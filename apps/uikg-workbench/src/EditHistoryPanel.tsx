@@ -5,7 +5,7 @@ const fieldLabels: Record<string, string> = {
   added: '新增元素',
   removed: '删除元素',
   label: '元素名称',
-  controlType: '控件类型',
+  controlType: '元素类型',
   role: '元素作用',
   capabilities: '支持操作',
   actionable: '是否可操作',

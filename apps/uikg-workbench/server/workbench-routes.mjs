@@ -16,6 +16,7 @@ import {
   validateScoutConsistency,
 } from './draft-model.mjs';
 import { buildAIReviewDemand, reviewCandidates } from './ai-review.mjs';
+import { ELEMENT_TYPES, SCOUT_ACTIONS, stringUnion } from './element-taxonomy.mjs';
 import { loadReviewerModelSettings, loadScoutModelSettings, saveReviewerModelSettings, saveScoutModelSettings } from './model-settings.mjs';
 import { recoverScoutCheckpointFromStream, runResumableScout, SCOUT_ERROR_RETRY_LIMIT } from './resumable-scout.mjs';
 import { runScoutModel } from './scout-client.mjs';
@@ -47,7 +48,9 @@ function workbenchError(status, message, details = {}) {
   return error;
 }
 
-const SCOUT_ELEMENT_SHAPE = '{candidateKey: string, label: string|null, visualDescription: string, controlType: "button"|"icon-button"|"switch"|"checkbox"|"radio"|"tab"|"menu-item"|"list-item"|"input"|"slider"|"status"|"badge"|"label"|"image"|"container"|"other", interactive: boolean, enabled: boolean|null, state: string|null, approximateRegion: {x:number,y:number,width:number,height:number}, geometryKind:"boundary"|"tap-target"|"approximate", geometryConfidence:number, meaning:{status:"known"|"candidate"|"unknown",description:string|null,evidence:{visibleTexts:string[],visibleIcons:string[],visibleStates:string[],visualCues:string[],userContext:string|null,unclassified:{type:string,detail:string|null}[]}}, dynamicContent:boolean, riskSignals:string[], confidence:number}';
+const ELEMENT_TYPE_UNION = stringUnion(ELEMENT_TYPES);
+const SCOUT_ACTION_UNION = stringUnion(SCOUT_ACTIONS);
+const SCOUT_ELEMENT_SHAPE = `{candidateKey: string, label: string|null, visualDescription: string, controlType: ${ELEMENT_TYPE_UNION}, interactive: boolean, enabled: boolean|null, state: string|null, approximateRegion: {x:number,y:number,width:number,height:number}, geometryKind:"boundary"|"tap-target"|"approximate", geometryConfidence:number, meaning:{status:"known"|"candidate"|"unknown",description:string|null,evidence:{visibleTexts:string[],visibleIcons:string[],visibleStates:string[],visualCues:string[],userContext:string|null,unclassified:{type:string,detail:string|null}[]}}, dynamicContent:boolean, riskSignals:string[], confidence:number}`;
 
 function buildScoutPrompt(frameId, pageContext = '') {
   return `请查看完整、稳定的 Android 截图，并严格返回以下结构的一个 JSON 对象。所有自然语言字段必须使用简体中文，不要输出 Markdown：
@@ -56,11 +59,11 @@ function buildScoutPrompt(frameId, pageContext = '') {
   page: {name: string|null, surfaceType: "page"|"dialog"|"drawer"|"bottom-sheet"|"menu"|"shared-component"|"unknown", stateSummary: string, scrollableRegions: string[]},
   elements: [${SCOUT_ELEMENT_SHAPE}],
   relationships: [{fromCandidateKey:string,type:"contains"|"labels"|"controls"|"belongs-to"|"adjacent-to",toCandidateKey:string}],
-  actionCandidates: [{triggerCandidateKey:string,action:"tap"|"input"|"scroll-vertical"|"swipe-horizontal"|"long-press"|"drag"|"toggle"|"select"|"open"|"dismiss"|"back"|"other",expectedOutcome:string|null,basis:"visible-affordance"|"user-context"|"requirement-document"|"existing-graph"|"authority-contract"|"unknown",riskSignals:string[],confidence:number}],
+  actionCandidates: [{triggerCandidateKey:string,action:${SCOUT_ACTION_UNION},expectedOutcome:string|null,basis:"visible-affordance"|"user-context"|"requirement-document"|"existing-graph"|"authority-contract"|"unknown",riskSignals:string[],confidence:number}],
   comparison: {basisFrameId:null,status:"not-requested",changes:[]},
   uncertainties: string[]
 }.
-盘点每个可见控件、标签、图标、状态指示器、结构容器、稳定内容锚点和关系。复合行容器、说明标签、当前值和实际触发器需要分开记录。区分纵向滚动（scroll-vertical）、横向翻页或控件手势（swipe-horizontal）、原地长按（long-press）和拖动物体（drag）。在 meaning.evidence 中记录可见事实，不要编造 meaning.basis。visibleTexts 放可见文字，visibleIcons 放可识别图标，visibleStates 放选中、禁用或开关状态，visualCues 放其他形状、颜色和布局证据，userContext 放用户提供的知识，其余证据放入 unclassified。JSON 必须紧凑且完整，所有 required 顶层字段都要返回。approximateRegion 使用 0 到 1 的归一化比例且不得越界。candidateKey 必须是稳定、唯一的 ASCII 语义 key。几何信息只是候选范围，不是精确定位器。无法证实的含义保持 unknown。不要规划或执行操作。frameId 必须严格等于 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
+按照 Navigation、Action、Input、Selection、Display、List、Container、Overlay、Scroll、Feedback、Progress、Media、Map、System、Gesture、Business 分类选择最具体的 controlType。盘点每个可见元素、标签、图标、状态指示器、结构容器、稳定内容锚点和关系。复合行容器、说明标签、当前值和实际触发器需要分开记录。actionCandidates 使用元素实际支持的操作；手势区域与交互能力必须分离。在 meaning.evidence 中记录可见事实，不要编造 meaning.basis。visibleTexts 放可见文字，visibleIcons 放可识别图标，visibleStates 放选中、禁用或开关状态，visualCues 放其他形状、颜色和布局证据，userContext 放用户提供的知识，其余证据放入 unclassified。JSON 必须紧凑且完整，所有 required 顶层字段都要返回。approximateRegion 使用 0 到 1 的归一化比例且不得越界。candidateKey 必须是稳定、唯一的 ASCII 语义 key。几何信息只是候选范围，不是精确定位器。无法证实的含义保持 unknown。不要规划或执行操作。frameId 必须严格等于 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
 }
 
 function buildScoutContinuationPrompt(frameId, pageContext, checkpoint, attempt) {
@@ -74,12 +77,12 @@ ${JSON.stringify(checkpoint)}
   page: {name: string|null, surfaceType: "page"|"dialog"|"drawer"|"bottom-sheet"|"menu"|"shared-component"|"unknown", stateSummary: string, scrollableRegions: string[]},
   elements: [${SCOUT_ELEMENT_SHAPE}],
   relationships: [{fromCandidateKey:string,type:"contains"|"labels"|"controls"|"belongs-to"|"adjacent-to",toCandidateKey:string}],
-  actionCandidates: [{triggerCandidateKey:string,action:"tap"|"input"|"scroll-vertical"|"swipe-horizontal"|"long-press"|"drag"|"toggle"|"select"|"open"|"dismiss"|"back"|"other",expectedOutcome:string|null,basis:"visible-affordance"|"user-context"|"requirement-document"|"existing-graph"|"authority-contract"|"unknown",riskSignals:string[],confidence:number}],
+  actionCandidates: [{triggerCandidateKey:string,action:${SCOUT_ACTION_UNION},expectedOutcome:string|null,basis:"visible-affordance"|"user-context"|"requirement-document"|"existing-graph"|"authority-contract"|"unknown",riskSignals:string[],confidence:number}],
   comparison: {basisFrameId:null,status:"not-requested",changes:[]},
   uncertainties: string[],
   done: boolean
 }.
-仅返回断点中不存在的元素，并使用新的稳定 ASCII candidateKey。必要时可返回涉及已有和新增候选的关系与动作。区分 scroll-vertical、swipe-horizontal、long-press 和 drag，不要返回旧动作 scroll。只有断点后的所有可见区域及缺失顶层字段都完成后，才能设置 done=true。证据保持简洁。frameId 仍为 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
+仅返回断点中不存在的元素，并使用新的稳定 ASCII candidateKey。必要时可返回涉及已有和新增候选的关系与动作。元素类型和支持操作必须使用上述枚举，元素类型与交互能力需要分开判断。只有断点后的所有可见区域及缺失顶层字段都完成后，才能设置 done=true。证据保持简洁。frameId 仍为 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
 }
 
 async function freezeAndCapture(agent) {
@@ -921,7 +924,6 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       const selectedReviewerElements = (reviewerResult.elements || []).filter((element) => selectedReviewerKeys.has(element.candidateKey));
       const candidateByKey = new Map(scoutElements.map((element) => [element.candidateKey, element]));
       for (const element of selectedReviewerElements) candidateByKey.set(element.candidateKey, element);
-      const reverseAction = { click: 'tap', input: 'input', scroll_vertical: 'scroll-vertical', swipe_horizontal: 'swipe-horizontal', long_press: 'long-press', drag: 'drag', toggle: 'toggle', select: 'select', open: 'open', dismiss: 'dismiss', back: 'back', other: 'other' };
       const selectedKeys = new Set(candidateByKey.keys());
       const combinedResult = {
         ...reviewerResult,
@@ -932,7 +934,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
           ...(reviewerResult.actionCandidates || []).filter((action) => selectedKeys.has(action.triggerCandidateKey)),
           ...selectedScout.flatMap((element) => element.capabilities.map((capability) => ({
             triggerCandidateKey: element.candidateKey,
-            action: reverseAction[capability] || 'other',
+            action: SCOUT_ACTIONS.includes(capability) ? capability : 'other',
             expectedOutcome: null,
             basis: 'existing-graph',
             riskSignals: [],

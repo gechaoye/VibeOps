@@ -1,5 +1,5 @@
 import { Bot, Check, CircleAlert, CircleCheck, Eye, EyeOff, RotateCcw, Trash2, X } from 'lucide-react';
-import { capabilityOptions, controlTypeOptions, roleOptions } from './model';
+import { capabilityGroups, elementTypeGroups, roleOptions } from './model';
 import type { DraftElement, DraftPage } from './types';
 
 interface InspectorProps {
@@ -69,16 +69,21 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
       </div>
 
       <label className={fieldClass('label')}><span>元素名称</span><input value={element.label} onBlur={onChangeEnd} onChange={(event) => updateField('label', event.target.value, true)} /></label>
-      <label className={fieldClass('controlType')}><span>控件类型</span><select value={element.controlType} onChange={(event) => updateField('controlType', event.target.value)}>{controlTypeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+      <label className={fieldClass('controlType')}><span>元素类型</span><select value={element.controlType} onChange={(event) => updateField('controlType', event.target.value)}>{elementTypeGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</optgroup>)}</select></label>
       <label className={fieldClass('role')}><span>元素作用</span><select value={element.role} onChange={(event) => updateField('role', event.target.value)}>{roleOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
       <label className={fieldClass('actionable')}><span>是否可操作</span><select value={element.actionable} onChange={(event) => updateField('actionable', event.target.value)}><option value="yes">可操作</option><option value="no">不可操作</option><option value="unknown">待确认</option></select></label>
 
       <fieldset className={groupClass('capabilities')}>
         <legend>支持操作</legend>
-        <div className="checkbox-grid">
-          {capabilityOptions.map(([value, label]) => (
-            <label key={value} className="check-field"><input type="checkbox" checked={element.capabilities.includes(value)} onChange={(event) => updateField('capabilities', event.target.checked ? [...element.capabilities, value] : element.capabilities.filter((item) => item !== value))} /><span>{label}</span></label>
-          ))}
+        <div className="capability-groups">
+          {capabilityGroups.map((group) => <section className="capability-group" key={group.label}>
+            <strong>{group.label}</strong>
+            <div className="checkbox-grid">
+              {group.options.map(([value, label]) => (
+                <label key={value} className="check-field"><input type="checkbox" checked={element.capabilities.includes(value)} onChange={(event) => updateField('capabilities', event.target.checked ? [...element.capabilities, value] : element.capabilities.filter((item) => item !== value))} /><span>{label}</span></label>
+              ))}
+            </div>
+          </section>)}
         </div>
       </fieldset>
 

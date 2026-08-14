@@ -1,5 +1,6 @@
 import { Check, LoaderCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { elementTypeLabel } from './model';
 import type { DraftElement, ReviewerResult } from './types';
 
 interface ReviewComparisonPanelProps {
@@ -22,7 +23,7 @@ function CandidateRow({ candidateKey, label, description, controlType, checked, 
       <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
       <span>
         <strong>{label || candidateKey}</strong>
-        <small>{controlType || 'other'} · {description || candidateKey}</small>
+        <small>{elementTypeLabel(controlType || 'other')} · {description || candidateKey}</small>
       </span>
     </label>
   );

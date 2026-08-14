@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { beginFrameCapture, createEmptyDraft, mergeScoutIntoDraft, normalizeDraftShape, normalizeScoutOutput, prepareScoutForDraft, validateDraft, validateScoutConsistency } from './draft-model.mjs';
+import { ELEMENT_TYPES, SCOUT_ACTIONS } from './element-taxonomy.mjs';
 
 function meaningEvidence(overrides = {}) {
   return {
@@ -98,16 +99,13 @@ test('旧单页草稿升级后保留 Page、Frame 和 Scout 模型来源', () =>
   assert.equal(upgraded.elements[0].scoutModel, 'qwen3-vl-plus');
 });
 
-test('旧 scroll 能力升级为纵向滚动并同步 Transition', () => {
+test('支持操作使用新枚举并去重', () => {
   const draft = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'model.json');
-  draft.elements[1].capabilities = ['scroll', 'toggle', 'scroll'];
-  draft.transitions = [{ capability: 'scroll', action: 'aiScroll' }];
+  draft.elements[1].capabilities = ['tap', 'zoom', 'tap'];
 
   const normalized = normalizeDraftShape(draft);
 
-  assert.deepEqual(normalized.elements[1].capabilities, ['scroll_vertical', 'toggle']);
-  assert.equal(normalized.transitions[0].capability, 'scroll_vertical');
-  assert.equal(normalized.transitions[0].action, 'aiScroll');
+  assert.deepEqual(normalized.elements[1].capabilities, ['tap', 'zoom']);
 });
 
 test('探索新页面时保留上一页元素并建立独立 Page', () => {
@@ -246,29 +244,24 @@ test('qwen3-vl-plus 的 visible-icon 动作依据可归一化并通过 Scout Sch
   assert.equal(validate(scout), true, JSON.stringify(validate.errors));
 });
 
-test('Scout 滚动别名归一化为新动作并通过 Schema', async () => {
+test('Scout 支持完整操作枚举并通过 Schema', async () => {
   const raw = sampleScout();
-  raw.actionCandidates = [
-    { ...raw.actionCandidates[0], action: 'scroll' },
-    { ...raw.actionCandidates[0], action: 'horizontal_swipe' },
-    { ...raw.actionCandidates[0], action: 'long_press' },
-    { ...raw.actionCandidates[0], action: 'drag_and_drop' },
-  ];
+  raw.actionCandidates = SCOUT_ACTIONS.map((action) => ({ ...raw.actionCandidates[0], action }));
 
   const { scout, normalizationIssues } = normalizeScoutOutput(raw);
   const schema = JSON.parse(await readFile(new URL('./scout-output.schema.json', import.meta.url), 'utf8'));
   const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
 
-  assert.deepEqual(scout.actionCandidates.map((candidate) => candidate.action), [
-    'scroll-vertical', 'swipe-horizontal', 'long-press', 'drag',
-  ]);
-  assert.equal(normalizationIssues.length, 4);
+  assert.deepEqual(schema.properties.elements.items.properties.controlType.enum, ELEMENT_TYPES);
+  assert.deepEqual(schema.properties.actionCandidates.items.properties.action.enum, SCOUT_ACTIONS);
+  assert.deepEqual(scout.actionCandidates.map((candidate) => candidate.action), SCOUT_ACTIONS);
+  assert.equal(normalizationIssues.length, 0);
   assert.equal(validate(scout), true, JSON.stringify(validate.errors));
 });
 
-test('Scout 新动作转换为四种元素能力', () => {
+test('Scout 操作直接转换为元素支持操作', () => {
   const scout = sampleScout();
-  scout.actionCandidates = ['scroll-vertical', 'swipe-horizontal', 'long-press', 'drag'].map((action) => ({
+  scout.actionCandidates = ['scroll_vertical', 'swipe', 'long_press', 'drag', 'play', 'share'].map((action) => ({
     ...scout.actionCandidates[0],
     action,
   }));
@@ -276,7 +269,7 @@ test('Scout 新动作转换为四种元素能力', () => {
   const draft = mergeScoutIntoDraft(createEmptyDraft(), scout, 'model.json');
   const trigger = draft.elements.find((element) => element.candidateKey === 'settings.toggle');
 
-  assert.deepEqual(trigger.capabilities, ['scroll_vertical', 'swipe_horizontal', 'long_press', 'drag']);
+  assert.deepEqual(trigger.capabilities, ['scroll_vertical', 'swipe', 'long_press', 'drag', 'play', 'share']);
 });
 
 test('旧草稿 meaning.basis 不迁移，缺少新证据时语义降级为未知', () => {

@@ -28,7 +28,7 @@ test('Transition 仅在完整动作证据闭环后通过', () => {
   draft.pages.push({ ...draft.pages[0], id: 'draft-page-target', key: 'page.target', name: '目标页', frameIds: ['sha256:after'], elementIds: [] });
   const transition = {
     id: 'draft-transition-1', key: 'source.open_target', sourcePageId: draft.currentPageId, sourceStateKey: 'default',
-    triggerElementId: draft.elements[0].id, action: 'aiTap', capability: 'click', targetPageId: 'draft-page-target', targetStateKey: 'default',
+    triggerElementId: draft.elements[0].id, action: 'aiTap', capability: 'tap', targetPageId: 'draft-page-target', targetStateKey: 'default',
     reversible: true, risk: 'safe',
     evidence: { beforeFrameId: 'sha256:before', locatorFrameId: 'sha256:before', actionTraceRef: 'trace:1', afterFrameId: 'sha256:after', postcondition: 'pass', semanticAssertions: ['目标页标题可见'] },
   };

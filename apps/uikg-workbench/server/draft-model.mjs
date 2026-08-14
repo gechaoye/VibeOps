@@ -1,39 +1,14 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { SCOUT_ACTIONS } from './element-taxonomy.mjs';
 
 export const DRAFT_SCHEMA_VERSION = 'uikg-workbench-draft/1.1';
 
 const MEANING_EVIDENCE_FIELDS = ['visibleTexts', 'visibleIcons', 'visibleStates', 'visualCues'];
 
-const SCOUT_ACTION_ALIASES = {
-  scroll: 'scroll-vertical',
-  'vertical-scroll': 'scroll-vertical',
-  vertical_scroll: 'scroll-vertical',
-  scroll_vertical: 'scroll-vertical',
-  'horizontal-swipe': 'swipe-horizontal',
-  horizontal_swipe: 'swipe-horizontal',
-  swipe_horizontal: 'swipe-horizontal',
-  longpress: 'long-press',
-  long_press: 'long-press',
-  'drag-and-drop': 'drag',
-  drag_and_drop: 'drag',
-};
-
-const DRAFT_CAPABILITY_ALIASES = {
-  scroll: 'scroll_vertical',
-  'scroll-vertical': 'scroll_vertical',
-  vertical_scroll: 'scroll_vertical',
-  'swipe-horizontal': 'swipe_horizontal',
-  horizontal_swipe: 'swipe_horizontal',
-  'long-press': 'long_press',
-  longpress: 'long_press',
-  'drag-and-drop': 'drag',
-  drag_and_drop: 'drag',
-};
-
 function normalizeCapabilities(capabilities) {
   return [...new Set((Array.isArray(capabilities) ? capabilities : [])
     .filter((capability) => typeof capability === 'string' && capability.trim())
-    .map((capability) => DRAFT_CAPABILITY_ALIASES[capability.trim()] || capability.trim()))];
+    .map((capability) => capability.trim()))];
 }
 
 function evidenceDetail(value) {
@@ -213,11 +188,6 @@ export function normalizeScoutOutput(rawScout) {
     scout.actionCandidates = scout.actionCandidates.map((actionCandidate, index) => {
       const messages = [];
       const normalized = { ...actionCandidate };
-      const action = SCOUT_ACTION_ALIASES[actionCandidate?.action];
-      if (action) {
-        normalized.action = action;
-        messages.push(`actionCandidates.action 已从 ${actionCandidate.action} 归一化为 ${action}`);
-      }
       if (actionCandidate?.basis === 'visible-icon') {
         normalized.basis = 'visible-affordance';
         messages.push('actionCandidates.basis 已从 visible-icon 归一化为 visible-affordance');
@@ -297,21 +267,6 @@ export function beginFrameCapture(currentDraft, frameId) {
     updatedAt: new Date().toISOString(),
   });
 }
-
-const ACTION_CAPABILITY = {
-  tap: 'click',
-  input: 'input',
-  'scroll-vertical': 'scroll_vertical',
-  'swipe-horizontal': 'swipe_horizontal',
-  'long-press': 'long_press',
-  drag: 'drag',
-  toggle: 'toggle',
-  select: 'select',
-  open: 'open',
-  dismiss: 'dismiss',
-  back: 'back',
-  other: 'other',
-};
 
 export function createEmptyDraft() {
   const now = new Date().toISOString();
@@ -423,7 +378,7 @@ function capabilitiesFor(candidateKey, actions) {
   return [...new Set(
     actions
       .filter((action) => action.triggerCandidateKey === candidateKey)
-      .map((action) => ACTION_CAPABILITY[action.action] || 'other'),
+      .map((action) => SCOUT_ACTIONS.includes(action.action) ? action.action : 'other'),
   )];
 }
 

@@ -234,6 +234,9 @@ button { color: inherit; }
 .field-modified .check-field input { accent-color: #2563eb; }
 .field-group { margin: 11px 0; padding: 9px; border: 1px solid var(--border); border-radius: 5px; }
 .field-group legend { padding: 0 5px; }
+.capability-groups { display: flex; flex-direction: column; gap: 9px; }
+.capability-group { min-width: 0; }
+.capability-group > strong { display: block; margin-bottom: 5px; color: #718078; font-size: 9px; font-weight: 600; }
 .checkbox-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .check-field { display: flex; align-items: center; gap: 4px; font-size: 10px; }
 .check-field input { accent-color: var(--primary); }

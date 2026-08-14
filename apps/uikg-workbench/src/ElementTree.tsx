@@ -1,5 +1,5 @@
 import { CheckCircle2, CircleHelp, Container, EyeOff, PenLine } from 'lucide-react';
-import { controlTypeLabel, reviewStatusLabels } from './model';
+import { elementTypeLabel, reviewStatusLabels } from './model';
 import type { DraftElement } from './types';
 
 interface ElementTreeProps {
@@ -41,7 +41,7 @@ export function ElementTree({ elements, selectedId, multiSelect, checkedIds, onS
             <Container size={14} className="tree-control-icon" />
             <span className="tree-row-main">
               <span className="tree-row-label">{element.label}</span>
-              <span className="tree-row-meta">{controlTypeLabel(element.controlType)}{element.aiReview && <i className={`tree-ai-review tree-ai-review-${element.aiReview.status}`} title={`AI 初审：${element.aiReview.summary}`} />}</span>
+              <span className="tree-row-meta">{elementTypeLabel(element.controlType)}{element.aiReview && <i className={`tree-ai-review tree-ai-review-${element.aiReview.status}`} title={`AI 初审：${element.aiReview.summary}`} />}</span>
             </span>
             <span className={`tree-status tree-status-${element.reviewStatus}`} title={reviewStatusLabels[element.reviewStatus]}>
               <StatusIcon status={element.reviewStatus} />

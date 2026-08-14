@@ -1,3 +1,5 @@
+import { ELEMENT_TYPES, SCOUT_ACTIONS, stringUnion } from './element-taxonomy.mjs';
+
 const STATUS_ALIASES = new Map([
   ['pass', 'pass'], ['passed', 'pass'], ['approve', 'pass'], ['approved', 'pass'], ['accept', 'pass'], ['accepted', 'pass'], ['ok', 'pass'],
   ['reject', 'reject'], ['rejected', 'reject'], ['fail', 'reject'], ['failed', 'reject'],
@@ -88,15 +90,17 @@ export function buildAIReviewDemand(draft, elements) {
     controlType: element.controlType,
     bbox: element.bbox,
   }));
-  return `你是独立的 UI 知识图谱识别模型。请重新查看当前冻结截图，独立盘点截图中所有可见控件、文本、图标、状态、结构容器、稳定内容锚点及它们的关系。不要只审核 Scout 候选，也不要假定 Scout 候选全部正确；请补充漏识别、删除截图中不存在的候选，并用新的完整识别结果与参考结果对照。
+  const elementTypeUnion = stringUnion(ELEMENT_TYPES);
+  const actionUnion = stringUnion(SCOUT_ACTIONS);
+  return `你是独立的 UI 知识图谱识别模型。请重新查看当前冻结截图，独立盘点截图中所有可见元素、文本、图标、状态、结构容器、稳定内容锚点及它们的关系。不要只审核 Scout 候选，也不要假定 Scout 候选全部正确；请补充漏识别、删除截图中不存在的候选，并用新的完整识别结果与参考结果对照。
 
 所有自然语言字段必须使用简体中文。不要执行任何操作，不要输出 Markdown 代码块，只返回一个 JSON 对象，结构如下：
 {
   "frameId": string,
   "page": {"name": string|null, "surfaceType": "page"|"dialog"|"drawer"|"bottom-sheet"|"menu"|"shared-component"|"unknown", "stateSummary": string, "scrollableRegions": string[]},
-  "elements": [{"candidateKey": string, "label": string|null, "visualDescription": string, "controlType": "button"|"icon-button"|"switch"|"checkbox"|"radio"|"tab"|"menu-item"|"list-item"|"input"|"slider"|"status"|"badge"|"label"|"image"|"container"|"other", "interactive": boolean, "enabled": boolean|null, "state": string|null, "approximateRegion": {"x":number,"y":number,"width":number,"height":number}, "geometryKind":"boundary"|"tap-target"|"approximate", "geometryConfidence":number, "meaning":{"status":"known"|"candidate"|"unknown","description":string|null,"evidence":{"visibleTexts":string[],"visibleIcons":string[],"visibleStates":string[],"visualCues":string[],"userContext":string|null,"unclassified":{"type":string,"detail":string|null}[]}}, "dynamicContent":boolean, "riskSignals":string[], "confidence":number}],
+  "elements": [{"candidateKey": string, "label": string|null, "visualDescription": string, "controlType": ${elementTypeUnion}, "interactive": boolean, "enabled": boolean|null, "state": string|null, "approximateRegion": {"x":number,"y":number,"width":number,"height":number}, "geometryKind":"boundary"|"tap-target"|"approximate", "geometryConfidence":number, "meaning":{"status":"known"|"candidate"|"unknown","description":string|null,"evidence":{"visibleTexts":string[],"visibleIcons":string[],"visibleStates":string[],"visualCues":string[],"userContext":string|null,"unclassified":{"type":string,"detail":string|null}[]}}, "dynamicContent":boolean, "riskSignals":string[], "confidence":number}],
   "relationships": [{"fromCandidateKey":string,"type":"contains"|"labels"|"controls"|"belongs-to"|"adjacent-to","toCandidateKey":string}],
-  "actionCandidates": [{"triggerCandidateKey":string,"action":"tap"|"input"|"scroll-vertical"|"swipe-horizontal"|"long-press"|"drag"|"toggle"|"select"|"open"|"dismiss"|"back"|"other","expectedOutcome":string|null,"basis":"visible-affordance"|"user-context"|"requirement-document"|"existing-graph"|"authority-contract"|"unknown","riskSignals":string[],"confidence":number}],
+  "actionCandidates": [{"triggerCandidateKey":string,"action":${actionUnion},"expectedOutcome":string|null,"basis":"visible-affordance"|"user-context"|"requirement-document"|"existing-graph"|"authority-contract"|"unknown","riskSignals":string[],"confidence":number}],
   "comparison": {"basisFrameId":null,"status":"not-requested","changes":[]},
   "uncertainties": string[]
 }

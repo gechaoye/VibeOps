@@ -1,5 +1,5 @@
 import { ArrowRight, CheckCircle2, CircleAlert, GitBranch, Plus, Trash2 } from 'lucide-react';
-import { transitionEvidenceIssues } from './model';
+import { capabilityGroups, transitionEvidenceIssues } from './model';
 import type { Draft, DraftPage, DraftTransition } from './types';
 
 interface PageGraphProps {
@@ -54,7 +54,7 @@ function TransitionEditor({ draft, transition, onUpdate, onDelete, onChangeEnd }
       <label className="field"><span>来源 Page</span><select value={transition.sourcePageId} onChange={(event) => onUpdate({ sourcePageId: event.target.value })}>{draft.pages.map((page) => <option key={page.id} value={page.id}>{page.name}</option>)}</select></label>
       <label className="field"><span>触发元素</span><select value={transition.triggerElementId} onChange={(event) => { const element = draft.elements.find((item) => item.id === event.target.value); onUpdate({ triggerElementId: event.target.value, capability: element?.capabilities[0] || transition.capability }); }}><option value="">请选择</option>{sourceElements.map((element) => <option key={element.id} value={element.id}>{element.label}</option>)}</select></label>
       <label className="field"><span>动作</span><select value={transition.action} onChange={(event) => onUpdate({ action: event.target.value })}><option value="aiTap">点击</option><option value="aiInput">输入</option><option value="aiScroll">纵向滚动</option><option value="aiSwipe">横向滑动</option><option value="aiLongPress">长按</option><option value="aiDragAndDrop">拖动</option><option value="aiToggle">切换</option><option value="aiBack">返回</option></select></label>
-      <label className="field"><span>能力</span><input value={transition.capability} onBlur={onChangeEnd} onChange={(event) => onUpdate({ capability: event.target.value }, 'transition:capability')} /></label>
+      <label className="field"><span>支持操作</span><select value={transition.capability} onChange={(event) => onUpdate({ capability: event.target.value })}>{capabilityGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</optgroup>)}</select></label>
       <label className="field"><span>目标 Page</span><select value={transition.targetPageId} onChange={(event) => onUpdate({ targetPageId: event.target.value })}>{draft.pages.map((page) => <option key={page.id} value={page.id}>{page.name}</option>)}</select></label>
       <div className="inline-fields"><label><span>可逆</span><input type="checkbox" checked={transition.reversible} onChange={(event) => onUpdate({ reversible: event.target.checked })} /></label><label><span>风险</span><select value={transition.risk} onChange={(event) => onUpdate({ risk: event.target.value as DraftTransition['risk'] })}><option value="safe">安全</option><option value="low">低</option><option value="medium">中</option><option value="high">高</option><option value="critical">严重</option></select></label></div>
 
