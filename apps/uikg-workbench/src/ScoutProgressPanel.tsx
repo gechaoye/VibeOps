@@ -134,9 +134,9 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
         {autoMode && <div className="auto-review-pipeline" aria-label="Auto 审核流程">
           <div className="auto-review-pipeline-track">
             <span className={`pipeline-step ${scoutStepDone ? 'done' : !reviewing && active ? 'active' : ''}`}><i><ScanSearch size={16} /></i><span><small>第一步</small><strong>Scout 识别</strong><em>{modelName || '未配置'}</em></span></span>
-            <span className={`pipeline-connector ${scoutStepDone ? 'done' : ''}`} aria-hidden="true" />
+            <span className={`pipeline-connector ${scoutStepDone ? 'done' : ''}`} aria-hidden="true"><ChevronRight size={16} strokeWidth={2.5} /></span>
             <span className={`pipeline-step ${reviewerStepDone ? 'done' : reviewing && active ? 'active' : reviewerStepError ? 'paused' : ''}`}><i><Bot size={16} /></i><span><small>第二步</small><strong>Reviewer 重识别</strong><em>{reviewerModel || '未配置'}</em></span></span>
-            <span className={`pipeline-connector ${reviewerStepDone ? 'done' : ''}`} aria-hidden="true" />
+            <span className={`pipeline-connector ${reviewerStepDone ? 'done' : ''}`} aria-hidden="true"><ChevronRight size={16} strokeWidth={2.5} /></span>
             <span className={`pipeline-step ${activity.phase === 'complete' ? 'done' : activity.phase === 'review-compare' ? 'active' : ''}`}><i><UserCheck size={16} /></i><span><small>第三步</small><strong>人工确认</strong><em>合并并审核</em></span></span>
           </div>
         </div>}
