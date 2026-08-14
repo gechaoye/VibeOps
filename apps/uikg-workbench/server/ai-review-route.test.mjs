@@ -19,7 +19,17 @@ test('AI 初审路由保留人工状态并写入 Reviewer 结论', async () => {
     async freezePageContext() {},
     async _snapshotContext() { return { screenshot: { base64: `data:image/png;base64,${PNG_1X1}`, capturedAt: Date.now() } }; },
     async aiQuery() {
-      return { reviews: [{ candidate_key: 'header.title', verdict: 'approved', score: 0.93, comment: '标题与画面一致', risks: [] }] };
+      return {
+        frameId: 'sha256:frame',
+        page: { name: '消息', surfaceType: 'page', stateSummary: '消息页', scrollableRegions: [] },
+        elements: [{
+          candidateKey: 'reviewer.title', label: '消息', visualDescription: '顶部标题', controlType: 'label', interactive: false,
+          enabled: true, state: null, approximateRegion: { x: 0.1, y: 0.05, width: 0.3, height: 0.05 }, geometryKind: 'boundary', geometryConfidence: 0.9,
+          meaning: { status: 'known', description: '页面标题', evidence: { visibleTexts: ['消息'], visibleIcons: [], visibleStates: [], visualCues: [], userContext: null, unclassified: [] } },
+          dynamicContent: false, riskSignals: [], confidence: 0.93,
+        }],
+        relationships: [], actionCandidates: [], comparison: { basisFrameId: null, status: 'not-requested', changes: [] }, uncertainties: [], done: true,
+      };
     },
   };
   const store = {
@@ -55,10 +65,23 @@ test('AI 初审路由保留人工状态并写入 Reviewer 结论', async () => {
     });
     assert.equal(response.status, 200);
     const result = await response.json();
-    assert.equal(result.reviewed, 1);
-    assert.equal(result.draft.elements[0].reviewStatus, 'pending');
-    assert.equal(result.draft.elements[0].aiReview.status, 'pass');
-    assert.equal(result.draft.elements[0].aiReview.model, 'test-reviewer');
+    assert.equal(draft.elements.length, 1, 'Reviewer 不应直接覆盖 Scout 草稿');
+    assert.equal(result.reviewerResult.elements[0].candidateKey, 'reviewer.title');
+    assert.equal(result.reviewerModel, 'test-reviewer');
+    const applyResponse = await fetch(`${baseUrl}/workbench/api/review/apply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        frameId: frame.frameId,
+        reviewerResult: result.reviewerResult,
+        selectedScoutKeys: [],
+        selectedReviewerKeys: ['reviewer.title'],
+        modelResultRef: result.modelResultRef,
+      }),
+    });
+    assert.equal(applyResponse.status, 200);
+    const applied = await applyResponse.json();
+    assert.deepEqual(applied.draft.elements.map((element) => element.candidateKey), ['reviewer.title']);
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     if (previousModel === undefined) delete process.env.MIDSCENE_MODEL_NAME;

@@ -118,7 +118,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
       <header className="model-settings-header">
         <div>
           <ServerCog size={21} />
-          <span><strong>{activeRole === 'scout' ? 'Scout 模型' : 'AI Reviewer'}</strong><small>{activeRole === 'scout' ? '只读页面清点与结构化提取' : '对 Scout 结果做初审，之后仍需人工确认'}</small></span>
+          <span><strong>{activeRole === 'scout' ? 'Scout 模型' : 'AI Reviewer'}</strong><small>{activeRole === 'scout' ? '只读页面清点与结构化提取' : '独立重识别冻结画面，与 Scout 结果并列对照'}</small></span>
         </div>
         <div className="model-role-switch" role="tablist" aria-label="模型角色">
           <button type="button" className={activeRole === 'scout' ? 'active' : ''} onClick={() => setActiveRole('scout')}>Scout</button>

@@ -1,4 +1,4 @@
-import type { Draft, FrameMetadata, ScoutModelSettings, ScoutResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, Draft, FrameMetadata, ReviewerResult, ScoutModelSettings, ScoutResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -26,12 +26,21 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 type ScoutStreamResult = { draft: Draft; issues: ValidationIssue[]; modelResultRef: string };
+type ReviewStreamResult = {
+  frameId: string;
+  reviewerResult: ReviewerResult;
+  scoutCandidates: Draft['elements'];
+  modelResultRef: string;
+  reviewerModel: string;
+  reasoningContent?: string;
+  outputContent?: string;
+};
 
-async function consumeScoutStream(
+async function consumeModelStream<T>(
   path: string,
   body: Record<string, unknown>,
   onEvent: (event: { type: string; [key: string]: unknown }) => void,
-): Promise<ScoutStreamResult> {
+): Promise<T> {
   const response = await fetch(`${serverUrl}/workbench/api${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
@@ -46,7 +55,7 @@ async function consumeScoutStream(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
-  let result: ScoutStreamResult | null = null;
+  let result: T | null = null;
   const consume = (block: string) => {
     let eventType = 'message';
     let data = '';
@@ -57,14 +66,14 @@ async function consumeScoutStream(
     if (!data) return;
     const payload = JSON.parse(data) as Record<string, unknown>;
     onEvent({ type: eventType, ...payload });
-    if (eventType === 'result') result = payload as ScoutStreamResult;
+    if (eventType === 'result') result = payload as T;
     if (eventType === 'error') {
-      const error = new Error(String(payload.message || 'Scout 分析失败')) as Error & { details?: Record<string, unknown> };
+      const error = new Error(String(payload.message || '模型分析失败')) as Error & { details?: Record<string, unknown> };
       error.details = payload;
       throw error;
     }
     if (eventType === 'cancelled') {
-      const error = new Error(String(payload.message || 'Scout 已中断')) as Error & { name: string };
+      const error = new Error(String(payload.message || '模型分析已中断')) as Error & { name: string };
       error.name = 'ScoutCancelledError';
       throw error;
     }
@@ -83,9 +92,14 @@ async function consumeScoutStream(
   } finally {
     reader.releaseLock();
   }
-  if (!result) throw new Error('Scout 流结束但未返回结果');
+  if (!result) throw new Error('模型流结束但未返回结果');
   return result;
 }
+
+const consumeScoutStream = (path: string, body: Record<string, unknown>, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+  consumeModelStream<ScoutStreamResult>(path, body, onEvent);
+const consumeReviewStream = (path: string, body: Record<string, unknown>, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+  consumeModelStream<ReviewStreamResult>(path, body, onEvent);
 
 export const workbenchApi = {
   status: () => request<WorkbenchStatus>('/status'),
@@ -104,10 +118,17 @@ export const workbenchApi = {
     body: JSON.stringify(config),
   }),
   review: (frameId: string) =>
-    request<{ draft: Draft; issues: ValidationIssue[]; modelResultRef: string; reviewed: number; reviewerModel: string }>('/review', {
+    request<ReviewStreamResult>('/review', {
       method: 'POST',
       body: JSON.stringify({ frameId }),
     }),
+  reviewStream: (
+    frameId: string,
+    onEvent: (event: { type: string; [key: string]: unknown }) => void,
+  ): Promise<ReviewStreamResult> => consumeReviewStream('/review/stream', { frameId }, onEvent),
+  applyReviewSelection: (payload: { frameId: string; reviewerResult: ReviewerResult; selectedScoutKeys: string[]; selectedReviewerKeys: string[]; modelResultRef: string }) =>
+    request<{ draft: Draft; issues: ValidationIssue[] }>('/review/apply', { method: 'POST', body: JSON.stringify(payload) }),
+  sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),
   draft: () => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft'),
   saveDraft: (draft: Draft) =>
     request<{ draft: Draft; issues: ValidationIssue[] }>('/draft', {

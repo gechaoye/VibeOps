@@ -205,6 +205,42 @@ export interface ScoutResumeSession {
   outputContent?: string;
 }
 
+export interface AnalysisSession {
+  id: string;
+  kind: 'scout' | 'review';
+  status: 'running' | 'completed' | 'failed' | 'cancelled';
+  frameId: string | null;
+  model: string | null;
+  startedAt: string;
+  updatedAt: string;
+  errorMessage?: string | null;
+  reasoningContent: string;
+  outputContent: string;
+  retryAttempts?: ScoutResumeSession['retryAttempts'];
+}
+
+export interface ReviewerElementCandidate {
+  candidateKey: string;
+  label?: string | null;
+  visualDescription?: string;
+  controlType?: string;
+  approximateRegion?: BBox;
+  confidence?: number;
+  [key: string]: unknown;
+}
+
+export interface ReviewerResult {
+  frameId: string;
+  page: Record<string, unknown>;
+  elements: ReviewerElementCandidate[];
+  relationships: Array<Record<string, unknown>>;
+  actionCandidates: Array<Record<string, unknown>>;
+  comparison: Record<string, unknown>;
+  uncertainties: string[];
+  done?: boolean;
+  [key: string]: unknown;
+}
+
 export interface ScoutModelPreset {
   id: string;
   name: string;

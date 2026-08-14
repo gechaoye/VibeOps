@@ -121,7 +121,7 @@ async function loadRoleModelSettings(envPath, runtimeEnv, role) {
     envPath,
     role,
     config,
-    presets: role === 'scout' ? SCOUT_MODEL_PRESETS : [{ id: 'gpt-5.6-sol', name: 'GPT 5.6 Sol', modelName: 'gpt-5.6-sol', modelFamily: 'gpt-5', badge: '默认审核', summary: '负责对 Scout 候选做初审，不替代人工确认', inputPrice: null, outputPrice: null }],
+    presets: role === 'scout' ? SCOUT_MODEL_PRESETS : [{ id: 'gpt-5.6-sol', name: 'GPT 5.6 Sol', modelName: 'gpt-5.6-sol', modelFamily: 'gpt-5', badge: '默认审核', summary: '独立重识别冻结画面，与 Scout 结果并列对照', inputPrice: null, outputPrice: null }],
     modelFamilies: MODEL_FAMILIES,
     runtimeModel,
     runtimeSynced: runtimeModel === config.modelName,

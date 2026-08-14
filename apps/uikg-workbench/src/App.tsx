@@ -44,7 +44,7 @@ import { createDraftPage, createDraftTransition, createHumanElement, elementAvai
 import { PageGraph } from './PageGraph';
 import { ScoutProgressPanel, type ScoutActivity } from './ScoutProgressPanel';
 import { StagingPanel } from './StagingPanel';
-import type { BBox, DeviceState, Draft, DraftElement, DraftPage, DraftTransition, ElementActivityRecord, ElementEditRecord, FrameMetadata, ScoutResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, BBox, DeviceState, Draft, DraftElement, DraftPage, DraftTransition, ElementActivityRecord, ElementEditRecord, FrameMetadata, ReviewerResult, ScoutResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 import './styles.css';
 
 type ViewMode = 'live' | 'review';
@@ -106,6 +106,8 @@ function AppContent() {
   const [notice, setNotice] = useState<{ type: 'info' | 'error' | 'success'; text: string } | null>(null);
   const [scoutActivity, setScoutActivity] = useState<ScoutActivity | null>(null);
   const [scoutDialogOpen, setScoutDialogOpen] = useState(false);
+  const [analysisSessions, setAnalysisSessions] = useState<AnalysisSession[]>([]);
+  const [reviewComparison, setReviewComparison] = useState<{ scoutElements: DraftElement[]; reviewerResult: ReviewerResult; modelResultRef: string } | null>(null);
   const [staging, setStaging] = useState<StagingResult | null>(null);
   const [elementActivities, setElementActivities] = useState<ElementActivityRecord[]>([]);
   const draftRef = useRef<Draft | null>(null);
@@ -130,6 +132,13 @@ function AppContent() {
   const frameUrl = draft?.currentFrameId
     ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(draft.currentFrameId)}/image`)
     : null;
+  const hasAnalyzedCurrentFrame = Boolean(draft?.currentFrameId && analysisSessions.some((session) => session.kind === 'scout' && session.frameId === draft.currentFrameId && session.status !== 'running'));
+
+  const refreshAnalysisSessions = async () => {
+    try {
+      setAnalysisSessions((await workbenchApi.sessions()).sessions);
+    } catch {}
+  };
 
   const showNotice = (type: 'info' | 'error' | 'success', text: string) => {
     setNotice({ type, text });
@@ -287,12 +296,13 @@ function AppContent() {
   }, [deviceClient]);
 
   useEffect(() => {
-    Promise.all([refreshConnection(), workbenchApi.draft(), workbenchApi.scoutSession()])
-      .then(([, result, scoutSessionResult]) => {
+    Promise.all([refreshConnection(), workbenchApi.draft(), workbenchApi.scoutSession(), workbenchApi.sessions()])
+      .then(([, result, scoutSessionResult, sessionHistory]) => {
         resetDraftState(result.draft);
         setServerIssues(result.issues);
         if (result.draft.currentFrameId) setViewMode('review');
         if (scoutSessionResult.session) setScoutActivity(pausedScoutActivity(scoutSessionResult.session));
+        setAnalysisSessions(sessionHistory.sessions);
       })
       .catch((error) => showNotice('error', error instanceof Error ? error.message : String(error)));
     const timer = window.setInterval(() => void refreshConnection(), 30_000);
@@ -376,19 +386,31 @@ function AppContent() {
     if (!runReview) {
       setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: 'Scout 分析完成，等待人工确认', errorMessage: undefined, resumeSessionId: undefined } : current);
       showNotice('success', `Scout 已识别 ${result.draft.elements.length} 个候选元素`);
+      await refreshAnalysisSessions();
       return;
     }
-    setScoutActivity((current) => current ? { ...current, status: 'running', phase: 'review', phaseMessage: 'Scout 完成，AI Reviewer 正在进行初审', errorMessage: undefined, resumeSessionId: undefined } : current);
+    setScoutActivity((current) => current ? {
+      ...current,
+      status: 'running',
+      phase: 'review',
+      phaseMessage: 'Scout 完成，Reviewer 正在重新识别画面',
+      scoutReasoningContent: current.reasoningContent,
+      scoutOutputContent: current.outputContent,
+      reasoningContent: '',
+      outputContent: '',
+      errorMessage: undefined,
+      resumeSessionId: undefined,
+    } : current);
     try {
-      const reviewed = await workbenchApi.review(result.draft.currentFrameId!);
-      resetDraftState(reviewed.draft);
-      setServerIssues(reviewed.issues);
-      setSelectedId(reviewed.draft.elements[0]?.id || null);
-      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: 'AI 初审完成，等待人工确认', errorMessage: undefined } : current);
-      showNotice('success', `Auto 已识别并初审 ${reviewed.reviewed} 个候选，仍需人工确认`);
+      const reviewed = await workbenchApi.reviewStream(result.draft.currentFrameId!, handleScoutEvent);
+      setReviewComparison({ scoutElements: reviewed.scoutCandidates, reviewerResult: reviewed.reviewerResult, modelResultRef: reviewed.modelResultRef });
+      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'review-compare', phaseMessage: '双模型识别完成，请选择要保留的元素', errorMessage: undefined } : current);
+      showNotice('success', 'Reviewer 已完成独立识别，请选择合并结果');
     } catch (error) {
       setScoutActivity((current) => current ? { ...current, status: 'error', phase: 'review-error', phaseMessage: 'Scout 已完成，AI 初审失败', errorMessage: error instanceof Error ? error.message : String(error) } : current);
       showNotice('error', `Scout 结果已保留；AI 初审失败：${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      await refreshAnalysisSessions();
     }
   };
 
@@ -397,18 +419,19 @@ function AppContent() {
     if (!currentDraft?.currentFrameId) return;
     setBusy('review');
     setScoutDialogOpen(true);
-    setScoutActivity((current) => current ? { ...current, status: 'running', phase: 'review', phaseMessage: '正在重试 AI 初审', errorMessage: undefined } : current);
+    setReviewComparison(null);
+    setScoutActivity((current) => current ? { ...current, status: 'running', phase: 'review', phaseMessage: 'Reviewer 正在重新识别画面', reasoningContent: '', outputContent: '', errorMessage: undefined } : current);
     try {
-      const reviewed = await workbenchApi.review(currentDraft.currentFrameId);
-      resetDraftState(reviewed.draft);
-      setServerIssues(reviewed.issues);
-      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: 'AI 初审完成，等待人工确认', errorMessage: undefined } : current);
-      showNotice('success', `AI 初审完成，${reviewed.reviewed} 个候选等待人工确认`);
+      const reviewed = await workbenchApi.reviewStream(currentDraft.currentFrameId, handleScoutEvent);
+      setReviewComparison({ scoutElements: reviewed.scoutCandidates, reviewerResult: reviewed.reviewerResult, modelResultRef: reviewed.modelResultRef });
+      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'review-compare', phaseMessage: '双模型识别完成，请选择要保留的元素', errorMessage: undefined } : current);
+      showNotice('success', 'Reviewer 已完成独立识别，请选择合并结果');
     } catch (error) {
       setScoutActivity((current) => current ? { ...current, status: 'error', phase: 'review-error', phaseMessage: 'AI 初审重试失败', errorMessage: error instanceof Error ? error.message : String(error) } : current);
       showNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
       setBusy(null);
+      await refreshAnalysisSessions();
     }
   };
 
@@ -444,6 +467,7 @@ function AppContent() {
     if (!draft?.currentFrameId) return;
     setBusy('scout');
     setScoutDialogOpen(true);
+    setReviewComparison(null);
     setScoutActivity({
       status: 'running',
       phase: 'starting',
@@ -456,6 +480,31 @@ function AppContent() {
       await finishScout(await workbenchApi.scoutStream(draft.currentFrameId, pageContext, handleScoutEvent), explorationMode === 'auto');
     } catch (error) {
       handleScoutFailure(error);
+    } finally {
+      setBusy(null);
+      await refreshAnalysisSessions();
+    }
+  };
+
+  const applyReviewComparison = async (selectedScoutKeys: string[], selectedReviewerKeys: string[]) => {
+    if (!draft?.currentFrameId || !reviewComparison) return;
+    setBusy('review-apply');
+    try {
+      const result = await workbenchApi.applyReviewSelection({
+        frameId: draft.currentFrameId,
+        reviewerResult: reviewComparison.reviewerResult,
+        selectedScoutKeys,
+        selectedReviewerKeys,
+        modelResultRef: reviewComparison.modelResultRef,
+      });
+      resetDraftState(result.draft);
+      setServerIssues(result.issues);
+      setSelectedId(result.draft.elements[0]?.id || null);
+      setReviewComparison(null);
+      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: '识别结果已合并，等待人工确认' } : current);
+      showNotice('success', `已合并 ${result.draft.elements.length} 个候选元素`);
+    } catch (error) {
+      showNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
       setBusy(null);
     }
@@ -492,6 +541,21 @@ function AppContent() {
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
     }
+  };
+
+  const openAnalysisHistory = () => {
+    const latest = analysisSessions[0];
+    if (!latest) return;
+    setReviewComparison(null);
+    setScoutActivity({
+      status: latest.status === 'completed' ? 'completed' : latest.status === 'cancelled' ? 'cancelled' : latest.status === 'running' ? 'running' : 'error',
+      phase: 'history',
+      phaseMessage: latest.kind === 'scout' ? 'Scout 识别会话' : 'Reviewer 重识别会话',
+      reasoningContent: latest.reasoningContent || '',
+      outputContent: latest.outputContent || '',
+      errorMessage: latest.errorMessage || undefined,
+    });
+    setScoutDialogOpen(true);
   };
 
   const saveDraft = async () => {
@@ -927,7 +991,8 @@ function AppContent() {
                   <button type="button" className="icon-button" title={showRejected ? '隐藏已忽略元素' : '显示已忽略元素'} onClick={() => setShowRejected((value) => !value)}>{showRejected ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                   <span className="scout-model" title={explorationMode === 'auto' ? `Scout：${status?.scoutModel || '未配置'}；Reviewer：${status?.reviewerModel || '未配置'}` : `Scout：${status?.scoutModel || '未配置'}`}>{explorationMode === 'auto' ? `Scout + Reviewer` : `Scout：${status?.scoutModel || '未配置'}`}</span>
                   {scoutActivity?.status === 'paused' && <button type="button" className="button scout-resume-button" onClick={() => setScoutDialogOpen(true)}><RefreshCw size={15} />继续 Scout · {scoutActivity.completedCandidates || 0}</button>}
-                  <button type="button" className="button" disabled={!draft?.currentFrameId || busy === 'scout' || busy === 'review' || scoutActivity?.status === 'paused' || (explorationMode === 'auto' && !status?.reviewerConfigured)} onClick={() => void runScout()}>{busy === 'scout' || busy === 'review' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}{explorationMode === 'auto' ? '运行 Auto' : '运行 Scout'}</button>
+                  <button type="button" className="icon-button" title="模型会话历史" disabled={analysisSessions.length === 0} onClick={openAnalysisHistory}><History size={15} /></button>
+                  <button type="button" className="button" disabled={!draft?.currentFrameId || busy === 'scout' || busy === 'review' || scoutActivity?.status === 'paused' || (explorationMode === 'auto' && !status?.reviewerConfigured)} onClick={() => void runScout()}>{busy === 'scout' || busy === 'review' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}{hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'}</button>
                 </>
               )}
             </div>
@@ -1019,7 +1084,7 @@ function AppContent() {
       )}
 
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
-      {scoutDialogOpen && scoutActivity && <ScoutProgressPanel activity={scoutActivity} modelName={status?.scoutModel || null} reviewerModel={status?.reviewerModel || null} autoMode={explorationMode === 'auto'} onCancel={() => void cancelScout()} onRetry={() => scoutActivity.phase === 'review-error' ? void retryReview() : void resumeScout()} onClose={() => { setScoutDialogOpen(false); if (scoutActivity.status !== 'paused') setScoutActivity(null); }} />}
+      {scoutDialogOpen && scoutActivity && <ScoutProgressPanel activity={scoutActivity} modelName={status?.scoutModel || null} reviewerModel={status?.reviewerModel || null} autoMode={explorationMode === 'auto'} sessions={analysisSessions} comparison={reviewComparison} applyingComparison={busy === 'review-apply'} onApplyComparison={(scoutKeys, reviewerKeys) => void applyReviewComparison(scoutKeys, reviewerKeys)} onCancel={() => void cancelScout()} onRetry={() => scoutActivity.phase === 'review-error' ? void retryReview() : void resumeScout()} onClose={() => { setScoutDialogOpen(false); if (scoutActivity.status !== 'paused') setScoutActivity(null); }} />}
     </div>
   );
 }

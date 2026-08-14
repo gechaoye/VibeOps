@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createEmptyDraft, normalizeDraftShape } from './draft-model.mjs';
 
@@ -17,12 +17,14 @@ export class DraftStore {
     this.draftPath = path.join(root, 'draft.json');
     this.framesRoot = path.join(root, 'evidence', 'frames');
     this.modelResultsRoot = path.join(root, 'evidence', 'model-results');
+    this.sessionsRoot = path.join(root, 'sessions');
   }
 
   async initialize() {
     await Promise.all([
       mkdir(this.framesRoot, { recursive: true }),
       mkdir(this.modelResultsRoot, { recursive: true }),
+      mkdir(this.sessionsRoot, { recursive: true }),
     ]);
     if (!(await exists(this.draftPath))) {
       await this.saveDraft(createEmptyDraft());
@@ -87,5 +89,22 @@ export class DraftStore {
     const resultPath = path.join(this.modelResultsRoot, `${modelResultId}.json`);
     await writeFile(resultPath, `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
     return resultPath;
+  }
+
+  async saveAnalysisSession(session) {
+    const safeId = String(session.id).replace(/[^a-zA-Z0-9._-]/g, '-');
+    const sessionPath = path.join(this.sessionsRoot, `${safeId}.json`);
+    const temporaryPath = `${sessionPath}.${process.pid}.tmp`;
+    await writeFile(temporaryPath, `${JSON.stringify(session, null, 2)}\n`, 'utf8');
+    await rename(temporaryPath, sessionPath);
+    return session;
+  }
+
+  async listAnalysisSessions() {
+    const entries = await readdir(this.sessionsRoot, { withFileTypes: true });
+    const sessions = await Promise.all(entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+      .map(async (entry) => JSON.parse(await readFile(path.join(this.sessionsRoot, entry.name), 'utf8'))));
+    return sessions.sort((a, b) => String(b.updatedAt || b.startedAt).localeCompare(String(a.updatedAt || a.startedAt)));
   }
 }

@@ -15,7 +15,7 @@ import {
   validateDraft,
   validateScoutConsistency,
 } from './draft-model.mjs';
-import { applyAIReviews, buildAIReviewDemand, normalizeAIReviewOutput, reviewCandidates } from './ai-review.mjs';
+import { buildAIReviewDemand, reviewCandidates } from './ai-review.mjs';
 import { loadReviewerModelSettings, loadScoutModelSettings, saveReviewerModelSettings, saveScoutModelSettings } from './model-settings.mjs';
 import { recoverScoutCheckpointFromStream, runResumableScout, SCOUT_ERROR_RETRY_LIMIT } from './resumable-scout.mjs';
 import { runScoutModel } from './scout-client.mjs';
@@ -49,7 +49,7 @@ function workbenchError(status, message, details = {}) {
 const SCOUT_ELEMENT_SHAPE = '{candidateKey: string, label: string|null, visualDescription: string, controlType: "button"|"icon-button"|"switch"|"checkbox"|"radio"|"tab"|"menu-item"|"list-item"|"input"|"slider"|"status"|"badge"|"label"|"image"|"container"|"other", interactive: boolean, enabled: boolean|null, state: string|null, approximateRegion: {x:number,y:number,width:number,height:number}, geometryKind:"boundary"|"tap-target"|"approximate", geometryConfidence:number, meaning:{status:"known"|"candidate"|"unknown",description:string|null,evidence:{visibleTexts:string[],visibleIcons:string[],visibleStates:string[],visualCues:string[],userContext:string|null,unclassified:{type:string,detail:string|null}[]}}, dynamicContent:boolean, riskSignals:string[], confidence:number}';
 
 function buildScoutPrompt(frameId, pageContext = '') {
-  return `Return one JSON object with exactly this structure:
+  return `请查看完整、稳定的 Android 截图，并严格返回以下结构的一个 JSON 对象。所有自然语言字段必须使用简体中文，不要输出 Markdown：
 {
   frameId: string,
   page: {name: string|null, surfaceType: "page"|"dialog"|"drawer"|"bottom-sheet"|"menu"|"shared-component"|"unknown", stateSummary: string, scrollableRegions: string[]},
@@ -59,15 +59,15 @@ function buildScoutPrompt(frameId, pageContext = '') {
   comparison: {basisFrameId:null,status:"not-requested",changes:[]},
   uncertainties: string[]
 }.
-Inspect the entire stable Android screenshot. Inventory every visible control, label, icon, status indicator, structural container, stable content anchor and relationship. Separate a compound row container, descriptive label, current value and actual trigger. Distinguish vertical content scrolling (scroll-vertical), horizontal paging or control gestures (swipe-horizontal), holding in place (long-press), and moving an object to another position (drag). Record concrete observations in meaning.evidence; do not invent a categorical meaning.basis. Put visible strings in visibleTexts, recognizable icon shapes in visibleIcons, selected/disabled/toggle states in visibleStates, other shape/color/layout evidence in visualCues, and supplied user knowledge in userContext. Put evidence that does not fit these fields in unclassified without discarding it. Keep the JSON compact so the complete object finishes: use concise labels and descriptions, omit repeated wording, keep each evidence array to the smallest sufficient set, and always include every required top-level field through uncertainties before ending the response. approximateRegion uses normalized 0-to-1 fractions and must stay inside the frame. Candidate keys must be stable ASCII semantic keys and unique within the frame. Geometry is only a candidate, not a precise locator. Preserve unsupported meanings as unknown. Do not plan or execute actions. Set frameId exactly to ${JSON.stringify(frameId)}. User page context: ${pageContext || 'none supplied'}.`;
+盘点每个可见控件、标签、图标、状态指示器、结构容器、稳定内容锚点和关系。复合行容器、说明标签、当前值和实际触发器需要分开记录。区分纵向滚动（scroll-vertical）、横向翻页或控件手势（swipe-horizontal）、原地长按（long-press）和拖动物体（drag）。在 meaning.evidence 中记录可见事实，不要编造 meaning.basis。visibleTexts 放可见文字，visibleIcons 放可识别图标，visibleStates 放选中、禁用或开关状态，visualCues 放其他形状、颜色和布局证据，userContext 放用户提供的知识，其余证据放入 unclassified。JSON 必须紧凑且完整，所有 required 顶层字段都要返回。approximateRegion 使用 0 到 1 的归一化比例且不得越界。candidateKey 必须是稳定、唯一的 ASCII 语义 key。几何信息只是候选范围，不是精确定位器。无法证实的含义保持 unknown。不要规划或执行操作。frameId 必须严格等于 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
 }
 
 function buildScoutContinuationPrompt(frameId, pageContext, checkpoint, attempt) {
-  return `Continue the same frozen-frame Scout inventory from checkpoint after request error ${attempt}. This is a delta request, not a new inventory. Do not restart from the top of the screenshot and do not repeat completed candidates.
-Already completed candidates and coverage:
+  return `第 ${attempt} 次请求错误后，请从同一冻结画面的断点继续。这是增量续写，不是重新识别；不要从截图顶部重新开始，也不要重复已完成候选。所有自然语言字段必须使用简体中文。
+已完成候选和覆盖范围：
 ${JSON.stringify(checkpoint)}
 
-Begin after normalized vertical position ${checkpoint.coveredBottom || 0}. If the visible elements are already covered, return elements:[] and only complete the missing top-level sections. Never return any candidateKey listed in completedCandidates. Inspect the same screenshot and return one compact JSON object with only the remaining work:
+从归一化纵向位置 ${checkpoint.coveredBottom || 0} 之后开始。如果可见元素已覆盖完毕，则返回 elements:[]，只补齐缺失的顶层字段。禁止返回 completedCandidates 中已有的 candidateKey。只返回剩余工作：
 {
   frameId: string,
   page: {name: string|null, surfaceType: "page"|"dialog"|"drawer"|"bottom-sheet"|"menu"|"shared-component"|"unknown", stateSummary: string, scrollableRegions: string[]},
@@ -78,7 +78,7 @@ Begin after normalized vertical position ${checkpoint.coveredBottom || 0}. If th
   uncertainties: string[],
   done: boolean
 }.
-Return only elements not listed in the checkpoint, using new stable ASCII candidateKey values. Include relationships and actions involving both existing and new candidate keys when needed. Distinguish scroll-vertical, swipe-horizontal, long-press, and drag; do not return the legacy action scroll. Set done=true only after every visible region after the checkpoint and every missing top-level section is complete. Keep evidence concise. FrameId remains ${JSON.stringify(frameId)}. User page context: ${pageContext || 'none supplied'}.`;
+仅返回断点中不存在的元素，并使用新的稳定 ASCII candidateKey。必要时可返回涉及已有和新增候选的关系与动作。区分 scroll-vertical、swipe-horizontal、long-press 和 drag，不要返回旧动作 scroll。只有断点后的所有可见区域及缺失顶层字段都完成后，才能设置 done=true。证据保持简洁。frameId 仍为 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
 }
 
 async function freezeAndCapture(agent) {
@@ -130,6 +130,114 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     reviewer: await loadReviewerModelSettings(modelEnvPath),
   });
 
+  const persistAnalysisSession = async (session) => {
+    if (typeof store.saveAnalysisSession !== 'function') return;
+    try {
+      await store.saveAnalysisSession(session);
+    } catch {
+      // Session history must never hide the model result or its error.
+    }
+  };
+
+  async function executeReview({ frameId, signal, onProgress = () => {} }) {
+    const modelResultId = `review-${Date.now()}-${randomUUID().slice(0, 8)}`;
+    const startedAt = new Date().toISOString();
+    let reasoningContent = '';
+    let outputContent = '';
+    let sessionStatus = 'running';
+    let sessionError = null;
+    const emitProgress = (event) => {
+      if (event.type === 'chunk') {
+        reasoningContent += event.reasoningContent || '';
+        outputContent += event.content || '';
+      }
+      onProgress(event);
+    };
+    await persistAnalysisSession({
+      id: modelResultId,
+      kind: 'review',
+      status: sessionStatus,
+      frameId,
+      model: process.env.MIDSCENE_MODEL_NAME || null,
+      startedAt,
+      updatedAt: startedAt,
+      reasoningContent,
+      outputContent,
+    });
+    try {
+      emitProgress({ type: 'stage', phase: 'review', message: '正在重新识别冻结画面' });
+      if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
+      if (!process.env.MIDSCENE_MODEL_NAME) throw workbenchError(503, '未配置 AI Reviewer 模型，请设置 MIDSCENE_MODEL_*');
+      if (!frameId) throw workbenchError(400, '缺少 frameId');
+      if (frozenAgent !== server.agent || frozenFrameId !== frameId) {
+        throw workbenchError(409, '当前进程没有该 frameId 的冻结上下文，请重新冻结画面后再识别');
+      }
+      const currentDraft = await store.loadDraft();
+      if (currentDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
+      const candidates = reviewCandidates(currentDraft);
+      if (candidates.length === 0) throw workbenchError(422, '当前页面没有可供对照的 Scout 候选');
+      signal?.throwIfAborted();
+      const rawResult = await server.agent.aiQuery(buildAIReviewDemand(currentDraft, candidates), {
+        domIncluded: false,
+        screenshotIncluded: true,
+        stream: true,
+        abortSignal: signal,
+        onChunk: (chunk) => emitProgress({
+          type: 'chunk',
+          content: chunk.content || '',
+          reasoningContent: process.env.MIDSCENE_MODEL_REASONING_ENABLED === 'true' ? chunk.reasoning_content || '' : '',
+        }),
+      });
+      signal?.throwIfAborted();
+      emitProgress({ type: 'stage', phase: 'normalize-review', message: '正在整理 Reviewer 识别结果' });
+      const { scout: normalizedResult, normalizationIssues } = normalizeScoutOutput(rawResult);
+      delete normalizedResult.done;
+      const schemaValid = validateScoutSchema(normalizedResult);
+      const schemaErrors = structuredClone(validateScoutSchema.errors || []);
+      if (!schemaValid) throw workbenchError(422, 'Reviewer 识别结果未通过结构检查', { schemaErrors, normalizationIssues });
+      const completedAt = new Date().toISOString();
+      const resultPath = await store.saveModelResult(modelResultId, {
+        recordType: 'WorkbenchAIReviewResult',
+        modelResultId,
+        frameId,
+        startedAt,
+        completedAt,
+        model: process.env.MIDSCENE_MODEL_NAME,
+        rawResult,
+        normalizedResult,
+        normalizationIssues,
+      });
+      sessionStatus = 'completed';
+      emitProgress({ type: 'stage', phase: 'review-compare', message: 'Reviewer 识别完成，请选择要保留的元素' });
+      return {
+        frameId,
+        reviewerResult: normalizedResult,
+        scoutCandidates: candidates,
+        modelResultRef: path.relative(workbenchRoot, resultPath).split(path.sep).join('/'),
+        reviewerModel: process.env.MIDSCENE_MODEL_NAME,
+        reasoningContent,
+        outputContent,
+      };
+    } catch (error) {
+      sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
+      sessionError = error instanceof Error ? error.message : String(error);
+      throw error;
+    } finally {
+      await persistAnalysisSession({
+        id: modelResultId,
+        kind: 'review',
+        status: sessionStatus,
+        frameId,
+        model: process.env.MIDSCENE_MODEL_NAME || null,
+        startedAt,
+        updatedAt: new Date().toISOString(),
+        errorMessage: sessionError,
+        reasoningContent,
+        outputContent,
+      });
+    }
+  }
+
   const inspectScoutResult = (candidate) => {
     const { scout: normalizedResult, normalizationIssues } = normalizeScoutOutput(candidate);
     const schemaValid = validateScoutSchema(normalizedResult);
@@ -156,12 +264,15 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
 
   async function executeScout({ frameId, pageContext = '', signal, onProgress = () => {}, resumeSession = null }) {
     const modelResultId = `scout-${Date.now()}-${randomUUID().slice(0, 8)}`;
+    const sessionStartedAt = resumeSession?.createdAt || new Date().toISOString();
     let rawResult = null;
     let modelStarted = false;
     let resultSaved = false;
     let retryAttempts = [];
     let reasoningContent = resumeSession?.reasoningContent || '';
     let outputContent = resumeSession?.outputContent || '';
+    let sessionStatus = 'running';
+    let sessionError = null;
     const emitProgress = (event) => {
       if (event.type === 'chunk') {
         reasoningContent += event.reasoningContent || '';
@@ -170,6 +281,17 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       onProgress(event);
     };
     try {
+      await persistAnalysisSession({
+        id: modelResultId,
+        kind: 'scout',
+        status: sessionStatus,
+        frameId: frameId || null,
+        model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+        startedAt: sessionStartedAt,
+        updatedAt: new Date().toISOString(),
+        reasoningContent,
+        outputContent,
+      });
       await syncModelRuntime();
       emitProgress({ type: 'stage', phase: 'validate', message: '正在校验冻结帧' });
       if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
@@ -183,7 +305,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       }
       signal?.throwIfAborted();
 
-      const startedAt = resumeSession?.createdAt || new Date().toISOString();
+      const startedAt = sessionStartedAt;
       modelStarted = true;
       emitProgress({
         type: 'stage',
@@ -304,8 +426,11 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       signal?.throwIfAborted();
       await store.saveDraft(draft);
       emitProgress({ type: 'stage', phase: 'complete', message: 'Scout 分析完成' });
+      sessionStatus = 'completed';
       return { draft, issues, modelResultRef };
     } catch (error) {
+      sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
+      sessionError = error instanceof Error ? error.message : String(error);
       if (modelStarted && !resultSaved) {
         try {
           const resultPath = await store.saveModelResult(modelResultId, {
@@ -325,6 +450,20 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         } catch {}
       }
       throw error;
+    } finally {
+      await persistAnalysisSession({
+        id: modelResultId,
+        kind: 'scout',
+        status: sessionStatus,
+        frameId: frameId || null,
+        model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+        startedAt: sessionStartedAt,
+        updatedAt: new Date().toISOString(),
+        errorMessage: sessionError,
+        reasoningContent,
+        outputContent,
+        retryAttempts,
+      });
     }
   }
 
@@ -372,6 +511,15 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
 
   router.get('/scout/session', (_req, res) => {
     res.json({ session: publicScoutSession(resumableScout, true) });
+  });
+
+  router.get('/sessions', async (_req, res, next) => {
+    try {
+      const sessions = typeof store.listAnalysisSessions === 'function' ? await store.listAnalysisSessions() : [];
+      res.json({ sessions });
+    } catch (error) {
+      next(error);
+    }
   });
 
   router.get('/model-settings', async (_req, res, next) => {
@@ -570,53 +718,111 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     res.json({ cancelled: true });
   });
 
+  async function streamReview(req, res) {
+    if (scoutInProgress || reviewInProgress) return res.status(409).json({ error: '已有 AI 分析正在运行' });
+    reviewInProgress = true;
+    await syncModelRuntime();
+    const controller = new AbortController();
+    let responseComplete = false;
+    res.status(200).set({
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    }).flushHeaders();
+    const send = (event, data) => {
+      if (res.writableEnded || res.destroyed) return;
+      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    };
+    res.on('close', () => {
+      if (!responseComplete) controller.abort('Reviewer 流连接已关闭');
+    });
+    try {
+      const result = await executeReview({
+        frameId: String(req.body?.frameId || ''),
+        signal: controller.signal,
+        onProgress: (event) => send(event.type, event),
+      });
+      send('result', result);
+    } catch (error) {
+      send(controller.signal.aborted ? 'cancelled' : 'error', { message: error instanceof Error ? error.message : String(error), ...(error?.details || {}) });
+    } finally {
+      responseComplete = true;
+      reviewInProgress = false;
+      if (!res.writableEnded) res.end();
+    }
+  }
+
+  router.post('/review/stream', async (req, res) => {
+    await streamReview(req, res);
+  });
+
   router.post('/review', async (req, res, next) => {
     if (scoutInProgress || reviewInProgress) return res.status(409).json({ error: '已有 AI 分析正在运行' });
+    reviewInProgress = true;
     try {
-      reviewInProgress = true;
       await syncModelRuntime();
-      if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
-      if (!process.env.MIDSCENE_MODEL_NAME) throw workbenchError(503, '未配置 AI Reviewer 模型，请设置 MIDSCENE_MODEL_*');
-      const frameId = String(req.body?.frameId || '');
-      if (!frameId) throw workbenchError(400, '缺少 frameId');
-      if (frozenAgent !== server.agent || frozenFrameId !== frameId) {
-        throw workbenchError(409, '当前进程没有该 frameId 的冻结上下文，请重新冻结画面后再初审');
-      }
-      const currentDraft = await store.loadDraft();
-      if (currentDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
-      const candidates = reviewCandidates(currentDraft);
-      if (candidates.length === 0) throw workbenchError(422, '当前页面没有可供 AI 初审的 Scout 候选');
-      const modelResultId = `review-${Date.now()}-${randomUUID().slice(0, 8)}`;
-      const startedAt = new Date().toISOString();
-      const rawResult = await server.agent.aiQuery(buildAIReviewDemand(currentDraft, candidates), {
-        domIncluded: false,
-        screenshotIncluded: true,
-      });
-      const reviewedAt = new Date().toISOString();
-      const normalizedReviews = normalizeAIReviewOutput(rawResult, candidates, process.env.MIDSCENE_MODEL_NAME, reviewedAt);
-      const resultPath = await store.saveModelResult(modelResultId, {
-        recordType: 'WorkbenchAIReviewResult',
-        modelResultId,
-        frameId,
-        startedAt,
-        completedAt: reviewedAt,
-        model: process.env.MIDSCENE_MODEL_NAME,
-        rawResult,
-        normalizedReviews,
-      });
-      const draft = applyAIReviews(currentDraft, normalizedReviews);
-      await store.saveDraft(draft);
-      res.json({
-        draft,
-        issues: validateDraft(draft),
-        modelResultRef: path.relative(workbenchRoot, resultPath).split(path.sep).join('/'),
-        reviewed: normalizedReviews.length,
-        reviewerModel: process.env.MIDSCENE_MODEL_NAME,
-      });
+      const result = await executeReview({ frameId: String(req.body?.frameId || '') });
+      res.json(result);
     } catch (error) {
       next(error);
     } finally {
       reviewInProgress = false;
+    }
+  });
+
+  router.post('/review/apply', async (req, res, next) => {
+    try {
+      const frameId = String(req.body?.frameId || '');
+      const currentDraft = await store.loadDraft();
+      if (!frameId || currentDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
+      const selectedScoutKeys = new Set(Array.isArray(req.body?.selectedScoutKeys) ? req.body.selectedScoutKeys.map(String) : []);
+      const selectedReviewerKeys = new Set(Array.isArray(req.body?.selectedReviewerKeys) ? req.body.selectedReviewerKeys.map(String) : []);
+      const { scout: reviewerResult } = normalizeScoutOutput(req.body?.reviewerResult || {});
+      const selectedScout = currentDraft.elements.filter((element) => selectedScoutKeys.has(element.candidateKey));
+      const scoutElements = selectedScout.map((element) => ({
+        candidateKey: element.candidateKey,
+        label: element.label,
+        visualDescription: element.visualDescription,
+        controlType: element.controlType,
+        interactive: element.actionable === 'yes',
+        enabled: element.enabled,
+        state: element.state || null,
+        approximateRegion: element.bbox,
+        geometryKind: element.geometryKind,
+        geometryConfidence: element.geometryConfidence,
+        meaning: element.meaning,
+        dynamicContent: element.dynamicContent,
+        riskSignals: element.riskSignals,
+        confidence: element.confidence,
+      }));
+      const selectedReviewerElements = (reviewerResult.elements || []).filter((element) => selectedReviewerKeys.has(element.candidateKey));
+      const candidateByKey = new Map(scoutElements.map((element) => [element.candidateKey, element]));
+      for (const element of selectedReviewerElements) candidateByKey.set(element.candidateKey, element);
+      const reverseAction = { click: 'tap', input: 'input', scroll_vertical: 'scroll-vertical', swipe_horizontal: 'swipe-horizontal', long_press: 'long-press', drag: 'drag', toggle: 'toggle', select: 'select', open: 'open', dismiss: 'dismiss', back: 'back', other: 'other' };
+      const selectedKeys = new Set(candidateByKey.keys());
+      const combinedResult = {
+        ...reviewerResult,
+        frameId,
+        elements: [...candidateByKey.values()],
+        relationships: (reviewerResult.relationships || []).filter((relationship) => selectedKeys.has(relationship.fromCandidateKey) && selectedKeys.has(relationship.toCandidateKey)),
+        actionCandidates: [
+          ...(reviewerResult.actionCandidates || []).filter((action) => selectedKeys.has(action.triggerCandidateKey)),
+          ...selectedScout.flatMap((element) => element.capabilities.map((capability) => ({
+            triggerCandidateKey: element.candidateKey,
+            action: reverseAction[capability] || 'other',
+            expectedOutcome: null,
+            basis: 'existing-graph',
+            riskSignals: [],
+            confidence: element.confidence,
+          }))),
+        ],
+      };
+      const draft = mergeScoutIntoDraft(currentDraft, prepareScoutForDraft(combinedResult), String(req.body?.modelResultRef || 'review-selection'), process.env.MIDSCENE_MODEL_NAME);
+      await store.saveDraft(draft);
+      res.json({ draft, issues: validateDraft(draft) });
+    } catch (error) {
+      next(error);
     }
   });
 
