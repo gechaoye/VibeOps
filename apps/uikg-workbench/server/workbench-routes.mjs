@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
+import dotenv from 'dotenv';
 import express from 'express';
 import { imageSize } from 'image-size';
 import {
@@ -105,6 +106,24 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
   let resumableScout = null;
   let frozenAgent = null;
   let frozenFrameId = null;
+  let loadedModelEnvHash = null;
+
+  const syncModelRuntime = async () => {
+    if (!modelEnvPath) return false;
+    let content;
+    try {
+      content = await readFile(modelEnvPath, 'utf8');
+    } catch (error) {
+      if (error?.code === 'ENOENT') return false;
+      throw error;
+    }
+    const contentHash = createHash('sha256').update(content).digest('hex');
+    if (contentHash === loadedModelEnvHash) return false;
+    Object.assign(process.env, dotenv.parse(content));
+    server.agent?.modelConfigManager?.clearModelConfigMap();
+    loadedModelEnvHash = contentHash;
+    return true;
+  };
 
   const loadCombinedModelSettings = async () => ({
     ...await loadScoutModelSettings(modelEnvPath),
@@ -155,6 +174,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       onProgress(event);
     };
     try {
+      await syncModelRuntime();
       emitProgress({ type: 'stage', phase: 'validate', message: '正在校验冻结帧' });
       if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
       if (!process.env.MIDSCENE_SCOUT_MODEL_NAME) {
@@ -346,20 +366,25 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     next();
   });
 
-  router.get('/status', async (_req, res) => {
-    const session = server.getSessionState?.() || null;
-    res.json({
-      ok: true,
-      agentConnected: Boolean(server.agent),
-      scoutRunning: scoutInProgress,
-      scoutConfigured: Boolean(process.env.MIDSCENE_SCOUT_MODEL_NAME),
-      scoutModel: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
-      reviewerConfigured: Boolean(process.env.MIDSCENE_MODEL_NAME),
-      reviewerModel: process.env.MIDSCENE_MODEL_NAME || null,
-      scoutSession: publicScoutSession(resumableScout),
-      spec,
-      session,
-    });
+  router.get('/status', async (_req, res, next) => {
+    try {
+      await syncModelRuntime();
+      const session = server.getSessionState?.() || null;
+      res.json({
+        ok: true,
+        agentConnected: Boolean(server.agent),
+        scoutRunning: scoutInProgress,
+        scoutConfigured: Boolean(process.env.MIDSCENE_SCOUT_MODEL_NAME),
+        scoutModel: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+        reviewerConfigured: Boolean(process.env.MIDSCENE_MODEL_NAME),
+        reviewerModel: process.env.MIDSCENE_MODEL_NAME || null,
+        scoutSession: publicScoutSession(resumableScout),
+        spec,
+        session,
+      });
+    } catch (error) {
+      next(error);
+    }
   });
 
   router.get('/scout/session', (_req, res) => {
@@ -368,6 +393,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
 
   router.get('/model-settings', async (_req, res, next) => {
     try {
+      await syncModelRuntime();
       res.json(await loadCombinedModelSettings());
     } catch (error) {
       next(error);
@@ -448,6 +474,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
   router.post('/frames', async (_req, res, next) => {
     try {
       if (!server.agent) return res.status(409).json({ error: '请先连接 Android 设备' });
+      await syncModelRuntime();
       const frame = await freezeAndCapture(server.agent);
       frozenAgent = server.agent;
       frozenFrameId = frame.frameId;
@@ -564,6 +591,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     if (scoutInProgress || reviewInProgress) return res.status(409).json({ error: '已有 AI 分析正在运行' });
     try {
       reviewInProgress = true;
+      await syncModelRuntime();
       if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
       if (!process.env.MIDSCENE_MODEL_NAME) throw workbenchError(503, '未配置 AI Reviewer 模型，请设置 MIDSCENE_MODEL_*');
       const frameId = String(req.body?.frameId || '');
