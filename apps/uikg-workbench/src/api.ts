@@ -1,4 +1,4 @@
-import type { AnalysisSession, Draft, FrameMetadata, ReviewerResult, ScoutModelSettings, ScoutResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, Draft, FrameMetadata, ReviewerResult, ReviewResumeSession, ScoutModelSettings, ScoutResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -73,8 +73,9 @@ async function consumeModelStream<T>(
       throw error;
     }
     if (eventType === 'cancelled') {
-      const error = new Error(String(payload.message || '模型分析已中断')) as Error & { name: string };
-      error.name = 'ScoutCancelledError';
+      const error = new Error(String(payload.message || '模型分析已中断')) as Error & { name: string; details?: Record<string, unknown> };
+      error.name = 'AnalysisCancelledError';
+      error.details = payload;
       throw error;
     }
   };
@@ -126,6 +127,13 @@ export const workbenchApi = {
     frameId: string,
     onEvent: (event: { type: string; [key: string]: unknown }) => void,
   ): Promise<ReviewStreamResult> => consumeReviewStream('/review/stream', { frameId }, onEvent),
+  reviewSession: () => request<{ session: ReviewResumeSession | null }>('/review/session'),
+  resumeReviewStream: (
+    sessionId: string,
+    onEvent: (event: { type: string; [key: string]: unknown }) => void,
+  ): Promise<ReviewStreamResult> => consumeReviewStream('/review/resume/stream', { sessionId }, onEvent),
+  cancelReview: () =>
+    request<{ cancelled: boolean }>('/review/cancel', { method: 'POST', body: '{}' }),
   applyReviewSelection: (payload: { frameId: string; reviewerResult: ReviewerResult; selectedScoutKeys: string[]; selectedReviewerKeys: string[]; modelResultRef: string }) =>
     request<{ draft: Draft; issues: ValidationIssue[] }>('/review/apply', { method: 'POST', body: JSON.stringify(payload) }),
   sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),

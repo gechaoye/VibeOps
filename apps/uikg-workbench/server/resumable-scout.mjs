@@ -150,7 +150,6 @@ export async function runResumableScout({
         lastError: null,
       };
     } catch (error) {
-      if (signal?.aborted) signal.throwIfAborted();
       const message = error instanceof Error ? error.message : String(error);
       const recovered = error && typeof error === 'object' ? error.scoutCheckpoint : null;
       const receivedContent = Boolean(error && typeof error === 'object' && error.receivedContent);
@@ -160,6 +159,10 @@ export async function runResumableScout({
           : structuredClone(recovered);
       } else if (rawResult === undefined && initialFallback !== undefined) {
         rawResult = structuredClone(initialFallback);
+      }
+      if (signal?.aborted) {
+        if (error && typeof error === 'object') error.scoutRawResult = rawResult;
+        throw error;
       }
       if (initialError === null) initialError = message;
       lastError = message;

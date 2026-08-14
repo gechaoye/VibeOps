@@ -175,6 +175,7 @@ export interface WorkbenchStatus {
   reviewerConfigured: boolean;
   reviewerModel: string | null;
   scoutSession: ScoutResumeSession | null;
+  reviewSession: ReviewResumeSession | null;
   spec: {
     version: string;
     schemaVersion: string;
@@ -198,6 +199,18 @@ export interface ScoutResumeSession {
     recoveredElements?: number;
     error?: string;
   }>;
+  createdAt: string;
+  updatedAt: string;
+  errorMessage: string;
+  reasoningContent?: string;
+  outputContent?: string;
+}
+
+export interface ReviewResumeSession {
+  id: string;
+  status: 'paused';
+  frameId: string;
+  model: string | null;
   createdAt: string;
   updatedAt: string;
   errorMessage: string;

@@ -1,4 +1,4 @@
-import { ArrowDown, Bot, ChevronDown, ChevronRight, CircleAlert, CircleCheck, History, LoaderCircle, RefreshCw, ScanSearch, Square, UserCheck, X } from 'lucide-react';
+import { ArrowDown, ArrowRight, Bot, ChevronDown, ChevronRight, CircleAlert, CircleCheck, History, LoaderCircle, RefreshCw, ScanSearch, Square, UserCheck, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -15,6 +15,7 @@ export interface ScoutActivity {
   scoutOutputContent?: string;
   errorMessage?: string;
   resumeSessionId?: string;
+  resumeKind?: 'scout' | 'review';
   completedCandidates?: number;
 }
 
@@ -106,6 +107,10 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
   const hasOutput = Boolean(activity.outputContent.trim());
   const [reasoningExpanded, setReasoningExpanded] = useState(false);
   const [showHistory, setShowHistory] = useState(activity.phase === 'history');
+  const [priorScoutExpanded, setPriorScoutExpanded] = useState(false);
+  const scoutStepDone = reviewing || activity.phase === 'review-compare' || activity.phase === 'complete';
+  const reviewerStepDone = activity.phase === 'review-compare' || activity.phase === 'complete';
+  const reviewerStepError = activity.phase === 'review-error' || activity.phase === 'review-cancelled' || activity.phase === 'review-paused';
 
   useEffect(() => {
     if (hasReasoning && !hasOutput) setReasoningExpanded(true);
@@ -127,11 +132,13 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
         </header>
 
         {autoMode && <div className="auto-review-pipeline" aria-label="Auto 审核流程">
-          <span className={!reviewing && activity.status === 'running' ? 'active' : activity.phase !== 'starting' && activity.phase !== 'model' && activity.phase !== 'resume' ? 'done' : ''}><ScanSearch size={14} /><small>Scout</small><strong>{modelName || '未配置'}</strong></span>
-          <i />
-          <span className={reviewing && activity.status === 'running' ? 'active' : activity.phase === 'complete' || activity.phase === 'review-compare' ? 'done' : ''}><Bot size={14} /><small>Reviewer 重识别</small><strong>{reviewerModel || '未配置'}</strong></span>
-          <i />
-          <span className={activity.phase === 'complete' ? 'active' : ''}><UserCheck size={14} /><small>人工确认</small><strong>必须完成</strong></span>
+          <div className="auto-review-pipeline-track">
+            <span className={`pipeline-step ${scoutStepDone ? 'done' : !reviewing && active ? 'active' : ''}`}><i><ScanSearch size={16} /></i><span><small>第一步</small><strong>Scout 识别</strong><em>{modelName || '未配置'}</em></span></span>
+            <span className={`pipeline-connector ${scoutStepDone ? 'done' : ''}`}><i /><ArrowRight size={14} /></span>
+            <span className={`pipeline-step ${reviewerStepDone ? 'done' : reviewing && active ? 'active' : reviewerStepError ? 'paused' : ''}`}><i><Bot size={16} /></i><span><small>第二步</small><strong>Reviewer 重识别</strong><em>{reviewerModel || '未配置'}</em></span></span>
+            <span className={`pipeline-connector ${reviewerStepDone ? 'done' : ''}`}><i /><ArrowRight size={14} /></span>
+            <span className={`pipeline-step ${activity.phase === 'complete' ? 'done' : activity.phase === 'review-compare' ? 'active' : ''}`}><i><UserCheck size={16} /></i><span><small>第三步</small><strong>人工确认</strong><em>合并并审核</em></span></span>
+          </div>
         </div>}
 
         <div className="scout-progress-stage">
@@ -150,8 +157,8 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
           ))}
         </section>}
 
-        {reviewing && (activity.scoutReasoningContent || activity.scoutOutputContent) && <details className="prior-scout-stream">
-          <summary>Scout 识别过程 <span>点击展开</span></summary>
+        {reviewing && (activity.scoutReasoningContent || activity.scoutOutputContent) && <details className="prior-scout-stream" open={priorScoutExpanded} onToggle={(event) => setPriorScoutExpanded(event.currentTarget.open)}>
+          <summary>Scout 识别过程 <span>{priorScoutExpanded ? '点击收起' : '点击展开'}</span></summary>
           {activity.scoutReasoningContent && <MarkdownStream content={activity.scoutReasoningContent} label="Scout 思考内容" />}
           {activity.scoutOutputContent && <MarkdownStream content={activity.scoutOutputContent} label="Scout 输出内容" />}
         </details>}
@@ -181,9 +188,9 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
 
         {activity.errorMessage && <div className="scout-progress-error"><CircleAlert size={15} /><span>{displayModelError(activity.errorMessage)}</span></div>}
         <footer className="scout-progress-footer">
-          <span>{activity.status === 'completed' ? comparison ? '请选择两份结果中需要保留的元素' : autoMode ? '合并结果仍需人工确认' : '结构化结果已写入草稿' : activity.status === 'cancelled' ? '半截结果未写入草稿' : activity.status === 'paused' ? `已保留 ${activity.completedCandidates || 0} 个候选的断点` : reviewing ? 'Scout 结果已保留' : ''}</span>
+          <span>{activity.status === 'completed' ? comparison ? '请选择两份结果中需要保留的元素' : autoMode ? '合并结果仍需人工确认' : '结构化结果已写入草稿' : activity.status === 'cancelled' ? '半截结果未写入草稿' : activity.status === 'paused' ? activity.resumeKind === 'review' ? '已保存 Reviewer 输出断点' : `已保留 ${activity.completedCandidates || 0} 个候选的断点` : reviewing ? 'Scout 结果已保留' : ''}</span>
           <div className="scout-progress-actions">
-            {active ? reviewing ? <button type="button" className="button" disabled><LoaderCircle className="spin" size={14} />Reviewer 识别中</button> : <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} fill="currentColor" />中断 Scout</button> : <>
+            {active ? <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} fill="currentColor" />{activity.status === 'cancelling' ? '正在中断' : reviewing ? '中断 Reviewer' : '中断 Scout'}</button> : <>
               {activity.status === 'paused' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />从断点重试</button>}
               {activity.phase === 'review-error' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
               <button type="button" className="button" onClick={onClose}>关闭</button>

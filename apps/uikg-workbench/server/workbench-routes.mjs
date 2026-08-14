@@ -105,6 +105,8 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
   let reviewInProgress = false;
   let activeScout = null;
   let resumableScout = null;
+  let activeReview = null;
+  let resumableReview = null;
   let frozenAgent = null;
   let frozenFrameId = null;
   let loadedModelEnvHash = null;
@@ -140,11 +142,11 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   };
 
-  async function executeReview({ frameId, signal, onProgress = () => {} }) {
+  async function executeReview({ frameId, signal, onProgress = () => {}, resumeSession = null }) {
     const modelResultId = `review-${Date.now()}-${randomUUID().slice(0, 8)}`;
-    const startedAt = new Date().toISOString();
-    let reasoningContent = '';
-    let outputContent = '';
+    const startedAt = resumeSession?.createdAt || new Date().toISOString();
+    let reasoningContent = resumeSession?.reasoningContent || '';
+    let outputContent = resumeSession?.outputContent || '';
     let sessionStatus = 'running';
     let sessionError = null;
     const emitProgress = (event) => {
@@ -179,10 +181,12 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       const candidates = reviewCandidates(currentDraft);
       if (candidates.length === 0) throw workbenchError(422, '当前页面没有可供对照的 Scout 候选');
       signal?.throwIfAborted();
+      resumableReview = null;
       const rawResult = await runReviewerModel({
         prompt: buildAIReviewDemand(currentDraft, candidates),
         imagePath: frozenFrame.imagePath,
         mimeType: frozenFrame.mimeType,
+        continuationContent: resumeSession?.rawOutput || '',
         signal,
         onChunk: (chunk) => emitProgress({
           type: 'chunk',
@@ -191,6 +195,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         }),
       });
       signal?.throwIfAborted();
+      resumableReview = null;
       emitProgress({ type: 'stage', phase: 'normalize-review', message: '正在整理 Reviewer 识别结果' });
       const { scout: normalizedResult, normalizationIssues } = normalizeScoutOutput(rawResult);
       delete normalizedResult.done;
@@ -221,8 +226,28 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         outputContent,
       };
     } catch (error) {
+      if (signal?.aborted && (!error || typeof error !== 'object')) error = new Error('用户中断 Reviewer');
       sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
-      sessionError = error instanceof Error ? error.message : String(error);
+      sessionError = signal?.aborted ? '用户中断 Reviewer' : error instanceof Error ? error.message : String(error);
+      if (signal?.aborted) {
+        resumableReview = {
+          id: modelResultId,
+          frameId,
+          model: process.env.MIDSCENE_MODEL_NAME || null,
+          rawOutput: error && typeof error === 'object' ? error.reviewerOutput || outputContent : outputContent,
+          createdAt: startedAt,
+          updatedAt: new Date().toISOString(),
+          errorMessage: sessionError,
+          reasoningContent,
+          outputContent,
+        };
+        if (error && typeof error === 'object') {
+          error.details = {
+            ...(error.details || {}),
+            resumableSession: publicReviewSession(resumableReview, true),
+          };
+        }
+      }
       throw error;
     } finally {
       await persistAnalysisSession({
@@ -255,6 +280,20 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     model: session.model,
     completedCandidates: session.completedCandidates,
     retryAttempts: session.retryAttempts,
+    createdAt: session.createdAt,
+    updatedAt: session.updatedAt,
+    errorMessage: session.errorMessage,
+    ...(includeStreams ? {
+      reasoningContent: session.reasoningContent,
+      outputContent: session.outputContent,
+    } : {}),
+  } : null;
+
+  const publicReviewSession = (session, includeStreams = false) => session ? {
+    id: session.id,
+    status: 'paused',
+    frameId: session.frameId,
+    model: session.model,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt,
     errorMessage: session.errorMessage,
@@ -314,7 +353,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         phase: resumeSession ? 'resume' : 'model',
         message: resumeSession ? '正在从已保存断点继续 Scout' : '模型正在分析画面',
       });
-      if (!resumeSession) resumableScout = null;
+      resumableScout = null;
       const run = await runResumableScout({
         initialPrompt: buildScoutPrompt(frameId, pageContext),
         initialResult: resumeSession?.rawResult,
@@ -349,7 +388,6 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
               onChunk,
             });
           } catch (error) {
-            if (signal?.aborted) signal.throwIfAborted();
             const recovered = recoverScoutCheckpointFromStream(accumulated);
             if (error && typeof error === 'object') {
               error.scoutCheckpoint = recovered;
@@ -401,11 +439,26 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       const modelResultRef = path.relative(workbenchRoot, resultPath).split(path.sep).join('/');
 
       if (run.lastError) {
+        resumableScout = {
+          id: modelResultId,
+          frameId,
+          pageContext,
+          model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+          rawResult,
+          completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
+          retryAttempts,
+          createdAt: sessionStartedAt,
+          updatedAt: new Date().toISOString(),
+          errorMessage: run.lastError,
+          reasoningContent,
+          outputContent,
+        };
         throw workbenchError(502, run.lastError, {
           modelResultRef,
           retryLimit: SCOUT_ERROR_RETRY_LIMIT,
           retryAttempts,
           completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
+          resumableSession: publicScoutSession(resumableScout, true),
         });
       }
       if (!schemaValid || !run.completed || blockingConsistencyIssues.length > 0) {
@@ -431,8 +484,35 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       sessionStatus = 'completed';
       return { draft, issues, modelResultRef };
     } catch (error) {
+      if (signal?.aborted && (!error || typeof error !== 'object')) error = new Error('用户中断 Scout');
       sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
-      sessionError = error instanceof Error ? error.message : String(error);
+      sessionError = signal?.aborted ? '用户中断 Scout' : error instanceof Error ? error.message : String(error);
+      if (signal?.aborted) {
+        const rawCheckpoint = error && typeof error === 'object'
+          ? error.scoutRawResult || recoverScoutCheckpointFromStream(outputContent)
+          : recoverScoutCheckpointFromStream(outputContent);
+        const rawResultForResume = rawCheckpoint || { frameId, elements: [] };
+        resumableScout = {
+          id: modelResultId,
+          frameId,
+          pageContext,
+          model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+          rawResult: rawResultForResume,
+          completedCandidates: Array.isArray(rawResultForResume?.elements) ? rawResultForResume.elements.length : 0,
+          retryAttempts,
+          createdAt: sessionStartedAt,
+          updatedAt: new Date().toISOString(),
+          errorMessage: sessionError,
+          reasoningContent,
+          outputContent,
+        };
+        if (error && typeof error === 'object') {
+          error.details = {
+            ...(error.details || {}),
+            resumableSession: publicScoutSession(resumableScout, true),
+          };
+        }
+      }
       if (modelStarted && !resultSaved) {
         try {
           const resultPath = await store.saveModelResult(modelResultId, {
@@ -483,6 +563,20 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     scoutInProgress = false;
   }
 
+  function beginReviewSession() {
+    if (scoutInProgress || reviewInProgress) throw workbenchError(409, '已有 AI 分析正在运行');
+    const session = { id: randomUUID(), controller: new AbortController() };
+    activeReview = session;
+    reviewInProgress = true;
+    return session;
+  }
+
+  function endReviewSession(session) {
+    if (activeReview?.id !== session.id) return;
+    activeReview = null;
+    reviewInProgress = false;
+  }
+
   server.app.use((req, res, next) => {
     if ((scoutInProgress || reviewInProgress) && req.path === '/interact') {
       return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
@@ -503,6 +597,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         reviewerConfigured: Boolean(process.env.MIDSCENE_MODEL_NAME),
         reviewerModel: process.env.MIDSCENE_MODEL_NAME || null,
         scoutSession: publicScoutSession(resumableScout),
+        reviewSession: publicReviewSession(resumableReview),
         spec,
         session,
       });
@@ -513,6 +608,10 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
 
   router.get('/scout/session', (_req, res) => {
     res.json({ session: publicScoutSession(resumableScout, true) });
+  });
+
+  router.get('/review/session', (_req, res) => {
+    res.json({ session: publicReviewSession(resumableReview, true) });
   });
 
   router.get('/sessions', async (_req, res, next) => {
@@ -689,7 +788,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       send('result', result);
     } catch (error) {
       if (session.controller.signal.aborted) {
-        send('cancelled', { message: 'Scout 已中断' });
+        send('cancelled', { message: 'Scout 已中断', ...(error?.details || {}) });
       } else {
         send('error', {
           message: error instanceof Error ? error.message : String(error),
@@ -720,11 +819,15 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     res.json({ cancelled: true });
   });
 
-  async function streamReview(req, res) {
-    if (scoutInProgress || reviewInProgress) return res.status(409).json({ error: '已有 AI 分析正在运行' });
-    reviewInProgress = true;
-    await syncModelRuntime();
-    const controller = new AbortController();
+  async function streamReview(req, res, resumeSession = null) {
+    let session;
+    try {
+      session = beginReviewSession();
+      await syncModelRuntime();
+    } catch (error) {
+      if (session) endReviewSession(session);
+      return res.status(error?.status || 500).json({ error: error instanceof Error ? error.message : String(error) });
+    }
     let responseComplete = false;
     res.status(200).set({
       'Content-Type': 'text/event-stream; charset=utf-8',
@@ -737,26 +840,43 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
     res.on('close', () => {
-      if (!responseComplete) controller.abort('Reviewer 流连接已关闭');
+      if (!responseComplete && activeReview?.id === session.id) session.controller.abort('Reviewer 流连接已关闭');
     });
     try {
       const result = await executeReview({
-        frameId: String(req.body?.frameId || ''),
-        signal: controller.signal,
+        frameId: resumeSession?.frameId || String(req.body?.frameId || ''),
+        signal: session.controller.signal,
         onProgress: (event) => send(event.type, event),
+        resumeSession,
       });
       send('result', result);
     } catch (error) {
-      send(controller.signal.aborted ? 'cancelled' : 'error', { message: error instanceof Error ? error.message : String(error), ...(error?.details || {}) });
+      send(session.controller.signal.aborted ? 'cancelled' : 'error', {
+        message: session.controller.signal.aborted ? 'Reviewer 已中断' : error instanceof Error ? error.message : String(error),
+        ...(error?.details || {}),
+      });
     } finally {
       responseComplete = true;
-      reviewInProgress = false;
+      endReviewSession(session);
       if (!res.writableEnded) res.end();
     }
   }
 
   router.post('/review/stream', async (req, res) => {
     await streamReview(req, res);
+  });
+
+  router.post('/review/resume/stream', async (req, res) => {
+    if (!resumableReview || resumableReview.id !== req.body?.sessionId) {
+      return res.status(404).json({ error: '没有可从断点继续的 Reviewer 会话' });
+    }
+    await streamReview(req, res, resumableReview);
+  });
+
+  router.post('/review/cancel', (_req, res) => {
+    if (!activeReview) return res.json({ cancelled: false });
+    activeReview.controller.abort('用户中断 Reviewer');
+    res.json({ cancelled: true });
   });
 
   router.post('/review', async (req, res, next) => {

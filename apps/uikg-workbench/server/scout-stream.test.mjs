@@ -8,7 +8,7 @@ import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
 
-test('Scout 流输出可见且中断会传递到模型请求，不合并半截草稿', async () => {
+test('Scout 手动中断后保留断点并从断点继续', async () => {
   const previousScoutModel = process.env.MIDSCENE_SCOUT_MODEL_NAME;
   const previousScoutReasoning = process.env.MIDSCENE_SCOUT_MODEL_REASONING_ENABLED;
   process.env.MIDSCENE_SCOUT_MODEL_NAME = 'test-scout-model';
@@ -16,6 +16,8 @@ test('Scout 流输出可见且中断会传递到模型请求，不合并半截�
   const app = express();
   let draft = createEmptyDraft();
   let modelAborted = false;
+  let modelCalls = 0;
+  let frozenFrameId = null;
   let draftSaveCount = 0;
   const agent = {
     interface: {},
@@ -24,8 +26,27 @@ test('Scout 流输出可见且中断会传递到模型请求，不合并半截�
     async _snapshotContext() {
       return { screenshot: { base64: `data:image/png;base64,${PNG_1X1}`, capturedAt: Date.now() } };
     },
-    async aiScout(_prompt, options) {
-      options.onChunk({ content: '{"partial":', reasoning_content: '正在识别页面', accumulated: '{"partial":', isComplete: false });
+    async aiScout(prompt, options) {
+      modelCalls += 1;
+      if (modelCalls > 1) {
+        assert.match(prompt, /header\.title/);
+        return {
+          elements: [], relationships: [], actionCandidates: [],
+          comparison: { basisFrameId: null, status: 'not-requested', changes: [] }, uncertainties: [], done: true,
+        };
+      }
+      const checkpoint = {
+        frameId: frozenFrameId,
+        page: { name: '消息', surfaceType: 'page', stateSummary: '消息页', scrollableRegions: [] },
+        elements: [{
+          candidateKey: 'header.title', label: '消息', visualDescription: '顶部标题', controlType: 'label', interactive: false,
+          enabled: true, state: null, approximateRegion: { x: 0.1, y: 0.05, width: 0.3, height: 0.05 }, geometryKind: 'boundary', geometryConfidence: 0.9,
+          meaning: { status: 'known', description: '页面标题', evidence: { visibleTexts: ['消息'], visibleIcons: [], visibleStates: [], visualCues: [], userContext: null, unclassified: [] } },
+          dynamicContent: false, riskSignals: [], confidence: 0.9,
+        }],
+      };
+      const partial = JSON.stringify(checkpoint);
+      options.onChunk({ content: partial, reasoning_content: '正在识别页面', accumulated: partial, isComplete: false });
       return new Promise((_resolve, reject) => {
         options.abortSignal.addEventListener('abort', () => {
           modelAborted = true;
@@ -60,6 +81,7 @@ test('Scout 流输出可见且中断会传递到模型请求，不合并半截�
     const frameResponse = await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' });
     assert.equal(frameResponse.status, 200);
     const { frame } = await frameResponse.json();
+    frozenFrameId = frame.frameId;
 
     const streamResponse = await fetch(`${baseUrl}/workbench/api/scout/stream`, {
       method: 'POST',
@@ -88,6 +110,19 @@ test('Scout 流输出可见且中断会传递到模型请求，不合并半截�
     assert.match(streamText, /event: cancelled/);
     assert.equal(modelAborted, true);
     assert.equal(draftSaveCount, 1, '只有冻结帧创建空白 Page，不应保存 Scout 半截结果');
+    const cancelled = streamText.split(/\r?\n\r?\n/).map((block) => ({
+      event: block.match(/^event:\s*(.+)$/m)?.[1],
+      data: JSON.parse(block.match(/^data:\s*(.+)$/m)?.[1] || '{}'),
+    })).find((event) => event.event === 'cancelled');
+    assert.equal(cancelled.data.resumableSession.completedCandidates, 1);
+
+    const resumeResponse = await fetch(`${baseUrl}/workbench/api/scout/resume/stream`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: cancelled.data.resumableSession.id }),
+    });
+    const resumeText = await resumeResponse.text();
+    assert.match(resumeText, /event: result/);
+    assert.equal(modelCalls, 2);
+    assert.equal(draftSaveCount, 2, '恢复完成后才合并并保存草稿');
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     if (previousScoutModel === undefined) delete process.env.MIDSCENE_SCOUT_MODEL_NAME;
