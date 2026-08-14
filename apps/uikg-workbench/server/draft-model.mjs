@@ -1,14 +1,62 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { SCOUT_ACTIONS } from './element-taxonomy.mjs';
+import { ELEMENT_ACTIONS, ELEMENT_TYPES, SCOUT_ACTIONS } from './element-taxonomy.mjs';
+
+const ELEMENT_TYPE_REPLACEMENTS = {
+  'bottom-navigation': 'navigation-bar',
+  back: 'icon-button',
+  close: 'icon-button',
+  menu: 'icon-button',
+  stepper: 'pagination',
+  button: 'text-button',
+  'primary-button': 'text-button',
+  'secondary-button': 'text-button',
+  'menu-button': 'icon-button',
+  'menu-item': 'text-button',
+  'danger-button': 'text-button',
+  'link-button': 'text-button',
+  icon: 'image',
+  'toggle-button': 'switch',
+};
+
+function normalizeElementType(value) {
+  const candidate = ELEMENT_TYPE_REPLACEMENTS[value] || value;
+  return ELEMENT_TYPES.includes(candidate) ? candidate : 'other';
+}
 
 export const DRAFT_SCHEMA_VERSION = 'uikg-workbench-draft/1.1';
 
 const MEANING_EVIDENCE_FIELDS = ['visibleTexts', 'visibleIcons', 'visibleStates', 'visualCues'];
 
 function normalizeCapabilities(capabilities) {
-  return [...new Set((Array.isArray(capabilities) ? capabilities : [])
+  const normalized = [...new Set((Array.isArray(capabilities) ? capabilities : [])
     .filter((capability) => typeof capability === 'string' && capability.trim())
-    .map((capability) => capability.trim()))];
+    .map((capability) => capability.trim())
+    .filter((capability) => ELEMENT_ACTIONS.includes(capability)))];
+  const actions = normalized.filter((capability) => capability !== 'none');
+  return actions.length > 0 ? actions : ['none'];
+}
+
+function defaultActionEffect(controlType, action) {
+  if (action === 'none') return `${controlType} 仅展示或承载内容，不触发交互`;
+  if (action === 'input') return `向 ${controlType} 输入文本或数值`;
+  if (action === 'delete') return `删除 ${controlType} 对应的内容`;
+  if (action === 'scroll_vertical') return `纵向滚动 ${controlType} 中的内容`;
+  if (action === 'scroll_horizontal') return `横向滚动 ${controlType} 中的内容`;
+  if (action === 'swipe') return `滑动 ${controlType} 以切换内容或状态`;
+  if (action === 'drag') return `拖拽 ${controlType} 或其中的目标对象`;
+  if (action === 'zoom') return `缩放 ${controlType} 中的内容`;
+  if (action === 'multi_touch') return `在 ${controlType} 上执行多点触控`;
+  if (action === 'double_tap') return `双击 ${controlType} 触发对应交互`;
+  if (action === 'long_press') return `长按 ${controlType} 打开扩展操作或状态`;
+  return `点击 ${controlType} 触发对应操作`;
+}
+
+function normalizeActionEffects(actionEffects, controlType, capabilities) {
+  const current = Array.isArray(actionEffects) ? actionEffects : [];
+  return capabilities.map((action) => ({
+    action,
+    effect: current.find((item) => item?.action === action && typeof item?.effect === 'string')?.effect || defaultActionEffect(controlType, action),
+  }));
 }
 
 function evidenceDetail(value) {
@@ -315,15 +363,22 @@ export function normalizeDraftShape(value) {
   if (draft.currentFrameId && !draft.pages.some((page) => page.id === draft.currentPageId)) {
     draft.pages.push(makeDraftPage(draft.page, draft.currentFrameId, draft.featurePath));
   }
-  draft.elements = (draft.elements || []).map((element) => ({
-    ...element,
-    capabilities: normalizeCapabilities(element.capabilities),
-    meaning: normalizeDraftMeaning(element.meaning),
-    pageId: element.pageId ?? (['application', 'shared_component'].includes(element.ownerKind) ? null : draft.currentPageId),
-    availableOnPageIds: [...(element.availableOnPageIds || (element.ownerKind === 'application' ? [draft.currentPageId] : []))],
-    scoutModel: element.scoutModel || draft.lastScoutModel || null,
-    aiReview: element.aiReview || null,
-  }));
+  draft.elements = (draft.elements || []).map((element) => {
+    const { actionable: _removedActionable, ...elementFields } = element;
+    const controlType = normalizeElementType(element.controlType);
+    const capabilities = normalizeCapabilities(element.capabilities);
+    return {
+      ...elementFields,
+      controlType,
+      capabilities,
+      actionEffects: normalizeActionEffects(element.actionEffects, controlType, capabilities),
+      meaning: normalizeDraftMeaning(element.meaning),
+      pageId: element.pageId ?? (['application', 'shared_component'].includes(element.ownerKind) ? null : draft.currentPageId),
+      availableOnPageIds: [...(element.availableOnPageIds || (element.ownerKind === 'application' ? [draft.currentPageId] : []))],
+      scoutModel: element.scoutModel || draft.lastScoutModel || null,
+      aiReview: element.aiReview || null,
+    };
+  });
   draft.elementEditRecords = Array.isArray(draft.elementEditRecords)
     ? draft.elementEditRecords.filter((record) => record && typeof record.elementId === 'string')
     : [];
@@ -336,10 +391,7 @@ export function normalizeDraftShape(value) {
       source: 'ai_scout',
     };
   });
-  draft.transitions = Array.isArray(draft.transitions) ? draft.transitions.map((transition) => ({
-    ...transition,
-    capability: DRAFT_CAPABILITY_ALIASES[transition.capability] || transition.capability,
-  })) : [];
+  draft.transitions = Array.isArray(draft.transitions) ? draft.transitions : [];
   draft.lastScoutModel ||= null;
   const pageById = new Map(draft.pages.map((page) => [page.id, page]));
   for (const page of draft.pages) {
@@ -375,14 +427,24 @@ function inferRole(element) {
 }
 
 function capabilitiesFor(candidateKey, actions) {
-  return [...new Set(
+  const capabilities = [...new Set(
     actions
       .filter((action) => action.triggerCandidateKey === candidateKey)
-      .map((action) => SCOUT_ACTIONS.includes(action.action) ? action.action : 'other'),
+      .map((action) => SCOUT_ACTIONS.includes(action.action) ? action.action : null)
+      .filter(Boolean),
   )];
+  return capabilities.length > 0 ? capabilities : ['none'];
+}
+
+function actionEffectsFor(candidateKey, actions, controlType, capabilities) {
+  return capabilities.map((action) => ({
+    action,
+    effect: actions.find((candidate) => candidate.triggerCandidateKey === candidateKey && candidate.action === action)?.expectedOutcome || defaultActionEffect(controlType, action),
+  }));
 }
 
 function nextElementFromScout(element, actions, pageId, model) {
+  const capabilities = capabilitiesFor(element.candidateKey, actions);
   return {
     id: draftElementId(element.candidateKey),
     candidateKey: element.candidateKey,
@@ -390,8 +452,8 @@ function nextElementFromScout(element, actions, pageId, model) {
     visualDescription: element.visualDescription,
     controlType: element.controlType,
     role: inferRole(element),
-    capabilities: capabilitiesFor(element.candidateKey, actions),
-    actionable: element.interactive ? 'yes' : 'no',
+    capabilities,
+    actionEffects: actionEffectsFor(element.candidateKey, actions, element.controlType, capabilities),
     enabled: element.enabled ?? null,
     state: element.state || '',
     dynamicContent: element.dynamicContent,
@@ -636,9 +698,7 @@ export function validateDraft(draft) {
     if (!element.parentId && ['component', 'shared_component'].includes(element.ownerKind)) {
       issues.push({ level: 'error', code: 'root_owner_kind', elementId: element.id, message: '容器后代必须选择父级元素' });
     }
-    if (element.actionable === 'yes' && element.capabilities.length === 0) {
-      issues.push({ level: 'warning', code: 'capability_missing', elementId: element.id, message: '可操作元素尚未设置支持操作' });
-    }
+    if (!element.capabilities.length) issues.push({ level: 'warning', code: 'capability_missing', elementId: element.id, message: '元素尚未设置动作' });
     if (element.reviewStatus === 'pending') {
       issues.push({ level: 'warning', code: 'review_pending', elementId: element.id, message: 'AI 候选尚未完成人工审核' });
     }

@@ -41,7 +41,7 @@ export interface DraftElement {
   controlType: string;
   role: string;
   capabilities: string[];
-  actionable: 'yes' | 'no' | 'unknown';
+  actionEffects: Array<{ action: string; effect: string }>;
   enabled: boolean | null;
   state: string;
   dynamicContent: boolean;

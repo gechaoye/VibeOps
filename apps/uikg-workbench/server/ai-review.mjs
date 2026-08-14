@@ -104,6 +104,6 @@ export function buildAIReviewDemand(draft, elements) {
   "comparison": {"basisFrameId":null,"status":"not-requested","changes":[]},
   "uncertainties": string[]
 }
-候选 key 必须是稳定且唯一的 ASCII 语义 key，所有区域坐标必须是 0 到 1 的归一化比例。不要编造不可见含义；无法确认时使用 unknown。参考 Scout 候选仅用于对照，不限制你的识别范围：${JSON.stringify(candidates)}
+候选 key 必须是稳定且唯一的 ASCII 语义 key，所有区域坐标必须是 0 到 1 的归一化比例。没有动作的元素不要返回 actionCandidate；每个 expectedOutcome 必须描述该动作在当前元素上的具体效果。不要编造不可见含义；无法确认时使用 unknown。参考 Scout 候选仅用于对照，不限制你的识别范围：${JSON.stringify(candidates)}
 frameId 必须严格等于 ${JSON.stringify(draft.currentFrameId)}。当前页面上下文：${JSON.stringify({ name: draft.page.name, stateSummary: draft.page.stateSummary })}`;
 }

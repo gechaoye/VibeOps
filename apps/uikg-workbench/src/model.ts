@@ -5,15 +5,12 @@ type OptionGroup = { label: string; options: readonly Option[] };
 
 export const elementTypeGroups: readonly OptionGroup[] = [
   { label: '导航 Navigation', options: [
-    ['navigation-bar', '导航栏'], ['bottom-navigation', '底部导航'], ['tab', '标签页'], ['back', '返回'], ['close', '关闭'],
-    ['menu', '菜单'], ['hamburger', '汉堡菜单'], ['breadcrumb', '面包屑'], ['pagination', '分页器'], ['stepper', '步骤导航'],
-    ['sidebar', '侧边栏'], ['page-indicator', '页面指示器'],
+    ['navigation-bar', '导航栏'], ['sidebar', '侧边栏'], ['drawer', '抽屉'], ['hamburger', '汉堡菜单'],
+    ['tab', '标签页'], ['breadcrumb', '面包屑'], ['page-indicator', '页面指示器'], ['pagination', '分页器'],
   ] },
   { label: '操作 Action', options: [
-    ['button', '按钮'], ['primary-button', '主按钮'], ['secondary-button', '次按钮'], ['text-button', '文字按钮'],
-    ['icon-button', '图标按钮'], ['floating-button', '悬浮按钮'], ['menu-button', '菜单按钮'], ['menu-item', '菜单项'],
-    ['danger-button', '危险操作按钮'], ['link-button', '链接按钮'], ['icon', '图标'], ['checkbox', '复选框'],
-    ['radio', '单选项'], ['switch', '开关'], ['toggle-button', '切换按钮'],
+    ['text-button', '文字按钮'], ['icon-button', '图标按钮'], ['floating-button', '悬浮按钮'],
+    ['radio', '单选项'], ['checkbox', '复选框'], ['switch', '开关'],
   ] },
   { label: '输入 Input', options: [
     ['input', '文本输入框'], ['search-input', '搜索输入框'], ['password-input', '密码输入框'], ['number-input', '数字输入框'],
@@ -29,7 +26,7 @@ export const elementTypeGroups: readonly OptionGroup[] = [
     ['text', '文本'], ['label', '文字标签'], ['title', '标题'], ['subtitle', '副标题'], ['caption', '辅助说明'], ['badge', '角标'],
     ['static-chip', '静态标签块'], ['selectable-chip', '可选标签块'], ['filter-chip', '筛选标签块'], ['action-chip', '操作标签块'],
     ['input-chip', '输入标签块'], ['avatar', '头像'], ['avatar-group', '头像组'], ['image', '图片'], ['banner', '横幅'],
-    ['thumbnail', '缩略图'], ['preview', '预览图'], ['product-image', '商品图片'],
+    ['thumbnail', '缩略图'], ['preview', '预览图'], ['product-image', '商品图片'], ['carousel', '轮播图'],
   ] },
   { label: '列表 List', options: [
     ['list', '列表'], ['list-item', '列表项'], ['grouped-list', '分组列表'], ['swipe-list', '侧滑列表'], ['expandable-list', '可展开列表'],
@@ -42,7 +39,7 @@ export const elementTypeGroups: readonly OptionGroup[] = [
     ['popup', '弹出层'], ['tooltip', '文字提示'], ['snackbar', '底部提示条'], ['toast', '轻提示'],
   ] },
   { label: '滚动 Scroll', options: [
-    ['scroll-view', '纵向滚动区'], ['horizontal-scroll', '横向滚动区'], ['recycler-view', '回收列表'], ['carousel', '轮播'], ['pager', '翻页容器'],
+    ['scroll-view', '纵向滚动区'], ['horizontal-scroll', '横向滚动区'], ['recycler-view', '回收列表'], ['pager', '翻页容器'],
   ] },
   { label: '反馈 Feedback', options: [
     ['error', '错误反馈'], ['warning', '警告反馈'], ['success', '成功反馈'], ['info', '信息反馈'], ['status', '状态信息'],
@@ -52,6 +49,7 @@ export const elementTypeGroups: readonly OptionGroup[] = [
   ] },
   { label: '媒体 Media', options: [
     ['video', '视频'], ['audio', '音频'], ['image-viewer', '图片查看器'], ['camera', '相机'], ['file-preview', '文件预览'],
+    ['live-stream', '直播'], ['screen-share', '屏幕共享'], ['remote-control', '远程控制'],
   ] },
   { label: '地图 Map', options: [
     ['map', '地图'], ['marker', '地图标记'], ['location', '位置'], ['route', '路线'], ['zoom-control', '缩放控件'], ['compass', '指南针'],
@@ -78,37 +76,15 @@ export const elementTypeGroups: readonly OptionGroup[] = [
 
 export const elementTypeOptions = elementTypeGroups.flatMap((group) => group.options);
 
-export const roleOptions = [
-  ['container', '结构容器'], ['label', '说明文字'], ['current_value', '当前值'],
-  ['action_trigger', '操作入口'], ['setting_control', '设置控件'], ['help_trigger', '帮助入口'],
-  ['help_content', '帮助内容'], ['navigation', '导航元素'], ['status_indicator', '状态指示'],
-  ['content_anchor', '内容锚点'], ['unknown', '待确认'],
-] as const;
-
-export const capabilityGroups: readonly OptionGroup[] = [
-  { label: '基础交互', options: [
-    ['tap', '点击'], ['double_tap', '双击'], ['long_press', '长按'],
-  ] },
-  { label: '输入与选择', options: [
-    ['input', '输入'], ['clear', '清空'], ['submit', '提交'], ['toggle', '切换'], ['select', '选择'],
-  ] },
-  { label: '导航与层级', options: [
-    ['open', '打开'], ['close', '关闭'], ['back', '返回'], ['expand', '展开'], ['collapse', '收起'], ['previous', '上一项'], ['next', '下一项'],
-  ] },
-  { label: '滚动与手势', options: [
-    ['scroll_vertical', '纵向滚动'], ['scroll_horizontal', '横向滚动'], ['swipe', '滑动'], ['drag', '拖拽'], ['fling', '快速滑动'],
-    ['pinch', '双指缩放'], ['zoom', '缩放'], ['rotate', '旋转'], ['multi_touch', '多点触控'],
-  ] },
-  { label: '媒体与相机', options: [
-    ['play', '播放'], ['pause', '暂停'], ['seek', '定位进度'], ['fullscreen', '全屏'], ['volume', '调节音量'],
-    ['capture', '拍照'], ['record', '录像'], ['switch_camera', '切换摄像头'], ['flash', '闪光灯'],
-  ] },
-  { label: '文件与业务', options: [
-    ['upload', '上传'], ['download', '下载'], ['rename', '重命名'], ['move', '移动'], ['share', '分享'], ['other', '其他'],
-  ] },
-];
+export const capabilityGroups: readonly OptionGroup[] = [{ label: '元素动作', options: [
+  ['none', '无'], ['tap', '点击'], ['double_tap', '双击'], ['long_press', '长按'], ['input', '输入'], ['delete', '删除'],
+  ['scroll_vertical', '纵向滚动'], ['scroll_horizontal', '横向滚动'], ['swipe', '滑动'], ['drag', '拖拽'], ['zoom', '缩放'], ['multi_touch', '多点触控'],
+] }];
 
 export const capabilityOptions = capabilityGroups.flatMap((group) => group.options);
+
+export const capabilityLabel = (value: string) =>
+  capabilityOptions.find(([key]) => key === value)?.[1] || value;
 
 export const reviewStatusLabels = {
   pending: '待审核',
@@ -120,17 +96,85 @@ export const reviewStatusLabels = {
 export const elementTypeLabel = (value: string) =>
   elementTypeOptions.find(([key]) => key === value)?.[1] || value;
 
+const typeGroup = (value: string) => elementTypeGroups.find((group) => group.options.some(([key]) => key === value));
+
+export function defaultDescriptionForElementType(value: string) {
+  const label = elementTypeLabel(value);
+  const group = typeGroup(value)?.label.split(' ')[0] || '业务';
+  const templates: Record<string, string> = {
+    导航: `用于页面、层级或内容位置导航的${label}`,
+    操作: `用于触发用户操作的${label}`,
+    输入: `用于接收用户输入的${label}`,
+    选择: `用于选择候选值的${label}`,
+    展示: `用于展示页面内容的${label}`,
+    列表: `用于组织和展示重复内容的${label}`,
+    容器: `用于组织页面元素的${label}`,
+    弹层: `覆盖在当前页面上方的${label}`,
+    滚动: `用于承载可滚动内容的${label}`,
+    反馈: `用于反馈当前结果或状态的${label}`,
+    进度: `用于展示任务进度的${label}`,
+    媒体: `用于展示或控制媒体内容的${label}`,
+    地图: `用于展示或操作地理信息的${label}`,
+    系统: `由系统提供的${label}`,
+    手势: `用于接收手势输入的${label}`,
+    业务: `承载具体业务信息或操作的${label}`,
+  };
+  return templates[group] || `页面中的${label}`;
+}
+
+const noActionGroups = new Set(['展示 Display', '容器 Container', '反馈 Feedback', '进度 Progress', '系统 System']);
+const inputTypes = new Set(['input', 'search-input', 'password-input', 'number-input', 'amount-input', 'url-input', 'email-input', 'phone-input', 'verification-code-input', 'pin-input', 'text-area', 'chat-input']);
+
+export function recommendedActionsForElementType(value: string): string[] {
+  const group = typeGroup(value)?.label || '';
+  if (inputTypes.has(value)) return ['input'];
+  if (['scroll-view', 'recycler-view', 'list', 'grouped-list'].includes(value)) return ['scroll_vertical'];
+  if (['horizontal-scroll', 'carousel', 'pager'].includes(value)) return ['scroll_horizontal', 'swipe'];
+  if (value === 'swipe-list') return ['scroll_vertical', 'swipe'];
+  if (value === 'image-viewer') return ['swipe', 'zoom', 'multi_touch'];
+  if (value === 'map') return ['tap', 'drag', 'zoom', 'multi_touch'];
+  if (value === 'remote-control' || value === 'gesture-region') return ['tap', 'swipe', 'drag', 'zoom', 'multi_touch'];
+  if (value === 'screen-share') return ['tap', 'zoom'];
+  if (['sidebar', 'drawer'].includes(value)) return ['tap', 'swipe'];
+  if (noActionGroups.has(group)) return ['none'];
+  return ['tap'];
+}
+
+export function defaultActionEffect(value: string, action: string) {
+  const label = elementTypeLabel(value);
+  const group = typeGroup(value)?.label.split(' ')[0] || '业务';
+  if (action === 'none') return `${label}仅展示或承载内容，不触发交互`;
+  if (action === 'input') return `向${label}输入文本或数值`;
+  if (action === 'delete') return `删除${label}对应的内容`;
+  if (action === 'scroll_vertical') return `纵向滚动${label}中的内容`;
+  if (action === 'scroll_horizontal') return `横向滚动${label}中的内容`;
+  if (action === 'swipe') return `滑动${label}以切换内容或状态`;
+  if (action === 'drag') return `拖拽${label}或其中的目标对象`;
+  if (action === 'zoom') return `缩放${label}中的内容`;
+  if (action === 'multi_touch') return `在${label}上执行多点触控`;
+  if (action === 'double_tap') return `双击${label}触发对应交互`;
+  if (action === 'long_press') return `长按${label}打开扩展操作或状态`;
+  if (group === '导航') return `点击${label}切换导航位置或进入对应内容`;
+  if (group === '选择') return `点击${label}更新当前选择`;
+  if (group === '弹层') return `点击${label}触发弹层中的对应操作`;
+  return `点击${label}触发对应操作`;
+}
+
+export function actionEffectsFor(value: string, actions: string[], current: DraftElement['actionEffects'] = []) {
+  return actions.map((action) => ({ action, effect: current.find((item) => item.action === action)?.effect || defaultActionEffect(value, action) }));
+}
+
 export function createHumanElement(bbox: BBox, pageId: string): DraftElement {
   const suffix = `${Date.now()}-${crypto.randomUUID().slice(0, 6)}`;
   return {
     id: `element-manual-${suffix}`,
     candidateKey: `manual.element.${suffix}`,
     label: '新元素',
-    visualDescription: '人工绘制的元素',
+    visualDescription: defaultDescriptionForElementType('other'),
     controlType: 'other',
     role: 'unknown',
-    capabilities: [],
-    actionable: 'unknown',
+    capabilities: ['none'],
+    actionEffects: actionEffectsFor('other', ['none']),
     enabled: null,
     state: '',
     dynamicContent: false,
@@ -255,9 +299,9 @@ export function validateDraftClient(draft: Draft): ValidationIssue[] {
     if (element.parentId && !byId.has(element.parentId)) {
       issues.push({ level: 'error', code: 'parent_missing', elementId: element.id, message: '父级元素不存在' });
     }
-    if (element.actionable === 'yes' && element.capabilities.length === 0) {
-      issues.push({ level: 'warning', code: 'capability_missing', elementId: element.id, message: '可操作元素尚未设置支持操作' });
-    }
+    if (element.capabilities.length === 0) issues.push({ level: 'warning', code: 'capability_missing', elementId: element.id, message: '元素尚未设置动作' });
+    if (element.capabilities.includes('none') && element.capabilities.length > 1) issues.push({ level: 'error', code: 'capability_none_conflict', elementId: element.id, message: '“无”不能与其他元素动作同时选择' });
+    if (element.actionEffects.length !== element.capabilities.length) issues.push({ level: 'warning', code: 'action_effect_missing', elementId: element.id, message: '元素动作尚未填写完整效果' });
     if (element.reviewStatus === 'pending') {
       issues.push({ level: 'warning', code: 'review_pending', elementId: element.id, message: 'AI 候选尚未完成人工审核' });
     }

@@ -63,7 +63,7 @@ function buildScoutPrompt(frameId, pageContext = '') {
   comparison: {basisFrameId:null,status:"not-requested",changes:[]},
   uncertainties: string[]
 }.
-按照 Navigation、Action、Input、Selection、Display、List、Container、Overlay、Scroll、Feedback、Progress、Media、Map、System、Gesture、Business 分类选择最具体的 controlType。盘点每个可见元素、标签、图标、状态指示器、结构容器、稳定内容锚点和关系。复合行容器、说明标签、当前值和实际触发器需要分开记录。actionCandidates 使用元素实际支持的操作；手势区域与交互能力必须分离。在 meaning.evidence 中记录可见事实，不要编造 meaning.basis。visibleTexts 放可见文字，visibleIcons 放可识别图标，visibleStates 放选中、禁用或开关状态，visualCues 放其他形状、颜色和布局证据，userContext 放用户提供的知识，其余证据放入 unclassified。JSON 必须紧凑且完整，所有 required 顶层字段都要返回。approximateRegion 使用 0 到 1 的归一化比例且不得越界。candidateKey 必须是稳定、唯一的 ASCII 语义 key。几何信息只是候选范围，不是精确定位器。无法证实的含义保持 unknown。不要规划或执行操作。frameId 必须严格等于 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
+按照 Navigation、Action、Input、Selection、Display、List、Container、Overlay、Scroll、Feedback、Progress、Media、Map、System、Gesture、Business 分类选择最具体的 controlType。盘点每个可见元素、标签、图标、状态指示器、结构容器、稳定内容锚点和关系。复合行容器、说明标签、当前值和实际触发器需要分开记录。actionCandidates 只使用元素实际支持的操作；没有动作的元素不要返回 actionCandidate；expectedOutcome 必须描述该动作在当前元素上的具体效果。手势区域与交互能力必须分离。在 meaning.evidence 中记录可见事实，不要编造 meaning.basis。visibleTexts 放可见文字，visibleIcons 放可识别图标，visibleStates 放选中、禁用或开关状态，visualCues 放其他形状、颜色和布局证据，userContext 放用户提供的知识，其余证据放入 unclassified。JSON 必须紧凑且完整，所有 required 顶层字段都要返回。approximateRegion 使用 0 到 1 的归一化比例且不得越界。candidateKey 必须是稳定、唯一的 ASCII 语义 key。几何信息只是候选范围，不是精确定位器。无法证实的含义保持 unknown。不要规划或执行操作。frameId 必须严格等于 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
 }
 
 function buildScoutContinuationPrompt(frameId, pageContext, checkpoint, attempt) {
@@ -82,7 +82,7 @@ ${JSON.stringify(checkpoint)}
   uncertainties: string[],
   done: boolean
 }.
-仅返回断点中不存在的元素，并使用新的稳定 ASCII candidateKey。必要时可返回涉及已有和新增候选的关系与动作。元素类型和支持操作必须使用上述枚举，元素类型与交互能力需要分开判断。只有断点后的所有可见区域及缺失顶层字段都完成后，才能设置 done=true。证据保持简洁。frameId 仍为 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
+仅返回断点中不存在的元素，并使用新的稳定 ASCII candidateKey。必要时可返回涉及已有和新增候选的关系与动作。元素类型和元素动作必须使用上述枚举，元素类型与交互能力需要分开判断。只有断点后的所有可见区域及缺失顶层字段都完成后，才能设置 done=true。证据保持简洁。frameId 仍为 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
 }
 
 async function freezeAndCapture(agent) {
@@ -910,7 +910,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         label: element.label,
         visualDescription: element.visualDescription,
         controlType: element.controlType,
-        interactive: element.actionable === 'yes',
+        interactive: element.capabilities.some((capability) => capability !== 'none'),
         enabled: element.enabled,
         state: element.state || null,
         approximateRegion: element.bbox,
@@ -932,9 +932,9 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         relationships: (reviewerResult.relationships || []).filter((relationship) => selectedKeys.has(relationship.fromCandidateKey) && selectedKeys.has(relationship.toCandidateKey)),
         actionCandidates: [
           ...(reviewerResult.actionCandidates || []).filter((action) => selectedKeys.has(action.triggerCandidateKey)),
-          ...selectedScout.flatMap((element) => element.capabilities.map((capability) => ({
+          ...selectedScout.flatMap((element) => element.capabilities.filter((capability) => capability !== 'none').map((capability) => ({
             triggerCandidateKey: element.candidateKey,
-            action: SCOUT_ACTIONS.includes(capability) ? capability : 'other',
+            action: capability,
             expectedOutcome: null,
             basis: 'existing-graph',
             riskSignals: [],

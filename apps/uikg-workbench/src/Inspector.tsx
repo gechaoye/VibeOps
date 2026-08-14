@@ -1,5 +1,5 @@
 import { Bot, Check, CircleAlert, CircleCheck, Eye, EyeOff, RotateCcw, Trash2, X } from 'lucide-react';
-import { capabilityGroups, elementTypeGroups, roleOptions } from './model';
+import { actionEffectsFor, capabilityGroups, capabilityLabel, defaultDescriptionForElementType, elementTypeGroups, recommendedActionsForElementType } from './model';
 import type { DraftElement, DraftPage } from './types';
 
 interface InspectorProps {
@@ -56,6 +56,26 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
   const bboxModified = (key: keyof DraftElement['bbox']) => Boolean(initialElement && element.bbox[key] !== initialElement.bbox[key]);
   const accepted = element.reviewStatus === 'accepted';
   const rejected = element.reviewStatus === 'rejected';
+  const displayedActionEffects = actionEffectsFor(element.controlType, element.capabilities, element.actionEffects);
+  const changeElementType = (controlType: string) => {
+    const capabilities = recommendedActionsForElementType(controlType);
+    onChange({
+      controlType,
+      visualDescription: defaultDescriptionForElementType(controlType),
+      capabilities,
+      actionEffects: actionEffectsFor(controlType, capabilities),
+    });
+  };
+  const toggleAction = (action: string, checked: boolean) => {
+    let capabilities = checked
+      ? action === 'none' ? ['none'] : [...element.capabilities.filter((item) => item !== 'none' && item !== action), action]
+      : element.capabilities.filter((item) => item !== action);
+    if (capabilities.length === 0) capabilities = ['none'];
+    onChange({ capabilities, actionEffects: actionEffectsFor(element.controlType, capabilities, element.actionEffects) });
+  };
+  const updateActionEffect = (action: string, effect: string) => {
+    onChange({ actionEffects: displayedActionEffects.map((item) => item.action === action ? { ...item, effect } : item) }, `field:actionEffects:${action}`);
+  };
 
   return (
     <div className="inspector-form">
@@ -69,21 +89,22 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
       </div>
 
       <label className={fieldClass('label')}><span>元素名称</span><input value={element.label} onBlur={onChangeEnd} onChange={(event) => updateField('label', event.target.value, true)} /></label>
-      <label className={fieldClass('controlType')}><span>元素类型</span><select value={element.controlType} onChange={(event) => updateField('controlType', event.target.value)}>{elementTypeGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</optgroup>)}</select></label>
-      <label className={fieldClass('role')}><span>元素作用</span><select value={element.role} onChange={(event) => updateField('role', event.target.value)}>{roleOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-      <label className={fieldClass('actionable')}><span>是否可操作</span><select value={element.actionable} onChange={(event) => updateField('actionable', event.target.value)}><option value="yes">可操作</option><option value="no">不可操作</option><option value="unknown">待确认</option></select></label>
+      <label className={fieldClass('controlType')}><span>元素类型</span><select value={element.controlType} onChange={(event) => changeElementType(event.target.value)}>{elementTypeGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</optgroup>)}</select></label>
+      <label className={fieldClass('visualDescription')}><span>元素描述</span><input value={element.visualDescription} onBlur={onChangeEnd} onChange={(event) => updateField('visualDescription', event.target.value, true)} /></label>
 
       <fieldset className={groupClass('capabilities')}>
-        <legend>支持操作</legend>
-        <div className="capability-groups">
-          {capabilityGroups.map((group) => <section className="capability-group" key={group.label}>
-            <strong>{group.label}</strong>
-            <div className="checkbox-grid">
-              {group.options.map(([value, label]) => (
-                <label key={value} className="check-field"><input type="checkbox" checked={element.capabilities.includes(value)} onChange={(event) => updateField('capabilities', event.target.checked ? [...element.capabilities, value] : element.capabilities.filter((item) => item !== value))} /><span>{label}</span></label>
-              ))}
-            </div>
-          </section>)}
+        <legend>元素动作</legend>
+        <div className="checkbox-grid">
+          {capabilityGroups[0].options.map(([value, label]) => (
+            <label key={value} className="check-field"><input type="checkbox" checked={element.capabilities.includes(value)} onChange={(event) => toggleAction(value, event.target.checked)} /><span>{label}</span></label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className={groupClass('actionEffects')}>
+        <legend>动作效果</legend>
+        <div className="action-effect-list">
+          {displayedActionEffects.map((item) => <label key={item.action}><span>{capabilityLabel(item.action)}</span><input value={item.effect} onBlur={onChangeEnd} onChange={(event) => updateActionEffect(item.action, event.target.value)} /></label>)}
         </div>
       </fieldset>
 

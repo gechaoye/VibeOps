@@ -55,7 +55,7 @@ type ExplorationMode = 'auto' | 'ai_assist';
 const emptyDevice: DeviceState = { online: false, session: null, runtimeInfo: null, targets: [] };
 
 const editableElementFields: Array<keyof DraftElement> = [
-  'label', 'controlType', 'role', 'capabilities', 'actionable', 'state', 'parentId',
+  'label', 'controlType', 'visualDescription', 'capabilities', 'actionEffects', 'state', 'parentId',
   'ownerKind', 'ownerRef', 'pageId', 'availableOnPageIds', 'interactionBoundary', 'bbox',
 ];
 
@@ -766,7 +766,7 @@ function AppContent() {
       visualDescription: `由 ${selected.length} 个所选元素组成的容器`,
       controlType: 'container',
       role: 'container',
-      actionable: 'no' as const,
+      actionEffects: [{ action: 'none', effect: '容器仅组织所选元素，不触发交互' }],
       interactionBoundary: 'candidate_bbox',
       parentId,
       ownerKind: parentId ? 'component' as const : 'page' as const,

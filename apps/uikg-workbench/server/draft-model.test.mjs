@@ -34,7 +34,7 @@ function sampleScout() {
       },
     ],
     relationships: [{ fromCandidateKey: 'settings.row', type: 'contains', toCandidateKey: 'settings.toggle' }],
-    actionCandidates: [{ triggerCandidateKey: 'settings.toggle', action: 'toggle', expectedOutcome: '切换提醒', basis: 'visible-affordance', riskSignals: [], confidence: 0.8 }],
+    actionCandidates: [{ triggerCandidateKey: 'settings.toggle', action: 'tap', expectedOutcome: '切换提醒开关状态', basis: 'visible-affordance', riskSignals: [], confidence: 0.8 }],
     comparison: { basisFrameId: null, status: 'not-requested', changes: [] },
     uncertainties: [],
   };
@@ -48,7 +48,9 @@ test('Scout 候选转换为带 owner 的可编辑草稿', () => {
   const toggle = draft.elements.find((item) => item.candidateKey === 'settings.toggle');
   assert.equal(toggle.parentId, row.id);
   assert.equal(toggle.ownerKind, 'component');
-  assert.deepEqual(toggle.capabilities, ['toggle']);
+  assert.deepEqual(row.capabilities, ['none']);
+  assert.deepEqual(toggle.capabilities, ['tap']);
+  assert.deepEqual(toggle.actionEffects, [{ action: 'tap', effect: '切换提醒开关状态' }]);
   assert.deepEqual(validateScoutConsistency(scout), []);
 });
 
@@ -101,11 +103,17 @@ test('旧单页草稿升级后保留 Page、Frame 和 Scout 模型来源', () =>
 
 test('支持操作使用新枚举并去重', () => {
   const draft = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'model.json');
+  draft.elements[1].controlType = 'button';
+  draft.elements[1].actionable = 'yes';
   draft.elements[1].capabilities = ['tap', 'zoom', 'tap'];
+  draft.elements[1].actionEffects = [];
 
   const normalized = normalizeDraftShape(draft);
 
+  assert.equal(normalized.elements[1].controlType, 'text-button');
+  assert.equal('actionable' in normalized.elements[1], false);
   assert.deepEqual(normalized.elements[1].capabilities, ['tap', 'zoom']);
+  assert.deepEqual(normalized.elements[1].actionEffects.map((item) => item.action), ['tap', 'zoom']);
 });
 
 test('探索新页面时保留上一页元素并建立独立 Page', () => {
@@ -261,7 +269,7 @@ test('Scout 支持完整操作枚举并通过 Schema', async () => {
 
 test('Scout 操作直接转换为元素支持操作', () => {
   const scout = sampleScout();
-  scout.actionCandidates = ['scroll_vertical', 'swipe', 'long_press', 'drag', 'play', 'share'].map((action) => ({
+  scout.actionCandidates = ['scroll_vertical', 'swipe', 'long_press', 'drag', 'zoom', 'multi_touch'].map((action) => ({
     ...scout.actionCandidates[0],
     action,
   }));
@@ -269,7 +277,7 @@ test('Scout 操作直接转换为元素支持操作', () => {
   const draft = mergeScoutIntoDraft(createEmptyDraft(), scout, 'model.json');
   const trigger = draft.elements.find((element) => element.candidateKey === 'settings.toggle');
 
-  assert.deepEqual(trigger.capabilities, ['scroll_vertical', 'swipe', 'long_press', 'drag', 'play', 'share']);
+  assert.deepEqual(trigger.capabilities, ['scroll_vertical', 'swipe', 'long_press', 'drag', 'zoom', 'multi_touch']);
 });
 
 test('旧草稿 meaning.basis 不迁移，缺少新证据时语义降级为未知', () => {
