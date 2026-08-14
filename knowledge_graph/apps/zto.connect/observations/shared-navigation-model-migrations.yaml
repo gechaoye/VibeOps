@@ -1,0 +1,77 @@
+recordType: UiGraphMigrationLedger
+migrationRef: reviewed-ui-model-corrections-through-20260730
+status: reviewed
+reviewSource: multiple_user_context_reviews
+migrations:
+- oldId: 01KYKA3ENBF0Y73YQHWS0Z8WNX
+  oldKey: navigation.bottom_navigation
+  oldEntityType: Page
+  targetRef: 01KY6Z7BD84VK4BNARMMSEET0K
+  targetKey: shared.bottom_navigation
+  targetEntityType: Element
+  targetStateKey: null
+  reason: 底部导航是 Application 持有的顶层共享 Element，不是 Page。
+  reviewedBy: user_context_2026-07-28
+- oldId: 01KY9E733GYTS9YD68AEBZA188
+  oldKey: app-drawer.root
+  oldEntityType: Page
+  targetRef: 01KY6Z7BD89DJT00X43WZAFNAR
+  targetKey: shared.bottom_tab.more
+  targetEntityType: Element
+  targetStateKey: open
+  reason: 更多应用抽屉是“更多”共享 Element 的打开状态，不是 Page。
+  reviewedBy: user_context_2026-07-28
+- oldId: 01KY6Z7BD85G8TC0GDC0EC8F9B
+  oldKey: shared.app_drawer
+  oldEntityType: Element
+  targetRef: 01KY6Z7BD89DJT00X43WZAFNAR
+  targetKey: shared.bottom_tab.more
+  targetEntityType: Element
+  targetStateKey: open
+  reason: “更多”本身持有抽屉状态和入口，不再为同一抽屉建立包装 Element。
+  reviewedBy: user_context_2026-07-28
+- oldId: 01KYKA3ENBB9R2TEBWRFE4R5JX
+  oldKey: messages.special_follow.settings.members_entry
+  oldEntityType: Element
+  targetRef: 01KYKA3ENB96ERX3FZW7HWSD16
+  targetKey: messages.special_follow.settings.members_container
+  targetEntityType: Element
+  targetStateKey: null
+  reason: 用户确认旧实体把总容器、说明文案和箭头入口错误合并；Canonical 应为页面持有总容器，总容器分别持有不可点击文案和可点击箭头。
+  reviewedBy: user_context_2026-07-30
+- oldId: 01KYKA3ENBMPWAJ7BFJB5ER46S
+  oldKey: messages.special_follow.settings.help
+  oldEntityType: Page
+  targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+  targetKey: messages.special_follow.settings
+  targetEntityType: Page
+  targetStateKey: null
+  reason: 三个帮助气泡是特别关注提醒设置页中对应设置项容器的瞬时子元素状态，不是独立页面。
+  reviewedBy: user_context_2026-07-31
+- oldId: 01KYKA3ENBA7CQMEZ6CG74MQ6S
+  oldKey: messages.special_follow.settings.help.popup
+  oldEntityType: Element
+  targetRef: 01KYKA3ENB6FXFS0TKJT80YAY5
+  targetKey: messages.special_follow.settings.popup_reminder_help
+  targetEntityType: Element
+  targetStateKey: expanded
+  reason: 旧实体重复框选了单聊弹窗提醒的同一个问号图标；保留设置项容器内的唯一帮助图标，帮助文案气泡另建帮助浮层子元素。
+  reviewedBy: user_context_2026-07-31
+- oldId: 01KYKA3ENBQX0Q626YP6YESFBH
+  oldKey: messages.special_follow.settings.help.sms_phone
+  oldEntityType: Element
+  targetRef: 01KYKA3ENBMYXFAYTP0W6DM5MY
+  targetKey: messages.special_follow.settings.sms_phone_help
+  targetEntityType: Element
+  targetStateKey: expanded
+  reason: 旧实体重复框选了短信或电话提醒的同一个问号图标；保留设置项容器内的唯一帮助图标，帮助文案气泡另建帮助浮层子元素。
+  reviewedBy: user_context_2026-07-31
+- oldId: 01KYKA3ENBSQ1SS5XP248KERAZ
+  oldKey: messages.special_follow.settings.help.group_dnd
+  oldEntityType: Element
+  targetRef: 01KYKA3ENB2WFXGWDJAV9HCS2R
+  targetKey: messages.special_follow.settings.group_dnd_help
+  targetEntityType: Element
+  targetStateKey: expanded
+  reason: 旧实体重复框选了免打扰群通知的同一个问号图标；保留设置项容器内的唯一帮助图标，帮助文案气泡另建帮助浮层子元素。
+  reviewedBy: user_context_2026-07-31

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHA5JZ7A902WFB8GX1FCX0X",
+  "sessionRef": "01KYH9T8PKX1QA0E8CPC4Q0K45",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHA18X7F2Q5RZB0THKKJWXM",
+  "sourceScreenshotRef": "sha256:af9020e4b4f796f0eed665fa9a22f1f641e11a25c64c2919242b1afa47941785",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"确定\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.add\",\"predicate\":\"opens_common_component\",\"value\":\"通用选人组件\",\"source\":\"user\"},{\"subjectKey\":\"common.person_picker\",\"predicate\":\"scope_role\",\"value\":\"通用组件边界_不递归探索\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注：1人",
+      "练良伟",
+      "添加",
+      "移除",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我：已开启",
+      "间隔时间：10",
+      "弹窗消息未读，短信/电话提醒我：已关闭",
+      "免打扰群通知：已关闭",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "supportedFunctionDescription": "紧接“确定”操作后，界面返回或进入无额外浮层的“特别关注提醒”设置页，并显示当前特别关注成员及提醒配置。依据题目提供的权威上下文，消息工具栏心形控件的功能名为“特别关注”；特别关注设置中的“添加”会打开通用选人组件，且本次探索仅到通用组件边界、不递归探索；当前授权允许添加特别关注。当前画面还直观支持查看1名已关注成员、进入添加或移除操作，以及配置单聊未读弹窗提醒、提醒间隔、短信/电话提醒、免打扰群通知和特别关注提示音。",
+    "evidenceBasis": [
+      "屏幕顶部标题可见“特别关注提醒”",
+      "“我的特别关注”右侧可见“1人”，下方可见成员“练良伟”及“添加”“移除”",
+      "单聊未读弹窗提醒开关呈蓝色开启状态，其余两个可见开关呈灰色关闭状态",
+      "页面可见“间隔时间 10”和“特别关注提示音 波浪”",
+      "当前屏幕没有可见弹窗、选人浮层或遮罩",
+      "功能名、通用选人组件边界及允许添加特别关注来自题目提供的权威非视觉上下文"
+    ],
+    "unresolvedMeaning": "仅凭当前画面无法确定此前“确定”具体确认了哪一项、是否新增或变更了成员，也无法确认数值10的时间单位、问号说明内容、短信/电话提醒的触发条件细节，以及点击移除、各行或开关后的完整交互结果。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:13:02.184Z",
+  "endedAt": "2026-07-27T08:13:25.863Z",
+  "durationMs": 23678.509834,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:299150991b2c81a66e9d8e0563df85f3dbf8e176d2372740bd0d5f8ac742883f"
+}

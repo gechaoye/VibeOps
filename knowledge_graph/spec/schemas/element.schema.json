@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "element.schema.json",
+  "title": "UIKG 3.0 Element",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "entityType",
+    "id",
+    "key",
+    "label",
+    "applicationRef",
+    "featurePath",
+    "owner",
+    "parentElementRef",
+    "controlType",
+    "role",
+    "capabilities",
+    "summary",
+    "relationshipRefs",
+    "observations",
+    "coverage",
+    "risk",
+    "status",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "entityType": {
+      "const": "Element"
+    },
+    "id": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "key": {
+      "$ref": "common.schema.json#/$defs/stableKey"
+    },
+    "label": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "aliases": {
+      "$ref": "common.schema.json#/$defs/stringArray"
+    },
+    "applicationRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "featurePath": {
+      "$ref": "common.schema.json#/$defs/featurePath"
+    },
+    "owner": {
+      "$ref": "common.schema.json#/$defs/owner"
+    },
+    "parentElementRef": {
+      "$ref": "common.schema.json#/$defs/nullableUlid"
+    },
+    "controlType": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "role": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "capabilities": {
+      "$ref": "common.schema.json#/$defs/stringArray"
+    },
+    "summary": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "relationshipRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/nonEmptyString"
+      },
+      "uniqueItems": true
+    },
+    "childElementRefs": {
+      "$ref": "common.schema.json#/$defs/ulidArray"
+    },
+    "availableOnPageRefs": {
+      "$ref": "common.schema.json#/$defs/ulidArray"
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/pageState"
+      }
+    },
+    "observations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "common.schema.json#/$defs/elementObservation"
+      }
+    },
+    "coverage": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "risk": {
+      "$ref": "common.schema.json#/$defs/risk"
+    },
+    "status": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "presentation": {
+      "type": "object"
+    },
+    "interactionBoundary": {
+      "type": "object"
+    },
+    "composition": {
+      "type": "object"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "owner": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "application",
+                  "page"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "parentElementRef": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "owner": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "component",
+                  "shared_component"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "parentElementRef": {
+            "$ref": "common.schema.json#/$defs/ulid"
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}

@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "open-sms-phone-help-live-repair",
+  "method": "aiTap",
+  "prompt": "只定位“弹窗消息未读，短信/电话提醒我”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或其他问号。",
+  "beforeFrameRef": "sha256:aba1aa2201d65f29780bcd9a71afbcd629aa7e000f57b657bf191858766e7836",
+  "locator": {
+    "rect": {
+      "left": 685,
+      "top": 1163,
+      "width": 54,
+      "height": 54
+    },
+    "center": [
+      711,
+      1189
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T04:24:17.770Z",
+  "completedAt": "2026-07-31T04:24:33.730Z",
+  "postcondition": "第二项“弹窗消息未读，短信/电话提醒我”问号附近已显示深色帮助说明气泡，且仍停留在特别关注提醒页面。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图顶部标题为“特别关注提醒”，说明仍停留在该页面。第二项“弹窗消息未读，短信/电话提醒我”的问号附近可见深色帮助说明气泡，气泡内容说明弹窗消息未处理时会转为电话或短信通知。"
+  },
+  "status": "executed_verified"
+}

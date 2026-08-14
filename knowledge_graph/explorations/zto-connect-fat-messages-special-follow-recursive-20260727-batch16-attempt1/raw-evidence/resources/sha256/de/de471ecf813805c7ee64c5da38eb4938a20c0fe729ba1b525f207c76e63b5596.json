@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHEYZGPFZ86J3Q57G9VNQ16",
+  "sessionRef": "01KYHESC3YYSAZZFY17D287R2P",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHEWQ90E7BQ08GB3SQCEM1M",
+  "sourceScreenshotRef": "sha256:bab46ac6266427f39ed33a3585426db05178c80a2b245a2f8bb0a3f2939da9ce",
+  "operation": "aiLocate",
+  "prompt": "定位文字“免打扰群通知”右侧的灰色圆圈问号；当前深灰色气泡尖角正指向该图标",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 351,
+      "y": 1373
+    },
+    "rect": {
+      "x": 325,
+      "y": 1347,
+      "width": 54,
+      "height": 54
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:37:05.657Z",
+  "endedAt": "2026-07-27T09:37:12.214Z",
+  "durationMs": 6557.593333,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:1c166819e4645cd43400d9256744a402c7717a692948a41f19005f004d2f0332"
+}

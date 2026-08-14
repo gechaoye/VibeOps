@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "transition.schema.json",
+  "title": "UIKG 3.0 Transition",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "entityType",
+    "id",
+    "key",
+    "applicationRef",
+    "featurePath",
+    "sourceRef",
+    "triggerElementRef",
+    "action",
+    "capability",
+    "targetRef",
+    "reversible",
+    "risk",
+    "verificationStatus",
+    "evidence",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "entityType": {
+      "const": "Transition"
+    },
+    "id": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "key": {
+      "$ref": "common.schema.json#/$defs/stableKey"
+    },
+    "applicationRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "featurePath": {
+      "$ref": "common.schema.json#/$defs/featurePath"
+    },
+    "sourceRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "sourceStateKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "triggerElementRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "action": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "capability": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "targetRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "targetStateKey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reversible": {
+      "type": "boolean"
+    },
+    "risk": {
+      "$ref": "common.schema.json#/$defs/risk"
+    },
+    "verificationStatus": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "actionTraceRef",
+        "beforeFrameRef",
+        "afterFrameRef",
+        "postcondition",
+        "semanticAssertions"
+      ],
+      "properties": {
+        "actionTraceRef": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "beforeFrameRef": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "afterFrameRef": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "postcondition": {
+          "const": "pass"
+        },
+        "semanticAssertions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "common.schema.json#/$defs/nonEmptyString"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    }
+  },
+  "additionalProperties": true
+}

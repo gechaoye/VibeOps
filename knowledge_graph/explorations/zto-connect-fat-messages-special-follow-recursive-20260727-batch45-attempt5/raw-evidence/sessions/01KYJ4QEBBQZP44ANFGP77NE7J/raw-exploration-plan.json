@@ -1,0 +1,247 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5:plan",
+  "sourceScopeHash": "sha256:e6c50f6d3c460d6ff5fa14803f3965782ace79532c3f162bdcbdf092568c86f6",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注页点击顶部成员头像条目，验证直接进入该成员聊天页，并返回特别关注页。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，消息页入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_entry",
+        "predicate": "navigation_result",
+        "value": "点击顶部成员头像条目会直接进入该成员的通用聊天页。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.with_read_lian_liangwei",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-member-entry",
+        "space": "current_display_px",
+        "rect": {
+          "x": 20,
+          "y": 330,
+          "width": 220,
+          "height": 270
+        },
+        "purpose": "特别关注页我的特别关注区域成员头像与截断名称条目。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.with_read_lian_liangwei": {
+      "key": "messages.special_follow.with_read_lian_liangwei",
+      "label": "点击成员前的特别关注已读状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注，“我的特别关注”区域内的棕橙色纹理头像和截断名称“这是练…”组成的成员条目可见，灰色分隔带下方相关会话可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只输出页面标题、成员条目和已读会话可见的事实，visibleControls 必须返回空数组；成员条目会由动作步骤单独执行实时 aiLocate。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_special_follow_member_conversation"
+      ],
+      "postcondition": "已记录点击成员前的特别关注状态。"
+    },
+    "boundary.common.conversation.lian_liangwei_from_member": {
+      "key": "boundary.common.conversation.lian_liangwei_from_member",
+      "label": "点击特别关注成员头像后到达的通用聊天边界",
+      "kind": "page",
+      "expectedStablePageKey": "boundary.common.conversation",
+      "requiredSemanticAssertions": [
+        "当前已进入点击成员头像后到达的聊天页面，顶部返回控件、聊天标题、橙黄色爱心图标和消息历史区域可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只输出当前聊天页标题、顶部橙黄色爱心以及消息历史区域和底部输入区域可见的事实，visibleControls 必须返回空数组；这是 APP 级通用聊天组件边界，不递归盘点或探索聊天内部控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "navigate_back"
+      ],
+      "postcondition": "已记录成员头像入口到通用聊天组件边界的导航结果。"
+    },
+    "messages.special_follow.with_read_lian_liangwei_after_member_return": {
+      "key": "messages.special_follow.with_read_lian_liangwei_after_member_return",
+      "label": "从成员聊天返回特别关注已读状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注，“我的特别关注”区域中的成员头像条目可见，灰色分隔带下方相关会话仍可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只输出从聊天页返回后特别关注标题、成员头像条目和会话行仍可见的事实，visibleControls 必须返回空数组。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证成员头像入口的返回闭环。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-before-member-open",
+      "kind": "capture",
+      "state": "messages.special_follow.with_read_lian_liangwei",
+      "depth": 1
+    },
+    {
+      "id": "open-special-follow-member-conversation",
+      "kind": "tap",
+      "semanticAction": "open_special_follow_member_conversation",
+      "fromState": "messages.special_follow.with_read_lian_liangwei",
+      "toState": "boundary.common.conversation.lian_liangwei_from_member",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 3000,
+      "target": {
+        "key": "special_follow_member_lian_liangwei",
+        "label": "特别关注成员头像条目",
+        "scope": "page_content",
+        "locatorPrompt": "定位“我的特别关注”标题下方最左侧、棕橙色纹理方形头像及其下方截断名称“这是练…”组成的完整成员条目；不要定位灰色分隔带下方的会话行。",
+        "allowedRegionRef": "special-follow-member-entry"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前已进入点击成员头像后到达的聊天页面，顶部返回控件、聊天标题、橙黄色爱心图标和消息历史区域可见。"
+        ]
+      }
+    },
+    {
+      "id": "back-from-member-conversation-boundary",
+      "kind": "back",
+      "semanticAction": "navigate_back",
+      "fromState": "boundary.common.conversation.lian_liangwei_from_member",
+      "toState": "messages.special_follow.with_read_lian_liangwei_after_member_return",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面标题为特别关注，“我的特别关注”区域中的成员头像条目可见。"
+        ]
+      }
+    }
+  ]
+}

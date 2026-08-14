@@ -1,0 +1,107 @@
+schemaVersion: 2.0.0
+entityType: DeviceSnapshot
+id: 01KY6Z7BD8N3EJCKYGH73N877P
+revision: 2
+status: active
+recordedAt: '2026-07-23T07:49:45Z'
+recordedBy: service:uikg-first-level-projector
+capturedAt: '2026-07-23T07:36:07.357Z'
+platform: android
+manufacturer: HUAWEI
+model: NOH-AN01
+deviceIdHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+deviceClass: phone
+osVersion: "12"
+apiLevel: 31
+kernel: unknown
+display:
+  physicalWidthPx: 1344
+  physicalHeightPx: 2772
+  effectiveWidthPx: 1152
+  effectiveHeightPx: 2376
+  devicePixelRatio: 3.5
+  densityDpi: 560
+window:
+  coordinateSpace: current_display_px
+  windowRectPx: {x: 0, y: 0, width: 1152, height: 2376}
+  viewportRectPx: {x: 0, y: 0, width: 1152, height: 2376}
+  safeAreaInsetsPx: null
+  systemBarInsetsPx: null
+  insetCaptureStatus: not_captured
+orientation: portrait
+rotationDegrees: 0
+foldState: unknown
+hingeRects: []
+locale: unknown
+language: unknown
+script: unknown
+region: unknown
+layoutDirection: unknown
+timezone: Asia/Shanghai
+theme: unknown
+colorScheme: unknown
+contrast: unknown
+fontScale: null
+accessibility:
+  boldText: unknown
+  reduceMotion: unknown
+availableInputModes: [touch]
+pointerType: touch
+touchSupport: true
+permissions:
+  captureStatus: not_captured
+  uiAffecting: {}
+network:
+  captureStatus: not_captured
+  networkClass: unknown
+  offline: unknown
+featureFlagDigest: unknown
+clockOffsetMs: null
+captureCompleteness:
+  status: partial
+  missingFields:
+    - window.safeAreaInsetsPx
+    - window.systemBarInsetsPx
+    - locale
+    - layoutDirection
+    - theme
+    - colorScheme
+    - fontScale
+    - accessibility.boldText
+    - accessibility.reduceMotion
+    - permissions.uiAffecting
+    - network.networkClass
+    - network.offline
+    - featureFlagDigest
+    - clockOffsetMs
+reuseGate:
+  status: blocked
+  reason: missing_ui_context_requires_fresh_device_snapshot
+  candidateRecallAllowed: true
+  pixelActionAllowed: false
+provenance:
+  - sourceType: runtime
+    sourceId: 01KY6YECXXQRGNZC5S1MWPRYCX
+    sourceVersion: adb-runtime-metadata@android-api-31
+    confidence: 1.0
+extensions:
+  com.zto.uikg.coordinateSpace:
+    name: current_display_px
+    width: 1152
+    height: 2376
+  com.zto.uikg.reuseLookup:
+    algorithmVersion: 1
+    modelKey: "android:huawei:noh-an01:phone"
+    effectiveGeometryKey: "android:current_display_px:effective=1152x2376:window=0,0,1152,2376:viewport=0,0,1152,2376:portrait:r0"
+    semantics: candidate_only
+    executionEligibility: blocked_missing_context
+    blockers:
+      - insets_not_captured
+      - locale_not_captured
+      - theme_not_captured
+      - font_scale_not_captured
+      - accessibility_visual_settings_not_captured
+      - ui_permissions_not_captured
+      - network_not_captured
+      - feature_flags_not_captured
+      - clock_offset_not_captured

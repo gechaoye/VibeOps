@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHPKJFBDT8AN025C2BD5S8H",
+  "sessionRef": "01KYHPFJ4PW4967B47JQVYJKXP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHPHBQ4X68BZBDZSR19J472",
+  "sourceScreenshotRef": "sha256:d001e2bb82ffea2967475b9c247171c4afcd97a8dec1a0654c5108198195e994",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "日程提醒弹窗已关闭且不再显示，当前屏幕标题为“特别关注提醒”，主要提醒设置可见。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:50:39.506Z",
+  "endedAt": "2026-07-27T11:50:47.019Z",
+  "durationMs": 7513.031125,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:79b986ca1daa1246d7b4a5ac07ffe14980c471aa431f8f0cf69f8a47b0f70585"
+}

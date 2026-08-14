@@ -1,0 +1,103 @@
+task:
+  id: zto-connect-fat-global-search-20260730
+  requestedAt: '2026-07-30T08:32:55Z'
+  objective: 使用技能，探索全局搜索的功能，入口为消息页右上角放大镜icon
+
+application:
+  key: zto.connect
+  packageId: com.zto.connect.fat
+  build:
+    environment: fat
+    versionName: 8.58.0.10542
+    versionCode: '10542'
+
+entry:
+  description: 消息页右上角放大镜icon
+  knownFacts:
+  - subjectKey: messages.toolbar.global_search
+    predicate: function_name
+    value: 全局搜索
+    source: user_context
+  authorityContracts:
+  - id: authority.messages.toolbar.global_search.open
+    edgeKind: authority_contract
+    sourceType: user_context
+    authorityStatus: authority_certified
+    planningEligible: true
+    sourceSelector:
+      kind: exact_page_or_state
+      ref: 01KY6Z7BD8D0X91GX7D73CBFMH
+    triggerElementRef: pending.messages.toolbar.global_search
+    expectedTarget:
+      kind: page
+      ref: pending.global_search.root
+      stateKey: initial
+    runtimeEvidenceStatus: pending
+    contradictionPolicy: record_product_defect
+
+scope:
+  recursion: all-safe-reachable-content-under-entry
+  include:
+  - pages-and-overlays
+  - scroll-and-pagination-states
+  - switches-settings-icons-buttons-and-menus
+  - empty-and-populated-states
+  sharedComponents:
+    policy: record-boundary-and-complete-target-flow
+  stopAt:
+  - external-app
+  - production-high-impact-action-without-authorization
+  - credential-or-permission-block
+
+actions:
+  testLikeEnvironment:
+    allowInAppCrud: true
+    allowSubmissionAndDeletion: true
+    allowPersistentSettings: true
+    restoreBusinessData: false
+  production:
+    requireAuthorizationForPersistentMutation: true
+
+midscene:
+  repository: /Users/mohan/Desktop/ZTO/Projects/midscene
+  envFile: .env
+  reloadEnvInFreshProcess: true
+  oneAndroidAgent: true
+  scoutIntent: scout
+  operatorIntents: [default, planning, insight]
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  keepAwakeForWholeTask: true
+
+graph:
+  root: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph
+  mergePolicy: additive-upsert
+  preserveHistoricalEntities: true
+  protectExistingSharedNavigation: true
+  stageBeforePublish: true
+  organization:
+    groupPagesAndElementsByFeature: true
+    featurePathMinDepth: 1
+    featurePathMaxDepth: 3
+    requireZeroEmptyFeatureDirectories: true
+    navigationRouteMaterialization: on_demand
+    allowFullTransitionProjection: false
+    navigationFeatureRoot: 底部导航
+    businessPagesUseOwnFeatureRoot: true
+    topLevelSharedElementOwner: application
+    sharedOwnerRefsUseStableIds: true
+    navigationDrawerMode: shared-element-state-not-page
+    obsidianValidationRoot: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph/obsidian
+  baseline:
+    fileCount: 146
+    contentHash: sha256:503cd8549a1464abdb1240eff8388a2e942f5ae2613e45d8006edb0b0fe3cf9f
+    entityIdsHash: sha256:c3746a171a931e431fe5685a0d1cf09c4ed68d4fe96b9ff224f952a7e69d4e2b
+
+completion:
+  requireQueueExhaustion: true
+  requireCompleteGraph: true
+  requireUnifiedObsidianCards: true
+  requireAllValidationGates: true
+  allowUntraversedAuthorityContractsPendingEvidence: true
+  requireTraversedAuthorityContractsResolved: true

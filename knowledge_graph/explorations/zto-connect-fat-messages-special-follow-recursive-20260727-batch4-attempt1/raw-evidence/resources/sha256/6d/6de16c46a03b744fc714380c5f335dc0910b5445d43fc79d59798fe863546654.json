@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH7MP37FTK3Q3NB5GZNRE3B",
+  "sessionRef": "01KYH7DX42ZA22TBZ72ZW059HV",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH7HG37CPBF6KE4N49NPA34",
+  "sourceScreenshotRef": "sha256:d0e784d34c68f7cda1cd9fc7214c5ed69d2a336f3bf5599e8a27cd7503726bbe",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"我的特别关注\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我（已开启）",
+      "间隔时间：10",
+      "弹窗消息未读，短信/电话提醒我（已关闭）",
+      "免打扰群通知（已关闭）",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "supportedFunctionDescription": "激活“我的特别关注”后进入全页式“特别关注提醒”设置页；该页 visibly 支持添加特别关注对象，并设置未读消息的弹窗提醒、提醒间隔、短信/电话提醒、免打扰群通知和个性化提示音。",
+    "evidenceBasis": [
+      "屏幕顶部标题显示“特别关注提醒”，左上角有返回控件，表明这是独立页面状态。",
+      "“我的特别关注”区域显示“添加”入口及右侧导航控件。",
+      "说明文字显示“来自「特别关注」的未读消息，自定义提醒方式”。",
+      "“单聊消息未读，弹窗提醒我”开关呈蓝色开启状态。",
+      "“间隔时间”右侧显示数值10。",
+      "“弹窗消息未读，短信/电话提醒我”和“免打扰群通知”开关均呈灰色关闭状态。",
+      "“特别关注提示音”右侧显示“波浪”。",
+      "功能名称“特别关注”来自已提供的权威任务上下文，而非像素或图标形状。"
+    ],
+    "unresolvedMeaning": "数值10的时间单位未在当前可见屏幕中标明；帮助图标对应的详细说明、短信/电话提醒的启用条件，以及添加入口和各导航项进入后的具体内容均不可见。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:28:56.583Z",
+  "endedAt": "2026-07-27T07:29:14.855Z",
+  "durationMs": 18271.660958,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:fcdc0f56b642b3f65066815ed39a9d662dd17d72480aa9321f24ebeb920abbff"
+}

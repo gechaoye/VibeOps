@@ -1,0 +1,168 @@
+{
+  "pageIdentity": "特别关注提醒页面；当前叠加显示“间隔时间”底部选择器，不是独立业务页面。",
+  "stateSummary": "特别关注人数为1人（练良伟）。单聊消息未读弹窗提醒已开启，间隔时间为1小时；弹窗消息未读短信/电话提醒已开启，其间隔时间为30分钟，提醒方式为电话。两个问号帮助图标均可见，但没有帮助气泡展开。当前底部选择器正在编辑第一项间隔时间，候选为10分钟、30分钟、1小时、4小时，“1小时”已选中，并提供取消操作。",
+  "rowCompositions": [
+    {
+      "rowName": "单聊消息未读弹窗提醒",
+      "labelText": "单聊消息未读，弹窗提醒我",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标可点击查看说明；右侧开关可切换启用状态。标签文字和整行容器未显示为独立操作目标。"
+    },
+    {
+      "rowName": "单聊提醒间隔时间",
+      "labelText": "间隔时间；当前值1小时",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧当前值/箭头区域用于打开间隔时间选择器；当前底部选择器已打开。设置名称本身不是独立按钮。"
+    },
+    {
+      "rowName": "弹窗消息未读短信/电话提醒",
+      "labelText": "弹窗消息未读，短信/电话提醒我",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标可点击查看说明；右侧开关可切换启用状态。标签文字和整行容器未显示为独立操作目标。"
+    },
+    {
+      "rowName": "短信/电话提醒间隔时间",
+      "labelText": "间隔时间；当前值30分钟",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧当前值/箭头区域用于打开该项间隔时间选择器；设置名称本身不是独立按钮。"
+    },
+    {
+      "rowName": "提醒方式",
+      "labelText": "提醒方式；当前值电话",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧当前值“电话”/箭头区域用于选择提醒方式；设置名称本身不是独立按钮。"
+    }
+  ],
+  "candidateReconciliation": [
+    {
+      "candidate": "页面返回箭头",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于顶部导航栏，用于退出当前特别关注提醒页面。"
+    },
+    {
+      "candidate": "我的特别关注区域",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于页面人员管理区，包含当前关注人、添加和移除入口，不属于目标提醒设置行。"
+    },
+    {
+      "candidate": "练良伟头像/姓名",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "由当前特别关注人员数据驱动，归属“我的特别关注”容器。"
+    },
+    {
+      "candidate": "添加",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属“我的特别关注”人员管理容器，是添加关注人的操作入口。"
+    },
+    {
+      "candidate": "移除",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属“我的特别关注”人员管理容器，是移除关注人的操作入口。"
+    },
+    {
+      "candidate": "单聊消息未读，弹窗提醒我",
+      "classification": "existing element",
+      "ownerContainerReasoning": "是第一项提醒设置行的描述标签；其问号和开关是该行内独立子控件。"
+    },
+    {
+      "candidate": "第一项问号帮助图标",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属单聊弹窗提醒设置行，用于触发帮助说明；当前未显示帮助气泡。"
+    },
+    {
+      "candidate": "第一项提醒开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属单聊弹窗提醒设置行，蓝色表示开启。"
+    },
+    {
+      "candidate": "第一项间隔时间值",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "归属第一项提醒的间隔时间行，当前值为1小时，并与打开的选择器状态一致。"
+    },
+    {
+      "candidate": "弹窗消息未读，短信/电话提醒我",
+      "classification": "existing element",
+      "ownerContainerReasoning": "是第二项提醒设置行的描述标签；其问号和开关是该行内独立子控件。"
+    },
+    {
+      "candidate": "第二项问号帮助图标",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属短信/电话提醒设置行，用于触发帮助说明；当前未显示帮助气泡。"
+    },
+    {
+      "candidate": "第二项提醒开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属短信/电话提醒设置行，蓝色表示开启。"
+    },
+    {
+      "candidate": "第二项间隔时间值",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "归属短信/电话提醒的间隔时间行，当前显示30分钟。"
+    },
+    {
+      "candidate": "提醒方式值",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "归属提醒方式设置行，当前显示电话。"
+    },
+    {
+      "candidate": "间隔时间底部选择器",
+      "classification": "existing element",
+      "ownerContainerReasoning": "是第一项间隔时间行触发的瞬态覆盖层，归属当前页面，不应识别为新页面。"
+    },
+    {
+      "candidate": "10分钟选项",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属当前间隔时间底部选择器，是可选值。"
+    },
+    {
+      "candidate": "30分钟选项",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属当前间隔时间底部选择器，是可选值。"
+    },
+    {
+      "candidate": "1小时选项及勾选标记",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属当前间隔时间底部选择器；蓝色和勾选表示当前选中值，不是重复控件。"
+    },
+    {
+      "candidate": "4小时选项",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属当前间隔时间底部选择器，是可选值。"
+    },
+    {
+      "candidate": "取消",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属底部选择器，用于关闭覆盖层而不更改选择。"
+    },
+    {
+      "candidate": "背景灰色遮罩",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属底部选择器的模态交互状态，用于弱化底层页面；不是业务设置项。"
+    },
+    {
+      "candidate": "帮助气泡",
+      "classification": "unknown",
+      "ownerContainerReasoning": "截图中没有帮助气泡可见，无法确认其内容或边界；不能把问号图标本身当作已展开气泡。"
+    }
+  ],
+  "interactionBoundaryAssertions": [
+    "“单聊消息未读，弹窗提醒我”是设置名称/描述文本，不等同于问号帮助按钮，也不等同于右侧开关。",
+    "“弹窗消息未读，短信/电话提醒我”是设置名称/描述文本，不等同于问号帮助按钮，也不等同于右侧开关。",
+    "两个问号图标分别归属于各自提醒设置行，是独立的帮助触发目标；当前没有帮助气泡展开。",
+    "两个蓝色开关分别归属于各自提醒设置行，是独立的启停目标，不能将整行标签或容器当作开关。",
+    "“间隔时间”和“提醒方式”左侧名称是静态标签；可操作入口由右侧值与箭头区域表达。",
+    "底部选择器中的时间选项和“取消”是可操作目标；背景灰色遮罩及其下方设置容器不是当前选择器选项。",
+    "底部选择器是当前页面上的瞬态覆盖层，不应被识别为新的业务页面。",
+    "已选中的“1小时”文字与勾选共同表达一个选项状态，不应拆分为两个重复操作目标。"
+  ]
+}

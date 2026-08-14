@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch22-attempt1:policy",
+  "sourceScopeHash": "sha256:67fba4329ebf66209adfe2746a8def8fd19b3475554cd4099f4d36baf47fb9c2",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 10,
+  "allowedRiskLevels": [
+    "low",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "settings_navigation",
+    "temporary_state_control"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "settings-reminder-content",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0.0,
+        "y": 850.0,
+        "width": 1152.0,
+        "height": 350.0
+      },
+      "purpose": "设置页“间隔时间”入口的实时 Midscene 定位范围。"
+    },
+    {
+      "key": "reminder-interval-sheet",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0.0,
+        "y": 1320.0,
+        "width": 1152.0,
+        "height": 1056.0
+      },
+      "purpose": "间隔时间底部面板选项和取消按钮的实时 Midscene 定位范围。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "temporary_display_state"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change",
+    "persistent_setting_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 1800,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 10,
+    "include": [
+      "messages.special_follow.settings",
+      "messages.special_follow.settings.reminder_interval"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

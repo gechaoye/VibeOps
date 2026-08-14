@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK5FWPE6XWCTVBKTJYP14F7",
+  "sessionRef": "01KYK56EAS2G50YYZCS42HQWRP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK5A76HPDG0D99Z27DX9AJX",
+  "sourceScreenshotRef": "sha256:5985a4dc3ba151f850d6a26732562bee0ff6406759a1c6379b9d9df4149bb59f",
+  "operation": "aiLocate",
+  "prompt": "定位底部导航从左至右第2个、蓝色高亮且标签为“消息”的按钮。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 372,
+      "y": 2273
+    },
+    "rect": {
+      "x": 315,
+      "y": 2209,
+      "width": 116,
+      "height": 130
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:30:01.526Z",
+  "endedAt": "2026-07-28T01:30:09.486Z",
+  "durationMs": 7959.725333,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:a606a6bf2e65f36c6d7a7c1b01f64497abc56efb075b2b32896880d43d4d2e4d"
+}

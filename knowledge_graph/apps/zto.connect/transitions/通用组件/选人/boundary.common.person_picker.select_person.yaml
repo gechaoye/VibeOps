@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBDXQZ7JVSBJ4KP68A
+key: boundary.common.person_picker.select_person
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 通用组件
+- 选人
+sourceRef: 01KYKA3ENBCMSXNBZDYXZ7PJSM
+triggerElementRef: 01KYKA3ENBPYYSWY1RN4GH3SJ6
+action: aiTap
+capability: select_person
+targetRef: 01KYKA3ENBCMSXNBZDYXZ7PJSM
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYJ10PZ3BKC8S023FTZA62SW
+  beforeFrameRef: 01KYJ0ZN10XXR1M9TCC9B23830
+  afterFrameRef: 01KYJ113NK6S3GQY2NZ128FPRQ
+  postcondition: pass
+  semanticAssertions:
+  - sha256:734b3bd0a843bcb155d122195db68dcf76975cb0db330ae981378e5ac65f64e8
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

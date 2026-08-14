@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHHYB5SYQP5RTNY3K9PGFAF",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHHTA0YV3XE1EAH6MVG8CEC",
+  "sourceScreenshotRef": "sha256:0bf108ed91ea8de7bfac41c48f45e5f7415f5d9f84a8170e86d765c22f230237",
+  "operation": "aiLocate",
+  "prompt": "定位底部提示音面板第四行左侧写有“门铃”的选项区域，不包括右侧试听按钮",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 197,
+      "y": 2087
+    },
+    "rect": {
+      "x": 145,
+      "y": 2047,
+      "width": 106,
+      "height": 82
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:29:11.662Z",
+  "endedAt": "2026-07-27T10:29:17.113Z",
+  "durationMs": 5451.109125,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d238be14366e8d4848bef7c6fbf6963ea3980328aa43b2cdd985d051c41580c1"
+}

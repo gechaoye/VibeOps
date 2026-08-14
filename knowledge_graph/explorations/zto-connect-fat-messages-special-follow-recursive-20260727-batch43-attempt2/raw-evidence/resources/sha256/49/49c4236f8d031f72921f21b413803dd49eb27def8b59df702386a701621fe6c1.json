@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ1WHDJ6BWAF0XJTF5WD9QG",
+  "sessionRef": "01KYJ1PJNZVBW0AWB4F06RAN5C",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ1R45YX4H9Q4ZKMZC2CWBE",
+  "sourceScreenshotRef": "sha256:e2e71634d57d62fac7bfaabb74a3ef1b3159e782016c83bb79e8854863e69d22",
+  "operation": "aiLocate",
+  "prompt": "定位会话列表第一行，标题以“上海总部IT部网点老板助”开头，右侧时间23:00且有红色36角标的条目",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 501,
+      "y": 989
+    },
+    "rect": {
+      "x": 215,
+      "y": 962,
+      "width": 573,
+      "height": 56
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:07:49.201Z",
+  "endedAt": "2026-07-27T15:07:55.186Z",
+  "durationMs": 5984.381791,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:2394ac6b39942bd335631c1886989d0d0b89ff9fe8a1dec8a80792e23070a3b4"
+}

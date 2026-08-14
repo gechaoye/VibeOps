@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSVZ18C2P9MW364HKX8AKM",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSS9G8BZJRVG6B9KMH3891",
+  "sourceScreenshotRef": "sha256:01b70f6b7a4bfa2d5dea6fd4452518f34be95ddfd625e60c466e6f9834026824",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "免打扰群通知开关已变为蓝色开启状态，夜间免打扰仍关闭。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:47:43.123Z",
+  "endedAt": "2026-07-27T12:47:47.752Z",
+  "durationMs": 4628.519458,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e86a208697b4c99419656d432dcbc7eab20bfa13fce6a1a9da79f72a15d1b561"
+}

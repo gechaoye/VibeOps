@@ -1,0 +1,194 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch44-attempt1
+title: 打开特别关注未读会话并返回第四十四批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 从橙黄色爱心入口进入特别关注页，打开练良伟相关未读会话，将通用会话页作为边界记录并返回。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.member_with_unread, predicate: conversation_visibility, value: 设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: unread_highlight_condition, value: 已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。, source: user}
+    - {subjectKey: messages.special_follow.conversation.lian_liangwei, predicate: unread_badge, value: "58", source: verified_evidence}
+    - {subjectKey: exploration.authorization, predicate: may_open_special_follow_conversation, value: "true", source: user}
+    - {subjectKey: messages.special_follow.settings.sound, predicate: current_value, value: 门铃, source: verified_evidence}
+
+entry:
+  knownStartPageKey: messages.root.with_special_follow_unread
+  launchComponent: com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity
+  navigationHint: 新预检已确认设备位于消息页，顶部快捷工具栏特别关注爱心呈橙黄色；未读会话尚未打开。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 4
+  include: [messages.root, messages.special_follow, boundary.common.conversation]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: [boundary.common.conversation.internal_controls]
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [navigation_history, persistent_message_read_state]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [feature_entry, page_content, page_navigation]
+  allowedTapRegions:
+    - {key: messages-toolbar-heart, space: current_display_px, rect: {x: 225, y: 545, width: 150, height: 145}, purpose: 消息页顶部快捷工具栏橙黄色特别关注爱心入口。}
+    - {key: special-follow-unread-conversation, space: current_display_px, rect: {x: 0, y: 600, width: 1152, height: 260}, purpose: 特别关注页练良伟相关未读会话整行。}
+
+expectedStates:
+  - key: messages.special_follow.with_unread_lian_liangwei
+    label: 特别关注页练良伟未读会话状态
+    kind: page
+    expectedStablePageKey: messages.special_follow
+    requiredSemanticAssertions: [当前页面标题为特别关注，练良伟相关会话可见，红色未读徽标显示58，左上收起按钮可见。]
+    inspection:
+      queryPrompt: 本批次仅复核并定位灰色分隔带下方唯一的练良伟相关未读会话整行，包含橙色“[特别关注]”摘要与红色未读徽标58；该页其他控件已有独立批次完整盘点，不要重复返回。
+      locateAllInteractiveControls: true
+      includeControlTypes: [list_entry]
+      requireScrollCoverage: false
+    allowedActions: [open_special_follow_conversation]
+    postcondition: 已复核特别关注未读会话入口。
+  - key: messages.root.with_special_follow_unread
+    label: 特别关注未读时的消息页
+    kind: page
+    expectedStablePageKey: messages.root
+    requiredSemanticAssertions: [当前底部消息Tab已选中，会话列表和顶部快捷工具栏可见，用户确认的特别关注爱心入口呈橙黄色。]
+    inspection:
+      queryPrompt: 本批次仅复核并定位横幅下方快捷工具栏从左数第三个橙黄色爱心图标；消息页其他控件已在上一成功批次完整盘点，不要重复返回。
+      locateAllInteractiveControls: true
+      includeControlTypes: [icon_button]
+      requireScrollCoverage: false
+    allowedActions: [open_special_follow]
+    postcondition: 已复核橙黄色特别关注入口。
+  - key: boundary.common.conversation.lian_liangwei
+    label: 练良伟相关通用会话边界
+    kind: page
+    expectedStablePageKey: boundary.common.conversation
+    requiredSemanticAssertions: [当前已进入刚才点击的练良伟相关会话页面，顶部标题、返回控件和消息历史可见。]
+    inspection:
+      queryPrompt: 这是 APP 通用会话页面边界；只记录顶部标题、返回控件、消息历史区域以及底部输入/发送区域的存在和禁用策略，不递归探索聊天内功能，不执行输入或发送。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, input, back, close]
+      requireScrollCoverage: false
+    allowedActions: [navigate_back]
+    postcondition: 已记录通用会话页边界和返回入口。
+  - key: messages.special_follow.after_conversation_visit
+    label: 从通用会话返回特别关注页
+    kind: page
+    expectedStablePageKey: messages.special_follow
+    requiredSemanticAssertions: [当前已返回标题为特别关注的页面；按实际画面记录练良伟相关会话及未读徽标是否仍存在。]
+    inspection:
+      queryPrompt: 完整盘点从通用会话返回后的特别关注页面，记录标题、收起按钮、设置、特别关注成员、会话列表和未读徽标的实际状态；不假定会话已读或仍未读。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, link, list_entry, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已验证通用会话边界返回特别关注页。
+
+actions:
+  - {id: capture-messages-with-orange-heart, kind: capture, state: messages.root.with_special_follow_unread, depth: 0}
+  - id: open-special-follow-from-orange-heart
+    kind: tap
+    semanticAction: open_special_follow
+    fromState: messages.root.with_special_follow_unread
+    toState: messages.special_follow.with_unread_lian_liangwei
+    depth: 1
+    risk: safe
+    sideEffects: [navigation_history]
+    waitMs: 2500
+    target: {key: messages_toolbar_heart, label: 特别关注, scope: feature_entry, locatorPrompt: 定位消息页横幅下方快捷工具栏从左数第三个、呈橙黄色填充或高亮的爱心图标。, allowedRegionRef: messages-toolbar-heart}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [当前已进入标题为特别关注的页面，练良伟相关会话和红色未读徽标58可见。]}
+  - id: open-special-follow-unread-conversation
+    kind: tap
+    semanticAction: open_special_follow_conversation
+    fromState: messages.special_follow.with_unread_lian_liangwei
+    toState: boundary.common.conversation.lian_liangwei
+    depth: 2
+    risk: medium
+    sideEffects: [navigation_history, persistent_message_read_state]
+    waitMs: 4000
+    target:
+      key: special_follow_conversation_lian_liangwei
+      label: 练良伟相关会话
+      scope: page_content
+      locatorPrompt: 定位灰色分隔带下方唯一的会话整行：左侧棕橙纹理头像，标题以“这是练工练工练工练”开头，摘要含橙色“[特别关注]”，最右侧有红色“58”徽标。
+      allowedRegionRef: special-follow-unread-conversation
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [当前已进入刚才点击的练良伟相关会话页面，顶部标题、返回控件和消息历史可见。]}
+  - id: back-from-common-conversation
+    kind: back
+    semanticAction: navigate_back
+    fromState: boundary.common.conversation.lian_liangwei
+    toState: messages.special_follow.after_conversation_visit
+    depth: 1
+    risk: safe
+    sideEffects: [navigation_history]
+    waitMs: 2500
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [当前已返回标题为特别关注的页面。]}
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch44-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

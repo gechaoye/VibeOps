@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHJ2KJAW6X7R2SVCSVRQNNT",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHJ02J33F2PPE1TGTKJWP23",
+  "sourceScreenshotRef": "sha256:cdcaf5933caa4fb039a1828d9e635392e1c9e0d3ed84b219629bd96c569549d7",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"试听门铃\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "页面背景进入灰色遮罩状态",
+      "底部显示声音选择面板",
+      "可见声音选项：默认、波浪、简报、门铃",
+      "“简报”显示蓝色勾选，为当前选中项",
+      "每个声音选项右侧均显示试听控制",
+      "面板底部显示“取消”"
+    ],
+    "supportedFunctionDescription": "激活“试听门铃”后，当前仍显示特别关注提醒页面上的声音选择覆盖层；该覆盖层支持在多个提醒声音之间查看当前选择，并通过各选项右侧的试听控制触发试听。当前可见选中状态仍为“简报”，未显示“门铃”已被选中。",
+    "evidenceBasis": [
+      "顶部可见页面标题“特别关注提醒”",
+      "背景内容整体变暗，表明前景覆盖层处于打开状态",
+      "底部面板逐项显示“默认”“波浪”“简报”“门铃”",
+      "“简报”左侧有蓝色勾选且文字为蓝色",
+      "四个选项右侧均有相同的试听控制",
+      "底部可见“取消”操作"
+    ],
+    "unresolvedMeaning": "静态画面不能确认激活“试听门铃”后是否实际发声、声音内容与播放持续时间，也不能确认试听是否已结束；同时，画面没有显示“门铃”被设为当前提醒音，当前可见选中项仍是“简报”。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:31:20.214Z",
+  "endedAt": "2026-07-27T10:31:36.778Z",
+  "durationMs": 16563.873333,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:9a15dbfd9850cf52ef9bc4d586db86e09b0ff0f0937ab11bf0724af0fd301b75"
+}

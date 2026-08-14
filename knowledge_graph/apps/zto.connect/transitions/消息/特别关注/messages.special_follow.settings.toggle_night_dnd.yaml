@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBFQ917SQ5VVH58WQR
+key: messages.special_follow.settings.toggle_night_dnd
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENB5S9E6EXKAT0H83NP
+action: aiTap
+capability: toggle_night_dnd
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHSP4AVXBMYXNG8JWP6ZS91
+  beforeFrameRef: 01KYHSKA6050XNY9HDBYPWPK1J
+  afterFrameRef: 01KYHSPF75Q4T9XTQKT7GSD7G6
+  postcondition: pass
+  semanticAssertions:
+  - sha256:b81bd059a3be5308ccda056b5a3015fc59782a135ad4ad29eb12dcbf028744f1
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH8GR0T5ZBCKFQQ05M25RHJ",
+  "sessionRef": "01KYH8B2Q3ZC8335GQARTC5XGZ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH8D2JBQ16VK3P31Z11V234",
+  "sourceScreenshotRef": "sha256:0a1d8e92e142628c58cf28e37c8da16b1967e671843bd8fee0db43cba44d492a",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"navigate_back\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我：已开启",
+      "间隔时间：10",
+      "弹窗消息未读，短信/电话提醒我：已关闭",
+      "免打扰群通知：已关闭",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "supportedFunctionDescription": "当前结果页支持管理“特别关注”对象，并配置其未读消息提醒方式，包括单聊弹窗提醒、提醒间隔、短信/电话提醒、免打扰群通知和个性化提示音；页面中的可进入项和开关 visibly 支持继续调整这些设置。题目提供的权威上下文说明 messages.toolbar.heart 的功能名称为“特别关注”。",
+    "evidenceBasis": [
+      "顶部标题直接显示“特别关注提醒”",
+      "“我的特别关注”区域显示“添加”入口",
+      "蓝色开关表明“单聊消息未读，弹窗提醒我”当前开启",
+      "灰色开关表明短信/电话提醒及免打扰群通知当前关闭",
+      "“间隔时间”右侧显示数值“10”及进入箭头",
+      "“特别关注提示音”右侧显示“波浪”及进入箭头",
+      "当前截图未显示任何遮罩、弹窗或抽屉",
+      "“特别关注”为题目提供的权威非视觉上下文"
+    ],
+    "unresolvedMeaning": "无法从单张结果截图确定 navigate_back 激活前所在的具体页面、覆盖层或导航层级，也无法确认“间隔时间 10”的单位；这些信息不应从返回图标或其他图标形状推断。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:44:13.018Z",
+  "endedAt": "2026-07-27T07:44:34.330Z",
+  "durationMs": 21312.00825,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d91954462896f949772a1d57ec6dfc833e398dc9cd320d83bda2896b41753776"
+}

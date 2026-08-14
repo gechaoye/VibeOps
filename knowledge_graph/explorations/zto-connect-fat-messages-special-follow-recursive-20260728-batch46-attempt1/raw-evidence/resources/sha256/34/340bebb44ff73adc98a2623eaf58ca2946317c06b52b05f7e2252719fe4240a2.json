@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK4SAADS0ZEZ6DR9J71P7TM",
+  "sessionRef": "01KYK4MYZH0C3R62M164MET7HS",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK4RJCAAE8NX6FWW6RG7XNK",
+  "sourceScreenshotRef": "sha256:a5b1a5c932f55bcac385d9169a842bd91aaf478a0d395c1bc54306aeb35eac48",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前页面标题为选择人员，左上关闭X、右上搜索、组织架构等通用选人内容和底部确定按钮可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:17:42.255Z",
+  "endedAt": "2026-07-28T01:17:49.773Z",
+  "durationMs": 7517.690667,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:9e3d164425256c86708e2d6747567f507792d7e0fcf5fecf24a7bd3776bbae6e"
+}

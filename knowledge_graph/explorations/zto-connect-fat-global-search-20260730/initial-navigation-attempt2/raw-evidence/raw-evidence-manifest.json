@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "2.0.0",
+  "manifestType": "RawExplorationEvidenceManifest",
+  "sessionRef": "01KYS35BW2W9TND42SF74YE80J",
+  "createdAt": "2026-07-30T08:44:54.657Z",
+  "createdBy": "midscene-android-uikg-evidence-producer",
+  "outputKind": "raw_exploration_evidence",
+  "recordNamespace": "uikg.raw-evidence",
+  "graphMaterialization": "none",
+  "producesGraphEntities": false,
+  "semanticAndActionFramework": "midscene.AndroidAgent",
+  "adbPolicy": "read_only_runtime_context_plus_reversible_stay_awake",
+  "requiredDownstreamProcessing": [
+    "evidence_fusion",
+    "semantic_identity_resolution",
+    "page_and_state_resolution",
+    "graph_materialization"
+  ],
+  "rootHashAlgorithm": "descriptor_lines_v1",
+  "entries": [
+    {
+      "path": "raw-evidence/policies/exploration-policy.json",
+      "mediaType": "application/json",
+      "byteLength": 2574,
+      "sha256": "58ac5c3b384aa8892d961c06c6bdcd06bdda948a0d9cdca77a3e7f9cbe72ec58"
+    },
+    {
+      "path": "raw-evidence/producer-contract.json",
+      "mediaType": "application/json",
+      "byteLength": 699,
+      "sha256": "3412944b5e458797bb6f32dc02112da11df9aad3af76a05c38a185661e02b9b0"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYS35BW2W9TND42SF74YE80J/raw-action-traces.jsonl",
+      "mediaType": "application/x-ndjson",
+      "byteLength": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYS35BW2W9TND42SF74YE80J/raw-exploration-plan.json",
+      "mediaType": "application/json",
+      "byteLength": 7168,
+      "sha256": "92758208798f476b8a1557aecd8f3624acfc5dcd76e346d00dca5b5df09354d3"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYS35BW2W9TND42SF74YE80J/raw-frames.jsonl",
+      "mediaType": "application/x-ndjson",
+      "byteLength": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYS35BW2W9TND42SF74YE80J/raw-observations.jsonl",
+      "mediaType": "application/x-ndjson",
+      "byteLength": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYS35BW2W9TND42SF74YE80J/raw-session.json",
+      "mediaType": "application/json",
+      "byteLength": 3667,
+      "sha256": "f53347faf42fd058665643f5bab59fc07465fe00f876e31638ebadc9e607b6e6"
+    }
+  ],
+  "resources": [],
+  "rootHash": "sha256:04f967a582c1941399c8bb05621384850a4e325517100dc2460f869692631fca",
+  "contentHash": "sha256:e3a1436dfd7084b00fab498b9a9c4ea679dd34797ea8ae4fcd359c47cb543dbc"
+}

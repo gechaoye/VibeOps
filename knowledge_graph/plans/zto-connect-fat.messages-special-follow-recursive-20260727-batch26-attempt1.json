@@ -1,0 +1,442 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch26-attempt1:plan",
+  "sourceScopeHash": "sha256:6d880e8527aba28f5d64d005a9ece6ac4b46b837799bf96daa3bfbbee837be49",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "设置特别关注人员后，入口爱心图标显示为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sms_phone_reminder.interval",
+        "predicate": "visible_options",
+        "value": "短信/电话提醒间隔面板包含10分钟、30分钟和取消，当前30分钟选中。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.sms_phone_reminder.interval.selector_30",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "sms-phone-interval-panel",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 1840.0,
+          "width": 1152.0,
+          "height": 536.0
+        },
+        "purpose": "短信/电话提醒间隔面板两个选项和取消按钮的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "sms-phone-settings-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 1000.0,
+          "width": 1152.0,
+          "height": 650.0
+        },
+        "purpose": "短信/电话提醒分区下第二个间隔时间入口的实时 Midscene 定位范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.sms_phone_reminder.interval.selector_30": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.interval.selector_30",
+      "label": "短信电话间隔面板三十分钟选中",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sms_phone_reminder.interval",
+      "requiredSemanticAssertions": [
+        "底部面板显示10分钟、30分钟和取消，30分钟为蓝色对勾选中。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点底部面板的10分钟、30分钟和取消；背景遮罩及背景页控件只记录为呈现，不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_sms_phone_interval_10"
+      ],
+      "postcondition": "已记录30分钟选中状态。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder.interval_10": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.interval_10",
+      "label": "短信电话间隔十分钟设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "面板已关闭，短信/电话提醒开关下方第二个“间隔时间”显示10分钟。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点当前视口中拥有完整点击区域的全部交互控件，确认短信/电话提醒下方第二个间隔时间为10分钟；屏幕底边裁切控件只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_sms_phone_interval_selector"
+      ],
+      "postcondition": "已验证选择10分钟并更新设置值。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder.interval.selector_10": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.interval.selector_10",
+      "label": "短信电话间隔面板十分钟选中",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sms_phone_reminder.interval",
+      "requiredSemanticAssertions": [
+        "底部面板显示10分钟、30分钟和取消，10分钟为蓝色对勾选中。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点底部面板的10分钟、30分钟和取消；背景页控件不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_sms_phone_interval_30"
+      ],
+      "postcondition": "已记录10分钟选中状态。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder.interval_30": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.interval_30",
+      "label": "短信电话间隔三十分钟设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "面板已关闭，短信/电话提醒开关下方第二个“间隔时间”显示30分钟。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点当前视口中拥有完整点击区域的全部交互控件，确认短信/电话提醒下方第二个间隔时间为30分钟；屏幕底边裁切控件只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_sms_phone_interval_selector_again"
+      ],
+      "postcondition": "已验证选择30分钟并更新设置值。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder.interval.selector_30_again": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.interval.selector_30_again",
+      "label": "再次打开短信电话间隔面板",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sms_phone_reminder.interval",
+      "requiredSemanticAssertions": [
+        "底部面板显示10分钟、30分钟和取消，30分钟为蓝色对勾选中。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点再次打开的底部面板三个控件；背景页控件不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "dismiss_sms_phone_interval_selector"
+      ],
+      "postcondition": "面板已准备验证取消。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder.interval.dismissed": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.interval.dismissed",
+      "label": "取消短信电话间隔面板后的设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "面板已关闭，短信/电话提醒下方第二个“间隔时间”仍显示30分钟。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点当前视口中拥有完整点击区域的全部交互控件，确认取消后第二个间隔时间保持30分钟；屏幕底边裁切控件只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证取消不改变短信电话提醒间隔。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-sms-phone-interval-30-selector",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.sms_phone_reminder.interval.selector_30",
+      "depth": 4
+    },
+    {
+      "id": "select-sms-phone-interval-10",
+      "kind": "tap",
+      "semanticAction": "select_sms_phone_interval_10",
+      "fromState": "messages.special_follow.settings.sms_phone_reminder.interval.selector_30",
+      "toState": "messages.special_follow.settings.sms_phone_reminder.interval_10",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "interval_10_minutes",
+        "label": "10分钟",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位底部间隔时间面板第一行“10分钟”单选项。",
+        "allowedRegionRef": "sms-phone-interval-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，短信/电话提醒下方第二个间隔时间显示10分钟。"
+        ]
+      }
+    },
+    {
+      "id": "reopen-sms-phone-interval-after-10",
+      "kind": "tap",
+      "semanticAction": "open_sms_phone_interval_selector",
+      "fromState": "messages.special_follow.settings.sms_phone_reminder.interval_10",
+      "toState": "messages.special_follow.settings.sms_phone_reminder.interval.selector_10",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "sms_phone_interval",
+        "label": "短信电话提醒下的间隔时间 10分钟",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位蓝色短信/电话提醒开关下方、右侧显示“10分钟”的第二个间隔时间整行，不要定位上方第一个间隔时间。",
+        "allowedRegionRef": "sms-phone-settings-content"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "底部面板重新打开，10分钟为当前选中项。"
+        ]
+      }
+    },
+    {
+      "id": "select-sms-phone-interval-30",
+      "kind": "tap",
+      "semanticAction": "select_sms_phone_interval_30",
+      "fromState": "messages.special_follow.settings.sms_phone_reminder.interval.selector_10",
+      "toState": "messages.special_follow.settings.sms_phone_reminder.interval_30",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "interval_30_minutes",
+        "label": "30分钟",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位底部间隔时间面板第二行“30分钟”单选项。",
+        "allowedRegionRef": "sms-phone-interval-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，短信/电话提醒下方第二个间隔时间显示30分钟。"
+        ]
+      }
+    },
+    {
+      "id": "reopen-sms-phone-interval-for-cancel",
+      "kind": "tap",
+      "semanticAction": "open_sms_phone_interval_selector_again",
+      "fromState": "messages.special_follow.settings.sms_phone_reminder.interval_30",
+      "toState": "messages.special_follow.settings.sms_phone_reminder.interval.selector_30_again",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "sms_phone_interval",
+        "label": "短信电话提醒下的间隔时间 30分钟",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位蓝色短信/电话提醒开关下方、右侧显示“30分钟”的第二个间隔时间整行，不要定位上方第一个间隔时间。",
+        "allowedRegionRef": "sms-phone-settings-content"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "底部面板重新打开，30分钟为当前选中项。"
+        ]
+      }
+    },
+    {
+      "id": "cancel-sms-phone-interval-selector",
+      "kind": "tap",
+      "semanticAction": "dismiss_sms_phone_interval_selector",
+      "fromState": "messages.special_follow.settings.sms_phone_reminder.interval.selector_30_again",
+      "toState": "messages.special_follow.settings.sms_phone_reminder.interval.dismissed",
+      "depth": 4,
+      "risk": "safe",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "cancel_interval_panel",
+        "label": "取消",
+        "scope": "temporary_state_control",
+        "locatorPrompt": "定位底部间隔时间面板最底部中央的“取消”按钮。",
+        "allowedRegionRef": "sms-phone-interval-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，短信/电话提醒下方第二个间隔时间仍为30分钟。"
+        ]
+      }
+    }
+  ]
+}

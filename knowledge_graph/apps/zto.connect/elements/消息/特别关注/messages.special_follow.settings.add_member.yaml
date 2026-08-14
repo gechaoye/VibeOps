@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB4BWWND6KPK6B41C4
+key: messages.special_follow.settings.add_member
+label: 特别关注-特别关注提醒-添加特别关注
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+parentElementRef: null
+controlType: button
+role: navigation
+capabilities:
+- open_person_picker
+summary: 进入APP级通用选人组件以添加特别关注成员。
+relationshipRefs:
+- owner:01KYKA3ENB5WR50THMQMPJ4FJZ
+- transition:01KYKA3ENBX195QB179EVJX1XX
+observations:
+- frameRef: 01KYK4PCJ2QTBP3H0RYPPA61S5
+  observedAt: '2026-07-28T01:16:16.619Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:b3cd8ace40d4b53c2b41c58bf9d924313e211a41985bab14e3eba74bc638d40a
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch46-attempt1/raw-evidence/sessions/01KYK4MYZH0C3R62M164MET7HS
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 198.0
+      top: 397.0
+      width: 127.0
+      height: 126.0
+    center:
+    - 261.5
+    - 460.0
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:010aee002862e26967158df3f1af51e7462f8269baed333aab65ef84d6dc6168
+  state: visible_and_actionable
+  dynamicValue: null
+  actionTraceRef: 01KYK4QWXCWDFGKK1431JYQ5N8
+  redboxRef: assets/element-redboxes/01KYKA3ENB4BWWND6KPK6B41C4-01KYK4PCJ2QTBP3H0RYPPA61S5.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: open_person_picker

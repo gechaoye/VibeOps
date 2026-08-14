@@ -1,0 +1,413 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch40-attempt1:plan",
+  "sourceScopeHash": "sha256:543b8092d79a9beb0e7f143fc86bf155f52194d4dbb87bc831b64799dba35f77",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从消息页进入特别关注设置和全部成员页，实际点击右上关闭X并验证回到特别关注页。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.people.close",
+        "predicate": "target_page",
+        "value": "右上关闭X关闭全部成员页后返回特别关注功能页。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.root.no_special_follow_unread",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "messages-toolbar-heart",
+        "space": "current_display_px",
+        "rect": {
+          "x": 225.0,
+          "y": 545.0,
+          "width": 150.0,
+          "height": 145.0
+        },
+        "purpose": "消息页顶部快捷工具栏特别关注爱心入口。"
+      },
+      {
+        "key": "special-follow-setup-link",
+        "space": "current_display_px",
+        "rect": {
+          "x": 330.0,
+          "y": 1390.0,
+          "width": 480.0,
+          "height": 210.0
+        },
+        "purpose": "特别关注空状态页设置特别关注链接。"
+      },
+      {
+        "key": "my-special-follows-row",
+        "space": "current_display_px",
+        "rect": {
+          "x": 980.0,
+          "y": 245.0,
+          "width": 172.0,
+          "height": 165.0
+        },
+        "purpose": "特别关注提醒页我的特别关注行右侧进入箭头。"
+      },
+      {
+        "key": "all-members-close-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 1010.0,
+          "y": 110.0,
+          "width": 142.0,
+          "height": 170.0
+        },
+        "purpose": "全部成员页顶栏右上关闭X。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.root.no_special_follow_unread": {
+      "key": "messages.root.no_special_follow_unread",
+      "label": "无特别关注未读的消息页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.root",
+      "requiredSemanticAssertions": [
+        "底部消息Tab已选中，会话列表与顶部快捷工具栏可见，特别关注爱心入口为灰色轮廓。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点消息页全部可见交互控件；用户确认顶部快捷工具栏的爱心图标为特别关注入口，如实记录其灰色轮廓状态和页面普通未读消息。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "tab",
+          "menu",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_special_follow"
+      ],
+      "postcondition": "已记录当前无特别关注未读状态。"
+    },
+    "messages.special_follow.empty": {
+      "key": "messages.special_follow.empty",
+      "label": "特别关注空状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "页面标题为特别关注，空状态说明和设置特别关注链接可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点特别关注空状态页的标题、左上收起按钮、空状态说明、设置特别关注链接和全部可见交互控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "list_entry",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_special_follow_settings"
+      ],
+      "postcondition": "已记录特别关注空状态。"
+    },
+    "messages.special_follow.settings.top": {
+      "key": "messages.special_follow.settings.top",
+      "label": "特别关注提醒设置页顶部",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为特别关注提醒，我的特别关注行、添加按钮和提醒设置可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点特别关注提醒设置页当前视口，准确定位我的特别关注行最右侧进入箭头；不激活其他设置。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_special_following_list"
+      ],
+      "postcondition": "已记录设置页顶部状态。"
+    },
+    "messages.special_follow.people.empty": {
+      "key": "messages.special_follow.people.empty",
+      "label": "全部成员空白状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people",
+      "requiredSemanticAssertions": [
+        "页面标题为全部成员，左侧返回箭头和右侧关闭X均可见，标题栏下方主体为空白。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点全部成员页面顶栏左侧返回、右侧关闭X和主体；主体空白时如实记录，不猜测业务原因。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "close_all_members"
+      ],
+      "postcondition": "已记录全部成员空白状态。"
+    },
+    "messages.special_follow.empty_after_people_close": {
+      "key": "messages.special_follow.empty_after_people_close",
+      "label": "关闭全部成员后返回特别关注空状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "全部成员页已关闭，当前页面标题为特别关注，空状态说明和设置特别关注链接可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点特别关注空状态页的标题、左上收起按钮、空状态说明、设置特别关注链接和全部可见交互控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "list_entry",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证右上关闭X返回特别关注功能页。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-messages-before-all-members-flow",
+      "kind": "capture",
+      "state": "messages.root.no_special_follow_unread",
+      "depth": 0
+    },
+    {
+      "id": "open-special-follow",
+      "kind": "tap",
+      "semanticAction": "open_special_follow",
+      "fromState": "messages.root.no_special_follow_unread",
+      "toState": "messages.special_follow.empty",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "messages_toolbar_heart",
+        "label": "特别关注",
+        "scope": "feature_entry",
+        "locatorPrompt": "定位消息页会话列表上方快捷工具栏从左数第三个灰色爱心轮廓图标，用户确认其功能名为特别关注。",
+        "allowedRegionRef": "messages-toolbar-heart"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面标题为特别关注，空状态说明和设置特别关注链接可见。"
+        ]
+      }
+    },
+    {
+      "id": "open-special-follow-settings",
+      "kind": "tap",
+      "semanticAction": "open_special_follow_settings",
+      "fromState": "messages.special_follow.empty",
+      "toState": "messages.special_follow.settings.top",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "special_follow_setup",
+        "label": "设置特别关注",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位特别关注空状态页中央偏下蓝色文字链接“设置特别关注 >”。",
+        "allowedRegionRef": "special-follow-setup-link"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面标题为特别关注提醒，我的特别关注和添加按钮可见。"
+        ]
+      }
+    },
+    {
+      "id": "open-all-members",
+      "kind": "tap",
+      "semanticAction": "open_special_following_list",
+      "fromState": "messages.special_follow.settings.top",
+      "toState": "messages.special_follow.people.empty",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "special_follows_chevron",
+        "label": "我的特别关注右侧进入箭头",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位特别关注提醒页面“我的特别关注”行最右侧、紧贴屏幕右边的黑色向右尖括号；只定位箭头，不定位添加按钮。",
+        "allowedRegionRef": "my-special-follows-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面标题为全部成员，左侧返回箭头和右侧关闭X可见，主体为空白。"
+        ]
+      }
+    },
+    {
+      "id": "close-all-members",
+      "kind": "tap",
+      "semanticAction": "close_all_members",
+      "fromState": "messages.special_follow.people.empty",
+      "toState": "messages.special_follow.empty_after_people_close",
+      "depth": 3,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history",
+        "temporary_display_state"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "all_members_close",
+        "label": "关闭",
+        "scope": "page_navigation",
+        "locatorPrompt": "定位标题为全部成员的页面顶栏最右侧黑色X形关闭图标；不要定位左侧返回箭头。",
+        "allowedRegionRef": "all-members-close-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "全部成员页已关闭，当前页面标题为特别关注，空状态说明和设置特别关注链接可见。"
+        ]
+      }
+    }
+  ]
+}

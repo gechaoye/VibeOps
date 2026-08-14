@@ -1,0 +1,63 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBM58Q41K771RESDSY
+key: messages.special_follow.people.remove
+label: 特别关注-全部成员-特别关注成员-移除成员
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENBSMTCBWJJYCW34TXV
+parentElementRef: 01KYKA3ENBSMTCBWJJYCW34TXV
+controlType: button
+role: action
+capabilities:
+- open_remove_confirmation
+summary: 打开移除特别关注成员确认弹窗。
+relationshipRefs:
+- owner:01KYKA3ENBSMTCBWJJYCW34TXV
+- parent:01KYKA3ENBSMTCBWJJYCW34TXV
+- transition:01KYKA3ENBQS8R5478TZC0FGDA
+observations:
+- frameRef: sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a
+  observedAt: '2026-07-31T07:19:45.942Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 968.0
+      top: 310.0
+      width: 137.0
+      height: 87.0
+    center:
+    - 1036.0
+    - 353.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:b953536ce7ae7e384a6c3c75ac0f8489c591488220e33c8957de85040c81dd08
+  state: visible
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBM58Q41K771RESDSY-sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a.png
+coverage: executed_verified_dual_model_live
+status: dual_model_verified_live
+risk: low
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: true
+  function: opens_remove_confirmation

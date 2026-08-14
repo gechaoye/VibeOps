@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYS34D5MNY4CBZSQRGZQ9QZ4",
+  "sessionRef": "01KYS2MZ2HQBPK0G7RGMQVE3ZN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYS2NTV30MFQB2TXR6MXS607",
+  "sourceScreenshotRef": "sha256:c157e07ccf15083ea85b5c2c3b40ded7b86a3e4e755d9d27e12b33f4e22456ef",
+  "operation": "aiLocate",
+  "prompt": "定位视频区域中间、红蓝光女性人像封面且左下显示81的视频卡片。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 576,
+      "y": 1835
+    },
+    "rect": {
+      "x": 418,
+      "y": 1578,
+      "width": 317,
+      "height": 516
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "scout": {
+      "name": "qwen3-vl-plus",
+      "family": "qwen3-vl",
+      "slot": "scout"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-30T08:43:37.920Z",
+  "endedAt": "2026-07-30T08:44:22.580Z",
+  "durationMs": 44660.369084,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:40e9c4201a76946707ac7e8e5e349e28453f1d182ee7d4d852f7f470f6b83ca3"
+}

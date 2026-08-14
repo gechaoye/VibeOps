@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHME53F35EV0RXHV2M6TPHH",
+  "sessionRef": "01KYHM8XHM8AXSN20JBZDQ2VMB",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHMASQBSW84XCEX4SHZQQZ4",
+  "sourceScreenshotRef": "sha256:07c93198c822a4421355cff216152422c699e80e9a111c659fab3f0c6506fbe1",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "面板已关闭，短信/电话提醒下方第二个间隔时间显示10分钟。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:12:44.969Z",
+  "endedAt": "2026-07-27T11:12:52.335Z",
+  "durationMs": 7366.047583,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:54072cee9793f79d87c7b13445cb0cb6d192296cde245cf801fd66e66931b988"
+}

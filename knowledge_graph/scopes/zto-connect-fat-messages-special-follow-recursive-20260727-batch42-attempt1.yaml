@@ -1,0 +1,141 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch42-attempt1
+title: 添加成员后返回特别关注列表第四十二批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 添加练良伟后从设置页返回特别关注列表，记录列表是否展示该成员的未读会话。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.member_with_unread, predicate: conversation_visibility, value: 设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: unread_highlight_condition, value: 已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。, source: user}
+    - {subjectKey: messages.special_follow.settings.sound, predicate: current_value, value: 门铃, source: verified_evidence}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings.with_member_lian_liangwei
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 新预检已确认设备位于特别关注提醒设置页，我的特别关注显示1人和练良伟，左上返回按钮完整可见。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 2
+  include: [messages.special_follow.settings, messages.special_follow]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low]
+  allowedSideEffects: [navigation_history]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [page_navigation]
+  allowedTapRegions:
+    - {key: settings-back-region, space: current_display_px, rect: {x: 0, y: 100, width: 170, height: 180}, purpose: 特别关注提醒设置页左上返回按钮。}
+
+expectedStates:
+  - key: messages.special_follow.settings.with_member_lian_liangwei
+    label: 添加练良伟后的特别关注提醒设置页
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [当前页面标题为特别关注提醒，我的特别关注显示1人和练良伟，添加与移除入口可见，左上返回按钮可见。]
+    inspection:
+      queryPrompt: 本批次只复核页面顶栏与“我的特别关注”成员区域：返回、1人入口、练良伟、添加和移除。该设置页其余控件已有独立批次完整证据，不要在本次返回灰色说明区及其下方的提醒设置控件。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, back]
+      requireScrollCoverage: false
+    allowedActions: [back_to_special_follow]
+    postcondition: 已记录设置页返回前状态。
+  - key: messages.special_follow.after_member_added
+    label: 添加成员后返回特别关注页
+    kind: page
+    expectedStablePageKey: messages.special_follow
+    requiredSemanticAssertions: [当前页面标题为特别关注，左上返回按钮可见；如有练良伟的未读会话则如实记录会话、未读徽标和全部可见控件，如无则如实记录空状态。]
+    inspection:
+      queryPrompt: 完整盘点添加成员后返回的特别关注页面，包括标题、左上返回按钮、设置入口、会话列表、练良伟会话、未读徽标、空状态及其他全部可见交互控件；不要根据用户事实推断，按屏幕实际状态返回。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, link, list_entry, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已验证设置页返回特别关注页并记录实际列表状态。
+
+actions:
+  - {id: capture-settings-with-member-before-back, kind: capture, state: messages.special_follow.settings.with_member_lian_liangwei, depth: 3}
+  - id: tap-settings-back
+    kind: tap
+    semanticAction: back_to_special_follow
+    fromState: messages.special_follow.settings.with_member_lian_liangwei
+    toState: messages.special_follow.after_member_added
+    depth: 2
+    risk: safe
+    sideEffects: [navigation_history]
+    waitMs: 2500
+    target: {key: settings_back, label: 返回, scope: page_navigation, locatorPrompt: 定位标题为“特别关注提醒”的页面顶栏最左侧黑色向左箭头返回按钮。, allowedRegionRef: settings-back-region}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [当前页面已返回标题为特别关注的功能页，左上返回按钮可见。]}
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch42-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

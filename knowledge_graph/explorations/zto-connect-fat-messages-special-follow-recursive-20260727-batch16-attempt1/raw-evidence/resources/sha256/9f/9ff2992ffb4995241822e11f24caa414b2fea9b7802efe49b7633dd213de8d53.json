@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHEVV9735AJKH412CSXTRYC",
+  "sessionRef": "01KYHESC3YYSAZZFY17D287R2P",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHESQSCPZE34SN6DJ6Z0TTE",
+  "sourceScreenshotRef": "sha256:665ea22ca5614241e5d9e106f747db25b289e73b996c07d18ef0121a5b190fe5",
+  "operation": "aiLocate",
+  "prompt": "定位首个蓝色开关下方、帮助气泡遮挡区域内仍露出“间隔时间”部分文字的整行设置入口",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 576,
+      "y": 1040
+    },
+    "rect": {
+      "x": 49,
+      "y": 970,
+      "width": 1055,
+      "height": 142
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:35:21.809Z",
+  "endedAt": "2026-07-27T09:35:29.574Z",
+  "durationMs": 7765.441084,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d6eb9f713543b98a85197da6d843f2c6baf892103e813a0b18e35f4f6a62998c"
+}

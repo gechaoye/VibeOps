@@ -1,0 +1,63 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBS65Y9X32DWXW2MZ6
+key: messages.root.special_follow_entry
+label: 消息-特别关注
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+owner:
+  kind: page
+  ref: 01KY6Z7BD8D0X91GX7D73CBFMH
+parentElementRef: null
+controlType: icon_button
+role: navigation
+capabilities:
+- open_special_follow
+summary: 打开特别关注功能；特别关注人员存在未读消息时，该爱心入口呈橙黄色高亮。
+relationshipRefs:
+- owner:01KY6Z7BD8D0X91GX7D73CBFMH
+- transition:01KYKA3ENB056FQR1JXRV47WZ5
+observations:
+- frameRef: 01KYK66H0196RNQ2KCZ37DDJY5
+  observedAt: '2026-07-28T01:42:34.112Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:503f6642dd3a7ec0861ea629fe386871eb88029d2dcfad745e914d95d0e7ef88
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2/raw-evidence/sessions/01KYK660P4DEBSA3NGF1SET476
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 264.0
+      top: 584.0
+      width: 55.0
+      height: 47.0
+    center:
+    - 291.5
+    - 607.5
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:0796917a34316b1caace824295159b0e87754236152d693f6087d51e0e761dbc
+  state: visible_and_actionable
+  dynamicValue: null
+  actionTraceRef: 01KYK679X7CSQ4NHGSKBE1VQEP
+  redboxRef: assets/element-redboxes/01KYKA3ENBS65Y9X32DWXW2MZ6-01KYK66H0196RNQ2KCZ37DDJY5.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: open_special_follow

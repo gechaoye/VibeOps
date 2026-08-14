@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK4SQT4BQMZ5K2WNDSZC93Z",
+  "sessionRef": "01KYK4MYZH0C3R62M164MET7HS",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK4RJCAAE8NX6FWW6RG7XNK",
+  "sourceScreenshotRef": "sha256:a5b1a5c932f55bcac385d9169a842bd91aaf478a0d395c1bc54306aeb35eac48",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"添加\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.add\",\"predicate\":\"target_component\",\"value\":\"点击添加后进入 APP 级通用选择人员组件；只记录入口和往返关系，不递归探索组件内部。\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "选择人员",
+    "visibleResultContent": [
+      "中通集团",
+      "组织架构",
+      "质量管理部",
+      "条线",
+      "个人标签",
+      "我的群组",
+      "最近联系人",
+      "练良伟",
+      "贾宗婷",
+      "葛超烨",
+      "郭虹利",
+      "已选择:",
+      "确定(0/9)"
+    ],
+    "supportedFunctionDescription": "点击“添加”后进入 APP 级通用选择人员组件；当前页面支持关闭返回、搜索人员、从组织架构、质量管理部、条线、个人标签、我的群组及最近联系人等可见入口选择人员，并通过底部“确定”提交选择。当前已选人数为 0，可见上限提示为 9。该组件仅记录入口和往返关系，不递归探索其内部。",
+    "evidenceBasis": [
+      "截图顶部标题明确显示“选择人员”。",
+      "截图左上角显示关闭控件，右上角显示搜索控件。",
+      "页面可见“组织架构”“质量管理部”“条线”“个人标签”“我的群组”等入口。",
+      "“最近联系人”区域可见练良伟、贾宗婷、葛超烨、郭虹利及对应选择控件。",
+      "底部明确显示“已选择:”和灰色“确定(0/9)”按钮。",
+      "权威上下文说明：messages.special_follow.add 的目标组件为点击添加后进入 APP 级通用选择人员组件，并仅记录入口和往返关系。"
+    ],
+    "unresolvedMeaning": "截图未直接显示返回后的特别关注列表状态，也未展示选择并确认人员后的结果；因此本屏无法验证确认后的人员写入、会话展示变化或爱心图标高亮变化。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:17:49.949Z",
+  "endedAt": "2026-07-28T01:18:03.587Z",
+  "durationMs": 13638.131084,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:18ff6bb83260f516ca046adaf008b5a8b3d5ec1fdabf0e970985f4366132d0ca"
+}

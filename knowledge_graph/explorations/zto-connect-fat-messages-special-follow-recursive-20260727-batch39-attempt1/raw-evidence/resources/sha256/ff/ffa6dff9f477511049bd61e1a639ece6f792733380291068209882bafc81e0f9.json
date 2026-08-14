@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHYW6YF6YXE3H6KZPN974DQ",
+  "sessionRef": "01KYHYQT6XJQ1Y496SNZ495WC0",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHYTZ5SWEW83BMBZ24VV0AY",
+  "sourceScreenshotRef": "sha256:87cf7c180d1fd9ff84aed73dcda89d5f385d4cfb44f4dcc8e7ba56f4bcd1c76d",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"返回\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"current_value\",\"value\":\"门铃\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注",
+    "visibleResultContent": [
+      "空状态插图",
+      "包含特别关注人消息的会话会展示在这里",
+      "设置特别关注 >"
+    ],
+    "supportedFunctionDescription": "紧接此前激活“返回”后，界面显示“特别关注”列表页的空状态。设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表；满足该条件并展示会话时，特别关注入口爱心图标变为橙黄色。页面提供“设置特别关注”入口；特别关注设置中的声音当前为“门铃”。",
+    "evidenceBasis": [
+      "当前屏幕顶部可见标题“特别关注”。",
+      "当前屏幕中央可见空状态插图和文案“包含特别关注人消息的会话会展示在这里”。",
+      "当前屏幕可见蓝色操作入口“设置特别关注 >”。",
+      "返回后的页面状态依据题目所述紧接此前激活了标注为“返回”的控件。",
+      "会话显示条件、入口爱心图标变色条件及设置声音“门铃”均来自题目提供的权威非视觉上下文，并非从当前画面像素推断。"
+    ],
+    "unresolvedMeaning": "当前画面未显示具体特别关注会话，也未展示爱心入口或特别关注设置页，因此无法仅凭当前画面确认具体人员、未读数量、爱心入口当前颜色或“门铃”设置项的视觉呈现。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:15:07.917Z",
+  "endedAt": "2026-07-27T14:15:18.735Z",
+  "durationMs": 10818.081625,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:aaa17e031ba197d6acfbaf20cb12045a8073dee5e27dfce69ebdee4bede80b9c"
+}

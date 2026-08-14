@@ -1,0 +1,563 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch34-attempt2:plan",
+  "sourceScopeHash": "sha256:429e6f4b77cbe3d05e9e3c6668cd65d61ee89b4ec659dc4896088ab8657ed298",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "实际选择单聊弹窗提醒的全部尚未验证间隔值，并记录每次选择后的设置页状态。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.popup_interval",
+        "predicate": "visible_options",
+        "value": "单聊弹窗提醒间隔面板包含10分钟、30分钟、1小时、4小时和取消。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.popup_interval_30",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "popup-interval-row",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 900,
+          "width": 1152,
+          "height": 300
+        },
+        "purpose": "单聊弹窗提醒开关正下方第一个“间隔时间”整行。"
+      },
+      {
+        "key": "popup-interval-panel",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 1280,
+          "width": 1152,
+          "height": 1096
+        },
+        "purpose": "间隔时间底部面板四个时间选项和取消按钮。"
+      },
+      {
+        "key": "settings-scroll-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 250,
+          "width": 1152,
+          "height": 2000
+        },
+        "purpose": "特别关注提醒设置页纵向滚动区域。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.popup_interval_30": {
+      "key": "messages.special_follow.settings.popup_interval_30",
+      "label": "单聊弹窗间隔三十分钟",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "单聊消息未读弹窗提醒开关为蓝色开启状态，其正下方第一个间隔时间显示30分钟；短信电话提醒下方第二个间隔仍显示30分钟。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确区分单聊弹窗提醒下方第一个间隔时间与短信电话提醒下方第二个间隔时间。屏幕最底部“特别关注提示音”行的点击区域被下边界裁切，只放入 visiblePrimaryContent，禁止把它放入 visibleControls；其余完整可见控件全部返回。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_popup_interval_selector_30"
+      ],
+      "postcondition": "已记录单聊弹窗间隔30分钟状态。"
+    },
+    "messages.special_follow.settings.popup_interval.selector_30": {
+      "key": "messages.special_follow.settings.popup_interval.selector_30",
+      "label": "单聊弹窗间隔面板三十分钟状态",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.popup_interval",
+      "requiredSemanticAssertions": [
+        "底部面板完整显示10分钟、30分钟、1小时、4小时和取消。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点底部间隔面板的10分钟、30分钟、1小时、4小时和取消；背景页控件只记录为被遮罩内容，不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_popup_interval_10"
+      ],
+      "postcondition": "已记录面板全部选项。"
+    },
+    "messages.special_follow.settings.popup_interval_10": {
+      "key": "messages.special_follow.settings.popup_interval_10",
+      "label": "单聊弹窗间隔十分钟",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "底部面板已关闭，单聊弹窗提醒正下方第一个间隔时间显示10分钟；短信电话提醒下方第二个间隔仍显示30分钟。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确区分单聊弹窗提醒下方第一个间隔时间与短信电话提醒下方第二个间隔时间。屏幕最底部“特别关注提示音”行的点击区域被下边界裁切，只放入 visiblePrimaryContent，禁止把它放入 visibleControls；其余完整可见控件全部返回。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_popup_interval_selector_10"
+      ],
+      "postcondition": "已验证选择10分钟。"
+    },
+    "messages.special_follow.settings.popup_interval.selector_10": {
+      "key": "messages.special_follow.settings.popup_interval.selector_10",
+      "label": "单聊弹窗间隔面板十分钟状态",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.popup_interval",
+      "requiredSemanticAssertions": [
+        "底部面板完整显示10分钟、30分钟、1小时、4小时和取消。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点底部间隔面板的10分钟、30分钟、1小时、4小时和取消；背景页控件只记录为被遮罩内容，不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_popup_interval_1_hour"
+      ],
+      "postcondition": "已重新打开间隔面板。"
+    },
+    "messages.special_follow.settings.popup_interval_1_hour": {
+      "key": "messages.special_follow.settings.popup_interval_1_hour",
+      "label": "单聊弹窗间隔一小时",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "底部面板已关闭，单聊弹窗提醒正下方第一个间隔时间显示1小时；短信电话提醒下方第二个间隔仍显示30分钟。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确区分单聊弹窗提醒下方第一个间隔时间与短信电话提醒下方第二个间隔时间。屏幕最底部“特别关注提示音”行的点击区域被下边界裁切，只放入 visiblePrimaryContent，禁止把它放入 visibleControls；其余完整可见控件全部返回。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_popup_interval_selector_1_hour"
+      ],
+      "postcondition": "已验证选择1小时。"
+    },
+    "messages.special_follow.settings.popup_interval.selector_1_hour": {
+      "key": "messages.special_follow.settings.popup_interval.selector_1_hour",
+      "label": "单聊弹窗间隔面板一小时状态",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.popup_interval",
+      "requiredSemanticAssertions": [
+        "底部面板完整显示10分钟、30分钟、1小时、4小时和取消。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点底部间隔面板的10分钟、30分钟、1小时、4小时和取消；背景页控件只记录为被遮罩内容，不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_popup_interval_4_hours"
+      ],
+      "postcondition": "已重新打开间隔面板。"
+    },
+    "messages.special_follow.settings.popup_interval_4_hours": {
+      "key": "messages.special_follow.settings.popup_interval_4_hours",
+      "label": "单聊弹窗间隔四小时",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "底部面板已关闭，单聊弹窗提醒正下方第一个间隔时间显示4小时；短信电话提醒下方第二个间隔仍显示30分钟。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确区分单聊弹窗提醒下方第一个间隔时间与短信电话提醒下方第二个间隔时间。屏幕最底部“特别关注提示音”行的点击区域被下边界裁切，只放入 visiblePrimaryContent，禁止把它放入 visibleControls；其余完整可见控件全部返回。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "scroll_settings_for_sound"
+      ],
+      "postcondition": "已验证选择4小时。"
+    },
+    "messages.special_follow.settings.popup_interval_4_hours.sound_visible": {
+      "key": "messages.special_follow.settings.popup_interval_4_hours.sound_visible",
+      "label": "四小时间隔且提示音行完整可见",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面仍为特别关注提醒，单聊弹窗提醒的间隔为4小时，特别关注提示音整行及其当前值简报已完整进入视口。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点滚动后的当前视口全部交互控件；特别关注提示音整行现在完整可见，必须作为可定位的 list_entry 返回；顶部或底部被裁切的其他行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已将提示音设置入口完整带入视口，为下一批探索建立稳定起点。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-popup-interval-30",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.popup_interval_30",
+      "depth": 4
+    },
+    {
+      "id": "open-popup-interval-selector-30",
+      "kind": "tap",
+      "semanticAction": "open_popup_interval_selector_30",
+      "fromState": "messages.special_follow.settings.popup_interval_30",
+      "toState": "messages.special_follow.settings.popup_interval.selector_30",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "popup_interval",
+        "label": "单聊弹窗提醒下方间隔时间30分钟",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位蓝色“单聊消息未读，弹窗提醒我”开关正下方、右侧显示30分钟的第一个间隔时间整行；不要定位短信电话提醒下方的第二个间隔时间。",
+        "allowedRegionRef": "popup-interval-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "底部面板已打开，显示10分钟、30分钟、1小时、4小时和取消。"
+        ]
+      }
+    },
+    {
+      "id": "select-popup-interval-10",
+      "kind": "tap",
+      "semanticAction": "select_popup_interval_10",
+      "fromState": "messages.special_follow.settings.popup_interval.selector_30",
+      "toState": "messages.special_follow.settings.popup_interval_10",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "popup_interval_10",
+        "label": "10分钟",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位底部间隔面板第一行“10分钟”选项。",
+        "allowedRegionRef": "popup-interval-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，上方单聊弹窗提醒下方第一个间隔时间显示10分钟，第二个短信电话提醒间隔仍为30分钟。"
+        ]
+      }
+    },
+    {
+      "id": "open-popup-interval-selector-10",
+      "kind": "tap",
+      "semanticAction": "open_popup_interval_selector_10",
+      "fromState": "messages.special_follow.settings.popup_interval_10",
+      "toState": "messages.special_follow.settings.popup_interval.selector_10",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "popup_interval",
+        "label": "单聊弹窗提醒下方间隔时间10分钟",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位蓝色单聊弹窗提醒开关正下方、右侧显示10分钟的第一个间隔时间整行。",
+        "allowedRegionRef": "popup-interval-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "底部间隔面板已重新打开。"
+        ]
+      }
+    },
+    {
+      "id": "select-popup-interval-1-hour",
+      "kind": "tap",
+      "semanticAction": "select_popup_interval_1_hour",
+      "fromState": "messages.special_follow.settings.popup_interval.selector_10",
+      "toState": "messages.special_follow.settings.popup_interval_1_hour",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "popup_interval_1_hour",
+        "label": "1小时",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位底部间隔面板第三行“1小时”选项。",
+        "allowedRegionRef": "popup-interval-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，上方单聊弹窗提醒下方第一个间隔时间显示1小时，第二个短信电话提醒间隔仍为30分钟。"
+        ]
+      }
+    },
+    {
+      "id": "open-popup-interval-selector-1-hour",
+      "kind": "tap",
+      "semanticAction": "open_popup_interval_selector_1_hour",
+      "fromState": "messages.special_follow.settings.popup_interval_1_hour",
+      "toState": "messages.special_follow.settings.popup_interval.selector_1_hour",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "popup_interval",
+        "label": "单聊弹窗提醒下方间隔时间1小时",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位蓝色单聊弹窗提醒开关正下方、右侧显示1小时的第一个间隔时间整行。",
+        "allowedRegionRef": "popup-interval-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "底部间隔面板已重新打开。"
+        ]
+      }
+    },
+    {
+      "id": "select-popup-interval-4-hours",
+      "kind": "tap",
+      "semanticAction": "select_popup_interval_4_hours",
+      "fromState": "messages.special_follow.settings.popup_interval.selector_1_hour",
+      "toState": "messages.special_follow.settings.popup_interval_4_hours",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "popup_interval_4_hours",
+        "label": "4小时",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位底部间隔面板第四行“4小时”选项。",
+        "allowedRegionRef": "popup-interval-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，上方单聊弹窗提醒下方第一个间隔时间显示4小时，第二个短信电话提醒间隔仍为30分钟。"
+        ]
+      }
+    },
+    {
+      "id": "scroll-settings-for-sound",
+      "kind": "scroll",
+      "semanticAction": "scroll_settings_for_sound",
+      "fromState": "messages.special_follow.settings.popup_interval_4_hours",
+      "toState": "messages.special_follow.settings.popup_interval_4_hours.sound_visible",
+      "depth": 4,
+      "risk": "safe",
+      "sideEffects": [
+        "viewport_scroll"
+      ],
+      "direction": "up",
+      "actionPrompt": "在当前“特别关注提醒”设置页纵向向上滑动较短距离，让底部“特别关注提示音”整行完整进入屏幕；不要点击或切换任何设置控件。",
+      "waitMs": 1800,
+      "target": {
+        "key": "special_follow_settings_scroll",
+        "label": "特别关注提醒设置页",
+        "scope": "scroll_region",
+        "locatorPrompt": "定位当前“特别关注提醒”页面白色设置内容的纵向可滚动区域，避开所有开关、设置行和顶部返回按钮。",
+        "allowedRegionRef": "settings-scroll-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "页面仍为特别关注提醒，特别关注提示音整行及当前值简报已完整进入视口。"
+        ]
+      }
+    }
+  ]
+}

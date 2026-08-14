@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ4SG3CC003NDXRFGBMXGKP",
+  "sessionRef": "01KYJ4QEBBQZP44ANFGP77NE7J",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ4RSHBHNHX2XJZASNB6YRC",
+  "sourceScreenshotRef": "sha256:bc7955fdf29ea9d6bfda44e4cd078aa11249c13687f4654107c99979d229d3b7",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前已进入点击成员头像后到达的聊天页面，顶部返回控件、聊天标题、橙黄色爱心图标和消息历史区域可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:58:35.777Z",
+  "endedAt": "2026-07-27T15:58:41.260Z",
+  "durationMs": 5482.7275,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:1f9df85d46bd2f13d4d00172f852cf507252373e06d118d7a8c6f3004010230e"
+}

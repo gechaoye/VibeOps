@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHVAYFRVAN64SDTGQB3YBFE",
+  "sessionRef": "01KYHV34EMMTPRNEMTFNFVD4P2",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHV8644EZDJAQYW6F6773CK",
+  "sourceScreenshotRef": "sha256:70a0878c685bd857abcf5ebda21292e8fd3e694ec2abdfc1ba7ff5a83a008012",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"10分钟\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.popup_interval\",\"predicate\":\"visible_options\",\"value\":\"单聊弹窗提醒间隔面板包含10分钟、30分钟、1小时、4小时和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "当前为设置页面，无可见弹窗或遮罩层",
+      "单聊消息未读，弹窗提醒我：已开启",
+      "对应间隔时间：10分钟",
+      "弹窗消息未读，短信/电话提醒我：已开启",
+      "对应间隔时间：30分钟",
+      "提醒方式：电话",
+      "夜间免打扰：已关闭",
+      "免打扰群通知：已关闭",
+      "特别关注提示音：简报"
+    ],
+    "supportedFunctionDescription": "立即激活“10分钟”后，单聊未读弹窗提醒的间隔被设为10分钟，并返回“特别关注提醒”设置页；该间隔选择面板支持10分钟、30分钟、1小时、4小时和取消。页面还支持设置特别关注成员、开启或关闭单聊未读弹窗提醒、短信/电话提醒、夜间免打扰和免打扰群通知，以及配置提醒方式与提示音。根据给定任务上下文，特别关注人员有未读消息时，其会话会显示在特别关注列表；当该会话展示时，入口爱心图标变为橙黄色。",
+    "evidenceBasis": [
+      "像素可见：页面标题为“特别关注提醒”。",
+      "像素可见：“单聊消息未读，弹窗提醒我”右侧开关为蓝色开启状态。",
+      "像素可见：该设置下方“间隔时间”的当前值为“10分钟”。",
+      "像素可见：当前页面未显示选项面板、弹窗或遮罩层。",
+      "给定的已验证证据：间隔面板包含10分钟、30分钟、1小时、4小时和取消。",
+      "给定的权威非视觉上下文：特别关注会话显示条件及入口爱心图标变为橙黄色的条件。"
+    ],
+    "unresolvedMeaning": "截图仅能确认激活后的当前值为10分钟且选择面板已不再可见；无法仅凭当前静态画面确定提醒计时从何时开始、重复提醒的精确触发规则、设置是否同步到其他设备，或提醒在具体系统权限受限时的表现。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T13:13:10.540Z",
+  "endedAt": "2026-07-27T13:13:27.288Z",
+  "durationMs": 16749.367167,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:4c374b7df9b646310710ca3f7c177f0258a7469e6ab25032d4f1bb5b41915e84"
+}

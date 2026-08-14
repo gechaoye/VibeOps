@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHK88708JC80YX9DSZXXY92",
+  "sessionRef": "01KYHK1MRD915BBV536E9KP4AF",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHK4T4YV0F5RRVYRV38SSBD",
+  "sourceScreenshotRef": "sha256:7ceae8350b35a72a8eeb203b702ab5056fb207dbd0368b7a5212efd9c21f659e",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "准确判断短信/电话提醒开关是否开启，或是否出现新的 APP 内提示、弹层或页面，并记录全部新增控件。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:52:03.313Z",
+  "endedAt": "2026-07-27T10:52:10.336Z",
+  "durationMs": 7022.546792,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:641c3dcb5edb93cf0814781de8ea564e3a6775635c40519db905bded8a73279a"
+}

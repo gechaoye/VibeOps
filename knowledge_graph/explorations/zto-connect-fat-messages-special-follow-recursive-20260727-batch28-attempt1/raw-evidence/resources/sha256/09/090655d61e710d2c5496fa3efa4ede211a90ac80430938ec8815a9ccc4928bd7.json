@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHNT8EF791ZBFRX0MWKJKNW",
+  "sessionRef": "01KYHNK2NQDTEG375N9GATH53W",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHNRVSTYEQS58VJXTAHH7EX",
+  "sourceScreenshotRef": "sha256:39fd42ad87ae9ad63c35eb808f25772e9e1a674f44b0b4cf6037a0a9093d97af",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "底部面板显示短信、电话和取消，电话为蓝色对勾选中。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:36:49.259Z",
+  "endedAt": "2026-07-27T11:36:57.551Z",
+  "durationMs": 8292.231167,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:21fe5678bdb200d78f05ed1b5f549baf9c52acfa6ef10e96bdee32a0dc03bd0e"
+}

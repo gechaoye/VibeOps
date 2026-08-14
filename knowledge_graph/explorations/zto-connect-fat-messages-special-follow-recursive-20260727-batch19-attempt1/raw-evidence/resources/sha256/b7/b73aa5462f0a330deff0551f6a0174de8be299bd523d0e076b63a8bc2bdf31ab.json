@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHGA871HWYZP77GM45NWA7Z",
+  "sessionRef": "01KYHG33TR66C5GH4VQK4PWFMC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHG6BC8XC5J68K3HGQ5M6RX",
+  "sourceScreenshotRef": "sha256:49a01816915d3e3b11bf5e4b75a9d15c1ad79979eb471ab4b08600b362063044",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前画面显示由“特别关注提示音”行打开的提示音选项界面或面板，至少可见提示音“波浪”。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:00:43.143Z",
+  "endedAt": "2026-07-27T10:00:50.145Z",
+  "durationMs": 7001.971166,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:cd28135a3b080c61030a7d983accb978c6b304363ceb44626bdc999ec0050ad8"
+}

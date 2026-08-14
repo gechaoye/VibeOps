@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHBZC35R7PWF73CVKFYSJKX",
+  "sessionRef": "01KYHBRRQ0FNFNTS8NJB3DVSTP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHBWHWQGPBT3981YK1N3VZW",
+  "sourceScreenshotRef": "sha256:de1c524af05ae68af1e3495329043954e7541b445abce74314adf4d2c23edc66",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"取消\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "全部成员",
+    "visibleResultContent": [
+      "成员：练良伟",
+      "操作：移除",
+      "顶部有返回和关闭控件",
+      "当前无可见弹窗或遮罩"
+    ],
+    "supportedFunctionDescription": "在全部成员页面查看成员，并可通过成员右侧的“移除”按钮发起成员移除操作。题目提供的上下文另行确认：消息工具栏心形控件的功能名为“特别关注”，且当前探索获准操作设置和成员；这两点并非由当前画面像素得出。紧接着激活“取消”后，当前结果画面显示相关覆盖层已不再可见。",
+    "evidenceBasis": [
+      "像素证据：页面标题显示“全部成员”",
+      "像素证据：可见成员姓名“练良伟”及其右侧“移除”按钮",
+      "像素证据：当前画面没有可见弹窗、遮罩或标为“取消”的控件",
+      "时序上下文：当前截图是在立即激活“取消”之后取得",
+      "权威非视觉上下文：messages.toolbar.heart 的 function_name 为“特别关注”",
+      "权威非视觉上下文：exploration.authorization.may_operate_settings_and_members 为 true"
+    ],
+    "unresolvedMeaning": "仅凭结果截图无法确定“取消”此前所属的具体弹窗或流程，也无法确认取消动作是否改变了成员数据；只能确认当前已回到或保留在无覆盖层的“全部成员”页面。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:44:36.501Z",
+  "endedAt": "2026-07-27T08:44:59.365Z",
+  "durationMs": 22863.315708,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e1697760a4495479a6fb6dcbd1d0e7965c46d4b30c26ac82c77f3755170d7d53"
+}

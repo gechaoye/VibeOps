@@ -1,0 +1,322 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1:plan",
+  "sourceScopeHash": "sha256:a0e270e0f5845df924453b02508b998caa013521e7a5113e4b5a6a240676f1ff",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "覆盖移除确认弹窗的取消与确定按钮，并验证最终空列表。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.authorization",
+        "predicate": "may_operate_settings_and_members",
+        "value": "true",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.people.remove_dialog",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "remove-dialog-cancel",
+        "space": "current_display_px",
+        "rect": {
+          "x": 180.0,
+          "y": 1200.0,
+          "width": 410.0,
+          "height": 250.0
+        },
+        "purpose": "移除确认弹窗左侧“取消”按钮的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "remove-dialog-confirm",
+        "space": "current_display_px",
+        "rect": {
+          "x": 570.0,
+          "y": 1200.0,
+          "width": 410.0,
+          "height": 250.0
+        },
+        "purpose": "移除确认弹窗右侧“确定”按钮的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "remove-special-follow-member",
+        "space": "current_display_px",
+        "rect": {
+          "x": 930.0,
+          "y": 250.0,
+          "width": 222.0,
+          "height": 230.0
+        },
+        "purpose": "成员“练良伟”行右侧“移除”按钮的实时 Midscene 定位范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.people.remove_dialog": {
+      "key": "messages.special_follow.people.remove_dialog",
+      "label": "移除成员确认弹窗",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.people.remove_confirmation",
+      "requiredSemanticAssertions": [
+        "当前屏幕显示“确定将练良伟移除特别关注吗？”确认弹窗，底部有“取消”和“确定”按钮。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点移除确认弹窗的说明、取消、确定及被遮罩的宿主页面控件；弹窗按钮必须分别定位。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "cancel_remove"
+      ],
+      "postcondition": "移除确认弹窗完成盘点。"
+    },
+    "messages.special_follow.people.after_cancel_remove": {
+      "key": "messages.special_follow.people.after_cancel_remove",
+      "label": "取消移除后非空列表",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people",
+      "requiredSemanticAssertions": [
+        "当前屏幕已关闭确认弹窗并返回“全部成员”，成员“练良伟”和“移除”按钮仍可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "复核取消移除后的列表，定位返回、关闭、成员“练良伟”和移除按钮。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "remove_special_follow_member"
+      ],
+      "postcondition": "已验证取消不会移除成员。"
+    },
+    "messages.special_follow.people.remove_dialog_again": {
+      "key": "messages.special_follow.people.remove_dialog_again",
+      "label": "再次显示移除确认弹窗",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.people.remove_confirmation",
+      "requiredSemanticAssertions": [
+        "当前屏幕再次显示“确定将练良伟移除特别关注吗？”弹窗，取消和确定按钮可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "复核再次显示的移除确认弹窗，定位取消和确定按钮。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "confirm_remove"
+      ],
+      "postcondition": "确定按钮准备执行。"
+    },
+    "messages.special_follow.people.empty_after_remove": {
+      "key": "messages.special_follow.people.empty_after_remove",
+      "label": "确定移除后的空列表",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people",
+      "requiredSemanticAssertions": [
+        "当前屏幕已关闭确认弹窗，标题仍为“全部成员”，成员“练良伟”及其“移除”按钮均不再显示。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点确定移除后的“全部成员”空列表，定位返回和关闭控件并记录主体空白，不推断其他业务原因。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "navigate_back",
+        "close"
+      ],
+      "postcondition": "已验证成员被移除后的空列表状态。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-remove-confirmation-dialog",
+      "kind": "capture",
+      "state": "messages.special_follow.people.remove_dialog",
+      "depth": 3
+    },
+    {
+      "id": "cancel-remove-member",
+      "kind": "tap",
+      "semanticAction": "cancel_remove",
+      "fromState": "messages.special_follow.people.remove_dialog",
+      "toState": "messages.special_follow.people.after_cancel_remove",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1500,
+      "target": {
+        "key": "cancel_remove_member",
+        "label": "取消",
+        "scope": "temporary_state_control",
+        "locatorPrompt": "定位“确定将练良伟移除特别关注吗？”弹窗底部左侧的“取消”按钮。",
+        "allowedRegionRef": "remove-dialog-cancel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕已关闭确认弹窗并返回“全部成员”，成员“练良伟”和“移除”按钮仍可见。"
+        ]
+      }
+    },
+    {
+      "id": "trigger-remove-member-again",
+      "kind": "tap",
+      "semanticAction": "remove_special_follow_member",
+      "fromState": "messages.special_follow.people.after_cancel_remove",
+      "toState": "messages.special_follow.people.remove_dialog_again",
+      "depth": 3,
+      "risk": "medium",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1500,
+      "target": {
+        "key": "remove_member_lian_liangwei",
+        "label": "移除",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位“全部成员”页面成员“练良伟”所在行最右侧、浅灰描边且文字为“移除”的按钮。",
+        "allowedRegionRef": "remove-special-follow-member"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕再次显示“确定将练良伟移除特别关注吗？”弹窗，取消和确定按钮可见。"
+        ]
+      }
+    },
+    {
+      "id": "confirm-remove-member",
+      "kind": "tap",
+      "semanticAction": "confirm_remove",
+      "fromState": "messages.special_follow.people.remove_dialog_again",
+      "toState": "messages.special_follow.people.empty_after_remove",
+      "depth": 3,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 3000,
+      "target": {
+        "key": "confirm_remove_member",
+        "label": "确定",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位“确定将练良伟移除特别关注吗？”弹窗底部右侧的“确定”按钮。",
+        "allowedRegionRef": "remove-dialog-confirm"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕已关闭确认弹窗，标题仍为“全部成员”，成员“练良伟”和“移除”按钮均不再显示。"
+        ]
+      }
+    }
+  ]
+}

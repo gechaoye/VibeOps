@@ -1,0 +1,26 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENB056FQR1JXRV47WZ5
+key: messages.open_special_follow
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+sourceRef: 01KY6Z7BD8D0X91GX7D73CBFMH
+triggerElementRef: 01KYKA3ENBS65Y9X32DWXW2MZ6
+action: aiTap
+capability: open_special_follow
+targetRef: 01KYKA3ENB431TAGYEEA0BJYYZ
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYK679X7CSQ4NHGSKBE1VQEP
+  beforeFrameRef: 01KYK66H0196RNQ2KCZ37DDJY5
+  afterFrameRef: 01KYK67VX792MACW0PT0MR3S48
+  postcondition: pass
+  semanticAssertions:
+  - sha256:7374dca5d34ff3b27618d332df622f420273ac6e3c2c1aed54af93aceaeeb454
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

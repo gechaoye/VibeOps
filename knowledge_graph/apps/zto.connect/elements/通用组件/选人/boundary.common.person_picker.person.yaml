@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBPYYSWY1RN4GH3SJ6
+key: boundary.common.person_picker.person
+label: 通用组件-选人-选择人员
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 通用组件
+- 选人
+owner:
+  kind: page
+  ref: 01KYKA3ENBCMSXNBZDYXZ7PJSM
+parentElementRef: null
+controlType: checkbox
+role: action
+capabilities:
+- select_person
+summary: 在通用选人组件中选择一名人员，以完成特别关注添加流程。
+relationshipRefs:
+- owner:01KYKA3ENBCMSXNBZDYXZ7PJSM
+- transition:01KYKA3ENBDXQZ7JVSBJ4KP68A
+observations:
+- frameRef: 01KYJ113NK6S3GQY2NZ128FPRQ
+  observedAt: '2026-07-27T14:52:59.229Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:c1a2abd820aa8be093cf320f31308521847815dd8e103ac74dafddc157f8aa40
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 29.0
+      top: 1872.0
+      width: 47.0
+      height: 47.0
+    center:
+    - 52.5
+    - 1895.5
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:a3e049272ab39b1b90a8ff05ea4c66f8de807543bff9c4e89de2773128e268a0
+  state: 已选中；行左侧为蓝色圆形勾选标记
+  dynamicValue: 已选中；行左侧为蓝色圆形勾选标记
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBPYYSWY1RN4GH3SJ6-01KYJ113NK6S3GQY2NZ128FPRQ.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: select_person

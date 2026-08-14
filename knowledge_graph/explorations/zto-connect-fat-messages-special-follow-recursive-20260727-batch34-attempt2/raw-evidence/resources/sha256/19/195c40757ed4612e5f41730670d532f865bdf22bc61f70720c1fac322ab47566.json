@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHV5C7F2DHWGFKP63NV16H7",
+  "sessionRef": "01KYHV34EMMTPRNEMTFNFVD4P2",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHV3GJ69KYZZPH7GGDE8FCJ",
+  "sourceScreenshotRef": "sha256:ea6cf997ddb8ef06afc89e635e6292ede854703026fca64531601a84a3c29b7d",
+  "operation": "aiLocate",
+  "prompt": "定位第一个“间隔时间”整行入口：它紧邻“单聊消息未读，弹窗提醒我”开关行下方，并位于“弹窗消息未读，短信/电话提醒我”行上方，右侧显示“30分钟”",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 564,
+      "y": 1040
+    },
+    "rect": {
+      "x": 49,
+      "y": 970,
+      "width": 1031,
+      "height": 141
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T13:10:20.367Z",
+  "endedAt": "2026-07-27T13:10:24.751Z",
+  "durationMs": 4383.720208,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e129cbd190f7eab1242828092b71147588155c01a5df68a7c52ad8e593454ca7"
+}

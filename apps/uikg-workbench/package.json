@@ -1,0 +1,41 @@
+{
+  "name": "uikg-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "dev:server": "node --watch server/index.mjs",
+    "build": "tsc -b && vite build",
+    "start": "node server/index.mjs",
+    "test": "node --test server/*.test.mjs",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@midscene/android-playground": "^1.10.6",
+    "@midscene/playground": "^1.10.6",
+    "@midscene/shared": "^1.10.6",
+    "@yume-chan/scrcpy": "2.3.0",
+    "@yume-chan/scrcpy-decoder-webcodecs": "2.5.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "antd": "5.21.6",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "image-size": "^1.2.1",
+    "jsonrepair": "^3.15.0",
+    "lucide-react": "^0.553.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "socket.io-client": "4.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.10",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0"
+  }
+}

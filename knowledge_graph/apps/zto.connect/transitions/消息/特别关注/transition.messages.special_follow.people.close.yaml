@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENB36EBNY57Z9J3RV8M
+key: transition.messages.special_follow.people.close
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENBX0Y8425JT9CK70DK
+triggerElementRef: 01KYKA3ENB0S9EJNTQG5PX558C
+action: aiTap
+capability: close_people
+targetRef: 01KYKA3ENB431TAGYEEA0BJYYZ
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHZRFJQ2237Q29JKNKMVNK2
+  beforeFrameRef: 01KYHZQ94K6FTV0CNAP4SZ4C1N
+  afterFrameRef: 01KYHZRTKE95BYCNE4S8XPA03V
+  postcondition: pass
+  semanticAssertions:
+  - sha256:67df698d5733c0789402fb4f3aa2e87180f0434a3459d3d4ca1da43859aecd2d
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

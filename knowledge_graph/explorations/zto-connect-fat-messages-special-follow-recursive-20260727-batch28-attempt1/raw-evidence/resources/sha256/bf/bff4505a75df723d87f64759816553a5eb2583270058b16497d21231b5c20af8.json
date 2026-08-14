@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHNT06DRGVPP7XNE5GZ6GFJ",
+  "sessionRef": "01KYHNK2NQDTEG375N9GATH53W",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHNRVSTYEQS58VJXTAHH7EX",
+  "sourceScreenshotRef": "sha256:39fd42ad87ae9ad63c35eb808f25772e9e1a674f44b0b4cf6037a0a9093d97af",
+  "operation": "aiLocate",
+  "prompt": "定位前景白色“日程”提醒弹窗底部最右侧、蓝底白字且文字为“接受”的按钮",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 895,
+      "y": 717
+    },
+    "rect": {
+      "x": 743,
+      "y": 657,
+      "width": 306,
+      "height": 122
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:36:35.907Z",
+  "endedAt": "2026-07-27T11:36:49.101Z",
+  "durationMs": 13194.322791,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d2d437aec6cadd9fd7d3cd1055f5c62d28e81b9fe1c191b8384139a43c517669"
+}

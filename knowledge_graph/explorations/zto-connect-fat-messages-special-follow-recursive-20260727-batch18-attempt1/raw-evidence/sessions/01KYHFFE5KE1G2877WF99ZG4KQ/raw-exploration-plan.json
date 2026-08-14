@@ -1,0 +1,247 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch18-attempt1:plan",
+  "sourceScopeHash": "sha256:36f44916d33b59c610e0b118fdcde3503afba5703bf49bf1749fa880acef4cbf",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "设置特别关注人员后，入口爱心图标显示为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.reminder_interval.sheet",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "reminder-interval-sheet",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 1320,
+          "width": 1152,
+          "height": 1010
+        },
+        "purpose": "间隔时间底部面板全部选项和取消按钮的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经风险策略允许的应用内导航、临时状态和已授权持久设置控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.reminder_interval.sheet": {
+      "key": "messages.special_follow.settings.reminder_interval.sheet",
+      "label": "间隔时间底部选项面板",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.reminder_interval",
+      "requiredSemanticAssertions": [
+        "“特别关注提醒”背景页上方有半透明遮罩，底部白色面板完整显示“10分钟”“30分钟”“1小时”“4小时”和“取消”。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点间隔时间底部面板的四个时间选项、“取消”、面板边界、背景遮罩和背景页全部可见控件；逐项定位，不把背景值10误作面板选中标记。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_reminder_interval_30_minutes"
+      ],
+      "postcondition": "间隔时间面板完成全控件盘点。"
+    },
+    "messages.special_follow.settings.interval_30": {
+      "key": "messages.special_follow.settings.interval_30",
+      "label": "提醒间隔更新为三十分钟",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "底部时间面板已经关闭，页面顶部标题为“特别关注提醒”，“间隔时间”行右侧值更新为“30”。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点选择30分钟后的“特别关注提醒”页全部交互控件和设置状态，重点确认底部面板关闭且“间隔时间”当前值为30。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证选择30分钟会关闭面板并持久更新主设置值。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-reminder-interval-sheet",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.reminder_interval.sheet",
+      "depth": 3
+    },
+    {
+      "id": "select-reminder-interval-30-minutes",
+      "kind": "tap",
+      "semanticAction": "select_reminder_interval_30_minutes",
+      "fromState": "messages.special_follow.settings.reminder_interval.sheet",
+      "toState": "messages.special_follow.settings.interval_30",
+      "depth": 3,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "interval_30_minutes",
+        "label": "30分钟",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位间隔时间底部白色选项面板中从上往下第二行的“30分钟”选项；不要定位第一行“10分钟”或底部“取消”。",
+        "allowedRegionRef": "reminder-interval-sheet"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "底部时间选项面板已关闭，“特别关注提醒”页“间隔时间”行右侧显示数值“30”。"
+        ]
+      }
+    }
+  ]
+}

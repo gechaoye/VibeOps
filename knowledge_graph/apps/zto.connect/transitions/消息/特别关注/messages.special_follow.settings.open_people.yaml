@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENB8T48CZ7P9W57GGE3
+key: messages.special_follow.settings.open_people
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+action: aiTap
+capability: open_special_follow_people
+targetRef: 01KYKA3ENBX0Y8425JT9CK70DK
+reversible: true
+risk: safe
+verificationStatus: success_dual_model_live
+evidence:
+  actionTraceRef: open-all-members-via-chevron-uikg301
+  actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-all-members-via-chevron-uikg301.json
+  beforeFrameRef: sha256:4a85ed0c814b88e8ba6f414a1d0d721a7f2350916f273912e4209aa2fbc996d3
+  afterFrameRef: sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a
+  postcondition: pass
+  semanticAssertions:
+  - sha256:59a6f380e67834c7fdba061046adb00ec4c6b60c7d980144ad0cdf8e002c31b6
+provenance:
+  sourceType: midscene_dual_model_live_action_trace
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1

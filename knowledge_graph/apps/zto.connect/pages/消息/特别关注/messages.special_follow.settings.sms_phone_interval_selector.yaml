@@ -1,0 +1,85 @@
+schemaVersion: 3.0.0
+entityType: Page
+id: 01KYKA3ENBV34YV6RCVMV9BTG3
+key: messages.special_follow.settings.sms_phone_interval_selector
+label: 特别关注-特别关注提醒-短信或电话提醒间隔选择
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+surfaceType: overlay
+status: observed_dual_model_verified_with_legacy_evidence
+summary: 选择短信或电话提醒的时间间隔，支持10分钟和30分钟。
+states:
+- key: selected_30_minutes
+  summary: 当前选中30分钟
+  frameRefs:
+  - sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e
+- key: selected_10_minutes
+  summary: 当前选中10分钟
+  frameRefs:
+  - 01KYHMRC108MP60ZEXMSYNZA7W
+elementRefs:
+- 01KYKA3ENB6QFXR8871C3PEM0H
+- 01KYKA3ENB8W59XXC5JJZ3DDK2
+- 01KYKA3ENBH76ERXC3Y6A1C314
+inboundTransitionRefs:
+- 01KYKA3ENBY8YE1WNGMS05DDQG
+outboundTransitionRefs:
+- 01KYKA3ENBAGTC68TW4NRFDST2
+- 01KYKA3ENBHT7R52HVB3R24ZD7
+- 01KYKA3ENBNVW391PTW3529BWG
+observations:
+- frameRef: 01KYHM1ZPTHH4HQM30K9BSPRJ4
+  observedAt: '2026-07-27T11:06:16.378Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.interval.selector
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:e48de91b263277efb307ff324b6fd7b778ec3dd5d3f37e5aa02704afc7ff5c6f
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch25-attempt3/raw-evidence/sessions/01KYHKYAK3XVF7MBHHRVR7W3CB
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHMRC108MP60ZEXMSYNZA7W
+  observedAt: '2026-07-27T11:18:29.809Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.interval.selector_10
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:3e4dcdeda85212e8271d7fa05b6334ed73eb84e7291681e7d750e7ff46e9a7a1
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch26-attempt2/raw-evidence/sessions/01KYHMMSAR8NZXY6JC450Q617D
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e
+  observedAt: '2026-07-31T06:37:35.993Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.remaining.sms_interval_selector
+    independentScout: complete
+    gptReconciliation: complete
+  screenshotRef: sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+provenance:
+  sourceType: mixed_verified_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRefs:
+  - zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  - zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  limitations:
+  - some historical states remain GPT-only pending independent Scout

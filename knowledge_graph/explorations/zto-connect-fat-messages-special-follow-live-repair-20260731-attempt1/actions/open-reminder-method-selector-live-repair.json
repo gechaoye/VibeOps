@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "open-reminder-method-selector-live-repair",
+  "method": "aiTap",
+  "prompt": "定位短信/电话提醒开关下方、间隔时间行之后、夜间免打扰之前，左侧为“提醒方式”、右侧显示当前方式和右箭头的完整横向设置行。",
+  "beforeFrameRef": "sha256:9c4f23d649b88d1d7bb068e3f62f22223e87ea9f823c9270698daba92ec97392",
+  "locator": {
+    "rect": {
+      "left": 49,
+      "top": 1410,
+      "width": 1031,
+      "height": 140
+    },
+    "center": [
+      564,
+      1479
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T03:02:18.205Z",
+  "completedAt": "2026-07-31T03:02:45.156Z",
+  "postcondition": "提醒方式底部选择面板已打开，面板中可见“短信”“电话”和“取消”。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图底部已打开提醒方式选择面板，其中清晰可见“短信”“电话”和“取消”三个选项，且“电话”当前被勾选。"
+  },
+  "status": "executed_verified"
+}

@@ -1,0 +1,245 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch8-attempt1:plan",
+  "sourceScopeHash": "sha256:22ae09defcdd072dbc179d8bcb03a21d2acfeccb8e2428234534f785cf95ccae",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "探索添加成员后的特别关注非空列表及其全部控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.add",
+        "predicate": "opens_common_component",
+        "value": "通用选人组件",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.authorization",
+        "predicate": "may_operate_settings_and_members",
+        "value": "true",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.with_member",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-members-chevron",
+        "space": "current_display_px",
+        "rect": {
+          "x": 970.0,
+          "y": 245.0,
+          "width": 182.0,
+          "height": 170.0
+        },
+        "purpose": "非空“我的特别关注 1人”行右侧进入箭头的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 96.0,
+          "width": 1152.0,
+          "height": 2184.0
+        },
+        "purpose": "经用户授权和风险策略允许的特别关注功能内控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.with_member": {
+      "key": "messages.special_follow.settings.with_member",
+      "label": "添加成员后的特别关注提醒设置",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“特别关注提醒”，“我的特别关注”显示“1人”，成员“练良伟”、添加和移除均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点添加成员后的“特别关注提醒”设置页，记录成员“练良伟”、添加、移除、全部帮助图标、开关、间隔时间、提示音和返回控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_nonempty_special_following_list"
+      ],
+      "postcondition": "非空设置页完成盘点。"
+    },
+    "messages.special_follow.people.nonempty": {
+      "key": "messages.special_follow.people.nonempty",
+      "label": "全部成员非空状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“全部成员”，左侧返回箭头和右侧关闭 X 可见，成员“练良伟”显示在页面主体中。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点特别关注“全部成员”非空页面的成员条目、头像、姓名、可能的操作、返回、关闭和真实可辨滚动区域；记录但不猜测成员点击后的目标。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [
+        "open_special_follow_member",
+        "navigate_back",
+        "close"
+      ],
+      "postcondition": "全部成员非空页面完成全控件盘点。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-settings-with-member",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.with_member",
+      "depth": 2
+    },
+    {
+      "id": "open-nonempty-special-follow-members",
+      "kind": "tap",
+      "semanticAction": "open_nonempty_special_following_list",
+      "fromState": "messages.special_follow.settings.with_member",
+      "toState": "messages.special_follow.people.nonempty",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 3000,
+      "target": {
+        "key": "special_follow_members_chevron",
+        "label": "我的特别关注右侧进入箭头",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位“特别关注提醒”页面“我的特别关注”同一行最右侧、显示“1人”右边的黑色向右尖括号进入箭头；只定位箭头。",
+        "allowedRegionRef": "special-follow-members-chevron"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕标题为“全部成员”，左侧返回箭头、右侧关闭 X 和成员“练良伟”均可见。"
+        ]
+      }
+    }
+  ]
+}

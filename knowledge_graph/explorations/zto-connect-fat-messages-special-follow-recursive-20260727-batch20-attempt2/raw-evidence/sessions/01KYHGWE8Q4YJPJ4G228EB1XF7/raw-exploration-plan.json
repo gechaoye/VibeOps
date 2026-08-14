@@ -1,0 +1,229 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch20-attempt2:plan",
+  "sourceScopeHash": "sha256:624d99bbe1f7a610e8d7cc5bdc93bdcf5b1b580cfe902596dcadf163f2501e94",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "设置特别关注人员后，入口爱心图标显示为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.sound.selector",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "sound-picker-panel",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 1440,
+          "width": 1152,
+          "height": 890
+        },
+        "purpose": "提示音面板四个选项、试听按钮和取消按钮的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经风险策略允许的应用内导航、临时状态和已授权持久设置控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.sound.selector": {
+      "key": "messages.special_follow.settings.sound.selector",
+      "label": "特别关注提示音选择面板",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sound",
+      "requiredSemanticAssertions": [
+        "底部提示音面板显示“默认”“波浪”“简报”“门铃”和“取消”，“波浪”为蓝色对勾选中。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点四个单选项、四个试听按钮、“取消”和被遮罩背景页控件；半透明背景遮罩没有可见按钮标识且点击行为未验证，只记录为呈现，不要返回为交互控件或滚动区域。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "radio",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_sound_briefing"
+      ],
+      "postcondition": "提示音面板完成全控件盘点。"
+    },
+    "messages.special_follow.settings.sound.briefing": {
+      "key": "messages.special_follow.settings.sound.briefing",
+      "label": "提示音更新为简报",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "提示音面板已经关闭，页面顶部标题为“特别关注提醒”，“特别关注提示音”行右侧值为“简报”。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点选择简报后的“特别关注提醒”页全部交互控件和设置状态，确认提示音面板关闭且当前提示音值为简报。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证选择简报会关闭面板并更新主设置值。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-sound-picker",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.sound.selector",
+      "depth": 3
+    },
+    {
+      "id": "select-sound-briefing",
+      "kind": "tap",
+      "semanticAction": "select_sound_briefing",
+      "fromState": "messages.special_follow.settings.sound.selector",
+      "toState": "messages.special_follow.settings.sound.briefing",
+      "depth": 3,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "sound_briefing",
+        "label": "简报",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位提示音底部面板中从上往下第三行、左侧文字为“简报”的单选项主体；不要定位该行右侧的圆形播放按钮。",
+        "allowedRegionRef": "sound-picker-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "提示音面板已关闭，“特别关注提醒”页“特别关注提示音”行右侧显示“简报”。"
+        ]
+      }
+    }
+  ]
+}

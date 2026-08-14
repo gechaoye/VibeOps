@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHT9PXHCP9F1EHCQDQ3XPJB",
+  "sessionRef": "01KYHT43FRH9CQVJ09JS5E1JN7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHT6K4J7QCPJTBZTJ4BDT7Q",
+  "sourceScreenshotRef": "sha256:7838b3c313f2a8fc57f68d270afac585378e1831145e353794c63c5bcb6dbef2",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "短信/电话提醒开关已变为灰色关闭状态，其独立间隔时间、提醒方式、夜间免打扰及说明均不再显示。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:55:14.176Z",
+  "endedAt": "2026-07-27T12:55:18.193Z",
+  "durationMs": 4017.116459,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:7b1d961446cb551961e6ee59ac8f8dc5539b82134ca3dd70fb209e2959dc9ee9"
+}

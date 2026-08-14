@@ -1,0 +1,489 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ1VAEPZG0RDABR5H0S0JWK",
+  "sessionRef": "01KYJ1PJNZVBW0AWB4F06RAN5C",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ1R45YX4H9Q4ZKMZC2CWBE",
+  "sourceScreenshotRef": "sha256:e2e71634d57d62fac7bfaabb74a3ef1b3159e782016c83bb79e8854863e69d22",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"icon_button\",\"list_entry\",\"tab\",\"menu\",\"close\",\"scroll_region\"]. 完整盘点返回后的消息页全部可见交互控件；用户确认顶部快捷工具栏爱心图标为特别关注入口，准确记录其橙黄色填充或高亮状态及当前未读呈现。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.conversation.lian_liangwei\",\"predicate\":\"unread_badge\",\"value\":\"58\",\"source\":\"verified_evidence\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"current_value\",\"value\":\"门铃\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "消息",
+    "visiblePrimaryContent": [
+      "葛超烨",
+      "中通快递",
+      "顶部横幅：宝盒民意调查；点击表扬宝盒",
+      "您有2条重要消息未读，点击查看",
+      "上海总部IT部网点老板助…；必看；经理；23:00；未读36",
+      "三个必看群22233；必看；经理；21:50；未读3",
+      "四个必看群；必看；经理；20:20；未读33",
+      "一个必看群；必看；经理；16:45；未读40",
+      "airtest公开群；公开；22:01；未读68",
+      "Online Form；内部；19:44；未读1",
+      "超级表单；18:01；未读76"
+    ],
+    "visibleNavigationState": "底部主导航“消息”处于蓝色选中状态；消息分类页签“全部”处于选中状态并带下划线；顶部快捷工具栏“特别关注”爱心图标呈橙黄色填充/高亮，入口自身当前无数字未读角标；铃铛图标显示红色未读角标63。",
+    "visibleControls": [
+      {
+        "candidateKey": "profile_header",
+        "label": "葛超烨 / 中通快递",
+        "controlType": "button",
+        "visibleState": "顶部个人资料区域，头像右上有红点",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "顶部可见个人资料入口，具体点击功能未由画面或上下文确定。",
+        "locatorPrompt": "定位页面顶部左侧包含头像、姓名“葛超烨”和文字“中通快递”的个人资料区域"
+      },
+      {
+        "candidateKey": "top_robot_icon",
+        "label": "无文字机器人样式图标",
+        "controlType": "icon_button",
+        "visibleState": "未见角标或选中标识",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位顶部右侧、搜索图标左边的彩色机器人样式图标"
+      },
+      {
+        "candidateKey": "top_search",
+        "label": "无文字放大镜图标",
+        "controlType": "icon_button",
+        "visibleState": "默认状态",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位页面顶部右侧、彩色机器人图标与圆圈加号之间的放大镜图标"
+      },
+      {
+        "candidateKey": "top_add",
+        "label": "无文字圆圈加号图标",
+        "controlType": "icon_button",
+        "visibleState": "默认状态",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位页面顶部最右侧的圆圈内加号图标"
+      },
+      {
+        "candidateKey": "survey_banner",
+        "label": "宝盒民意调查",
+        "controlType": "button",
+        "visibleState": "横幅完整可见，含“点击表扬宝盒”按钮样式区域",
+        "semanticRole": "survey_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能离开当前消息列表或进入调查页面",
+        "functionDescription": "进入可见的宝盒民意调查或表扬内容。",
+        "locatorPrompt": "定位个人资料下方写有大字“宝盒民意调查”和“点击表扬宝盒”的彩色横幅"
+      },
+      {
+        "candidateKey": "toolbar_at",
+        "label": "@图标",
+        "controlType": "icon_button",
+        "visibleState": "灰色，未见数字角标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位横幅下方快捷工具栏最左侧的灰色@图标"
+      },
+      {
+        "candidateKey": "toolbar_history",
+        "label": "时钟回转箭头图标",
+        "controlType": "icon_button",
+        "visibleState": "灰色，未见数字角标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位横幅下方快捷工具栏从左数第二个灰色时钟回转箭头图标"
+      },
+      {
+        "candidateKey": "toolbar_special_follow",
+        "label": "特别关注",
+        "controlType": "icon_button",
+        "visibleState": "爱心轮廓及内部呈橙黄色填充/高亮；入口自身未显示数字未读角标",
+        "semanticRole": "special_follow_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "进入特别关注会话列表，不表示会修改关注设置",
+        "functionDescription": "打开特别关注列表。依据用户提供的权威上下文，已设置的特别关注人员存在未读消息并在该列表展示时，此入口爱心会变为橙黄色；当前画面正处于该高亮呈现。",
+        "locatorPrompt": "定位横幅下方快捷工具栏从左数第三个、呈橙黄色填充或高亮的爱心图标"
+      },
+      {
+        "candidateKey": "toolbar_briefcase",
+        "label": "橙色箱包样式图标",
+        "controlType": "icon_button",
+        "visibleState": "橙色，未见数字角标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位横幅下方快捷工具栏中、橙黄色爱心右边的橙色箱包样式图标"
+      },
+      {
+        "candidateKey": "toolbar_lightning",
+        "label": "闪电图标",
+        "controlType": "icon_button",
+        "visibleState": "灰色，未见数字角标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位横幅下方快捷工具栏中央偏右的灰色闪电图标"
+      },
+      {
+        "candidateKey": "toolbar_envelope",
+        "label": "信封图标",
+        "controlType": "icon_button",
+        "visibleState": "灰色，未见数字角标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位横幅下方快捷工具栏中、闪电右边的灰色信封图标"
+      },
+      {
+        "candidateKey": "toolbar_bell",
+        "label": "铃铛图标",
+        "controlType": "icon_button",
+        "visibleState": "灰色铃铛，红色未读角标63",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定；可见未读计数为63。",
+        "locatorPrompt": "定位横幅下方快捷工具栏中、信封右边并带红色“63”角标的灰色铃铛图标"
+      },
+      {
+        "candidateKey": "toolbar_more",
+        "label": "省略号图标",
+        "controlType": "menu",
+        "visibleState": "灰色三点，未展开",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "功能未由可见文字或供应上下文确定。",
+        "locatorPrompt": "定位横幅下方快捷工具栏最右侧的灰色三点省略号图标"
+      },
+      {
+        "candidateKey": "important_unread_notice",
+        "label": "您有2条重要消息未读，点击查看",
+        "controlType": "button",
+        "visibleState": "浅蓝提示条，显示2条重要消息未读",
+        "semanticRole": "important_unread_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "将打开或筛选重要未读消息",
+        "functionDescription": "查看2条重要未读消息。",
+        "locatorPrompt": "定位快捷工具栏下方浅蓝色提示条中写有“您有2条重要消息未读，点击查看”的区域，避开右侧关闭叉号"
+      },
+      {
+        "candidateKey": "important_notice_close",
+        "label": "关闭重要消息提示",
+        "controlType": "close",
+        "visibleState": "浅蓝提示条右侧灰色叉号",
+        "semanticRole": "dismiss_notice",
+        "enabled": true,
+        "reversible": false,
+        "riskHint": "会隐藏当前重要消息提示条",
+        "functionDescription": "关闭或隐藏重要未读消息提示。",
+        "locatorPrompt": "定位“您有2条重要消息未读，点击查看”浅蓝提示条最右侧的灰色X关闭图标"
+      },
+      {
+        "candidateKey": "tab_all",
+        "label": "全部",
+        "controlType": "tab",
+        "visibleState": "选中，深色文字并带底部下划线",
+        "semanticRole": "message_filter_tab",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅切换消息列表筛选",
+        "functionDescription": "显示全部消息会话。",
+        "locatorPrompt": "定位提示条下方分类栏最左侧、深色且带底部下划线的“全部”页签"
+      },
+      {
+        "candidateKey": "tab_unread",
+        "label": "未读",
+        "controlType": "tab",
+        "visibleState": "未选中，灰色",
+        "semanticRole": "message_filter_tab",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅切换消息列表筛选",
+        "functionDescription": "筛选未读消息会话。",
+        "locatorPrompt": "定位消息分类栏中“全部”右侧的灰色“未读”页签"
+      },
+      {
+        "candidateKey": "tab_must_read",
+        "label": "必看",
+        "controlType": "tab",
+        "visibleState": "未选中，灰色",
+        "semanticRole": "message_filter_tab",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅切换消息列表筛选",
+        "functionDescription": "筛选必看消息会话。",
+        "locatorPrompt": "定位消息分类栏中“未读”右侧的灰色“必看”页签"
+      },
+      {
+        "candidateKey": "tab_pinned",
+        "label": "置顶",
+        "controlType": "tab",
+        "visibleState": "未选中，灰色",
+        "semanticRole": "message_filter_tab",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅切换消息列表筛选",
+        "functionDescription": "筛选置顶消息会话。",
+        "locatorPrompt": "定位消息分类栏中“必看”右侧的灰色“置顶”页签"
+      },
+      {
+        "candidateKey": "tab_direct",
+        "label": "单聊",
+        "controlType": "tab",
+        "visibleState": "未选中，灰色",
+        "semanticRole": "message_filter_tab",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅切换消息列表筛选",
+        "functionDescription": "筛选单聊会话。",
+        "locatorPrompt": "定位消息分类栏中“置顶”右侧的灰色“单聊”页签"
+      },
+      {
+        "candidateKey": "tab_group",
+        "label": "群聊",
+        "controlType": "tab",
+        "visibleState": "未选中，灰色",
+        "semanticRole": "message_filter_tab",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅切换消息列表筛选",
+        "functionDescription": "筛选群聊会话。",
+        "locatorPrompt": "定位消息分类栏中“单聊”右侧的灰色“群聊”页签"
+      },
+      {
+        "candidateKey": "tab_service",
+        "label": "服务",
+        "controlType": "tab",
+        "visibleState": "未选中，灰色",
+        "semanticRole": "message_filter_tab",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅切换消息列表筛选",
+        "functionDescription": "筛选服务类消息。",
+        "locatorPrompt": "定位消息分类栏最右侧的灰色“服务”页签"
+      },
+      {
+        "candidateKey": "conversation_shanghai_it",
+        "label": "上海总部IT部网点老板助…",
+        "controlType": "list_entry",
+        "visibleState": "必看、经理；23:00；红色未读角标36",
+        "semanticRole": "conversation_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开会话可能影响其未读状态",
+        "functionDescription": "打开会话“上海总部IT部网点老板助…”。",
+        "locatorPrompt": "定位会话列表第一行，标题以“上海总部IT部网点老板助”开头，右侧时间23:00且有红色36角标的条目"
+      },
+      {
+        "candidateKey": "conversation_three_must_read_22233",
+        "label": "三个必看群22233",
+        "controlType": "list_entry",
+        "visibleState": "必看、经理；21:50；红色未读角标3",
+        "semanticRole": "conversation_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开会话可能影响其未读状态",
+        "functionDescription": "打开会话“三个必看群22233”。",
+        "locatorPrompt": "定位会话列表中标题为“三个必看群22233”、右侧时间21:50且有红色3角标的条目"
+      },
+      {
+        "candidateKey": "conversation_four_must_read",
+        "label": "四个必看群",
+        "controlType": "list_entry",
+        "visibleState": "必看、经理；20:20；红色未读角标33",
+        "semanticRole": "conversation_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开会话可能影响其未读状态",
+        "functionDescription": "打开会话“四个必看群”。",
+        "locatorPrompt": "定位会话列表中标题为“四个必看群”、右侧时间20:20且有红色33角标的条目"
+      },
+      {
+        "candidateKey": "conversation_one_must_read",
+        "label": "一个必看群",
+        "controlType": "list_entry",
+        "visibleState": "必看、经理；16:45；红色未读角标40",
+        "semanticRole": "conversation_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开会话可能影响其未读状态",
+        "functionDescription": "打开会话“一个必看群”。",
+        "locatorPrompt": "定位会话列表中标题为“一个必看群”、右侧时间16:45且有红色40角标的条目"
+      },
+      {
+        "candidateKey": "conversation_airtest_public",
+        "label": "airtest公开群",
+        "controlType": "list_entry",
+        "visibleState": "公开；22:01；红色未读角标68；右上有浅蓝小角标",
+        "semanticRole": "conversation_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开会话可能影响其未读状态",
+        "functionDescription": "打开会话“airtest公开群”。",
+        "locatorPrompt": "定位会话列表中带绿色“公开群”头像、标题为“airtest公开群”、右侧时间22:01且有红色68角标的条目"
+      },
+      {
+        "candidateKey": "conversation_online_form",
+        "label": "Online Form",
+        "controlType": "list_entry",
+        "visibleState": "内部；19:44；红色未读角标1；右上有浅蓝小角标",
+        "semanticRole": "conversation_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开会话可能影响其未读状态",
+        "functionDescription": "打开会话“Online Form”。",
+        "locatorPrompt": "定位会话列表中带蓝色多人头像、标题为“Online Form”、右侧时间19:44且有红色1角标的条目"
+      },
+      {
+        "candidateKey": "conversation_super_form",
+        "label": "超级表单",
+        "controlType": "list_entry",
+        "visibleState": "18:01；红色未读角标76；右上有浅蓝小角标",
+        "semanticRole": "conversation_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开会话可能影响其未读状态",
+        "functionDescription": "打开会话“超级表单”。",
+        "locatorPrompt": "定位会话列表中带青色表单头像、标题为“超级表单”、右侧时间18:01且有红色76角标的条目"
+      },
+      {
+        "candidateKey": "nav_workbench",
+        "label": "工作台",
+        "controlType": "tab",
+        "visibleState": "未选中；红色角标25",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "切换到工作台页面",
+        "functionDescription": "打开底部主导航的工作台。",
+        "locatorPrompt": "定位底部导航最左侧、带红色25角标的“工作台”"
+      },
+      {
+        "candidateKey": "nav_messages",
+        "label": "消息",
+        "controlType": "tab",
+        "visibleState": "蓝色选中；红色角标99+",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "当前已在消息页面",
+        "functionDescription": "打开消息页面；当前已选中。",
+        "locatorPrompt": "定位底部导航中蓝色高亮且带红色“99+”角标的“消息”"
+      },
+      {
+        "candidateKey": "nav_contacts",
+        "label": "通讯录",
+        "controlType": "tab",
+        "visibleState": "未选中，灰色，无角标",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "切换到通讯录页面",
+        "functionDescription": "打开通讯录页面。",
+        "locatorPrompt": "定位底部导航中央的灰色“通讯录”"
+      },
+      {
+        "candidateKey": "nav_news",
+        "label": "资讯",
+        "controlType": "tab",
+        "visibleState": "未选中，灰色，无角标",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "切换到资讯页面",
+        "functionDescription": "打开资讯页面。",
+        "locatorPrompt": "定位底部导航中“通讯录”右侧的灰色“资讯”"
+      },
+      {
+        "candidateKey": "nav_more",
+        "label": "更多",
+        "controlType": "tab",
+        "visibleState": "未选中；红色角标41",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "切换到更多页面",
+        "functionDescription": "打开更多页面。",
+        "locatorPrompt": "定位底部导航最右侧、带红色41角标的“更多”"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "conversation_list_scroll",
+        "label": "消息会话列表",
+        "directions": [
+          "up",
+          "down"
+        ],
+        "locatorPrompt": "定位分类页签下方、底部主导航上方，包含“上海总部IT部网点老板助…”至“超级表单”等会话条目的纵向列表区域"
+      },
+      {
+        "candidateKey": "message_category_tabs_scroll",
+        "label": "消息分类页签栏",
+        "directions": [
+          "left",
+          "right"
+        ],
+        "locatorPrompt": "定位浅蓝重要消息提示条下方，包含“全部、未读、必看、置顶、单聊、群聊、服务”的横向分类栏"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "顶部彩色机器人样式图标的功能未由可见文字或供应上下文确定。",
+      "顶部放大镜与圆圈加号图标的功能未由供应上下文明确确认，未仅凭外形推断。",
+      "快捷工具栏中的@、时钟回转箭头、橙色箱包、闪电、信封、铃铛和省略号图标的具体功能未由可见文字或供应上下文确定。",
+      "头像右上红点的确切含义未确定。",
+      "部分会话条目右上浅蓝色折角标记的含义未确定。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:05:33.397Z",
+  "endedAt": "2026-07-27T15:07:15.286Z",
+  "durationMs": 101886.391417,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:144a505b9dbd580aac3887b529a3f7812fdf7aa820a3160069db592858e3ac21"
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHGAR9WAVE5P8C0K6ZV1YRZ",
+  "sessionRef": "01KYHG33TR66C5GH4VQK4PWFMC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHG6BC8XC5J68K3HGQ5M6RX",
+  "sourceScreenshotRef": "sha256:49a01816915d3e3b11bf5e4b75a9d15c1ad79979eb471ab4b08600b362063044",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"特别关注提示音\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "底部弹出提示音选择面板",
+      "可选提示音：默认、波浪、简报、门铃",
+      "波浪当前被勾选",
+      "每个提示音右侧显示试听按钮",
+      "底部显示取消操作",
+      "背景页面被灰色遮罩覆盖"
+    ],
+    "supportedFunctionDescription": "激活“特别关注提示音”后会打开提示音选择面板；用户可在默认、波浪、简报、门铃之间选择，并可通过各项右侧按钮试听。当前选择为“波浪”，可通过“取消”关闭面板。根据提供的权威上下文，设置为特别关注的人员存在未读消息时，其相关会话显示在特别关注列表；设置特别关注人员后，入口爱心图标显示为橙黄色。",
+    "evidenceBasis": [
+      "视觉证据：页面顶部标题为“特别关注提醒”",
+      "视觉证据：灰色遮罩上方出现底部选项面板",
+      "视觉证据：面板显示默认、波浪、简报、门铃四项",
+      "视觉证据：“波浪”左侧有蓝色勾选且文字为蓝色",
+      "视觉证据：四个选项右侧均有播放样式按钮，底部显示“取消”",
+      "权威上下文：特别关注人员有未读消息时，相关会话显示在特别关注列表",
+      "权威上下文：设置特别关注人员后，入口爱心图标显示为橙黄色"
+    ],
+    "unresolvedMeaning": "仅凭当前静态画面无法确认点击右侧播放按钮后的声音内容、播放状态反馈、选择提示音后是否立即保存，以及点击遮罩是否能关闭面板。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:00:50.305Z",
+  "endedAt": "2026-07-27T10:01:06.620Z",
+  "durationMs": 16315.12975,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3ef1b078d0bbba7795d6dfe92e120e44deef31e873dbb8e8c4cdb935c3e4c1f4"
+}

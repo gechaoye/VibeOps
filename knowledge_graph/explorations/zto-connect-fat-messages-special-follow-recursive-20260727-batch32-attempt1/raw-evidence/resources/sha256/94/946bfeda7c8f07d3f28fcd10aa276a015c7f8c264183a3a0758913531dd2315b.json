@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSZHTK54M8NEEQRCKCX07T",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSW8NKYA16V9ANG9PAC46P",
+  "sourceScreenshotRef": "sha256:8330a5043d9ff81bf5c3d89c52ee0e5f50bcb5318c47b68ef0853941ec0a3a54",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"免打扰群通知\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.night_dnd\",\"predicate\":\"visible_description\",\"value\":\"开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "仍停留在“特别关注提醒”设置页，未显示弹窗、遮罩或新页面",
+      "“免打扰群通知”右侧开关呈灰色关闭状态",
+      "“单聊消息未读，弹窗提醒我”开关已开启，间隔时间为30分钟",
+      "“弹窗消息未读，短信/电话提醒我”开关已开启，间隔时间为30分钟，提醒方式为电话",
+      "“夜间免打扰”开关处于关闭状态",
+      "“特别关注提示音”当前为“简报”"
+    ],
+    "supportedFunctionDescription": "该页面用于配置“特别关注”的提醒行为。根据供应的权威上下文，夜间免打扰开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知。就刚激活的“免打扰群通知”而言，当前画面仅能支持它是一个可切换设置项，且激活后未见可视状态变化。",
+    "evidenceBasis": [
+      "像素证据：顶部标题为“特别关注提醒”",
+      "像素证据：“免打扰群通知”右侧开关为灰色，未显示开启态",
+      "像素证据：画面中没有新增弹窗、抽屉、遮罩或页面跳转",
+      "像素证据：两项未读提醒开关为蓝色开启态，间隔均显示“30分钟”，提醒方式显示“电话”",
+      "供应上下文：该功能名称为“特别关注”",
+      "供应上下文：用户明确允许操作开关和设置，探索阶段无需恢复业务状态",
+      "供应上下文：夜间免打扰的说明为开启后在22:00至次日06:00期间不再通过短信或电话通知"
+    ],
+    "unresolvedMeaning": "无法仅凭当前画面确定“免打扰群通知”开关为何在激活后仍显示关闭，也无法确认该次激活是否未生效、被阻止、触发后立即回退，或需要其他前置条件；页面未显示相关说明或错误反馈。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:49:27.812Z",
+  "endedAt": "2026-07-27T12:49:45.299Z",
+  "durationMs": 17488.149917,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:242288bb22f9b38bf5a810aac9d391a5e6203a6ee3aec60b94e9dc306a4b32e1"
+}

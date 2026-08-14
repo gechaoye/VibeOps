@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHFAMYJGKNXP7YZSPJ1EKTN",
+  "sessionRef": "01KYHF4AGPYZRHN8D90W2V16EY",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHF7D9BV9CQYCF92QH2QBH4",
+  "sourceScreenshotRef": "sha256:378e8ae23c17dba95fa428b62b23e8f22061d9429e95578872ea5291ca82983f",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"间隔时间\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "10分钟",
+      "30分钟",
+      "1小时",
+      "4小时",
+      "取消"
+    ],
+    "supportedFunctionDescription": "激活“间隔时间”后会打开底部选择面板，并将背景页面遮暗；用户可选择10分钟、30分钟、1小时或4小时，也可取消。当前背景值为10，对应面板中的10分钟选项。依据用户提供的权威上下文，该功能属于“特别关注”：被设为特别关注的人员存在未读消息时，其相关会话显示在特别关注列表；设置特别关注人员后，工具栏入口的爱心图标显示为橙黄色。",
+    "evidenceBasis": [
+      "截图像素：顶部标题为“特别关注提醒”。",
+      "截图像素：底部白色面板显示“10分钟”“30分钟”“1小时”“4小时”和“取消”。",
+      "截图像素：背景被灰色遮罩覆盖，且“间隔时间”一行右侧显示“10”。",
+      "截图像素：页面可见“我的特别关注”“添加”及提醒相关开关。",
+      "用户提供的权威上下文：messages.toolbar.heart 的功能名称为“特别关注”。",
+      "用户提供的权威上下文：特别关注人员有未读消息时，相关会话显示在特别关注列表。",
+      "用户提供的权威上下文：设置特别关注人员后，入口爱心图标显示为橙黄色。"
+    ],
+    "unresolvedMeaning": "截图未明确说明该间隔从何时开始计时、是否重复提醒、选择后何时生效，也未展示各选项被选中时的视觉标记或最终确认结果。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:43:15.773Z",
+  "endedAt": "2026-07-27T09:43:34.610Z",
+  "durationMs": 18836.563875,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e441d2edb3538fc9081a6a6d356c0eb1156fb6a639f28924606c7d6376b12e5b"
+}

@@ -1,0 +1,73 @@
+{
+  "task": {
+    "id": "zto-connect-fat-messages-special-follow-popup-backdrop-repair-20260731-attempt1",
+    "requestedAt": "2026-07-31T08:51:25.113Z",
+    "objective": "按 UIKG 3.0.1 补采弹窗提醒间隔选择器完整背景遮罩的独立实时边界，修正错误红框。",
+    "status": "complete",
+    "completedAt": "2026-07-31T08:59:39.035Z",
+    "evidenceSummary": {
+      "frames": 2,
+      "actions": 2,
+      "archivedRetryFrames": 0
+    },
+    "retryHistoryRef": "attempts/retry-history.json"
+  },
+  "application": {
+    "key": "zto.connect",
+    "packageId": "com.zto.connect.fat",
+    "build": {
+      "environment": "fat",
+      "versionCode": "10542"
+    }
+  },
+  "entry": {
+    "description": "消息/特别关注/特别关注提醒",
+    "knownFacts": [
+      "背景遮罩是底部白色选择面板之外的完整半透明灰色命中区域。",
+      "背景遮罩不包含顶部标题栏、底部白色选择面板、选项或取消按钮。",
+      "本次仅修正遮罩 Observation 的 locator/redbox，不改变元素稳定身份、owner 或 capability。"
+    ]
+  },
+  "scope": {
+    "recursion": "targeted-live-evidence-repair",
+    "include": [
+      "popup-interval-selector-full-backdrop-locator"
+    ]
+  },
+  "midscene": {
+    "repository": "/Users/mohan/Desktop/ZTO/Projects/midscene",
+    "reloadEnvInFreshProcess": true,
+    "oneAndroidAgent": true,
+    "modelDiagnostics": {
+      "default": {
+        "intent": "default",
+        "slot": "default",
+        "name": "gpt-5.6-sol",
+        "family": "gpt-5"
+      },
+      "scout": {
+        "intent": "scout",
+        "slot": "scout",
+        "name": "qwen3-vl-plus",
+        "family": "qwen3-vl"
+      }
+    }
+  },
+  "device": {
+    "serialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+    "keepAwakeForWholeTask": true
+  },
+  "graph": {
+    "root": "/Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph",
+    "normativeSpec": {
+      "index": "spec/README.md",
+      "version": "UIKG 3.0.1",
+      "schemaVersion": "3.0.0",
+      "contentHash": "sha256:03904e083f55a42e36b035db877d2bf575f6973426a2abde089326b51833969f",
+      "relationshipRules": "spec/relationship-invariants.md",
+      "precedenceAccepted": true
+    },
+    "mergePolicy": "reviewed-migration-plus-additive-upsert",
+    "stageBeforePublish": true
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHV5PZKWBRAMHBNCNX1BDEZ",
+  "sessionRef": "01KYHV34EMMTPRNEMTFNFVD4P2",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHV3GJ69KYZZPH7GGDE8FCJ",
+  "sourceScreenshotRef": "sha256:ea6cf997ddb8ef06afc89e635e6292ede854703026fca64531601a84a3c29b7d",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "单聊消息未读弹窗提醒开关为蓝色开启状态，其正下方第一个间隔时间显示30分钟；短信电话提醒下方第二个间隔仍显示30分钟。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T13:10:30.388Z",
+  "endedAt": "2026-07-27T13:10:35.762Z",
+  "durationMs": 5375.210167,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f76a8a7ac9260e01facdbc1c9dedf38083f3a636ff73cbadc3fbffa7b46fdc9f"
+}

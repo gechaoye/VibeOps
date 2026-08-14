@@ -1,0 +1,138 @@
+{
+  "recordType": "LiveRepairEvidenceIndex",
+  "explorationRef": "zto-connect-fat-messages-special-follow-popup-backdrop-repair-20260731-attempt1",
+  "generatedAt": "2026-07-31T08:59:39.032Z",
+  "modelDiagnostics": {
+    "default": {
+      "intent": "default",
+      "slot": "default",
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "scout": {
+      "intent": "scout",
+      "slot": "scout",
+      "name": "qwen3-vl-plus",
+      "family": "qwen3-vl"
+    }
+  },
+  "frames": [
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.popup_backdrop_repair.before",
+      "frameId": "sha256:d3c5ec113854a54b5da4685d322c61a07ac406b5bda1324db80722eecc7ffd29",
+      "observedAt": "2026-07-31T08:51:50.486Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:d3c5ec113854a54b5da4685d322c61a07ac406b5bda1324db80722eecc7ffd29",
+      "screenshotPath": "frames/d3c5ec113854a54b5da4685d322c61a07ac406b5bda1324db80722eecc7ffd29.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.popup_backdrop_repair.before.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.popup_backdrop_repair.before.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.popup_backdrop_repair.before.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.popup_backdrop_repair.overlay",
+      "frameId": "sha256:6d030f335a32821f0bebfd4c614837258d165747f682a185c6d15bd216d3de90",
+      "observedAt": "2026-07-31T08:55:31.142Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:6d030f335a32821f0bebfd4c614837258d165747f682a185c6d15bd216d3de90",
+      "screenshotPath": "frames/6d030f335a32821f0bebfd4c614837258d165747f682a185c6d15bd216d3de90.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.popup_backdrop_repair.overlay.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.popup_backdrop_repair.overlay.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.popup_backdrop_repair.overlay.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "popup_backdrop": {
+          "rect": {
+            "left": 0,
+            "top": 251,
+            "width": 1152,
+            "height": 1299
+          },
+          "center": [
+            575,
+            900
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:6d030f335a32821f0bebfd4c614837258d165747f682a185c6d15bd216d3de90",
+          "prompt": "只定位弹窗提醒间隔底部白色选择面板之外、标题栏下方的完整半透明灰色背景遮罩命中区域；横向覆盖整个页面内容区，纵向从标题栏下边缘延伸到白色选择面板上边缘。不要只框面板上方的一小条空白，不要包含顶部白色标题栏、底部白色选项面板、选项文字或取消按钮。",
+          "status": "pass"
+        }
+      }
+    }
+  ],
+  "actions": [
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-popup-interval-for-backdrop-repair",
+      "method": "aiTap",
+      "prompt": "定位第一组弹窗提醒开关下方，左侧名称为“间隔时间”、右侧显示当前间隔值和向右箭头的完整横向设置行；不包含上下相邻行。",
+      "beforeFrameRef": "sha256:d3c5ec113854a54b5da4685d322c61a07ac406b5bda1324db80722eecc7ffd29",
+      "locator": {
+        "rect": {
+          "left": 48,
+          "top": 971,
+          "width": 1032,
+          "height": 140
+        },
+        "center": [
+          563,
+          1040
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T08:55:18.287Z",
+      "completedAt": "2026-07-31T08:55:30.617Z",
+      "postcondition": "弹窗提醒间隔底部选择面板已打开，可见10分钟、30分钟、1小时、4小时和取消，面板上方显示完整半透明灰色背景遮罩。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中“弹窗提醒间隔”的底部选择面板已打开，面板内可见“10分钟”“30分钟”“1小时”“4小时”和“取消”；面板上方页面区域覆盖了完整的半透明灰色背景遮罩。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "cancel-popup-interval-after-backdrop-repair",
+      "method": "aiTap",
+      "prompt": "只定位当前底部选择面板最下方居中的“取消”按钮。",
+      "beforeFrameRef": "sha256:6d030f335a32821f0bebfd4c614837258d165747f682a185c6d15bd216d3de90",
+      "locator": {
+        "rect": {
+          "left": 521,
+          "top": 2250,
+          "width": 112,
+          "height": 69
+        },
+        "center": [
+          576,
+          2284
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T08:59:02.722Z",
+      "completedAt": "2026-07-31T08:59:39.031Z",
+      "postcondition": "底部选择面板已关闭，仍停留在特别关注提醒设置页。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中未显示任何底部选择面板，当前页面标题为“特别关注提醒”，并可见特别关注人员及提醒方式等设置项，因此该陈述为真。"
+      },
+      "status": "executed_verified"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHNMD956C4EB1F7BAWAD6VZ",
+  "sessionRef": "01KYHNK2NQDTEG375N9GATH53W",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHNKJWKNZNVMQ0TP3TF95GC",
+  "sourceScreenshotRef": "sha256:4c637634c7f94d0d7164a03bc9fda7a2142ef9a60fb69acc3e06fa4bc5ada1c2",
+  "operation": "aiLocate",
+  "prompt": "定位底部白色提醒方式面板第二行、文字为“电话”且没有勾选标记的选项",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 196,
+      "y": 2116
+    },
+    "rect": {
+      "x": 147,
+      "y": 2091,
+      "width": 99,
+      "height": 51
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:33:39.887Z",
+  "endedAt": "2026-07-27T11:33:45.893Z",
+  "durationMs": 6006.725666,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:bdbad0a2dffeeaeb5381f8d382b587ba81be7ca842b69ae8dcdfe811a708e3fe"
+}

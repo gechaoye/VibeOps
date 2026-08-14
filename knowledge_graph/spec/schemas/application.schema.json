@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "application.schema.json",
+  "title": "UIKG 3.0 Application",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "entityType",
+    "id",
+    "key",
+    "label",
+    "packageId",
+    "platform",
+    "status",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "entityType": {
+      "const": "Application"
+    },
+    "id": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "key": {
+      "$ref": "common.schema.json#/$defs/stableKey"
+    },
+    "label": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "packageId": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "platform": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "status": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    }
+  },
+  "additionalProperties": true
+}

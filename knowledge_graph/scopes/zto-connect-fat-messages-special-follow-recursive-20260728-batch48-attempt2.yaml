@@ -1,0 +1,214 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2
+title: 全部成员成员行无导航结果第四十八批第二次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 进入非空全部成员页并点击成员主体，验证其是否产生导航、弹层或状态变化。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.unread_badge, predicate: value_semantics, value: 红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: unread_highlight_condition, value: 特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。, source: user}
+    - {subjectKey: exploration.authorization, predicate: may_operate_settings_and_members, value: "true", source: user}
+
+entry:
+  knownStartPageKey: messages.root.with_special_follow_unread_highlight
+  launchComponent: com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity
+  navigationHint: 新预检已确认设备位于消息页，顶部特别关注爱心呈橙黄色。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 5
+  include: [messages.root, messages.special_follow, messages.special_follow.settings, messages.special_follow.people]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low]
+  allowedSideEffects: [navigation_history, temporary_display_state]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [feature_entry, page_content, settings_navigation, page_navigation]
+  allowedTapRegions:
+    - {key: messages-special-follow-heart, space: current_display_px, rect: {x: 200, y: 450, width: 190, height: 230}, purpose: 消息页顶部功能工具栏橙黄色爱心入口。}
+    - {key: special-follow-settings, space: current_display_px, rect: {x: 940, y: 235, width: 212, height: 190}, purpose: 特别关注页设置按钮。}
+    - {key: special-follow-members-chevron, space: current_display_px, rect: {x: 930, y: 220, width: 222, height: 210}, purpose: 特别关注提醒页1人右侧进入箭头。}
+    - {key: all-members-member-row, space: current_display_px, rect: {x: 20, y: 220, width: 720, height: 270}, purpose: 全部成员页练良伟头像和姓名组成的成员主体，不包含右侧移除按钮。}
+
+expectedStates:
+  - key: messages.root.with_special_follow_unread_highlight
+    label: 特别关注有未读时的消息页
+    kind: page
+    expectedStablePageKey: messages.root
+    requiredSemanticAssertions: [当前页面为消息页，顶部功能工具栏中的特别关注爱心图标呈橙黄色高亮。]
+    inspection:
+      queryPrompt: 本状态帧只输出消息页和顶部橙黄色特别关注爱心可见的事实，visibleControls 必须返回空数组；爱心由动作步骤单独实时 aiLocate。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button]
+      requireScrollCoverage: false
+    allowedActions: [open_special_follow]
+    postcondition: 已记录消息页高亮入口状态。
+  - key: messages.special_follow.with_dynamic_unread_for_people
+    label: 带动态未读角标的特别关注页
+    kind: page
+    expectedStablePageKey: messages.special_follow
+    requiredSemanticAssertions: [当前页面标题为特别关注，成员头像、会话摘要中的橙色特别关注前缀和实时未读数量角标可见。]
+    inspection:
+      queryPrompt: 本状态帧只输出标题、成员条目、会话摘要中的橙色特别关注前缀和实时未读数量角标可见的事实，visibleControls 必须返回空数组；设置由动作步骤单独实时 aiLocate。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button]
+      requireScrollCoverage: false
+    allowedActions: [open_special_follow_settings]
+    postcondition: 已记录特别关注页当前动态未读状态。
+  - key: messages.special_follow.settings.with_member_for_people
+    label: 进入全部成员前的非空设置页
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [当前页面标题为特别关注提醒，“我的特别关注”显示1人，练良伟头像、添加和移除可见。]
+    inspection:
+      queryPrompt: 本状态帧只输出标题、1人、练良伟头像、添加和移除可见的事实，visibleControls 必须返回空数组；1人右侧箭头由动作步骤单独实时 aiLocate。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button]
+      requireScrollCoverage: false
+    allowedActions: [open_nonempty_special_following_list]
+    postcondition: 已记录非空成员设置状态。
+  - key: messages.special_follow.people.nonempty_before_member_tap
+    label: 点击成员主体前的全部成员非空页
+    kind: page
+    expectedStablePageKey: messages.special_follow.people
+    requiredSemanticAssertions: [当前页面标题为全部成员，左上返回、右上关闭X、练良伟头像和姓名、右侧移除按钮可见。]
+    inspection:
+      queryPrompt: 本状态帧只输出标题、返回、关闭、练良伟头像姓名和右侧移除按钮可见的事实，visibleControls 必须返回空数组；成员主体由动作步骤单独实时 aiLocate。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button]
+      requireScrollCoverage: false
+    allowedActions: [activate_special_follow_member_row]
+    postcondition: 已记录点击成员主体前状态。
+  - key: messages.special_follow.people.nonempty_after_member_tap
+    label: 点击成员主体后的全部成员非空页
+    kind: page
+    expectedStablePageKey: messages.special_follow.people
+    requiredSemanticAssertions: [点击练良伟成员主体后当前页面仍为全部成员，练良伟和移除按钮仍可见，未出现新页面、弹窗、菜单或选中状态。]
+    inspection:
+      queryPrompt: 完整盘点点击成员主体后的页面，确认仍为全部成员、成员与移除按钮仍可见，并记录未出现导航、弹层、菜单或选中态；定位当前可见的返回、关闭、成员主体和移除按钮。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, list_entry, back, close]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已验证成员主体点击不产生可见导航或状态变化。
+
+actions:
+  - {id: capture-messages-before-member-row-flow, kind: capture, state: messages.root.with_special_follow_unread_highlight, depth: 0}
+  - id: open-special-follow-from-highlighted-heart
+    kind: tap
+    semanticAction: open_special_follow
+    fromState: messages.root.with_special_follow_unread_highlight
+    toState: messages.special_follow.with_dynamic_unread_for_people
+    depth: 1
+    risk: safe
+    sideEffects: [navigation_history, temporary_display_state]
+    waitMs: 3000
+    target: {key: messages_toolbar_special_follow_highlighted, label: 特别关注, scope: feature_entry, locatorPrompt: 定位消息页顶部功能工具栏中、历史图标右侧和橙色箱包图标左侧的橙黄色爱心轮廓按钮。, allowedRegionRef: messages-special-follow-heart}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [当前页面标题为特别关注，成员头像和带实时未读角标的会话可见。]}
+  - id: open-settings-for-all-members
+    kind: tap
+    semanticAction: open_special_follow_settings
+    fromState: messages.special_follow.with_dynamic_unread_for_people
+    toState: messages.special_follow.settings.with_member_for_people
+    depth: 2
+    risk: safe
+    sideEffects: [navigation_history]
+    waitMs: 3500
+    target: {key: special_follow_settings_for_people, label: 设置, scope: page_content, locatorPrompt: 定位特别关注页面“我的特别关注”标题同一行最右侧的蓝色文字按钮“设置”。, allowedRegionRef: special-follow-settings}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [当前页面标题为特别关注提醒，“我的特别关注”显示1人，添加和移除可见。]}
+  - id: open-all-members-nonempty
+    kind: tap
+    semanticAction: open_nonempty_special_following_list
+    fromState: messages.special_follow.settings.with_member_for_people
+    toState: messages.special_follow.people.nonempty_before_member_tap
+    depth: 3
+    risk: safe
+    sideEffects: [navigation_history]
+    waitMs: 3500
+    target: {key: special_follow_members_chevron_for_member_row, label: 1人右侧进入箭头, scope: settings_navigation, locatorPrompt: 定位特别关注提醒页面“我的特别关注”同一行最右侧、数字“1人”右边的黑色向右尖括号进入箭头；只定位箭头。, allowedRegionRef: special-follow-members-chevron}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [当前页面标题为全部成员，练良伟和右侧移除按钮可见。]}
+  - id: tap-all-members-member-row
+    kind: tap
+    semanticAction: activate_special_follow_member_row
+    fromState: messages.special_follow.people.nonempty_before_member_tap
+    toState: messages.special_follow.people.nonempty_after_member_tap
+    depth: 3
+    risk: safe
+    sideEffects: [temporary_display_state]
+    waitMs: 2500
+    target: {key: all_members_lian_liangwei_row_body, label: 练良伟成员主体, scope: page_content, locatorPrompt: 定位全部成员页面左侧的练良伟头像及其右侧姓名“练良伟”组成的成员主体区域；不要包含右侧“移除”按钮。, allowedRegionRef: all-members-member-row}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: false, semanticAssertions: [点击练良伟成员主体后当前页面仍为全部成员，练良伟和移除按钮仍可见，未出现新页面、弹窗、菜单或选中状态。]}
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260728
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-28-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true
+

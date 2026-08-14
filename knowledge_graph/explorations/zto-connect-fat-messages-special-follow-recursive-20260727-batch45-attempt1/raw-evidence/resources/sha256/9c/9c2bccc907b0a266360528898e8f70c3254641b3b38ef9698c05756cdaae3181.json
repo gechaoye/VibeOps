@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ3PES64F3RQTJ9VW6GZ955",
+  "sessionRef": "01KYJ3HY9DN1MN2MJY1QCWN9D2",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ3K8RNAE40TS9T2FY2HQ2J",
+  "sourceScreenshotRef": "sha256:b90dd37d92d9ad2aef1c4401306705ef3dd84858ca96c1c46adb4b49badd58b9",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前页面标题仍为特别关注，顶部成员条目和灰色分隔带下方的练良伟相关会话仍可见。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:39:28.688Z",
+  "endedAt": "2026-07-27T15:39:33.030Z",
+  "durationMs": 4341.763208,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:5bef085c61be73535177afbde862f4983482b4a8bc86873339b8f6e09ac7025b"
+}

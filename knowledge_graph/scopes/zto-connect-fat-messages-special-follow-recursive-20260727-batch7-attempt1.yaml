@@ -1,0 +1,199 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch7-attempt1
+title: 通用选人边界内完成添加第七批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 在 APP 通用选人组件内任选一人完成特别关注添加流程，然后继续探索特别关注非空状态。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.settings.add, predicate: opens_common_component, value: 通用选人组件, source: user}
+    - {subjectKey: common.person_picker, predicate: scope_role, value: 通用组件边界_不递归探索, source: user}
+    - {subjectKey: exploration.authorization, predicate: may_add_special_follow, value: "true", source: user}
+
+entry:
+  knownStartPageKey: common.person_picker.initial
+  launchComponent: com.zto.connect.fat/com.zto.framework.zrn.containers.ZRNActivity
+  navigationHint: 设备已位于标题为“选择人员”的 APP 通用选人组件；仅选择最近联系人“练良伟”并确认。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 40
+  include: [common.person_picker, messages.special_follow.settings]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [navigation_history, viewport_scroll, temporary_display_state, persistent_setting_change]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [feature_entry, page_navigation, page_content, settings_navigation, temporary_state_control, scroll_region]
+  allowedTapRegions:
+    - key: first-recent-contact-row
+      space: current_display_px
+      rect: {x: 0, y: 1420, width: 1152, height: 230}
+      purpose: 通用选人组件“最近联系人”首项“练良伟”的实时 Midscene 定位范围。
+    - key: person-picker-confirm
+      space: current_display_px
+      rect: {x: 820, y: 2150, width: 332, height: 226}
+      purpose: 通用选人组件底部右侧确定按钮的实时 Midscene 定位范围。
+    - key: app-visible-content
+      space: current_display_px
+      rect: {x: 0, y: 96, width: 1152, height: 2184}
+      purpose: 经用户授权和风险策略允许的特别关注功能内控件范围。
+
+expectedStates:
+  - key: common.person_picker.initial
+    label: 通用选人组件未选择状态
+    kind: page
+    expectedStablePageKey: boundary.common.person_picker
+    requiredSemanticAssertions:
+      - 当前屏幕标题为“选择人员”，“最近联系人”中“练良伟”可见，底部确定按钮显示“确定(0/10)”。
+    inspection:
+      queryPrompt: 这是范围外的 APP 通用选人组件；只定位完成当前流程必需的“练良伟”成员行、底部确定按钮和关闭控件，不递归分析组织架构或其他入口。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, checkbox, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [select_special_follow_candidate]
+    postcondition: 通用选人组件边界已记录，准备选择一人。
+  - key: common.person_picker.one_selected
+    label: 通用选人组件已选择一人
+    kind: page
+    expectedStablePageKey: boundary.common.person_picker
+    requiredSemanticAssertions:
+      - 当前屏幕仍为“选择人员”，成员“练良伟”已选中，底部确定按钮显示选择计数为1并处于可用状态。
+    inspection:
+      queryPrompt: 只复核“练良伟”的已选状态和底部可用确定按钮，不探索通用选人组件的其他入口。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, list_entry, checkbox, close]
+      requireScrollCoverage: false
+    allowedActions: [confirm_add_special_follow]
+    postcondition: 已选择一名成员，确定按钮可用。
+  - key: messages.special_follow.settings.with_member
+    label: 添加成员后的特别关注提醒设置
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 当前屏幕已回到标题为“特别关注提醒”的设置页，“我的特别关注”区域显示至少一名成员或成员头像，且“添加”入口仍可见。
+    inspection:
+      queryPrompt: 完整盘点添加成员后的“特别关注提醒”设置页，记录“我的特别关注”非空呈现、成员入口、添加、全部帮助图标、开关、间隔时间、提示音和返回控件。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, link, menu, list_entry, toggle, checkbox, radio, segmented_control, tab, slider, stepper, input, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [navigate_back, open_special_following_list, open_add_special_following, show_help, toggle_setting, open_reminder_interval, open_special_following_sound]
+    postcondition: 特别关注非空设置状态完成全控件盘点。
+
+actions:
+  - id: capture-common-person-picker-boundary
+    kind: capture
+    state: common.person_picker.initial
+    depth: 3
+  - id: select-first-recent-contact
+    kind: tap
+    semanticAction: select_special_follow_candidate
+    fromState: common.person_picker.initial
+    toState: common.person_picker.one_selected
+    depth: 3
+    risk: medium
+    sideEffects: [temporary_display_state]
+    waitMs: 1500
+    target:
+      key: select_lian_liangwei
+      label: 练良伟
+      scope: page_content
+      locatorPrompt: 定位“选择人员”页“最近联系人”区域第一行、姓名为“练良伟”、左侧为空心选择圆圈的完整成员行。
+      allowedRegionRef: first-recent-contact-row
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 当前屏幕仍为“选择人员”，“练良伟”已选中，底部确定按钮的选择计数为1且可用。
+  - id: confirm-selected-special-follow
+    kind: tap
+    semanticAction: confirm_add_special_follow
+    fromState: common.person_picker.one_selected
+    toState: messages.special_follow.settings.with_member
+    depth: 2
+    risk: medium
+    sideEffects: [persistent_setting_change, navigation_history]
+    waitMs: 5000
+    target:
+      key: confirm_member_selection
+      label: 确定
+      scope: settings_navigation
+      locatorPrompt: 定位“选择人员”页底部右侧、选择一人后显示计数1且处于蓝色可用状态的“确定”按钮。
+      allowedRegionRef: person-picker-confirm
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 当前屏幕已回到标题为“特别关注提醒”的设置页，“我的特别关注”区域显示至少一名成员或成员头像。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch7-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

@@ -1,0 +1,161 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch33-attempt1
+title: 短信电话提醒开关子项显隐第三十三批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 验证短信/电话提醒开关关闭和重新开启时其子设置的隐藏与恢复。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.settings, predicate: exploration_authorization, value: 用户明确允许操作开关和设置，探索阶段无需恢复业务状态。, source: user}
+    - {subjectKey: messages.special_follow.settings.sms_phone_reminder, predicate: enabled_children, value: 开启后显示独立间隔时间、提醒方式、夜间免打扰及其说明。, source: verified_evidence}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings.sms_phone.enabled
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 当前短信/电话提醒开启，独立间隔为30分钟、提醒方式为电话、夜间免打扰关闭；本批关闭后验证子项隐藏，再开启验证恢复。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 4
+  include: [messages.special_follow.settings, messages.special_follow.settings.sms_phone_reminder]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [persistent_setting_change]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2000
+  allowedTargetScopes: [persistent_setting_control]
+  allowedTapRegions:
+    - {key: sms-phone-toggle-region, space: current_display_px, rect: {x: 830, y: 1050, width: 310, height: 300}, purpose: “弹窗消息未读，短信/电话提醒我”行右侧开关区域。}
+
+expectedStates:
+  - key: messages.special_follow.settings.sms_phone.enabled
+    label: 短信电话提醒开启且子项可见
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [短信/电话提醒开关为蓝色开启状态；其下独立间隔时间、提醒方式、夜间免打扰和22:00至次日06:00说明均可见。]
+    inspection: &settingsInspection
+      queryPrompt: 完整盘点当前视口中拥有完整点击区域的交互控件，准确记录短信/电话提醒开关及其子项显隐；底边裁切行只记录为内容。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [disable_sms_phone_reminder]
+    postcondition: 已记录短信电话提醒开启及子项可见状态。
+  - key: messages.special_follow.settings.sms_phone.disabled
+    label: 短信电话提醒关闭且子项隐藏
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [短信/电话提醒开关为灰色关闭状态；其独立间隔时间、提醒方式、夜间免打扰和22:00至次日06:00说明均不再显示；单聊弹窗提醒及其间隔仍显示。]
+    inspection: *settingsInspection
+    allowedActions: [enable_sms_phone_reminder]
+    postcondition: 已验证短信电话提醒关闭时子项整体隐藏。
+  - key: messages.special_follow.settings.sms_phone.enabled_restored
+    label: 短信电话提醒重新开启且子项恢复
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [短信/电话提醒开关恢复蓝色开启状态；独立间隔时间、提醒方式、夜间免打扰和22:00至次日06:00说明恢复显示。]
+    inspection: *settingsInspection
+    allowedActions: []
+    postcondition: 已验证重新开启时子项恢复。
+
+actions:
+  - {id: capture-sms-phone-enabled, kind: capture, state: messages.special_follow.settings.sms_phone.enabled, depth: 4}
+  - id: disable-sms-phone-reminder
+    kind: tap
+    semanticAction: disable_sms_phone_reminder
+    fromState: messages.special_follow.settings.sms_phone.enabled
+    toState: messages.special_follow.settings.sms_phone.disabled
+    depth: 4
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 2000
+    target: {key: sms_phone_reminder_toggle, label: 弹窗消息未读，短信/电话提醒我, scope: persistent_setting_control, locatorPrompt: 定位“弹窗消息未读，短信/电话提醒我”行最右侧当前为蓝色开启状态的开关；不要定位文字右侧问号。, allowedRegionRef: sms-phone-toggle-region}
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions: [短信/电话提醒开关已变为灰色关闭状态，其独立间隔时间、提醒方式、夜间免打扰及说明均不再显示。]
+  - id: enable-sms-phone-reminder
+    kind: tap
+    semanticAction: enable_sms_phone_reminder
+    fromState: messages.special_follow.settings.sms_phone.disabled
+    toState: messages.special_follow.settings.sms_phone.enabled_restored
+    depth: 4
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 2000
+    target: {key: sms_phone_reminder_toggle, label: 弹窗消息未读，短信/电话提醒我, scope: persistent_setting_control, locatorPrompt: 定位“弹窗消息未读，短信/电话提醒我”行最右侧当前为灰色关闭状态的开关；不要定位文字右侧问号。, allowedRegionRef: sms-phone-toggle-region}
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions: [短信/电话提醒开关已恢复蓝色开启状态，其独立间隔时间、提醒方式、夜间免打扰及说明恢复显示。]
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch33-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

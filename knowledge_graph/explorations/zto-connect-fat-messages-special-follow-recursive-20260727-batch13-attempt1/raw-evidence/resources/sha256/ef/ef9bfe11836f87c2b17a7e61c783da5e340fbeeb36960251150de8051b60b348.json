@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHDFXAMPKW2SKYYDH9TMJYT",
+  "sessionRef": "01KYHDAF7NCMTJ1X1HGNMRAA89",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHDCVP18N27EKWJ8NR1KNK0",
+  "sourceScreenshotRef": "sha256:a0662335c1c6f87168d2afd024a50d99aab2c6a64a9888edff250e78c4f5c8cd",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"设置\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我（已开启）",
+      "间隔时间：10",
+      "群消息未读，短信/电话提醒我（已关闭）",
+      "免打扰群通知（已关闭）",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "supportedFunctionDescription": "激活“设置”后进入“特别关注提醒”页面；该页支持管理或添加特别关注对象，并可配置特别关注未读消息的弹窗提醒、提醒间隔、群消息短信/电话提醒、免打扰群通知以及特别关注提示音。当前没有可见的弹窗或遮罩层。依据用户提供的权威上下文，相关功能名称为“特别关注”。",
+    "evidenceBasis": [
+      "屏幕顶部标题可见“特别关注提醒”",
+      "页面可见“我的特别关注”和带文字“添加”的入口",
+      "说明文字可见“来自「特别关注」的未读消息，自定义提醒方式”",
+      "单聊消息弹窗提醒开关呈开启状态",
+      "间隔时间一项右侧显示“10”",
+      "短信/电话提醒和免打扰群通知开关呈关闭状态",
+      "特别关注提示音一项右侧显示“波浪”",
+      "功能名称“特别关注”采用用户提供的权威非视觉上下文"
+    ],
+    "unresolvedMeaning": "屏幕未显示间隔时间“10”的单位，也未展开问号帮助内容；未显示短信/电话提醒、免打扰群通知的具体规则，以及“添加”入口和各右箭头进入后的详细页面，因此这些细节无法从当前画面确定。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:11:12.770Z",
+  "endedAt": "2026-07-27T09:11:29.876Z",
+  "durationMs": 17105.309583,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:217d656ae9e8054b1dca3eef6c01e6555c140614faad1efcba42a860bf20b223"
+}

@@ -1,0 +1,340 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "title": "UIKG 3.0 Common Definitions",
+  "$defs": {
+    "schemaVersion": {
+      "const": "3.0.0"
+    },
+    "ulid": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "stableKey": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "featurePath": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ulidArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ulid"
+      },
+      "uniqueItems": true
+    },
+    "nullableUlid": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ulid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "risk": {
+      "type": "string",
+      "enum": [
+        "safe",
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "sourceType"
+      ],
+      "properties": {
+        "sourceType": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "sourceEntityId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "materializationSpec": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewedBy": {
+          "type": "string"
+        },
+        "limitations": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "userContextCertifiedFact": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "viewport": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "orientation"
+      ],
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "orientation": {
+          "type": "string",
+          "enum": [
+            "portrait",
+            "landscape",
+            "unknown"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "rect": {
+      "type": "object",
+      "required": [
+        "left",
+        "top",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "left": {
+          "type": "number"
+        },
+        "top": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "locator": {
+      "type": "object",
+      "required": [
+        "rect",
+        "center",
+        "dpr",
+        "status"
+      ],
+      "properties": {
+        "rect": {
+          "$ref": "#/$defs/rect"
+        },
+        "center": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "number"
+          }
+        },
+        "dpr": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "status": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "evidenceRef": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "owner": {
+      "type": "object",
+      "required": [
+        "kind",
+        "ref"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "application",
+            "page",
+            "component",
+            "shared_component"
+          ]
+        },
+        "ref": {
+          "$ref": "#/$defs/ulid"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pageState": {
+      "type": "object",
+      "required": [
+        "key",
+        "summary",
+        "frameRefs"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/stableKey"
+        },
+        "summary": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "frameRefs": {
+          "$ref": "#/$defs/stringArray"
+        }
+      },
+      "additionalProperties": true
+    },
+    "pageObservation": {
+      "type": "object",
+      "required": [
+        "frameRef",
+        "observedAt",
+        "buildRef",
+        "deviceRef",
+        "viewport",
+        "stateProperties",
+        "screenshotRef",
+        "evidenceStatus"
+      ],
+      "properties": {
+        "frameRef": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "buildRef": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "deviceRef": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "viewport": {
+          "$ref": "#/$defs/viewport"
+        },
+        "stateProperties": {
+          "type": "object"
+        },
+        "screenshotRef": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "rawEvidenceRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidenceStatus": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    },
+    "elementObservation": {
+      "type": "object",
+      "required": [
+        "frameRef",
+        "observedAt",
+        "buildRef",
+        "locator",
+        "state",
+        "stateProperties",
+        "dynamicValue",
+        "screenshotRef",
+        "evidenceStatus"
+      ],
+      "properties": {
+        "frameRef": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "buildRef": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "deviceRef": {
+          "type": "string"
+        },
+        "viewport": {
+          "$ref": "#/$defs/viewport"
+        },
+        "locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "state": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "stateProperties": {
+          "type": "object"
+        },
+        "dynamicValue": {},
+        "screenshotRef": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "redboxRef": {
+          "type": "string"
+        },
+        "actionTraceRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rawEvidenceRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidenceStatus": {
+          "$ref": "#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

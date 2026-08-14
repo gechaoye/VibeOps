@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "open-popup-interval-for-backdrop-repair",
+  "method": "aiTap",
+  "prompt": "定位第一组弹窗提醒开关下方，左侧名称为“间隔时间”、右侧显示当前间隔值和向右箭头的完整横向设置行；不包含上下相邻行。",
+  "beforeFrameRef": "sha256:d3c5ec113854a54b5da4685d322c61a07ac406b5bda1324db80722eecc7ffd29",
+  "locator": {
+    "rect": {
+      "left": 48,
+      "top": 971,
+      "width": 1032,
+      "height": 140
+    },
+    "center": [
+      563,
+      1040
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T08:55:18.287Z",
+  "completedAt": "2026-07-31T08:55:30.617Z",
+  "postcondition": "弹窗提醒间隔底部选择面板已打开，可见10分钟、30分钟、1小时、4小时和取消，面板上方显示完整半透明灰色背景遮罩。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图中“弹窗提醒间隔”的底部选择面板已打开，面板内可见“10分钟”“30分钟”“1小时”“4小时”和“取消”；面板上方页面区域覆盖了完整的半透明灰色背景遮罩。"
+  },
+  "status": "executed_verified"
+}

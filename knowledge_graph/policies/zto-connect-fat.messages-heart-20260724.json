@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-heart-20260724:policy",
+  "sourceScopeHash": "sha256:8bbaf952ea390264b297b3414a5f96a2f5cf590c94e2fbd74768afe005dc0e1e",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 2,
+  "maxActions": 2,
+  "allowedRiskLevels": [
+    "low",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "messages_toolbar_read_only_entry",
+    "shared_navigation"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "bottom-navigation-messages-tab",
+      "space": "current_display_px",
+      "rect": {
+        "x": 230.0,
+        "y": 2140.0,
+        "width": 220.0,
+        "height": 236.0
+      },
+      "purpose": "只允许从冷启动后的一级页切换到消息页。"
+    },
+    {
+      "key": "messages-toolbar-heart",
+      "space": "current_display_px",
+      "rect": {
+        "x": 225.0,
+        "y": 545.0,
+        "width": 150.0,
+        "height": 145.0
+      },
+      "purpose": "只允许点击消息页顶部工具栏内经 Midscene 实时定位的特别关注入口（爱心图标）。"
+    }
+  ],
+  "entryOnly": [
+    "messages.banner.survey",
+    "messages.conversation.row",
+    "messages.toolbar.add",
+    "messages.toolbar.profile",
+    "messages.toolbar.search"
+  ],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "bounded_feature_or_page",
+    "maxDepth": 2,
+    "maxActions": 2,
+    "include": [
+      "messages.root",
+      "messages.toolbar.heart",
+      "messages.toolbar.heart.destination.unresolved"
+    ],
+    "exclude": [
+      "messages.search",
+      "messages.new_chat",
+      "messages.chat_detail",
+      "messages.banner",
+      "messages.conversation_filter_mutation",
+      "workbench.root.interior"
+    ],
+    "entryOnly": [
+      "messages.toolbar.search",
+      "messages.toolbar.add",
+      "messages.toolbar.profile",
+      "messages.banner.survey",
+      "messages.conversation.row"
+    ],
+    "stopAt": [
+      "messages.toolbar.heart.destination.unresolved"
+    ],
+    "unknownControlPolicy": "observe_only",
+    "viewportOnly": true
+  }
+}

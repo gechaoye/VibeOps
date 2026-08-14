@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHE9S3D17PB2N6PWYCHHGQE",
+  "sessionRef": "01KYHE6NHV52ZRY5RVSXS0F6B2",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHE72GBZS1GCZY90QMBKGKR",
+  "sourceScreenshotRef": "sha256:b301515a84bfc4fb7079b384c2052ec0b337ff1a52991d9b8169b8cd145df6a6",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面顶部标题文字为“特别关注提醒”，三个帮助问号均可见且当前没有深色帮助气泡。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:25:27.465Z",
+  "endedAt": "2026-07-27T09:25:37.517Z",
+  "durationMs": 10051.485625,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:4362566ce53be943a5fa535f4b50e5df346e268aefea8aba2918e143332d1e37"
+}

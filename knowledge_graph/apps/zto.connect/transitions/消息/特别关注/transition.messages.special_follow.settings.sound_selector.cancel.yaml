@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBWKGMC4FJWMGTE7QW
+key: transition.messages.special_follow.settings.sound_selector.cancel
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENBH55299C13ABP9088
+triggerElementRef: 01KYKA3ENB66P4S6137G5DSM1Z
+action: aiTap
+capability: cancel_sound_selector
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHJ2QKAR9ACB2F94FDT5NH4
+  beforeFrameRef: 01KYHJ02J33F2PPE1TGTKJWP23
+  afterFrameRef: 01KYHJ36C43GS7B8J5NBZKK55K
+  postcondition: pass
+  semanticAssertions:
+  - sha256:47fa61a99321bf57f35de493e9c1bead5c4b5ca219899c9aac196c0145ec411e
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

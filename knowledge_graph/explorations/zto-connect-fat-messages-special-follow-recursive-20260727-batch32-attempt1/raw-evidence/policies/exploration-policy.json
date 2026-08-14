@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1:policy",
+  "sourceScopeHash": "sha256:9d50935d46e5f175b1dda4278c0c8cf39e9f460e01447169c6239fadcdb8e551",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 8,
+  "allowedRiskLevels": [
+    "low",
+    "medium",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "persistent_setting_control"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "night-dnd-toggle-region",
+      "space": "current_display_px",
+      "rect": {
+        "x": 840,
+        "y": 1450,
+        "width": 300,
+        "height": 350
+      },
+      "purpose": "夜间免打扰行右侧开关区域。"
+    },
+    {
+      "key": "group-dnd-toggle-region",
+      "space": "current_display_px",
+      "rect": {
+        "x": 840,
+        "y": 1850,
+        "width": 300,
+        "height": 350
+      },
+      "purpose": "免打扰群通知行右侧开关区域。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "persistent_setting_change"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 1800,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 8,
+    "include": [
+      "messages.special_follow.settings",
+      "messages.special_follow.settings.night_dnd",
+      "messages.special_follow.settings.group_dnd"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

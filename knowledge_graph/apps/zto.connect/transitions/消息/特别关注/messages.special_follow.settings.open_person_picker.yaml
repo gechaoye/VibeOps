@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBX195QB179EVJX1XX
+key: messages.special_follow.settings.open_person_picker
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENB4BWWND6KPK6B41C4
+action: aiTap
+capability: open_person_picker
+targetRef: 01KYKA3ENBCMSXNBZDYXZ7PJSM
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYK4QWXCWDFGKK1431JYQ5N8
+  beforeFrameRef: 01KYK4PCJ2QTBP3H0RYPPA61S5
+  afterFrameRef: 01KYK4RJCAAE8NX6FWW6RG7XNK
+  postcondition: pass
+  semanticAssertions:
+  - sha256:54bafde05283447bd5552ff4079fed0b8e209ab67cdd2ac2cb65c993d177ed47
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

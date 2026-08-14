@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBX0NPQD3YD3CTTDZ6
+key: messages.special_follow.settings.scroll
+label: 特别关注-特别关注提醒-设置页纵向滚动
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+parentElementRef: null
+controlType: scroll_region
+role: navigation
+capabilities:
+- scroll_settings
+summary: 纵向滚动设置页以查看视口外设置项。
+relationshipRefs:
+- owner:01KYKA3ENB5WR50THMQMPJ4FJZ
+- transition:01KYKA3ENBD8BX5GW0D1HMTEYG
+observations:
+- frameRef: 01KYHXJN3Q386BC6FCBYW2BCT4
+  observedAt: '2026-07-27T13:52:39.760Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:5fc36ef08a173e0a13e516171dfe0fa9d890fe07671913384bf63c4b2752a39b
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch38-attempt2/raw-evidence/sessions/01KYHXJCZ09T7F5859VFTBTMX4
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 0.0
+      top: 250.0
+      width: 1152.0
+      height: 2126.0
+    center:
+    - 576.0
+    - 1313.0
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:0f9fce10489e7c4e23945ef582999c82729717b988961052a2c42caaed7161e9
+  state: 可见且可纵向滚动，右侧显示滚动条
+  dynamicValue: 可见且可纵向滚动，右侧显示滚动条
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBX0NPQD3YD3CTTDZ6-01KYHXJN3Q386BC6FCBYW2BCT4.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: scroll_settings

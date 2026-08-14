@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ13NZMHFEDT6CYN07RJ06J",
+  "sessionRef": "01KYJ0ZBGHS38PARSMY4TVCBRC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ1300BRDETCNZASH2NHWZ0",
+  "sourceScreenshotRef": "sha256:5e1bb52a49ca5c8197683f1df80821986b61a77a239e31af536c7b08f0b28398",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"icon_button\",\"list_entry\",\"back\"]. 本批次只复核页面顶栏与“我的特别关注”成员区域：返回、我的特别关注行、练良伟成员头像或名称、添加入口。该设置页其余控件已有独立批次完整证据，不要在本次返回灰色说明区及其下方的提醒设置控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.add\",\"predicate\":\"opens_common_component\",\"value\":\"通用选人组件\",\"source\":\"user\"},{\"subjectKey\":\"common.person_picker\",\"predicate\":\"scope_role\",\"value\":\"通用组件边界_不递归探索\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "1人",
+      "练良伟",
+      "添加",
+      "移除"
+    ],
+    "visibleNavigationState": "当前位于“特别关注提醒”设置页，顶部“我的特别关注”成员区域可见，当前显示1人。",
+    "visibleControls": [
+      {
+        "candidateKey": "special_follow_back",
+        "label": "返回",
+        "controlType": "back",
+        "visibleState": "顶部左侧黑色左箭头，可见",
+        "semanticRole": "返回上一页",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "返回上一页面。",
+        "locatorPrompt": "定位“特别关注提醒”页面顶栏最左侧的黑色左箭头返回控件"
+      },
+      {
+        "candidateKey": "special_follow_members_row",
+        "label": "我的特别关注（1人）",
+        "controlType": "list_entry",
+        "visibleState": "成员区标题行可见，右侧显示“1人”和向右箭头",
+        "semanticRole": "进入特别关注成员列表",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "打开当前特别关注成员列表。",
+        "locatorPrompt": "定位标题“特别关注提醒”下方、左侧文字为“我的特别关注”且右侧显示“1人”和右箭头的整行入口"
+      },
+      {
+        "candidateKey": "special_follow_member_lian_liangwei",
+        "label": "练良伟",
+        "controlType": "list_entry",
+        "visibleState": "成员头像及其下方名称“练良伟”可见",
+        "semanticRole": "特别关注成员",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "当前特别关注成员入口；截图与 supplied context 未明确点击后的具体行为。",
+        "locatorPrompt": "定位“我的特别关注”区域内最左侧、名称为“练良伟”的成员头像或其下方名称"
+      },
+      {
+        "candidateKey": "special_follow_add",
+        "label": "添加",
+        "controlType": "button",
+        "visibleState": "虚线方框内灰色加号，下面显示“添加”",
+        "semanticRole": "添加特别关注人员",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会进入通用选人组件并可能新增特别关注人员",
+        "functionDescription": "打开通用选人组件以添加特别关注人员；该组件属于不递归探索边界。",
+        "locatorPrompt": "定位“我的特别关注”成员区域内、练良伟右侧的虚线方框加号及下方“添加”文字入口"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "special_follow_settings_page_scroll",
+        "label": "特别关注提醒页面",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位整个“特别关注提醒”设置页面的主内容区域；右侧可见竖向滚动条"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "截图及 supplied context 未明确“练良伟”成员头像或名称被点击后的具体行为。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:54:00.915Z",
+  "endedAt": "2026-07-27T14:54:20.660Z",
+  "durationMs": 19744.408875,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:dabb54781f8a4ce4d5ac1bf9bea2e5fe61a020b2317ea8907c0ad0833b2fdd44"
+}

@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch42-attempt1:plan",
+  "sourceScopeHash": "sha256:1747e72de42af358dd8a68d3fd450237f6fc0df1f957b2c2d8945638598883a5",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "添加练良伟后从设置页返回特别关注列表，记录列表是否展示该成员的未读会话。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sound",
+        "predicate": "current_value",
+        "value": "门铃",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.with_member_lian_liangwei",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "settings-back-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 100,
+          "width": 170,
+          "height": 180
+        },
+        "purpose": "特别关注提醒设置页左上返回按钮。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.with_member_lian_liangwei": {
+      "key": "messages.special_follow.settings.with_member_lian_liangwei",
+      "label": "添加练良伟后的特别关注提醒设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注提醒，我的特别关注显示1人和练良伟，添加与移除入口可见，左上返回按钮可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本批次只复核页面顶栏与“我的特别关注”成员区域：返回、1人入口、练良伟、添加和移除。该设置页其余控件已有独立批次完整证据，不要在本次返回灰色说明区及其下方的提醒设置控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "back"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "back_to_special_follow"
+      ],
+      "postcondition": "已记录设置页返回前状态。"
+    },
+    "messages.special_follow.after_member_added": {
+      "key": "messages.special_follow.after_member_added",
+      "label": "添加成员后返回特别关注页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注，左上返回按钮可见；如有练良伟的未读会话则如实记录会话、未读徽标和全部可见控件，如无则如实记录空状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点添加成员后返回的特别关注页面，包括标题、左上返回按钮、设置入口、会话列表、练良伟会话、未读徽标、空状态及其他全部可见交互控件；不要根据用户事实推断，按屏幕实际状态返回。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "list_entry",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证设置页返回特别关注页并记录实际列表状态。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-settings-with-member-before-back",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.with_member_lian_liangwei",
+      "depth": 3
+    },
+    {
+      "id": "tap-settings-back",
+      "kind": "tap",
+      "semanticAction": "back_to_special_follow",
+      "fromState": "messages.special_follow.settings.with_member_lian_liangwei",
+      "toState": "messages.special_follow.after_member_added",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "settings_back",
+        "label": "返回",
+        "scope": "page_navigation",
+        "locatorPrompt": "定位标题为“特别关注提醒”的页面顶栏最左侧黑色向左箭头返回按钮。",
+        "allowedRegionRef": "settings-back-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面已返回标题为特别关注的功能页，左上返回按钮可见。"
+        ]
+      }
+    }
+  ]
+}

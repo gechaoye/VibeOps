@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHMZ37SAVSQERZAHD4FZ9VB",
+  "sessionRef": "01KYHMMSAR8NZXY6JC450Q617D",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHMYDB078H10HV5JV315AWS",
+  "sourceScreenshotRef": "sha256:9464b12360d102375ef695d79c2b02240bc4086a43b651e10b7706fc8779bf53",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"list_entry\",\"radio\",\"close\"]. 完整盘点再次打开的底部面板三个控件；背景页控件不作为当前可操作控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.interval\",\"predicate\":\"visible_options\",\"value\":\"短信/电话提醒间隔面板包含10分钟、30分钟和取消；设备当前已更新为10分钟。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "底部间隔时间选择面板",
+      "10分钟",
+      "30分钟（当前可见选中）",
+      "取消"
+    ],
+    "visibleNavigationState": "底部间隔时间选择面板已打开；背景“特别关注提醒”页面被遮罩，当前操作焦点位于底部面板。",
+    "visibleControls": [
+      {
+        "candidateKey": "interval_10_minutes",
+        "label": "10分钟",
+        "controlType": "radio",
+        "visibleState": "未选中",
+        "semanticRole": "设置提醒间隔为10分钟",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会更改提醒间隔设置",
+        "functionDescription": "选择10分钟作为提醒间隔。",
+        "locatorPrompt": "定位底部白色间隔时间选择面板中第一行、文字为“10分钟”的选项"
+      },
+      {
+        "candidateKey": "interval_30_minutes",
+        "label": "30分钟",
+        "controlType": "radio",
+        "visibleState": "已选中，左侧显示蓝色对勾且文字为蓝色",
+        "semanticRole": "设置提醒间隔为30分钟",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "当前已选中；选择其他间隔可更改该设置",
+        "functionDescription": "选择30分钟作为提醒间隔；当前视觉状态显示此项已选中。",
+        "locatorPrompt": "定位底部白色间隔时间选择面板中第二行、左侧有蓝色对勾且文字为蓝色“30分钟”的选项"
+      },
+      {
+        "candidateKey": "close_interval_panel",
+        "label": "取消",
+        "controlType": "close",
+        "visibleState": "可用",
+        "semanticRole": "关闭间隔时间选择面板",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "关闭面板，不选择新的间隔项",
+        "functionDescription": "取消当前选择操作并关闭底部面板。",
+        "locatorPrompt": "定位屏幕底部白色面板最下方居中、文字为“取消”的关闭控件"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:21:47.924Z",
+  "endedAt": "2026-07-27T11:22:07.481Z",
+  "durationMs": 19556.183833,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:bda3fa5c07b8a81439d5d426368db8411c85eab43e9e5bd447f352dba4f131e8"
+}

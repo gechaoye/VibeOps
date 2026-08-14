@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ4JH21QP0XNB4JZRVPJSBM",
+  "sessionRef": "01KYJ4FXEX0ZV2MQDJVS4B3MYB",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ4H12DPN6NWCFJ394P3ZG2",
+  "sourceScreenshotRef": "sha256:2d76f510c4265df9ace9a87355ae5c7d4e3e2524317306fc02c69ffe68038e4a",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"navigate_back\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_entry\",\"predicate\":\"navigation_result\",\"value\":\"点击顶部成员头像条目会直接进入该成员的通用聊天页。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注",
+    "visibleResultContent": [
+      "我的特别关注",
+      "设置",
+      "成员头像条目及名称“这是练...”",
+      "会话标题“这是练工练工练工练...”",
+      "会话摘要“练良伟 创建了待办 循环待办每天”",
+      "附加文字“🥰努力工...”",
+      "时间“10:28”"
+    ],
+    "supportedFunctionDescription": "立即执行“navigate_back”后，当前呈现特别关注页面，而非覆盖式弹窗；页面支持通过“设置”管理特别关注。根据供应的权威上下文，设置为特别关注的人员存在未读消息时，其会话会显示在特别关注列表；该会话展示期间，消息页入口的爱心图标会变为橙黄色；点击顶部成员头像条目会直接进入该成员的通用聊天页。",
+    "evidenceBasis": [
+      "屏幕顶部标题明确显示“特别关注”。",
+      "页面主体明确显示“我的特别关注”和蓝色“设置”。",
+      "顶部成员区可见头像及截断名称“这是练...”。",
+      "下方列表可见一条会话、摘要和时间“10:28”。",
+      "特别关注未读会话展示及消息页爱心图标橙黄色高亮条件来自用户提供的权威任务上下文，并非由截图像素推断。",
+      "点击顶部成员头像进入通用聊天页来自 supplied verified_evidence，并非由截图像素推断。"
+    ],
+    "unresolvedMeaning": "仅凭当前静态屏幕无法确定“navigate_back”执行前所在页面、当前会话是否仍处于未读状态、未读数量，以及点击下方会话行的具体导航结果；截图中截断的成员名称、会话标题和附加文字也无法完整还原。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:54:39.578Z",
+  "endedAt": "2026-07-27T15:54:52.865Z",
+  "durationMs": 13286.613,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:6c529d5b14be95574a8d65a12598abe69ca983a7ad57e315cf762f04f8e65add"
+}

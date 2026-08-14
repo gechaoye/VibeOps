@@ -1,0 +1,30 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "dismiss-popup-help-via-description-live-repair",
+  "method": "aiTap",
+  "prompt": "定位页面浅灰色分区说明文字“来自「特别关注」的未读消息，自定义提醒方式”；点击该非操作说明区以关闭帮助气泡，不要点击问号、开关或设置行。",
+  "beforeFrameRef": "sha256:e0e77d75b63bb1144528698e27379d67c600168467d8cbaff945153ded2974ec",
+  "locator": {
+    "rect": {
+      "left": 51,
+      "top": 1744,
+      "width": 998,
+      "height": 113
+    },
+    "center": [
+      549,
+      1800
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T02:32:54.855Z",
+  "completedAt": "2026-07-31T02:33:06.959Z",
+  "postcondition": "所有深色帮助说明气泡均已关闭，仍停留在特别关注提醒页面。",
+  "assertion": {
+    "pass": false,
+    "thought": "截图仍位于“特别关注提醒”页面，但画面中仍显示一条深色帮助说明气泡，内容为特别关注人的单聊消息未读提醒说明，因此并非所有深色帮助说明气泡均已关闭。",
+    "message": "Assertion failed: 所有深色帮助说明气泡均已关闭，仍停留在特别关注提醒页面。\nReason: 截图仍位于“特别关注提醒”页面，但画面中仍显示一条深色帮助说明气泡，内容为特别关注人的单聊消息未读提醒说明，因此并非所有深色帮助说明气泡均已关闭。"
+  },
+  "status": "unresolved",
+  "error": "Error: Postcondition failed for dismiss-popup-help-via-description-live-repair: 截图仍位于“特别关注提醒”页面，但画面中仍显示一条深色帮助说明气泡，内容为特别关注人的单聊消息未读提醒说明，因此并非所有深色帮助说明气泡均已关闭。"
+}

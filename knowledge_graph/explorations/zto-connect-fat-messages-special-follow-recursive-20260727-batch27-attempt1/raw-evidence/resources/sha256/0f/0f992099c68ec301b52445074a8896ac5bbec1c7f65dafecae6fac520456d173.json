@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHNDHDG37N4P4TQ0KH0W5KA",
+  "sessionRef": "01KYHN8S4VCAVNFXMZSEKJ13T7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHNBY25VBJ9YYP6BHG284HM",
+  "sourceScreenshotRef": "sha256:2d3f91910567d5eeb2b7ce6d3dd033754231fa7a9301b744d8778a0f3809c21a",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"提醒方式 短信\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder\",\"predicate\":\"enabled_children\",\"value\":\"开启短信/电话提醒后新增独立间隔时间、提醒方式和夜间免打扰设置。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "底部弹出提醒方式选择面板",
+      "短信（当前选中）",
+      "电话",
+      "取消",
+      "背景页面被灰色遮罩覆盖"
+    ],
+    "supportedFunctionDescription": "激活“提醒方式 短信”会打开底部单选面板，可在“短信”和“电话”之间选择提醒方式，或点击“取消”关闭面板。已开启短信/电话提醒后，页面提供独立的间隔时间、提醒方式和夜间免打扰设置。",
+    "evidenceBasis": [
+      "截图顶部标题显示“特别关注提醒”。",
+      "截图底部出现覆盖在页面上的白色选择面板。",
+      "“短信”旁有蓝色勾选标记且文字为蓝色，表明当前选择为短信。",
+      "选择面板中还显示“电话”和“取消”。",
+      "背景可见“弹窗消息未读，短信/电话提醒我”开关处于开启状态，并显示“间隔时间 30分钟”“提醒方式 短信”“夜间免打扰”。",
+      "关于特别关注会话可见性、入口配置后颜色，以及允许操作设置的含义来自用户提供的权威任务上下文，并非从截图像素推断。",
+      "“开启短信/电话提醒后新增独立间隔时间、提醒方式和夜间免打扰设置”来自已验证的权威任务上下文，并与当前可见设置项一致。"
+    ],
+    "unresolvedMeaning": "当前画面未展示点击“电话”后的最终保存方式、提醒渠道是否立即生效，以及“取消”之外是否可通过点击遮罩或返回键关闭面板；这些行为无法仅由当前截图确认。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:29:47.205Z",
+  "endedAt": "2026-07-27T11:30:00.752Z",
+  "durationMs": 13546.862666,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:409d9460b827a0b4cf5ec361271b558e41714866a831f13b4e0b067253248c92"
+}

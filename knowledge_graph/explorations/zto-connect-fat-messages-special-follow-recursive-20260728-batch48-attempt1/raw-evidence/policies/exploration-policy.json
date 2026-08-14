@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt1:policy",
+  "sourceScopeHash": "sha256:9d301bc4e30d23a680c698017175f53e24270148b31dcbc18b615089b6d8120e",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 5,
+  "allowedRiskLevels": [
+    "low",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "feature_entry",
+    "page_content",
+    "page_navigation",
+    "settings_navigation"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "messages-special-follow-heart",
+      "space": "current_display_px",
+      "rect": {
+        "x": 205,
+        "y": 470,
+        "width": 165,
+        "height": 135
+      },
+      "purpose": "消息页顶部功能工具栏橙黄色爱心入口。"
+    },
+    {
+      "key": "special-follow-settings",
+      "space": "current_display_px",
+      "rect": {
+        "x": 940,
+        "y": 235,
+        "width": 212,
+        "height": 190
+      },
+      "purpose": "特别关注页设置按钮。"
+    },
+    {
+      "key": "special-follow-members-chevron",
+      "space": "current_display_px",
+      "rect": {
+        "x": 930,
+        "y": 220,
+        "width": 222,
+        "height": 210
+      },
+      "purpose": "特别关注提醒页1人右侧进入箭头。"
+    },
+    {
+      "key": "all-members-member-row",
+      "space": "current_display_px",
+      "rect": {
+        "x": 20,
+        "y": 220,
+        "width": 720,
+        "height": 270
+      },
+      "purpose": "全部成员页练良伟头像和姓名组成的成员主体，不包含右侧移除按钮。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "temporary_display_state"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 5,
+    "include": [
+      "messages.root",
+      "messages.special_follow",
+      "messages.special_follow.settings",
+      "messages.special_follow.people"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

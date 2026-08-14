@@ -1,0 +1,187 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch9-attempt1
+title: 特别关注成员条目探索第九批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 验证特别关注成员条目“练良伟”的点击目标并返回成员列表。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: exploration.authorization, predicate: may_operate_settings_and_members, value: "true", source: user}
+
+entry:
+  knownStartPageKey: messages.special_follow.people.nonempty
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 设备已位于特别关注“全部成员”非空页；本批点击唯一成员“练良伟”并返回。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 40
+  include: [messages.special_follow.people, boundary.common.person_profile]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [navigation_history, viewport_scroll, temporary_display_state, persistent_setting_change]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [feature_entry, page_navigation, page_content, settings_navigation, temporary_state_control, scroll_region]
+  allowedTapRegions:
+    - key: special-follow-member-row
+      space: current_display_px
+      rect: {x: 0, y: 250, width: 930, height: 230}
+      purpose: “全部成员”页面成员“练良伟”条目的实时 Midscene 定位范围，不含右侧移除按钮。
+    - key: app-visible-content
+      space: current_display_px
+      rect: {x: 0, y: 96, width: 1152, height: 2184}
+      purpose: 经用户授权和风险策略允许的特别关注功能内控件范围。
+
+expectedStates:
+  - key: messages.special_follow.people.nonempty
+    label: 全部成员非空状态
+    kind: page
+    expectedStablePageKey: messages.special_follow.people
+    requiredSemanticAssertions:
+      - 当前屏幕标题为“全部成员”，成员“练良伟”和其右侧“移除”按钮可见。
+    inspection:
+      queryPrompt: 完整盘点特别关注“全部成员”非空页面的返回、关闭、成员“练良伟”和移除按钮。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [open_special_follow_member]
+    postcondition: 非空成员列表完成盘点。
+  - key: boundary.common.person_profile.lian_liangwei
+    label: 练良伟成员点击目标
+    kind: page
+    expectedStablePageKey: boundary.common.person_profile
+    requiredSemanticAssertions:
+      - 当前屏幕已离开“全部成员”列表，并显示与“练良伟”相关的个人信息、资料、名片或详情内容。
+    inspection:
+      queryPrompt: 该页面若为 APP 通用个人资料组件，只盘点返回/关闭和能确认组件身份的主要信息，不递归探索组件内部功能；如点击无导航则如实记录。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, link, menu, list_entry, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [navigate_back]
+    postcondition: 成员条目目标已确认并作为通用组件边界记录。
+  - key: messages.special_follow.people.returned_from_profile
+    label: 从成员目标返回全部成员
+    kind: page
+    expectedStablePageKey: messages.special_follow.people
+    requiredSemanticAssertions:
+      - 当前屏幕已返回标题为“全部成员”的页面，成员“练良伟”和“移除”按钮可见。
+    inspection:
+      queryPrompt: 复核返回后的全部成员页，定位返回、关闭、成员“练良伟”和移除按钮。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, list_entry, back, close]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已验证从成员目标返回全部成员。
+
+actions:
+  - id: capture-nonempty-members-before-member-entry
+    kind: capture
+    state: messages.special_follow.people.nonempty
+    depth: 3
+  - id: open-special-follow-member
+    kind: tap
+    semanticAction: open_special_follow_member
+    fromState: messages.special_follow.people.nonempty
+    toState: boundary.common.person_profile.lian_liangwei
+    depth: 4
+    risk: low
+    sideEffects: [navigation_history]
+    waitMs: 3000
+    target:
+      key: member_lian_liangwei
+      label: 练良伟
+      scope: page_navigation
+      locatorPrompt: 定位“全部成员”标题下方唯一成员条目左侧头像和中部姓名“练良伟”组成的行；不要定位最右侧“移除”按钮。
+      allowedRegionRef: special-follow-member-row
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 当前屏幕已离开“全部成员”列表，并显示与“练良伟”相关的个人信息、资料、名片或详情内容。
+  - id: back-from-special-follow-member-target
+    kind: back
+    semanticAction: navigate_back
+    fromState: boundary.common.person_profile.lian_liangwei
+    toState: messages.special_follow.people.returned_from_profile
+    depth: 3
+    risk: safe
+    sideEffects: [navigation_history]
+    waitMs: 2500
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 当前屏幕已返回标题为“全部成员”的页面，成员“练良伟”和“移除”按钮可见。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch9-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

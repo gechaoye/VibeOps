@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK5HJ41ZVVNYPETP9CX9P6A",
+  "sessionRef": "01KYK56EAS2G50YYZCS42HQWRP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK5A76HPDG0D99Z27DX9AJX",
+  "sourceScreenshotRef": "sha256:5985a4dc3ba151f850d6a26732562bee0ff6406759a1c6379b9d9df4149bb59f",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"收起特别关注\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字是 Runtime 呈现，不属于稳定身份或固定规则。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "消息页（特别关注已收起）",
+    "visibleResultContent": [
+      "当前显示常规消息会话列表，未见特别关注列表或弹层。",
+      "页面提示“您有2条重要消息未读，点击查看”。",
+      "可见会话包括“上海总部IT部网点老板助…”、“三个必看群22233”、“四个必看群”、“一个必看群”、“airtest公开群”、“龚帆”和“超级表单”。",
+      "消息页工具栏中的特别关注爱心图标当前呈橙黄色。"
+    ],
+    "supportedFunctionDescription": "紧接着启用“收起特别关注”后，特别关注区域被收起，页面显示常规消息列表。根据提供的权威任务上下文，爱心控件的功能名称为“特别关注”；设置为特别关注的人员存在未读消息时，该人员会话显示在特别关注列表；红色角标实时展示特别关注会话当前未读消息数量；当已设置的特别关注人员存在未读消息且会话正在特别关注列表中展示时，消息页入口爱心图标变为橙黄色。",
+    "evidenceBasis": [
+      "屏幕中未见特别关注列表、抽屉或弹层，主体为常规消息会话列表。",
+      "工具栏爱心图标在当前画面中可见为橙黄色。",
+      "屏幕顶部明确显示“您有2条重要消息未读，点击查看”。",
+      "特别关注的功能名称、红色角标语义、成员会话展示条件和爱心高亮条件均来自题目提供的权威非视觉任务上下文。"
+    ],
+    "unresolvedMeaning": "仅凭当前静态画面无法确认特别关注区域收起前的具体列表内容、成员身份及当时的实时未读数量，也无法确认顶部“2条重要消息”是否等同于特别关注未读消息。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:30:31.662Z",
+  "endedAt": "2026-07-28T01:31:04.193Z",
+  "durationMs": 32531.849625,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:45675dfed7802bab3df9d0fc84e6f202dcdd96dd1407f6eeb32c70c32720dafe"
+}

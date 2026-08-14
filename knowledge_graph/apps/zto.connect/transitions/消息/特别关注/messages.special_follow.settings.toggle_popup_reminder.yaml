@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBK8GKAGTP7SYSVHSY
+key: messages.special_follow.settings.toggle_popup_reminder
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBA43VQTMC90S6PBFG
+action: aiTap
+capability: toggle_popup_reminder
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHJV2AD0XJ3WR97FSZNRFKG
+  beforeFrameRef: 01KYHJRETDM2RK6P5ER9W5TMQK
+  afterFrameRef: 01KYHJVGNWN620BBTQ00DWFZ2B
+  postcondition: pass
+  semanticAssertions:
+  - sha256:d7ec084461a2fee55feb56d000a1b958b7bf1abfd1e97662192d6ed6998e0f07
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

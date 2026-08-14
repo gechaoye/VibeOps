@@ -1,0 +1,76 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBJ4XNNW97FZQQ2Y6P
+key: messages.special_follow.settings.popup_interval
+label: 特别关注-特别关注提醒-单聊弹窗提醒间隔
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+parentElementRef: null
+controlType: container
+role: setting_group
+capabilities:
+- open_popup_interval_selector
+summary: 单聊弹窗提醒间隔选择行总容器；名称区域实测可触发父行，因此由容器承担选择动作，当前值与箭头仅呈现状态和可操作提示。
+relationshipRefs:
+- owner:01KYKA3ENB5WR50THMQMPJ4FJZ
+- child:01KYKA3ENBR0195NB7W52E20HV
+- child:01KYKA3ENB4VEJBJMDXP8ADY01
+- child:01KYKA3ENBS0K27728HFHXSJMM
+- transition:01KYKA3ENBH21T50G11CGVXAKP
+observations:
+- frameRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  observedAt: '2026-07-31T06:19:26.974Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 48.0
+      top: 970.0
+      width: 1032.0
+      height: 141.0
+    center:
+    - 563.0
+    - 1040.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:50fe9505459837b4416c00ed513f3ff9a3d49cd9c067e7f0f1c0817418f091fa
+  state: visible
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBJ4XNNW97FZQQ2Y6P-sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329.png
+coverage: executed_verified_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: true
+  function: opens_popup_interval_selector_from_parent_row_hit_area
+childElementRefs:
+- 01KYKA3ENBR0195NB7W52E20HV
+- 01KYKA3ENB4VEJBJMDXP8ADY01
+- 01KYKA3ENBS0K27728HFHXSJMM
+composition:
+  roles:
+    label: 01KYKA3ENBR0195NB7W52E20HV
+    currentValue: 01KYKA3ENB4VEJBJMDXP8ADY01
+    settingTrigger: 01KYKA3ENBJ4XNNW97FZQQ2Y6P
+    affordance: 01KYKA3ENBS0K27728HFHXSJMM
+  profile: selector_row

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHHHYGE43MWN1MBQF8HB3HS",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHHFBA6FRB5MJ42CF887DXR",
+  "sourceScreenshotRef": "sha256:0073f611c0c6ad24c4a7773c493c7a2d435d48cb7b12f3d8c60c019b630b6b1b",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "底部提示音面板已打开，显示默认、波浪、简报、门铃和取消，简报为当前选中项。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:22:24.997Z",
+  "endedAt": "2026-07-27T10:22:30.926Z",
+  "durationMs": 5929.09725,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:543d1761557f076205461d3c5a57c663178ae550aedd43007ee111bf01b662b9"
+}

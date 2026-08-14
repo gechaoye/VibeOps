@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawExplorationSession",
+  "id": "01KYK9QAD4KZC178DVBGB1E9K6",
+  "observedApplicationBuild": {
+    "platform": "android",
+    "packageId": "com.zto.connect.fat",
+    "versionName": "8.58.0.10542",
+    "versionCode": "10542",
+    "source": "adb_read_only_dumpsys_package",
+    "semantics": "raw_observed_metadata_not_graph_identity"
+  },
+  "rawDeviceContext": {
+    "serialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+    "serialRecordedSeparately": false,
+    "platform": "android",
+    "manufacturer": "HUAWEI",
+    "model": "NOH-AN01",
+    "buildCharacteristics": "default",
+    "android": {
+      "release": "12",
+      "apiLevel": 31
+    },
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "densityDpi": {
+      "physical": 560,
+      "override": null,
+      "effective": 560
+    },
+    "logicalCoordinateSizePx": {
+      "width": 329,
+      "height": 679
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "observedApplicationBuild": {
+      "platform": "android",
+      "packageId": "com.zto.connect.fat",
+      "versionName": "8.58.0.10542",
+      "versionCode": "10542",
+      "source": "adb_read_only_dumpsys_package",
+      "semantics": "raw_observed_metadata_not_graph_identity"
+    }
+  },
+  "policyRef": "zto-connect-fat-messages-special-follow-recursive-20260728-batch50-attempt1:policy",
+  "planRef": "zto-connect-fat-messages-special-follow-recursive-20260728-batch50-attempt1:plan",
+  "sourceScopeHash": "sha256:62ca77785ae7ab8b266e01a0272f53d423ffbd1eacf9837d67a904f6fdd18081",
+  "startedAt": "2026-07-28T02:44:07.204Z",
+  "endedAt": "2026-07-28T02:46:04.092Z",
+  "mode": "recursive_feature_evidence_capture",
+  "status": "completed_with_unresolved_postconditions",
+  "failure": {
+    "code": "SEMANTIC_POSTCONDITION_UNRESOLVED",
+    "category": "SemanticResolutionError",
+    "stage": "semantic_recognition"
+  },
+  "bootstrap": {
+    "coldStart": false,
+    "requireUserPreparedState": true,
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "operations": [
+      {
+        "operation": "user_prepared_state_verified",
+        "target": "com.zto.connect.fat"
+      }
+    ],
+    "foregroundVerified": true,
+    "activityVerified": true,
+    "framework": "midscene.AndroidAgent"
+  },
+  "deviceOrchestration": {
+    "stayAwake": {
+      "status": "enabled",
+      "mechanism": "adb_global_stay_on_while_plugged_in",
+      "originalValue": 7,
+      "appliedValue": 7,
+      "changed": false,
+      "restoration": {
+        "status": "not_required",
+        "verifiedValue": 7
+      }
+    }
+  },
+  "executionAuthorization": {
+    "physicalActionsAllowed": true,
+    "visualInspectionConfirmed": true,
+    "offlineFixture": false
+  },
+  "semanticModelSummary": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "credentialsPersisted": false,
+    "serviceLocationPersisted": false
+  },
+  "frameCount": 2,
+  "actionCount": 1,
+  "contractValidation": {
+    "status": "compatible",
+    "executionFramework": "midscene",
+    "semanticProvider": "midscene",
+    "stepCount": 2,
+    "actionCount": 1,
+    "sourceScopeHash": "sha256:62ca77785ae7ab8b266e01a0272f53d423ffbd1eacf9837d67a904f6fdd18081"
+  },
+  "outputKind": "raw_exploration_evidence",
+  "recordNamespace": "uikg.raw-evidence",
+  "graphMaterialization": "none",
+  "producesGraphEntities": false,
+  "semanticAndActionFramework": "midscene.AndroidAgent",
+  "adbPolicy": "read_only_runtime_context_plus_reversible_stay_awake",
+  "requiredDownstreamProcessing": [
+    "evidence_fusion",
+    "semantic_identity_resolution",
+    "page_and_state_resolution",
+    "graph_materialization"
+  ],
+  "producer": {
+    "id": "midscene-android-uikg-evidence-producer",
+    "midsceneVersion": "1.10.6"
+  },
+  "contentHash": "sha256:36642509e179d1b3f7c1b594790dc48f49b6cab60863eab7d3cb4dd6af07588c"
+}

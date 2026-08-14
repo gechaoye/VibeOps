@@ -1,0 +1,66 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBXTS93XTAA19098GF
+key: messages.special_follow.settings.group_dnd_help_popover
+label: 特别关注-特别关注提醒-免打扰群通知设置项-帮助浮层
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENB9RC99D65BM6HGB4E
+parentElementRef: 01KYKA3ENB9RC99D65BM6HGB4E
+controlType: help_popover
+role: help_content
+capabilities: []
+summary: 展示免打扰群通知规则的深灰色说明气泡；该浮层不是第二个帮助图标。
+relationshipRefs:
+- owner:01KYKA3ENB9RC99D65BM6HGB4E
+- parent:01KYKA3ENB9RC99D65BM6HGB4E
+observations:
+- frameRef: sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727
+  observedAt: '2026-07-31T04:13:23.676Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: null
+    actionable: false
+    visible: true
+  screenshotRef: sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 12.0
+      top: 1777.0
+      width: 1082.0
+      height: 181.0
+    center:
+    - 552.0
+    - 1867.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:3845742788cb8e915b876fb31ce3516e7032bde661d3dd6ba12fdab58bb70d3b
+  state: visible
+  dynamicValue: 开启后，设置消息免打扰的群，特别关注人新消息保持正常通知。
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBXTS93XTAA19098GF-sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727.png
+coverage: observed_not_activated_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+aliases:
+- 免打扰群通知帮助说明文案泡泡框
+interactionBoundary:
+  actionable: false
+  function: presents_help_content

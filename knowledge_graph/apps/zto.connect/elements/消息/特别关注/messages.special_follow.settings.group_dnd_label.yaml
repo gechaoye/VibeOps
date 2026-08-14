@@ -1,0 +1,65 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBZD61K43CQK52XS6H
+key: messages.special_follow.settings.group_dnd_label
+label: 特别关注-特别关注提醒-免打扰群通知设置项-名称文案
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENB9RC99D65BM6HGB4E
+parentElementRef: 01KYKA3ENB9RC99D65BM6HGB4E
+controlType: text_label
+role: description
+capabilities: []
+summary: 显示设置名称“免打扰群通知”；该文案只说明设置含义，不承担帮助或开关动作。
+relationshipRefs:
+- owner:01KYKA3ENB9RC99D65BM6HGB4E
+- parent:01KYKA3ENB9RC99D65BM6HGB4E
+observations:
+- frameRef: sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727
+  observedAt: '2026-07-31T04:13:23.676Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: null
+    actionable: false
+  screenshotRef: sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 50.0
+      top: 1976.0
+      width: 269.0
+      height: 51.0
+    center:
+    - 184.0
+    - 2001.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:cb81777f768e6336095c85935a7a1d83837dae371358a6205694ffe09aad27bd
+  state: visible_non_actionable_label
+  dynamicValue: 免打扰群通知
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBZD61K43CQK52XS6H-sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727.png
+coverage: observed_not_activated_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+aliases:
+- 免打扰群通知名称
+interactionBoundary:
+  actionable: false
+  function: describes_sibling_controls

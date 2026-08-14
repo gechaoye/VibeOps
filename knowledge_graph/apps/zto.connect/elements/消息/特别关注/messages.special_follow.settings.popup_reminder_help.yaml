@@ -1,0 +1,63 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB6FXFS0TKJT80YAY5
+key: messages.special_follow.settings.popup_reminder_help
+label: 特别关注-特别关注提醒-单聊消息未读弹窗提醒设置项-帮助图标
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENBHBGQG57WEXWEJ91S
+parentElementRef: 01KYKA3ENBHBGQG57WEXWEJ91S
+controlType: icon_button
+role: help
+capabilities:
+- open_popup_reminder_help
+summary: 显示单聊消息未读弹窗提醒的帮助浮层；当前构建未验证再次点击同一图标可收起浮层。
+relationshipRefs:
+- owner:01KYKA3ENBHBGQG57WEXWEJ91S
+- parent:01KYKA3ENBHBGQG57WEXWEJ91S
+- transition:01KYKA3ENBDGS1AJN4X67RFC7M
+observations:
+- frameRef: sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582
+  observedAt: '2026-07-31T03:44:51.462Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 583.0
+      top: 830.0
+      width: 53.0
+      height: 54.0
+    center:
+    - 609.0
+    - 856.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:40e9cbd3196a0aac1d62aa2788a6f82fbff192696674d33c7e6b0112c6344007
+  state: visible
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENB6FXFS0TKJT80YAY5-sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582.png
+coverage: executed_verified_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: true
+  function: open_popup_reminder_help

@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "open-all-members-via-chevron-uikg301",
+  "method": "aiTap",
+  "prompt": "只定位“我的特别关注”标题行最右侧、动态人数右边的黑色向右箭头图标；不要包含人数或标题文字。",
+  "beforeFrameRef": "sha256:4a85ed0c814b88e8ba6f414a1d0d721a7f2350916f273912e4209aa2fbc996d3",
+  "locator": {
+    "rect": {
+      "left": 1035,
+      "top": 309,
+      "width": 29,
+      "height": 47
+    },
+    "center": [
+      1049,
+      332
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T07:19:22.412Z",
+  "completedAt": "2026-07-31T07:19:45.433Z",
+  "postcondition": "当前页面标题为全部成员，页面中可见成员行及其独立移除按钮。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图顶部标题为“全部成员”。页面中可见一条成员记录，成员名为“练良伟”，其右侧有独立的“移除”按钮。"
+  },
+  "status": "executed_verified"
+}

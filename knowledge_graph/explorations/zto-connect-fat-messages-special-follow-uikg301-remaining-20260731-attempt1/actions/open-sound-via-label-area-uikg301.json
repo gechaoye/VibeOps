@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "open-sound-via-label-area-uikg301",
+  "method": "aiTap",
+  "prompt": "只定位提示音设置行左侧“特别关注提示音”文字；不要包含右侧当前值、箭头或分区标题。",
+  "beforeFrameRef": "sha256:38318987a38ef73111214c5721629e45d397e1789679b273f7cb94d1f07ef65a",
+  "locator": {
+    "rect": {
+      "left": 49,
+      "top": 2274,
+      "width": 300,
+      "height": 49
+    },
+    "center": [
+      198,
+      2298
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T06:55:08.616Z",
+  "completedAt": "2026-07-31T06:55:23.088Z",
+  "postcondition": "提示音底部选择面板已打开，可见默认、波浪、简报、门铃、每行右侧试听按钮和取消。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图中提示音底部选择面板已打开，面板列出“默认”“波浪”“简报”“门铃”，每行右侧均有试听按钮；底部可见“取消”。其中“门铃”当前已勾选。"
+  },
+  "status": "executed_verified"
+}

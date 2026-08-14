@@ -1,0 +1,197 @@
+{
+  "pageIdentity": "“特别关注提醒”业务设置页；当前没有可见覆盖层或临时帮助气泡。",
+  "stateSummary": "我的特别关注为1人（练良伟）。“单聊消息未读，弹窗提醒我”已开启，间隔时间为1小时；“弹窗消息未读，短信/电话提醒我”已开启，间隔时间为30分钟，提醒方式为电话；“夜间免打扰”关闭；“免打扰群通知”关闭；“特别关注提示音”为门铃。所有可见问号帮助图标均未展开帮助气泡，所有可见选择器均处于未展开状态。",
+  "rowCompositions": [
+    {
+      "rowName": "单聊消息未读提醒",
+      "labelText": "单聊消息未读，弹窗提醒我",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标与右侧开关分别可操作；设置名称文字及整行容器不应作为独立操作目标。"
+    },
+    {
+      "rowName": "单聊提醒间隔时间",
+      "labelText": "间隔时间（1小时）",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧“1小时”值和箭头构成选择入口；左侧名称本身不是独立按钮。"
+    },
+    {
+      "rowName": "弹窗未读短信/电话提醒",
+      "labelText": "弹窗消息未读，短信/电话提醒我",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标与右侧开关分别可操作；设置名称文字及整行容器不应作为独立操作目标。"
+    },
+    {
+      "rowName": "短信/电话提醒间隔时间",
+      "labelText": "间隔时间（30分钟）",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧“30分钟”值和箭头构成选择入口；左侧名称本身不是独立按钮。"
+    },
+    {
+      "rowName": "提醒方式",
+      "labelText": "提醒方式（电话）",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧“电话”值和箭头构成选择入口；左侧设置名称不是独立按钮。"
+    },
+    {
+      "rowName": "夜间免打扰",
+      "labelText": "夜间免打扰",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "仅右侧关闭状态的开关是明确操作控件；名称、说明文字和行容器不应被识别为开关。"
+    },
+    {
+      "rowName": "免打扰群通知",
+      "labelText": "免打扰群通知",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标与右侧关闭状态开关分别可操作；名称及行容器不是独立操作控件。"
+    },
+    {
+      "rowName": "特别关注提示音",
+      "labelText": "特别关注提示音（门铃）",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧“门铃”值和箭头构成提示音选择入口；左侧名称不是独立按钮。"
+    }
+  ],
+  "candidateReconciliation": [
+    {
+      "candidate": "页面标题“特别关注提醒”",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于顶部导航栏的页面身份元素，不属于任一设置行。"
+    },
+    {
+      "candidate": "返回箭头",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于顶部导航栏的返回操作。"
+    },
+    {
+      "candidate": "“我的特别关注”区域",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于关注对象管理容器，包含成员、添加、移除及人数入口，不属于提醒设置行。"
+    },
+    {
+      "candidate": "人数“1人”",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "由“我的特别关注”成员数量动态生成，并与右侧箭头共同位于该区域入口。"
+    },
+    {
+      "candidate": "成员“练良伟”",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "属于“我的特别关注”成员列表中的现有成员数据。"
+    },
+    {
+      "candidate": "添加",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于“我的特别关注”管理容器的添加操作。"
+    },
+    {
+      "candidate": "移除",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于“我的特别关注”管理容器的移除操作。"
+    },
+    {
+      "candidate": "单聊消息未读帮助问号",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于“单聊消息未读，弹窗提醒我”设置行，是独立帮助入口；当前未生成帮助气泡。"
+    },
+    {
+      "candidate": "单聊消息未读开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于同名设置行右侧，当前为开启状态。"
+    },
+    {
+      "candidate": "1小时间隔选择器",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于第一组提醒设置的“间隔时间”行；当前未展开，值为动态配置数据。"
+    },
+    {
+      "candidate": "短信/电话提醒帮助问号",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于“弹窗消息未读，短信/电话提醒我”设置行，是独立帮助入口；当前未生成帮助气泡。"
+    },
+    {
+      "candidate": "短信/电话提醒开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于同名设置行右侧，当前为开启状态。"
+    },
+    {
+      "candidate": "30分钟间隔选择器",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于第二组提醒设置的“间隔时间”行；当前未展开，值为动态配置数据。"
+    },
+    {
+      "candidate": "提醒方式“电话”选择器",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于“提醒方式”行；“电话”为当前动态配置值，选择器未展开。"
+    },
+    {
+      "candidate": "夜间免打扰开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于“夜间免打扰”行右侧，当前为关闭状态。"
+    },
+    {
+      "candidate": "夜间免打扰说明文字",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于夜间免打扰设置的说明内容，不是按钮或新设置项。"
+    },
+    {
+      "candidate": "免打扰群通知帮助问号",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于“免打扰群通知”设置行，是独立帮助入口；当前未生成帮助气泡。"
+    },
+    {
+      "candidate": "免打扰群通知开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于同名设置行右侧，当前为关闭状态。"
+    },
+    {
+      "candidate": "特别关注提示音“门铃”选择器",
+      "classification": "existing element",
+      "ownerContainerReasoning": "归属于“个性化提醒”分区中的提示音行；“门铃”为动态配置值，选择器未展开。"
+    },
+    {
+      "candidate": "问号帮助气泡",
+      "classification": "new element candidate",
+      "ownerContainerReasoning": "点击任一帮助问号后可能出现的临时覆盖元素，但当前截图中不可见，不能认定为现有元素或新业务页面。"
+    },
+    {
+      "candidate": "设置行名称文字作为按钮",
+      "classification": "duplicate",
+      "ownerContainerReasoning": "名称仅标识其所属设置；真正操作由同一行中的帮助图标、开关或右侧选择入口承担，不能重复建模为按钮。"
+    },
+    {
+      "candidate": "灰色分区标题和分隔容器",
+      "classification": "out-of-scope",
+      "ownerContainerReasoning": "仅负责信息分组和布局，不是目标设置控件。"
+    },
+    {
+      "candidate": "状态栏图标与滚动条",
+      "classification": "out-of-scope",
+      "ownerContainerReasoning": "属于系统状态或页面滚动反馈，不属于业务设置。"
+    }
+  ],
+  "interactionBoundaryAssertions": [
+    "“单聊消息未读，弹窗提醒我”和“弹窗消息未读，短信/电话提醒我”的名称文字是标签，不等同于其右侧开关。",
+    "每个问号图标是独立帮助入口，不应与相邻标签、开关或整行点击区域合并。",
+    "当前没有可见帮助气泡；不能把问号图标本身、页面说明文字或灰色分区当作已展开气泡。",
+    "开关的可操作边界仅是右侧滑动控件；行名称、分隔线和空白容器不是开关。",
+    "“间隔时间”“提醒方式”“特别关注提示音”行的操作入口由右侧当前值及箭头表示，左侧名称不是独立选择器。",
+    "“夜间免打扰”的灰色说明文本仅解释规则，不可作为开关或链接。",
+    "“我的特别关注”是成员管理容器，不应与下方提醒设置行或个性化提醒分区合并。",
+    "灰色分区标题、背景带和分隔线仅用于分组，不构成可操作设置。"
+  ]
+}

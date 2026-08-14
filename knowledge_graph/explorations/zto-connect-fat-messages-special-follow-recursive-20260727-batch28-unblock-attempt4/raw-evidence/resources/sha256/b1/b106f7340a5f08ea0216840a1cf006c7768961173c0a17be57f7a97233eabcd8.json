@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQ8ABECFDP616D24QB8WZX",
+  "sessionRef": "01KYHQ21JG97TA7ZN1AR477GQE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQ4SPZ1NC5JX38XZA11XZP",
+  "sourceScreenshotRef": "sha256:978d66126b621d2e08225a889f09b5e533d9f9187824efc6abea352757b3f4fe",
+  "operation": "aiLocate",
+  "prompt": "定位视频区域中间、红蓝光女性特写封面、左下角显示播放图标和“68”的视频卡片",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 576,
+      "y": 1822
+    },
+    "rect": {
+      "x": 413,
+      "y": 1566,
+      "width": 328,
+      "height": 514
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:01:58.512Z",
+  "endedAt": "2026-07-27T12:02:06.830Z",
+  "durationMs": 8318.136833,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:b5dd57e044dbdc9c794426588e0e4890c3d882987dde883a54af7777dc5578db"
+}

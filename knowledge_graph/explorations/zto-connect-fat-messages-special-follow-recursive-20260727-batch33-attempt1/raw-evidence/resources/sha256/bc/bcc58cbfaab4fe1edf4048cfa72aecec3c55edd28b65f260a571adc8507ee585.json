@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHTCMMJ675FJ8A31NHZYP53",
+  "sessionRef": "01KYHT43FRH9CQVJ09JS5E1JN7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHTA1P4ZPSET9FX9R2PW8QC",
+  "sourceScreenshotRef": "sha256:7c280c972134c4d6daccec90326c96eb8f164960060bd5012f904363648a44e0",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"弹窗消息未读，短信/电话提醒我\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder\",\"predicate\":\"enabled_children\",\"value\":\"开启后显示独立间隔时间、提醒方式、夜间免打扰及其说明。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "“弹窗消息未读，短信/电话提醒我”开关已开启",
+      "间隔时间：30分钟",
+      "提醒方式：电话",
+      "夜间免打扰：关闭",
+      "说明：开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知"
+    ],
+    "supportedFunctionDescription": "根据提供的权威上下文，开启“弹窗消息未读，短信/电话提醒我”后，会显示独立的间隔时间、提醒方式、夜间免打扰及其说明；当前屏幕支持配置30分钟提醒间隔、电话提醒方式和夜间免打扰。此次激活直接更新当前设置页中的开关及子设置显示，未见页面跳转或覆盖层。",
+    "evidenceBasis": [
+      "像素可见：页面标题为“特别关注提醒”。",
+      "像素可见：“弹窗消息未读，短信/电话提醒我”右侧开关为蓝色开启状态。",
+      "像素可见：该项下方依次显示“间隔时间 30分钟”“提醒方式 电话”“夜间免打扰”及22:00至次日06:00的说明。",
+      "像素可见：夜间免打扰开关为灰色关闭状态。",
+      "像素可见：屏幕未出现对话框、抽屉、提示浮层或新页面。",
+      "权威非视觉上下文：开启该控制后显示独立间隔时间、提醒方式、夜间免打扰及其说明。"
+    ],
+    "unresolvedMeaning": "当前画面无法确认短信/电话提醒的具体触发条件细节、30分钟间隔的计时起点、电话通知的实际执行流程，以及开启操作是否已持久化到服务端。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:56:40.585Z",
+  "endedAt": "2026-07-27T12:56:54.162Z",
+  "durationMs": 13576.957583,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e890ab8a6700ef5d385b95ebbe57073bfabe22c5253ed2401bd6792e2f3687d1"
+}

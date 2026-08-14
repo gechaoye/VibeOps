@@ -1,0 +1,200 @@
+{
+  "frameId": "sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e",
+  "page": {
+    "name": "特别关注提醒",
+    "surfaceType": "dialog",
+    "stateSummary": "时间间隔选择弹窗处于打开状态，30分钟选项被选中",
+    "scrollableRegions": []
+  },
+  "elements": [
+    {
+      "candidateKey": "sms-option-10-minutes-row",
+      "label": "10分钟",
+      "visualDescription": "白色背景文字行，黑色字体，无选中标识",
+      "controlType": "list-item",
+      "interactive": true,
+      "enabled": true,
+      "state": "unselected",
+      "approximateRegion": {
+        "x": 0.12,
+        "y": 0.8,
+        "width": 0.88,
+        "height": 0.1
+      },
+      "meaning": {
+        "status": "known",
+        "description": "选择10分钟作为提醒间隔",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.98
+    },
+    {
+      "candidateKey": "sms-option-30-minutes-row",
+      "label": "30分钟",
+      "visualDescription": "白色背景文字行，蓝色字体，左侧有蓝色对勾图标",
+      "controlType": "list-item",
+      "interactive": true,
+      "enabled": true,
+      "state": "selected",
+      "approximateRegion": {
+        "x": 0.12,
+        "y": 0.87,
+        "width": 0.88,
+        "height": 0.1
+      },
+      "meaning": {
+        "status": "known",
+        "description": "当前选中的提醒间隔为30分钟",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    },
+    {
+      "candidateKey": "night-dnd-row-container",
+      "label": null,
+      "visualDescription": "灰色背景行，含‘夜间免打扰’标签及右侧灰色开关",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.66,
+        "width": 0.96,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "夜间免打扰设置行容器",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.97
+    },
+    {
+      "candidateKey": "night-dnd-name-label",
+      "label": "夜间免打扰",
+      "visualDescription": "黑色文本标签，位于行左侧",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.05,
+        "y": 0.67,
+        "width": 0.25,
+        "height": 0.06
+      },
+      "meaning": {
+        "status": "known",
+        "description": "该行功能名称",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    },
+    {
+      "candidateKey": "night-dnd-toggle",
+      "label": null,
+      "visualDescription": "灰色圆角开关，处于关闭状态",
+      "controlType": "switch",
+      "interactive": true,
+      "enabled": true,
+      "state": "off",
+      "approximateRegion": {
+        "x": 0.8,
+        "y": 0.67,
+        "width": 0.15,
+        "height": 0.06
+      },
+      "meaning": {
+        "status": "known",
+        "description": "控制夜间免打扰开关",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.98
+    },
+    {
+      "candidateKey": "reminder-method-phone-option",
+      "label": "电话",
+      "visualDescription": "右侧带箭头的文本选项，位于‘提醒方式’行",
+      "controlType": "list-item",
+      "interactive": true,
+      "enabled": true,
+      "state": "current-value",
+      "approximateRegion": {
+        "x": 0.8,
+        "y": 0.61,
+        "width": 0.18,
+        "height": 0.06
+      },
+      "meaning": {
+        "status": "known",
+        "description": "当前选定的提醒方式为电话",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.97
+    },
+    {
+      "candidateKey": "popup-cancel-button",
+      "label": "取消",
+      "visualDescription": "底部居中文本按钮",
+      "controlType": "button",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0,
+        "y": 0.95,
+        "width": 1,
+        "height": 0.05
+      },
+      "meaning": {
+        "status": "known",
+        "description": "关闭时间选择弹窗",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    }
+  ],
+  "relationships": [
+    {
+      "fromCandidateKey": "sms-option-10-minutes-row",
+      "type": "contains",
+      "toCandidateKey": "sms-option-10-minutes-row"
+    },
+    {
+      "fromCandidateKey": "sms-option-30-minutes-row",
+      "type": "contains",
+      "toCandidateKey": "sms-option-30-minutes-row"
+    },
+    {
+      "fromCandidateKey": "night-dnd-row-container",
+      "type": "contains",
+      "toCandidateKey": "night-dnd-name-label"
+    },
+    {
+      "fromCandidateKey": "night-dnd-row-container",
+      "type": "contains",
+      "toCandidateKey": "night-dnd-toggle"
+    },
+    {
+      "fromCandidateKey": "reminder-method-phone-option",
+      "type": "belongs-to",
+      "toCandidateKey": "reminder-method-phone-option"
+    }
+  ],
+  "uncertainties": []
+}

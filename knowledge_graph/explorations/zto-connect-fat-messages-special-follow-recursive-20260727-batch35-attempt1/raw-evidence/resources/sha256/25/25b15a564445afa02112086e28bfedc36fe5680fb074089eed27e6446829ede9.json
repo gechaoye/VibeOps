@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHYHCBA37AMVM7YH9VA7X2S",
+  "sessionRef": "01KYHXWRA5CNQ6EAH24XQV0YW8",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHYEN7CQSZPJT134A2EWJW4",
+  "sourceScreenshotRef": "sha256:a7b1ef115a71208657a390d54adffb4013154589ac328e15a8ed4c4bb5a443b3",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"门铃\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"visible_options\",\"value\":\"提示音面板包含默认、波浪、简报、门铃、各自试听按钮和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "当前仍位于“特别关注提醒”设置页，未显示提示音选择面板或其他覆盖层。",
+      "“特别关注提示音”当前显示为“门铃”。",
+      "“单聊消息未读，弹窗提醒我”开关已开启，间隔时间为1小时。",
+      "“弹窗消息未读，短信/电话提醒我”开关已开启，间隔时间为30分钟，提醒方式为电话。",
+      "“夜间免打扰”和“免打扰群通知”开关均关闭。"
+    ],
+    "supportedFunctionDescription": "权威上下文表明，特别关注提示音面板支持默认、波浪、简报、门铃四种提示音，分别提供试听按钮，并提供取消操作。结合当前画面，立即先前激活“门铃”后，页面可见的提示音设置值为“门铃”，支持将特别关注提示音设为门铃；当前截图未显示选择面板或持续试听状态。",
+    "evidenceBasis": [
+      "截图顶部标题为“特别关注提醒”。",
+      "截图底部“特别关注提示音”右侧明确显示“门铃”。",
+      "当前截图中未见模态弹窗、底部面板、遮罩或新页面。",
+      "截图中的两个未读提醒开关呈蓝色开启状态，夜间免打扰和免打扰群通知开关呈灰色关闭状态。",
+      "提示音面板的选项、试听按钮和取消能力来自题目提供的 verified_evidence，而非当前截图像素。"
+    ],
+    "unresolvedMeaning": "仅凭当前静态截图无法确定激活“门铃”时是否播放了试听音、试听是否已结束、选择是否自动保存或是否还触发了其他瞬时反馈；画面只确认当前可见设置值为“门铃”，且没有可见覆盖层。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:09:06.650Z",
+  "endedAt": "2026-07-27T14:09:23.818Z",
+  "durationMs": 17168.1165,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:c7086621ceb0bba7f197f6d12980a52de3949182d1094fc1f9ba4ce40190bf2d"
+}

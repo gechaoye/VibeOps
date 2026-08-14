@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ2P4PQCKTVKJFC7DC8FYH8",
+  "sessionRef": "01KYJ2NAWQCYJ2WHB2ZCWFTR83",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ2NMD4CEXWFHBV6J71YY8W",
+  "sourceScreenshotRef": "sha256:b4cd4209e483a0dab50ed122df3179a9b51facab126a32424d813e4fb6ffa1dc",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"icon_button\",\"list_entry\"]. 本批次仅复核灰色分隔带下方唯一的练良伟相关未读会话，并以该行最右侧红色圆形数字徽标“58”作为可点击定位锚点；visibleControls 只返回这个未读徽标所在的会话入口，不要重复返回该页其他控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.conversation.lian_liangwei\",\"predicate\":\"unread_badge\",\"value\":\"58\",\"source\":\"verified_evidence\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_open_special_follow_conversation\",\"value\":\"true\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"current_value\",\"value\":\"门铃\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "这是练…",
+      "这是练工练工练工练…",
+      "🥰 努力工…",
+      "[特别关注]练良伟 创建了待办 循环待办…",
+      "10:28",
+      "58"
+    ],
+    "visibleNavigationState": "当前位于“特别关注”页面；灰色分隔带下方显示练良伟相关未读会话。",
+    "visibleControls": [
+      {
+        "candidateKey": "lian_liangwei_unread_conversation_58",
+        "label": "练良伟相关未读会话，58条未读",
+        "controlType": "list_entry",
+        "visibleState": "可见；行最右侧为红色圆形数字徽标“58”，并显示时间“10:28”。",
+        "semanticRole": "打开特别关注中的练良伟相关会话",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "低风险：进入会话查看内容，本身不表示发送消息或修改设置。",
+        "functionDescription": "打开设置为特别关注的练良伟相关未读会话，当前未读徽标为58。",
+        "locatorPrompt": "定位灰色分隔带下方唯一会话行最右侧的红色圆形数字徽标“58”，并以该徽标所在整条练良伟相关会话作为点击入口。"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "special_follow_conversation_list",
+        "label": "特别关注会话列表区域",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位顶部标题“特别关注”下方、包含“我的特别关注”和灰色分隔带下方未读会话行的主内容列表区域。"
+      }
+    ],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:21:40.156Z",
+  "endedAt": "2026-07-27T15:21:54.135Z",
+  "durationMs": 13978.229208,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:b26dd3d70a333a8d0b809171e56228e5130f3d964d1cd7a98093bcfc77c8a0e4"
+}

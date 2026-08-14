@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHPM20XW8XQ21DPK043HBF1",
+  "sessionRef": "01KYHPFJ4PW4967B47JQVYJKXP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHPHBQ4X68BZBDZSR19J472",
+  "sourceScreenshotRef": "sha256:d001e2bb82ffea2967475b9c247171c4afcd97a8dec1a0654c5108198195e994",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"navigate_back\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.transient_schedule_overlay\",\"predicate\":\"scope_boundary\",\"value\":\"日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。\",\"source\":\"task_policy\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "日程",
+    "visibleResultContent": [
+      "您有一个新日程",
+      "日程UI自动化",
+      "07月27日 20:00 - 21:00",
+      "忽略",
+      "拒绝",
+      "接受",
+      "背景页面标题：特别关注提醒",
+      "背景可见设置：单聊消息未读，弹窗提醒我",
+      "间隔时间：30分钟",
+      "弹窗消息未读，短信/电话提醒我",
+      "提醒方式：电话",
+      "夜间免打扰",
+      "免打扰群通知",
+      "个性化提醒",
+      "特别关注提示音：简报"
+    ],
+    "supportedFunctionDescription": "当前结果状态是在“特别关注提醒”页面上显示一个 APP 全局临时日程提醒遮罩。该遮罩可见支持对新日程执行“忽略”“拒绝”或“接受”；背景页面可见支持配置特别关注提醒，包括未读消息弹窗提醒、提醒间隔、短信/电话提醒、提醒方式、夜间免打扰、免打扰群通知及特别关注提示音。根据权威任务上下文，messages.toolbar.heart 的功能名称为“特别关注”，且该日程弹窗不属于特别关注功能图谱。",
+    "evidenceBasis": [
+      "像素可见：页面顶部标题为“特别关注提醒”。",
+      "像素可见：白色模态弹窗标题为“日程”，背景被灰色遮罩压暗。",
+      "像素可见：弹窗正文显示“您有一个新日程”“日程UI自动化”和“07月27日 20:00 - 21:00”。",
+      "像素可见：弹窗底部有“忽略”“拒绝”“接受”三个文字操作控件。",
+      "像素可见：背景页面存在提醒开关、30分钟间隔、电话提醒方式及提示音等设置。",
+      "供应的权威上下文：messages.toolbar.heart 的 function_name 为“特别关注”。",
+      "供应的任务策略：日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。"
+    ],
+    "unresolvedMeaning": "当前静态截图不能确定紧接“navigate_back”激活后，返回动作是被日程弹窗拦截、未生效，还是恰逢全局日程提醒出现；也不能确认弹窗三个操作执行后的最终页面状态。未从任何图标形状推断额外含义。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:50:47.161Z",
+  "endedAt": "2026-07-27T11:51:02.941Z",
+  "durationMs": 15780.367041,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:7d26641397559513e837bdca5af5c119293fda61e6275a8786b9b679ab8e3c9c"
+}

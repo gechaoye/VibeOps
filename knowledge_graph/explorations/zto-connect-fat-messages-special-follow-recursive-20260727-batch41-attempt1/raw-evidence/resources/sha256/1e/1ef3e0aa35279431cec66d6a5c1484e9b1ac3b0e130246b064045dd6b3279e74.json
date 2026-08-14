@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ04W55C4E75TRQW6AXAX4E",
+  "sessionRef": "01KYJ005FGP7SFJMNW5AXVCJ3M",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ01N7ERHR6TPD85HG968Y1",
+  "sourceScreenshotRef": "sha256:7bec35d58d938f157297b0177621deda3ff429053e4db09a595fbf8b0c17f072",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"设置特别关注\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.add\",\"predicate\":\"opens_common_component\",\"value\":\"点击添加按钮后进入APP通用选人组件。\",\"source\":\"user\"},{\"subjectKey\":\"common.person_picker\",\"predicate\":\"scope_role\",\"value\":\"通用组件边界_只执行完成添加所需最小动作_不递归探索\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注：可通过“添加”设置特别关注人员",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我：已开启",
+      "单聊消息提醒间隔：1小时",
+      "弹窗消息未读，短信/电话提醒我：已开启",
+      "短信/电话提醒间隔：30分钟",
+      "提醒方式：电话",
+      "夜间免打扰：未开启；开启后22:00至次日06:00期间不再通过短信或电话通知",
+      "免打扰群通知：未开启",
+      "个性化提醒中的特别关注提示音：门铃"
+    ],
+    "supportedFunctionDescription": "立即前序激活“设置特别关注”后进入“特别关注提醒”页面，当前没有可见弹窗或覆盖层。页面支持添加特别关注人员并配置相关未读消息提醒。点击“添加”进入APP通用选人组件，只执行完成添加所需的最小动作。设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表；当该会话展示于特别关注列表时，消息工具栏的特别关注入口爱心图标变为橙黄色。",
+    "evidenceBasis": [
+      "截图顶部标题为“特别关注提醒”",
+      "截图中“我的特别关注”区域可见虚线加号按钮及“添加”文字",
+      "截图可见说明“来自「特别关注」的未读消息，自定义提醒方式”",
+      "截图中两个未读提醒开关为蓝色开启状态，夜间免打扰和免打扰群通知开关为灰色关闭状态",
+      "截图可见间隔时间分别为“1小时”和“30分钟”，提醒方式为“电话”，特别关注提示音为“门铃”",
+      "题目提供的权威非视觉上下文明确给出特别关注会话展示条件、入口变色条件、添加按钮去向及通用选人组件操作边界"
+    ],
+    "unresolvedMeaning": "当前截图未展示已添加的特别关注人员、实际未读会话、入口爱心图标的橙黄色状态或通用选人组件，因此无法从当前画面确认具体人员、未读数量以及选人组件的可见布局；这些行为仅按题目提供的权威非视觉上下文描述。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:37:13.971Z",
+  "endedAt": "2026-07-27T14:37:31.173Z",
+  "durationMs": 17201.160208,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:92f203f829aecd00684e1ef9798383fd6f6157bb2fffd52f88eaf62783a10808"
+}

@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "supporting-record.schema.json",
+  "title": "UIKG 3.0 Supporting Record",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/migrationLedger"
+    },
+    {
+      "$ref": "#/$defs/materializationAudit"
+    },
+    {
+      "$ref": "#/$defs/legacyTransitionLedger"
+    }
+  ],
+  "$defs": {
+    "migration": {
+      "type": "object",
+      "required": [
+        "oldId",
+        "oldKey",
+        "oldEntityType",
+        "targetRef",
+        "targetKey",
+        "targetEntityType",
+        "reason",
+        "reviewedBy"
+      ],
+      "properties": {
+        "oldId": {
+          "$ref": "common.schema.json#/$defs/ulid"
+        },
+        "oldKey": {
+          "$ref": "common.schema.json#/$defs/stableKey"
+        },
+        "oldEntityType": {
+          "type": "string"
+        },
+        "targetRef": {
+          "$ref": "common.schema.json#/$defs/ulid"
+        },
+        "targetKey": {
+          "$ref": "common.schema.json#/$defs/stableKey"
+        },
+        "targetEntityType": {
+          "type": "string"
+        },
+        "targetStateKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "reviewedBy": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        }
+      },
+      "additionalProperties": true
+    },
+    "migrationLedger": {
+      "type": "object",
+      "required": [
+        "recordType",
+        "migrationRef",
+        "status",
+        "reviewSource",
+        "migrations"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "$ref": "common.schema.json#/$defs/schemaVersion"
+        },
+        "recordType": {
+          "const": "UiGraphMigrationLedger"
+        },
+        "migrationRef": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "status": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "reviewSource": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "migrations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/migration"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "materializationAudit": {
+      "type": "object",
+      "required": [
+        "recordType",
+        "explorationRef",
+        "status",
+        "reason",
+        "evidence",
+        "materialized",
+        "pending"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "$ref": "common.schema.json#/$defs/schemaVersion"
+        },
+        "recordType": {
+          "const": "UiGraphMaterializationAudit"
+        },
+        "explorationRef": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "incomplete"
+          ]
+        },
+        "reason": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "evidence": {
+          "type": "object"
+        },
+        "materialized": {
+          "type": "object"
+        },
+        "pending": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "legacyTransitionLedger": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "recordType",
+        "status",
+        "reason",
+        "records"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "$ref": "common.schema.json#/$defs/schemaVersion"
+        },
+        "recordType": {
+          "const": "LegacyTransitionLedger"
+        },
+        "status": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "reason": {
+          "$ref": "common.schema.json#/$defs/nonEmptyString"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSNZKHY5KNV7CKJAVH71JR",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSKA6050XNY9HDBYPWPK1J",
+  "sourceScreenshotRef": "sha256:1bf5e3d9d2710c613348981517d31fd76dd8994bc3b30a00aefd1e1dd7792293",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"夜间免打扰\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.night_dnd\",\"predicate\":\"visible_description\",\"value\":\"开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "夜间免打扰开关已开启",
+      "未出现弹窗、遮罩或新页面",
+      "开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知"
+    ],
+    "supportedFunctionDescription": "“夜间免打扰”用于在每日22:00至次日06:00期间停止通过短信或电话发送特别关注通知；当前视觉状态表明该功能已启用。",
+    "evidenceBasis": [
+      "当前页面顶部标题显示“特别关注提醒”",
+      "“夜间免打扰”右侧开关显示为蓝色开启状态",
+      "开关下方的可见说明写明“开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知”",
+      "当前画面仍停留在原设置页，未见弹窗、遮罩或页面跳转",
+      "授权上下文明确允许操作特别关注设置中的开关且无需恢复业务状态",
+      "已提供的权威上下文确认该功能名称为“特别关注”，并确认夜间免打扰的可见说明"
+    ],
+    "unresolvedMeaning": "当前画面仅能确认开关已开启及页面声明的时间范围和通知渠道变化；无法仅凭该静态画面确认设置是否已持久化到服务端、是否立即生效，以及夜间时段内弹窗类提醒是否仍会保留。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:44:20.877Z",
+  "endedAt": "2026-07-27T12:44:31.729Z",
+  "durationMs": 10851.994834,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:94b01ef255f82adda9b1daa2925ddd74a88a8775f6fbff3c4710a0d32ececd67"
+}

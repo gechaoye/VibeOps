@@ -1,0 +1,246 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-global-search-20260730:initial-navigation",
+  "sourceScopeHash": "sha256:4623fe78d898f9735ec796700b54a8faf4826aae4e121ae508162af6757b8311",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页右上角全局搜索入口及其可安全到达的内容",
+    "userIntent": "从应用一级页进入消息页，激活右上角放大镜图标的全局搜索入口，并递归探索全局搜索功能。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.global_search",
+        "predicate": "function_name",
+        "value": "全局搜索",
+        "source": "user_context",
+        "sourceRef": "scope.yaml#entry"
+      }
+    ]
+  },
+  "initialState": "application.foreground",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": true,
+    "requireUserPreparedState": false
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "app-visible-surface",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1152,
+          "height": 2376
+        },
+        "purpose": "仅限制 Midscene 实时定位结果位于当前应用可见范围；不作为坐标定位或点击依据。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "application.foreground": {
+      "key": "application.foreground",
+      "label": "中通宝盒一级前台状态",
+      "kind": "page",
+      "requiredSemanticAssertions": [
+        "当前可见且可交互的界面属于中通宝盒应用。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整清点当前一级前台可见控件，特别确认底部导航中可进入消息页的入口；不把图标形状单独视为语义依据。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "tab",
+          "button",
+          "icon_button",
+          "menu_item",
+          "list_item",
+          "input"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [
+        "activate_messages_tab"
+      ]
+    },
+    "messages.root": {
+      "key": "messages.root",
+      "label": "消息",
+      "kind": "page",
+      "requiredSemanticAssertions": [
+        "当前页面是消息页，并且顶部右侧可见用户指定的全局搜索放大镜入口。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整清点消息页当前视口的所有控件、会话分类、工具栏图标、动态状态和可滚动区域。用户已认证：右上角放大镜入口的功能名称为全局搜索。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "icon_button",
+          "button",
+          "tab",
+          "menu_item",
+          "list_item",
+          "input"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [
+        "open_global_search"
+      ]
+    },
+    "global_search.root": {
+      "key": "global_search.root",
+      "label": "全局搜索",
+      "kind": "page",
+      "requiredSemanticAssertions": [
+        "当前表面呈现全局搜索功能的搜索输入区域或搜索结果控制。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整清点全局搜索初始视口的输入、筛选、历史、建议、结果、导航和滚动区域；不能从图标外形推断未知语义。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "input",
+          "icon_button",
+          "button",
+          "tab",
+          "menu_item",
+          "list_item"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": []
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-application-foreground",
+      "kind": "capture",
+      "state": "application.foreground",
+      "depth": 0
+    },
+    {
+      "id": "activate-messages-tab",
+      "kind": "tap",
+      "semanticAction": "activate_messages_tab",
+      "fromState": "application.foreground",
+      "toState": "messages.root",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "shared.bottom_tab.messages",
+        "label": "消息",
+        "scope": "shared_navigation",
+        "locatorPrompt": "定位中通宝盒底部导航栏中标签为“消息”的可点击入口。",
+        "allowedRegionRef": "app-visible-surface"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面是消息页。"
+        ]
+      }
+    },
+    {
+      "id": "open-global-search",
+      "kind": "tap",
+      "semanticAction": "open_global_search",
+      "fromState": "messages.root",
+      "toState": "global_search.root",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "messages.toolbar.global_search",
+        "label": "全局搜索",
+        "scope": "feature_entry",
+        "locatorPrompt": "定位消息页顶部工具栏最右侧、用户指定为全局搜索入口的放大镜图标。",
+        "allowedRegionRef": "app-visible-surface"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前表面呈现全局搜索功能的搜索输入区域或搜索结果控制。"
+        ]
+      }
+    }
+  ]
+}

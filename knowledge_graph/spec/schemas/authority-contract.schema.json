@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "authority-contract.schema.json",
+  "title": "UIKG 3.0 AuthorityContract",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "entityType",
+    "id",
+    "key",
+    "edgeKind",
+    "applicationRef",
+    "featurePath",
+    "sourceSelector",
+    "triggerElementRef",
+    "action",
+    "capability",
+    "expectedTarget",
+    "risk",
+    "sourceType",
+    "authorityStatus",
+    "planningEligible",
+    "runtimeEvidenceStatus",
+    "verifiedTransitionRef",
+    "defectRef",
+    "certifiedFact",
+    "contradictionPolicy",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "entityType": {
+      "const": "AuthorityContract"
+    },
+    "id": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "key": {
+      "$ref": "common.schema.json#/$defs/stableKey"
+    },
+    "edgeKind": {
+      "const": "authority_contract"
+    },
+    "applicationRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "featurePath": {
+      "$ref": "common.schema.json#/$defs/featurePath"
+    },
+    "sourceSelector": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "ref"
+          ],
+          "properties": {
+            "kind": {
+              "const": "exact_page"
+            },
+            "ref": {
+              "$ref": "common.schema.json#/$defs/ulid"
+            },
+            "stateKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "ref"
+          ],
+          "properties": {
+            "kind": {
+              "const": "shared_availability"
+            },
+            "ref": {
+              "$ref": "common.schema.json#/$defs/ulid"
+            },
+            "stateKey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "triggerElementRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "action": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "capability": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "expectedTarget": {
+      "type": "object",
+      "required": [
+        "kind",
+        "ref",
+        "stateKey"
+      ],
+      "properties": {
+        "kind": {
+          "const": "page"
+        },
+        "ref": {
+          "$ref": "common.schema.json#/$defs/ulid"
+        },
+        "stateKey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "risk": {
+      "$ref": "common.schema.json#/$defs/risk"
+    },
+    "sourceType": {
+      "const": "user_context"
+    },
+    "authorityStatus": {
+      "const": "authority_certified"
+    },
+    "planningEligible": {
+      "type": "boolean"
+    },
+    "runtimeEvidenceStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "verified",
+        "contradicted"
+      ]
+    },
+    "verifiedTransitionRef": {
+      "$ref": "common.schema.json#/$defs/nullableUlid"
+    },
+    "defectRef": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "certifiedFact": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    },
+    "contradictionPolicy": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "runtimeEvidenceStatus": {
+            "const": "verified"
+          }
+        },
+        "required": [
+          "runtimeEvidenceStatus"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verifiedTransitionRef": {
+            "$ref": "common.schema.json#/$defs/ulid"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "runtimeEvidenceStatus": {
+            "const": "contradicted"
+          }
+        },
+        "required": [
+          "runtimeEvidenceStatus"
+        ]
+      },
+      "then": {
+        "properties": {
+          "defectRef": {
+            "$ref": "common.schema.json#/$defs/nonEmptyString"
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}

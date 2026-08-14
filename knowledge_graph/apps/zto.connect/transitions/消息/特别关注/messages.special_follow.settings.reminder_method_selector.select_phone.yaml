@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENB835QTWSG8TDR6JJB
+key: messages.special_follow.settings.reminder_method_selector.select_phone
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB80X4G3EYDN53XKYA
+triggerElementRef: 01KYKA3ENBQNEGVZ80QGGWWE0X
+action: aiTap
+capability: select_reminder_method_phone
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHS8362YP50E7JZVH77NQZ2
+  beforeFrameRef: 01KYHS58X0BTXZV0AR8PYQP26A
+  afterFrameRef: 01KYHS8MJ046D6J20D3YQ0YS4C
+  postcondition: pass
+  semanticAssertions:
+  - sha256:245c1c7be783c0e2a88faaa310a3546e79fb055fff18ab9e781e2e4778e684de
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

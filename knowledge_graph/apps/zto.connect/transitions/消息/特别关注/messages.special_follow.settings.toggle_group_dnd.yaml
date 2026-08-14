@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBB534HK5R6G54K01F
+key: messages.special_follow.settings.toggle_group_dnd
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENB5ADYBBTXRBP7BHVJ
+action: aiTap
+capability: toggle_group_dnd
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHSVZ19FNJZJCTR8ZJY6SMQ
+  beforeFrameRef: 01KYHSS9G8BZJRVG6B9KMH3891
+  afterFrameRef: 01KYHSW8NKYA16V9ANG9PAC46P
+  postcondition: pass
+  semanticAssertions:
+  - sha256:7a51e9c08b9851d42ec92d3c573eecab7bbb2d6a6b0f85d0bcbd892b4207ec12
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

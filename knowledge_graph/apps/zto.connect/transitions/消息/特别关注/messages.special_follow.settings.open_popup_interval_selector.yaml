@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBH21T50G11CGVXAKP
+key: messages.special_follow.settings.open_popup_interval_selector
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBJ4XNNW97FZQQ2Y6P
+action: aiTap
+capability: open_popup_interval_selector
+targetRef: 01KYKA3ENB2N6Q6010ZD4NT6P4
+reversible: true
+risk: safe
+verificationStatus: success_dual_model_live
+evidence:
+  actionTraceRef: open-popup-interval-via-label-area-uikg301
+  actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-popup-interval-via-label-area-uikg301.json
+  beforeFrameRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  afterFrameRef: sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17
+  postcondition: pass
+  semanticAssertions:
+  - sha256:75ced63a2bf5e022e193d0c0a49ce98ec4c3b7813d6a1697705500c9bc635ac3
+provenance:
+  sourceType: midscene_dual_model_live_action_trace
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1

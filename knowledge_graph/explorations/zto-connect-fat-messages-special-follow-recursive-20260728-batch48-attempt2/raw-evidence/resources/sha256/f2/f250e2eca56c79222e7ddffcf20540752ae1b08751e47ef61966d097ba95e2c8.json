@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK6FSYXDK51PC03ZHCS5SZG",
+  "sessionRef": "01KYK660P4DEBSA3NGF1SET476",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK6DK5A5GBNPT26DP3ZV4Y3",
+  "sourceScreenshotRef": "sha256:db0b9a6cca5588aa9336fb19512171c007338b8426556984468151173dbc74bf",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "点击练良伟成员主体后当前页面仍为全部成员，练良伟和移除按钮仍可见，未出现新页面、弹窗、菜单或选中状态。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:47:30.216Z",
+  "endedAt": "2026-07-28T01:47:35.261Z",
+  "durationMs": 5044.895625,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:18cc1c0ce65659de244e346644d358fad9449952a97f3f24a93e940008ae6e52"
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHEN03QPBVA6BHFJJMNC4QK",
+  "sessionRef": "01KYHEEFB49Q61Y0ZTS2SYH5YP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHEHWE96DM06E208FRCVX1N",
+  "sourceScreenshotRef": "sha256:991badfe538d065cf988963af27ecdb68000a00c7c5c5888197e38667952e6f6",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"弹窗消息未读短信电话提醒帮助问号\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "当特别关注人的弹窗消息在一段时间内未被处理时，系统将自动转换为电话或短信通知；每个特别关注人的消息每天最多可以提醒三次。",
+      "我的特别关注",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我",
+      "弹窗消息未读，短信/电话提醒我",
+      "免打扰群通知",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "supportedFunctionDescription": "该帮助问号会在当前页面上显示说明气泡：特别关注人员的弹窗消息在一段时间内未处理时，系统可自动转换为电话或短信通知，且每位特别关注人员的消息每天最多提醒三次。页面同时支持添加特别关注人员，以及配置弹窗提醒、短信/电话提醒、免打扰群通知和特别关注提示音。依据 supplied context，该功能名称为“特别关注”；设置为特别关注的人员存在未读消息时，其相关会话显示在特别关注列表；设置特别关注人员后，入口爱心图标显示为橙黄色。",
+    "evidenceBasis": [
+      "屏幕顶部可见页面标题“特别关注提醒”。",
+      "“弹窗消息未读，短信/电话提醒我”右侧帮助问号附近出现带指向尖角的深色说明气泡。",
+      "气泡中直接显示未处理后转为电话或短信通知、每人每天最多提醒三次的规则。",
+      "页面可见“添加”入口及多个提醒开关，其中“单聊消息未读，弹窗提醒我”开关为开启状态，其余当前可见相关开关为关闭状态。",
+      "功能名称、未读会话在特别关注列表中的显示规则、爱心入口设置后的橙黄色状态来自权威非视觉任务上下文，并非从图标像素推断。"
+    ],
+    "unresolvedMeaning": "屏幕未说明“一段时间”的具体时长，也未说明系统在何种条件下选择电话或短信、是否可由用户进一步指定；当前气泡还遮挡了其下方一部分页面文字。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:31:26.251Z",
+  "endedAt": "2026-07-27T09:31:45.143Z",
+  "durationMs": 18891.742709,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:6f410bd5bc93d39b42147f4e7a01f9ebc360efe5cef3638a9b03abc47106b592"
+}

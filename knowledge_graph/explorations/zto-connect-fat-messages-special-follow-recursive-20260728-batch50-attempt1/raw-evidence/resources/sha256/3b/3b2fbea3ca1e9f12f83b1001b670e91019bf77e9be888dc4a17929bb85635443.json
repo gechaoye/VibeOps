@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK9TENGQHKERHQCS46R9W5Q",
+  "sessionRef": "01KYK9QAD4KZC178DVBGB1E9K6",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK9RBBS5S6WEFY5X7HC6X01",
+  "sourceScreenshotRef": "sha256:8c67332978d86a7f9b22c649a6b812666a6a4f07811ded12b86596fb53d9ab65",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"navigate_back\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现，不能进入稳定元素命名、状态键或规则条件。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注",
+    "visibleResultContent": [
+      "我的特别关注",
+      "设置",
+      "特别关注对象：这是练…",
+      "会话：这是练工练工练工练…",
+      "消息预览：[特别关注]练良伟 创建了待办 循环待办每天",
+      "时间：10:28",
+      "红色未读角标：4"
+    ],
+    "supportedFunctionDescription": "当前结果页用于展示和管理特别关注对象及其会话；可见“设置”入口和带未读数量角标的特别关注会话。依据给定的权威上下文，消息工具栏爱心控件的功能名为“特别关注”；红色角标表示特别关注会话当前实时未读消息数量，具体数字仅为运行时呈现；特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。",
+    "evidenceBasis": [
+      "屏幕像素：顶部标题为“特别关注”",
+      "屏幕像素：主体显示“我的特别关注”和“设置”",
+      "屏幕像素：会话行显示橙色“[特别关注]”、时间“10:28”及红色数字角标“4”",
+      "给定权威上下文：messages.toolbar.heart 的 function_name 为“特别关注”",
+      "给定权威上下文：红色角标表示当前实时未读消息数量，数字不得进入稳定命名、状态键或规则条件",
+      "给定权威上下文：存在未读消息时，消息页入口爱心图标变为橙黄色"
+    ],
+    "unresolvedMeaning": "静态截图未展示“navigate_back”触发前的画面、动画或页面层级，因此无法确认该结果是独立页面、覆盖层、底部弹层，还是其他导航容器，也无法确认再次返回将到达何处；除给定权威上下文外，不从图标形状推断其他功能。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T02:45:32.195Z",
+  "endedAt": "2026-07-28T02:45:49.872Z",
+  "durationMs": 17677.346542,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:83e8bb5ce02214fe0cf1e84e64b166d05edb801674fe3816af46b48f948d314c"
+}

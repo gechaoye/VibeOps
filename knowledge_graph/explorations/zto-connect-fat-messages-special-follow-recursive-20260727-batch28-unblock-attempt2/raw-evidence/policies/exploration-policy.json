@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch28-unblock-attempt2:policy",
+  "sourceScopeHash": "sha256:ce6a6728f9d4c49577a9bf0e30411b86061b3bdb4a2e59c06e0a07c253afe683",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 1,
+  "maxActions": 3,
+  "allowedRiskLevels": [
+    "low",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "temporary_state_control"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "schedule-overlay-actions",
+      "space": "current_display_px",
+      "rect": {
+        "x": 20,
+        "y": 550,
+        "width": 1112,
+        "height": 350
+      },
+      "purpose": "仅用于盘点弹窗动作；本会话不点击其中任何按钮。"
+    }
+  ],
+  "entryOnly": [
+    "schedule.accept",
+    "schedule.ignore",
+    "schedule.reject"
+  ],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "temporary_display_state"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change",
+    "persistent_setting_change",
+    "schedule_accept",
+    "schedule_reject"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 1,
+    "maxActions": 3,
+    "include": [
+      "common.schedule_reminder.overlay"
+    ],
+    "exclude": [
+      "common.schedule_reminder.details",
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [
+      "schedule.ignore",
+      "schedule.reject",
+      "schedule.accept"
+    ],
+    "stopAt": [
+      "messages.special_follow.settings"
+    ],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

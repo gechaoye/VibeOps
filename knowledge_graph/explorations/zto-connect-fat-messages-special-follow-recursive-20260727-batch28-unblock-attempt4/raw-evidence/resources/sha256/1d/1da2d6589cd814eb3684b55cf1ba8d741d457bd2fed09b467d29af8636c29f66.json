@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQ73JPFDDTRZCX6G5THK96",
+  "sessionRef": "01KYHQ21JG97TA7ZN1AR477GQE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQ4SPZ1NC5JX38XZA11XZP",
+  "sourceScreenshotRef": "sha256:978d66126b621d2e08225a889f09b5e533d9f9187824efc6abea352757b3f4fe",
+  "operation": "aiLocate",
+  "prompt": "定位顶部中间显示“468078”且下方标注“动态验证码”的控件",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 703,
+      "y": 183
+    },
+    "rect": {
+      "x": 626,
+      "y": 128,
+      "width": 155,
+      "height": 112
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:01:15.087Z",
+  "endedAt": "2026-07-27T12:01:27.126Z",
+  "durationMs": 12038,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:fc7bcd2be7a6ba88d772b4c0c567b32e67f7f638dbc6433a5f7ff31ea751fae3"
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHXE3B9F6J95EXQAPJ6KH8Y",
+  "sessionRef": "01KYHXBGHCCDHRFAW5SFW7H9NG",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHXBSGV8GP8BR43ESBAT0R5",
+  "sourceScreenshotRef": "sha256:fbc77d536be78fc7fe7e920b85e4b77d59a72b3a7fe796c891c7c0bbcae7f3b4",
+  "operation": "aiLocate",
+  "prompt": "定位当前特别关注提醒页面白色设置内容的纵向可滚动区域，避开所有开关、设置行和顶部返回按钮。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 1139,
+      "y": 1305
+    },
+    "rect": {
+      "x": 1128,
+      "y": 252,
+      "width": 24,
+      "height": 2107
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T13:50:04.019Z",
+  "endedAt": "2026-07-27T13:50:07.721Z",
+  "durationMs": 3702.657833,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:9c886803308bdf849dbae186e1cd1b27c242957cb9781d5f156f0ab97eb30345"
+}

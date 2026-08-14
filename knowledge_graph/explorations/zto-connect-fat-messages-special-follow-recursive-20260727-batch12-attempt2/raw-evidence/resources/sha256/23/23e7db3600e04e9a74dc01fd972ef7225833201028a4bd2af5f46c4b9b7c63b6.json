@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHD432WVGN2K6QT0T0PTH05",
+  "sessionRef": "01KYHD0YFZEZ4NFERXP1ZE7BHX",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHD2FWWDDG736WZY4E1RWCK",
+  "sourceScreenshotRef": "sha256:e48c01101d658c01aed25030df8eb90b54da690f061d7f8d49955ec7f716932c",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前“全部成员”页面已关闭且不再显示，宝盒测试包仍保持前台；准确识别并记录实际返回页面，不预设目标。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:04:53.584Z",
+  "endedAt": "2026-07-27T09:05:02.556Z",
+  "durationMs": 8972.194459,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3767425f1a1a75565694abfeb31dff69ece465fb4e02c42d3f5f6dff85a30937"
+}

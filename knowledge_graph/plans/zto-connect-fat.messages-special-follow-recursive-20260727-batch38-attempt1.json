@@ -1,0 +1,220 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch38-attempt1:plan",
+  "sourceScopeHash": "sha256:801961087519960eee9d444a8ff559f2e2ef91e08096a9f0beb1c75fc7eafc2e",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "在特别关注提醒设置页小幅上滑，使特别关注提示音整行完整进入视口。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.popup_interval_1_hour",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "settings-scroll-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 250.0,
+          "width": 1152.0,
+          "height": 2000.0
+        },
+        "purpose": "特别关注提醒设置页纵向滚动区域。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.popup_interval_1_hour": {
+      "key": "messages.special_follow.settings.popup_interval_1_hour",
+      "label": "设置页顶部且提示音行被裁切",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为特别关注提醒，首个间隔时间显示1小时，特别关注提示音行位于视口底部且点击区域未完整显示。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件。特别关注提示音行在屏幕最底部被裁切，只记录为内容，禁止放入 visibleControls；设置页纵向滚动区域必须作为 scroll_region 返回。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "scroll_settings_for_sound"
+      ],
+      "postcondition": "已记录滚动前设置页状态。"
+    },
+    "messages.special_follow.settings.sound_visible": {
+      "key": "messages.special_follow.settings.sound_visible",
+      "label": "特别关注提示音行完整可见",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面仍为特别关注提醒，特别关注提示音整行及其当前值简报已完整进入视口。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点滚动后的当前视口全部交互控件；特别关注提示音整行完整可见，必须作为可定位的 list_entry 返回；被上下边界裁切的其他行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已将提示音设置入口完整带入视口。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-settings-before-sound-scroll",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.popup_interval_1_hour",
+      "depth": 4
+    },
+    {
+      "id": "scroll-settings-for-sound",
+      "kind": "scroll",
+      "semanticAction": "scroll_settings_for_sound",
+      "fromState": "messages.special_follow.settings.popup_interval_1_hour",
+      "toState": "messages.special_follow.settings.sound_visible",
+      "depth": 4,
+      "risk": "safe",
+      "sideEffects": [
+        "viewport_scroll"
+      ],
+      "direction": "up",
+      "actionPrompt": "在当前特别关注提醒设置页纵向向上滑动较短距离，让底部“特别关注提示音”整行完整进入屏幕；不要点击或切换任何设置控件。",
+      "waitMs": 1800,
+      "target": {
+        "key": "special_follow_settings_scroll",
+        "label": "特别关注提醒设置页",
+        "scope": "scroll_region",
+        "locatorPrompt": "定位当前特别关注提醒页面白色设置内容的纵向可滚动区域，避开所有开关、设置行和顶部返回按钮。",
+        "allowedRegionRef": "settings-scroll-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "页面仍为特别关注提醒，特别关注提示音整行及当前值简报已完整进入视口。"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ4AVC96N25AYHGBF01YBX1",
+  "sessionRef": "01KYJ48ZH6Q2V6VWXPXN61FW9A",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ4998JFJS6PD1W3BXJNPZW",
+  "sourceScreenshotRef": "sha256:e5ff01dbf74823ee27a86242789b1f82aa7e21e1abc03bc08a2bd0fbea442002",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"icon_button\",\"input\",\"back\",\"close\"]. 这是 APP 级通用聊天组件边界；只记录顶部返回、聊天标题、橙黄色爱心、电话、更多、消息历史区域和底部输入区域的存在，不递归探索聊天内部控件，不执行输入或发送。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_entry\",\"predicate\":\"navigation_result\",\"value\":\"点击顶部成员头像条目会直接进入该成员的通用聊天页。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "这是练工练工练工练工...",
+    "visiblePrimaryContent": [
+      "消息历史区域",
+      "09:00：个人待办任务，循环待办自定义创建时间每周，0/2完成，包含我，08月03日 17:28截止",
+      "10:28：个人待办任务，循环待办每天，0/2完成，包含我，明天10:28截止",
+      "底部输入区域"
+    ],
+    "visibleNavigationState": "当前位于“这是练工练工练工练工...”通用聊天页；顶部返回旁显示99+；特别关注爱心入口呈橙黄色。",
+    "visibleControls": [
+      {
+        "candidateKey": "chat_back",
+        "label": "返回",
+        "controlType": "back",
+        "visibleState": "左上角黑色左箭头，旁有99+",
+        "semanticRole": "navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "离开当前聊天页",
+        "functionDescription": "返回上一层页面",
+        "locatorPrompt": "定位页面左上角、99+灰色徽标左侧的黑色左箭头返回控件"
+      },
+      {
+        "candidateKey": "special_follow",
+        "label": "特别关注",
+        "controlType": "icon_button",
+        "visibleState": "顶部橙黄色方形背景内白色爱心，高亮",
+        "semanticRole": "特别关注",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能改变或打开特别关注相关状态；当前操作结果未由可见画面确定",
+        "functionDescription": "特别关注入口；供应上下文说明，特别关注人员存在未读消息并展示于特别关注列表时，消息页入口爱心变为橙黄色",
+        "locatorPrompt": "定位顶部聊天标题右侧、电话图标左侧的橙黄色方形白色爱心控件"
+      },
+      {
+        "candidateKey": "chat_call",
+        "label": "电话",
+        "controlType": "icon_button",
+        "visibleState": "顶部黑色电话听筒图标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "可见电话形图标的顶部控件，具体功能未由可见证据或供应事实建立",
+        "locatorPrompt": "定位顶部右侧、橙黄色爱心与三点更多之间的黑色电话听筒图标"
+      },
+      {
+        "candidateKey": "chat_more",
+        "label": "更多",
+        "controlType": "icon_button",
+        "visibleState": "顶部右侧三个黑色圆点",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "顶部三点控件，具体功能未由可见证据或供应事实建立",
+        "locatorPrompt": "定位页面顶部最右侧的三个水平排列黑色圆点控件"
+      },
+      {
+        "candidateKey": "quick_app_test_shared",
+        "label": "测试共享应用",
+        "controlType": "button",
+        "visibleState": "底部输入区上方左侧，白底蓝色描边，左侧有浅灰方块",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "底部可见快捷项，具体功能未由可见证据建立",
+        "locatorPrompt": "定位底部输入栏上方快捷项横排中最左侧、文字为“测试共享应用”的蓝色描边按钮"
+      },
+      {
+        "candidateKey": "quick_app_test_shared_2",
+        "label": "测试共享应用2",
+        "controlType": "button",
+        "visibleState": "底部输入区上方中间，白底蓝色描边，左侧有浅灰方块",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "底部可见快捷项，具体功能未由可见证据建立",
+        "locatorPrompt": "定位底部输入栏上方快捷项横排中间、文字为“测试共享应用2”的蓝色描边按钮"
+      },
+      {
+        "candidateKey": "quick_app_partial",
+        "label": "",
+        "controlType": "button",
+        "visibleState": "底部输入区上方右侧仅部分可见，白底蓝色描边，文字被“更多”控件遮挡",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "仅部分可见的底部快捷项，标签和具体功能无法确定",
+        "locatorPrompt": "定位底部输入栏上方、“测试共享应用2”右侧且被“更多”按钮部分遮挡的蓝色描边快捷项"
+      },
+      {
+        "candidateKey": "quick_more",
+        "label": "更多",
+        "controlType": "button",
+        "visibleState": "底部输入区上方右侧，白色按钮，带蓝色列表图标和“更多”文字",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "底部快捷区的更多控件，具体功能未由可见证据建立",
+        "locatorPrompt": "定位底部输入栏上方最右侧、带蓝色列表图标及“更多”文字的白色按钮"
+      },
+      {
+        "candidateKey": "voice_input",
+        "label": "语音",
+        "controlType": "icon_button",
+        "visibleState": "底部最左侧圆形麦克风图标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "底部麦克风形控件，具体功能未由可见证据或供应事实建立",
+        "locatorPrompt": "定位页面底部最左侧、黑色圆形边框内的麦克风图标"
+      },
+      {
+        "candidateKey": "message_input",
+        "label": "消息输入框",
+        "controlType": "input",
+        "visibleState": "底部中央空白圆角输入框，右端显示点赞图标",
+        "semanticRole": "text_input",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "输入内容本身通常可编辑；按任务要求不执行输入或发送",
+        "functionDescription": "聊天消息输入区域",
+        "locatorPrompt": "定位页面底部、麦克风右侧且表情按钮左侧的长条空白圆角输入框"
+      },
+      {
+        "candidateKey": "quick_like",
+        "label": "点赞",
+        "controlType": "icon_button",
+        "visibleState": "消息输入框右端的灰色描边拇指图标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "输入框内拇指形控件，具体功能未由可见证据或供应事实建立",
+        "locatorPrompt": "定位底部长条消息输入框内部最右端的灰色描边拇指图标"
+      },
+      {
+        "candidateKey": "emoji",
+        "label": "表情",
+        "controlType": "icon_button",
+        "visibleState": "底部输入框右侧的圆形笑脸图标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "底部笑脸形控件，具体功能未由可见证据或供应事实建立",
+        "locatorPrompt": "定位页面底部、消息输入框右侧与加号左侧的黑色圆形笑脸图标"
+      },
+      {
+        "candidateKey": "chat_add",
+        "label": "加号",
+        "controlType": "icon_button",
+        "visibleState": "底部最右侧圆形加号图标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "底部加号形控件，具体功能未由可见证据或供应事实建立",
+        "locatorPrompt": "定位页面底部最右侧、黑色圆形边框内的加号图标"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "message_history",
+        "label": "消息历史区域",
+        "directions": [
+          "up",
+          "down"
+        ],
+        "locatorPrompt": "定位顶部聊天栏下方至底部快捷项上方、包含09:00与10:28时间标记和个人待办任务消息卡片的主内容区域"
+      },
+      {
+        "candidateKey": "quick_actions",
+        "label": "底部快捷项区域",
+        "directions": [
+          "left",
+          "right"
+        ],
+        "locatorPrompt": "定位消息历史下方、消息输入栏上方，包含“测试共享应用”“测试共享应用2”和“更多”的横向快捷项区域"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "顶部电话听筒图标的具体功能未由可见证据或供应事实建立。",
+      "顶部三点图标的具体菜单内容未显示。",
+      "底部麦克风、输入框内拇指、笑脸和加号图标的具体行为未由供应事实建立。",
+      "底部“测试共享应用”“测试共享应用2”、部分被遮挡快捷项及“更多”的具体功能未显示。",
+      "标题下方“软件工程师”是会话属性还是成员信息无法仅凭当前画面确定。",
+      "底部右侧被“更多”遮挡的快捷项标签不可见完整。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:49:52.843Z",
+  "endedAt": "2026-07-27T15:50:41.289Z",
+  "durationMs": 48443.684167,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:4d048aa7fb0d0bc1c8bf3d4ffef1b4d78a315525e7a05ae4ac1baff4ed9f834a"
+}

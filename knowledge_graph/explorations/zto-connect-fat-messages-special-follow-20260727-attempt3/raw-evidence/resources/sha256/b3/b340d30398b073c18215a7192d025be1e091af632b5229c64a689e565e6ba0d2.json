@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYGXECZZ3R32XG92DXC6ME1N",
+  "sessionRef": "01KYGXD0C957YB101AG2F9X7HC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYGXDC4RC5VXPYNKN1CJ1GMD",
+  "sourceScreenshotRef": "sha256:9ecd839e4cd0c2ae7813624f39e58ee8a2b9d19869de1686ca27561d445ce7f5",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前屏幕是宝盒消息页，底部“消息”Tab 显示为选中状态，会话列表可见，并且顶部工具栏靠左一侧可见爱心轮廓图标。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T04:30:53.342Z",
+  "endedAt": "2026-07-27T04:31:03.167Z",
+  "durationMs": 9825.308791,
+  "captureCoupling": "sequential_non_atomic",
+  "contentHash": "sha256:9b4b5845adad114199cb8a53e7eea9c5300bcc9448bd6e4b4b78b0b4a87e2e5b"
+}

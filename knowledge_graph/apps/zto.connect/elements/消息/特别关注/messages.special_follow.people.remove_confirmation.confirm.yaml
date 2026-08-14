@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB32RHWSPCWKB9GE6J
+key: messages.special_follow.people.remove_confirmation.confirm
+label: 特别关注-全部成员-移除确认-确定移除
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENBTQHXG4XJ1F3NJTFG
+parentElementRef: null
+controlType: button
+role: action
+capabilities:
+- confirm_remove_member
+summary: 确认移除该特别关注成员。
+relationshipRefs:
+- owner:01KYKA3ENBTQHXG4XJ1F3NJTFG
+- transition:01KYKA3ENBVNC72NGWT4VYXRJQ
+observations:
+- frameRef: 01KYHC08GF9NJXY200M49HEXPT
+  observedAt: '2026-07-27T08:45:31.235Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:0b032c5170e1166c0d76608d59f8b921736d99e949b3ad50a47810a9bbcdaa21
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1/raw-evidence/sessions/01KYHBRRQ0FNFNTS8NJB3DVSTP
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 575.0
+      top: 1237.0
+      width: 376.0
+      height: 145.0
+    center:
+    - 763.0
+    - 1309.5
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:df9ce83fe96a27b5481c6793eb5fe47efd6d805fadac28269c53bd38f3daaafa
+  state: 确认弹窗底部右侧可见且可操作
+  dynamicValue: 确认弹窗底部右侧可见且可操作
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENB32RHWSPCWKB9GE6J-01KYHC08GF9NJXY200M49HEXPT.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: low
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: confirm_remove_member

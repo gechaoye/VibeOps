@@ -1,0 +1,1106 @@
+{
+  "schemaVersion": "2.0.0",
+  "manifestType": "RawExplorationEvidenceManifest",
+  "sessionRef": "01KYJ1PJNZVBW0AWB4F06RAN5C",
+  "createdAt": "2026-07-27T15:08:34.040Z",
+  "createdBy": "midscene-android-uikg-evidence-producer",
+  "outputKind": "raw_exploration_evidence",
+  "recordNamespace": "uikg.raw-evidence",
+  "graphMaterialization": "none",
+  "producesGraphEntities": false,
+  "semanticAndActionFramework": "midscene.AndroidAgent",
+  "adbPolicy": "read_only_runtime_context_plus_reversible_stay_awake",
+  "requiredDownstreamProcessing": [
+    "evidence_fusion",
+    "semantic_identity_resolution",
+    "page_and_state_resolution",
+    "graph_materialization"
+  ],
+  "rootHashAlgorithm": "descriptor_lines_v1",
+  "entries": [
+    {
+      "path": "raw-evidence/policies/exploration-policy.json",
+      "mediaType": "application/json",
+      "byteLength": 2334,
+      "sha256": "4764b39519c8e593285f074c18149d5392f9683a3b11d141db79c6193c782b5b"
+    },
+    {
+      "path": "raw-evidence/producer-contract.json",
+      "mediaType": "application/json",
+      "byteLength": 699,
+      "sha256": "3412944b5e458797bb6f32dc02112da11df9aad3af76a05c38a185661e02b9b0"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYJ1PJNZVBW0AWB4F06RAN5C/raw-action-traces.jsonl",
+      "mediaType": "application/x-ndjson",
+      "byteLength": 4144,
+      "sha256": "c4eede8fb9b6f669c119dfcbde125d6a83a0948b3b5d38daec90bf29c68ae3d3"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYJ1PJNZVBW0AWB4F06RAN5C/raw-exploration-plan.json",
+      "mediaType": "application/json",
+      "byteLength": 7085,
+      "sha256": "94df4f2e0a1fb12186e1098223f0b12e454ce8d5aaec79c15372081ae0d134ba"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYJ1PJNZVBW0AWB4F06RAN5C/raw-frames.jsonl",
+      "mediaType": "application/x-ndjson",
+      "byteLength": 56057,
+      "sha256": "af87f97413c953cb4196fdc9d46e150f34a568bf577fc8723843b94d6110db92"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYJ1PJNZVBW0AWB4F06RAN5C/raw-observations.jsonl",
+      "mediaType": "application/x-ndjson",
+      "byteLength": 48224,
+      "sha256": "8b9aa6c35c20e6597672ba2354f8b71bb91f1d626813487154ee742a81a6d222"
+    },
+    {
+      "path": "raw-evidence/sessions/01KYJ1PJNZVBW0AWB4F06RAN5C/raw-session.json",
+      "mediaType": "application/json",
+      "byteLength": 4160,
+      "sha256": "b16282ff6a7305d2908354065aa32d3ea87efdcfd670e641fb299648b626b1b8"
+    }
+  ],
+  "resources": [
+    {
+      "id": "sha256:004c47786cd6f4d82760252f630b6ac1d3ba6c62de576eef56e6790506d9c08d",
+      "sha256": "004c47786cd6f4d82760252f630b6ac1d3ba6c62de576eef56e6790506d9c08d",
+      "byteLength": 1325,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/00/004c47786cd6f4d82760252f630b6ac1d3ba6c62de576eef56e6790506d9c08d.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:08:03.335Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:0661b7a1a4c3ba8c03071d15ea5dec0847d493d84626772da4b84e064c611028",
+      "sha256": "0661b7a1a4c3ba8c03071d15ea5dec0847d493d84626772da4b84e064c611028",
+      "byteLength": 4590,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/06/0661b7a1a4c3ba8c03071d15ea5dec0847d493d84626772da4b84e064c611028.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:08:28.793Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiQuery",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:0ee7b14ddfe6c15b9b4bc0fa205def419b838b9322a7a6fbf81e2bb35cf529c2",
+      "sha256": "0ee7b14ddfe6c15b9b4bc0fa205def419b838b9322a7a6fbf81e2bb35cf529c2",
+      "byteLength": 1297,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/0e/0ee7b14ddfe6c15b9b4bc0fa205def419b838b9322a7a6fbf81e2bb35cf529c2.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:08:03.451Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:1030a0d68734b8677e7343e8b7988523280b5b5102c0a6f53dcf02ed040a2311",
+      "sha256": "1030a0d68734b8677e7343e8b7988523280b5b5102c0a6f53dcf02ed040a2311",
+      "byteLength": 1343,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/10/1030a0d68734b8677e7343e8b7988523280b5b5102c0a6f53dcf02ed040a2311.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:39.733Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:1d9961d2fbcdfae728330ba229dd065b512999752d13f243a6338e5a130c8d6a",
+      "sha256": "1d9961d2fbcdfae728330ba229dd065b512999752d13f243a6338e5a130c8d6a",
+      "byteLength": 1295,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/1d/1d9961d2fbcdfae728330ba229dd065b512999752d13f243a6338e5a130c8d6a.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:05:28.055Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiTap",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:2b71f38b48fbd2960c9cf21291a617966041cd5e598e7ff4f55c12811fa7810b",
+      "sha256": "2b71f38b48fbd2960c9cf21291a617966041cd5e598e7ff4f55c12811fa7810b",
+      "byteLength": 1350,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/2b/2b71f38b48fbd2960c9cf21291a617966041cd5e598e7ff4f55c12811fa7810b.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:59.262Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:2fb35e9ca70ba011b53378fc69ff7404953555291b53fdaf1b0ba66b512a2454",
+      "sha256": "2fb35e9ca70ba011b53378fc69ff7404953555291b53fdaf1b0ba66b512a2454",
+      "byteLength": 1314,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/2f/2fb35e9ca70ba011b53378fc69ff7404953555291b53fdaf1b0ba66b512a2454.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:08:01.148Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:374c1269b016382257cf8298022854ce88eebb8c124ed611ce337b1628d355c5",
+      "sha256": "374c1269b016382257cf8298022854ce88eebb8c124ed611ce337b1628d355c5",
+      "byteLength": 1369,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/37/374c1269b016382257cf8298022854ce88eebb8c124ed611ce337b1628d355c5.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:58.581Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:422d1756210b466088b21a9ee4d4d2bf13f8e7b3f6e5cfa5eef6f0770054a021",
+      "sha256": "422d1756210b466088b21a9ee4d4d2bf13f8e7b3f6e5cfa5eef6f0770054a021",
+      "byteLength": 1300,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/42/422d1756210b466088b21a9ee4d4d2bf13f8e7b3f6e5cfa5eef6f0770054a021.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:29.707Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:45504b583b02b3eab8e27e4c5f0f78efdb37b8b8e802ae03b5bd557c910ba995",
+      "sha256": "45504b583b02b3eab8e27e4c5f0f78efdb37b8b8e802ae03b5bd557c910ba995",
+      "byteLength": 1334,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/45/45504b583b02b3eab8e27e4c5f0f78efdb37b8b8e802ae03b5bd557c910ba995.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:47.021Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:49c4236f8d031f72921f21b413803dd49eb27def8b59df702386a701621fe6c1",
+      "sha256": "49c4236f8d031f72921f21b413803dd49eb27def8b59df702386a701621fe6c1",
+      "byteLength": 1379,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/49/49c4236f8d031f72921f21b413803dd49eb27def8b59df702386a701621fe6c1.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:55.187Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:5544fd45960bc13345d0b4d4895452293f104317e07912d31dbb8362230e8e43",
+      "sha256": "5544fd45960bc13345d0b4d4895452293f104317e07912d31dbb8362230e8e43",
+      "byteLength": 1414,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/55/5544fd45960bc13345d0b4d4895452293f104317e07912d31dbb8362230e8e43.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:05:33.396Z",
+      "evidenceRole": "read_only_runtime_context",
+      "metadata": {
+        "captureSource": "adb_read_only_runtime_context"
+      }
+    },
+    {
+      "id": "sha256:5960fac5e3971a9d6545b2cb29c4f908f50a23b96a8bc012640e0f6cbdd37639",
+      "sha256": "5960fac5e3971a9d6545b2cb29c4f908f50a23b96a8bc012640e0f6cbdd37639",
+      "byteLength": 1320,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/59/5960fac5e3971a9d6545b2cb29c4f908f50a23b96a8bc012640e0f6cbdd37639.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:40.478Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:5b9705abdf185761226401687a1c2b594b948a7bbdc20536a0149db81f199fc8",
+      "sha256": "5b9705abdf185761226401687a1c2b594b948a7bbdc20536a0149db81f199fc8",
+      "byteLength": 1374,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/5b/5b9705abdf185761226401687a1c2b594b948a7bbdc20536a0149db81f199fc8.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:05:11.527Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:5fea0afa531f1b68eff9f22624055c97e59629e9bd521e7f2bf560cfe4217862",
+      "sha256": "5fea0afa531f1b68eff9f22624055c97e59629e9bd521e7f2bf560cfe4217862",
+      "byteLength": 1253,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/5f/5fea0afa531f1b68eff9f22624055c97e59629e9bd521e7f2bf560cfe4217862.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:08:13.124Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiAssert",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:830466726b0ca0490767a4e2ab1fefbf2f24092409a31c94f332ada4aee4be7a",
+      "sha256": "830466726b0ca0490767a4e2ab1fefbf2f24092409a31c94f332ada4aee4be7a",
+      "byteLength": 1313,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/83/830466726b0ca0490767a4e2ab1fefbf2f24092409a31c94f332ada4aee4be7a.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:08:07.653Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:83695dd3a0799d7e4fb016365cf0fab7f82358a7c267495c8dccc7c5b386384f",
+      "sha256": "83695dd3a0799d7e4fb016365cf0fab7f82358a7c267495c8dccc7c5b386384f",
+      "byteLength": 1355,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/83/83695dd3a0799d7e4fb016365cf0fab7f82358a7c267495c8dccc7c5b386384f.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:20.504Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:885826775040f8a148c2a9fa9b75c01bfcc05a6f93026da9e2758d7e5cf960f6",
+      "sha256": "885826775040f8a148c2a9fa9b75c01bfcc05a6f93026da9e2758d7e5cf960f6",
+      "byteLength": 1302,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/88/885826775040f8a148c2a9fa9b75c01bfcc05a6f93026da9e2758d7e5cf960f6.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:30.261Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:8b49b6dd23e671539b37a7f235eac5b1c668ba02669195930c6b2c60ad1646bd",
+      "sha256": "8b49b6dd23e671539b37a7f235eac5b1c668ba02669195930c6b2c60ad1646bd",
+      "byteLength": 1350,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/8b/8b49b6dd23e671539b37a7f235eac5b1c668ba02669195930c6b2c60ad1646bd.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:53.527Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:8e4cb8c22f8ff02fb765bfc1e1fd5118ada44018afb709d6c6eb2ca6e2838662",
+      "sha256": "8e4cb8c22f8ff02fb765bfc1e1fd5118ada44018afb709d6c6eb2ca6e2838662",
+      "byteLength": 1346,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/8e/8e4cb8c22f8ff02fb765bfc1e1fd5118ada44018afb709d6c6eb2ca6e2838662.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:45.002Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:8e6ad381b99451c685c80928e6eba4ad1c92dfbfe795715eebeef302110bcc7b",
+      "sha256": "8e6ad381b99451c685c80928e6eba4ad1c92dfbfe795715eebeef302110bcc7b",
+      "byteLength": 1313,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/8e/8e6ad381b99451c685c80928e6eba4ad1c92dfbfe795715eebeef302110bcc7b.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:47.614Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:90a52c35593b5432ea92eef73cb37584a860186d2b744931713b30a785c1c222",
+      "sha256": "90a52c35593b5432ea92eef73cb37584a860186d2b744931713b30a785c1c222",
+      "byteLength": 1313,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/90/90a52c35593b5432ea92eef73cb37584a860186d2b744931713b30a785c1c222.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:08:06.605Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:90d9841620be423448c8626e0b2fc02f45f71aea77a58a20614396c49d889408",
+      "sha256": "90d9841620be423448c8626e0b2fc02f45f71aea77a58a20614396c49d889408",
+      "byteLength": 1414,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/90/90d9841620be423448c8626e0b2fc02f45f71aea77a58a20614396c49d889408.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:04:55.150Z",
+      "evidenceRole": "read_only_runtime_context",
+      "metadata": {
+        "captureSource": "adb_read_only_runtime_context"
+      }
+    },
+    {
+      "id": "sha256:920c947fff9d1dfe90cdec4448fea7aaf44b0803151c71ff7ea9b748f9111def",
+      "sha256": "920c947fff9d1dfe90cdec4448fea7aaf44b0803151c71ff7ea9b748f9111def",
+      "byteLength": 23937,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/92/920c947fff9d1dfe90cdec4448fea7aaf44b0803151c71ff7ea9b748f9111def.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:15.288Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiQuery",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:94b660d01477ad1e849b4b6fcf2bc8bf7bff1c5885ce97231bd5509b34227867",
+      "sha256": "94b660d01477ad1e849b4b6fcf2bc8bf7bff1c5885ce97231bd5509b34227867",
+      "byteLength": 1236,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/94/94b660d01477ad1e849b4b6fcf2bc8bf7bff1c5885ce97231bd5509b34227867.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:08:33.962Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiAssert",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:969552fd0fd401172ed396fbf210f850bb67c5e58021b99dfc04eb502279aa79",
+      "sha256": "969552fd0fd401172ed396fbf210f850bb67c5e58021b99dfc04eb502279aa79",
+      "byteLength": 1382,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/96/969552fd0fd401172ed396fbf210f850bb67c5e58021b99dfc04eb502279aa79.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:56.246Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:976f46121089f8f6864a722ca7dd4a49340285ef185709d06050a5d3a0d6bce0",
+      "sha256": "976f46121089f8f6864a722ca7dd4a49340285ef185709d06050a5d3a0d6bce0",
+      "byteLength": 1334,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/97/976f46121089f8f6864a722ca7dd4a49340285ef185709d06050a5d3a0d6bce0.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:31.229Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:9a280cb90463aa587bc1e60a36c3c07d65c358a8196f525187305dbdb9cf7ed5",
+      "sha256": "9a280cb90463aa587bc1e60a36c3c07d65c358a8196f525187305dbdb9cf7ed5",
+      "byteLength": 1314,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/9a/9a280cb90463aa587bc1e60a36c3c07d65c358a8196f525187305dbdb9cf7ed5.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:49.570Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:9a7bb54434f4a6215db05915d459c42e3834a589d9fd4ec2e9564ce6f6bbe850",
+      "sha256": "9a7bb54434f4a6215db05915d459c42e3834a589d9fd4ec2e9564ce6f6bbe850",
+      "byteLength": 1315,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/9a/9a7bb54434f4a6215db05915d459c42e3834a589d9fd4ec2e9564ce6f6bbe850.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:52.692Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:9d61c9a2a38cfa4218fbdd2b1c920f6ccad44d7d797fbeeeded142f0f1bb1d7f",
+      "sha256": "9d61c9a2a38cfa4218fbdd2b1c920f6ccad44d7d797fbeeeded142f0f1bb1d7f",
+      "byteLength": 165520,
+      "mediaType": "image/png",
+      "uri": "raw-evidence/resources/sha256/9d/9d61c9a2a38cfa4218fbdd2b1c920f6ccad44d7d797fbeeeded142f0f1bb1d7f.png",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied",
+        "reason": "local_authorized_exploration"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:04:55.149Z",
+      "evidenceRole": "full_page_screenshot",
+      "metadata": {
+        "captureSource": "midscene.AndroidDevice.screenshotBase64",
+        "stateKeyHint": "messages.special_follow.with_unread_lian_liangwei"
+      },
+      "dimensions": {
+        "width": 1152,
+        "height": 2376
+      }
+    },
+    {
+      "id": "sha256:9eba03343a6781181e22d17e36f09b17b68cc034b563d0b15f04b2b9b529bb83",
+      "sha256": "9eba03343a6781181e22d17e36f09b17b68cc034b563d0b15f04b2b9b529bb83",
+      "byteLength": 1354,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/9e/9eba03343a6781181e22d17e36f09b17b68cc034b563d0b15f04b2b9b529bb83.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:52.545Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:a304d2f28e025b1cd24ba1bb344599e9fdd4e86a75f4865a7dbc68d8cee4f2ea",
+      "sha256": "a304d2f28e025b1cd24ba1bb344599e9fdd4e86a75f4865a7dbc68d8cee4f2ea",
+      "byteLength": 1315,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/a3/a304d2f28e025b1cd24ba1bb344599e9fdd4e86a75f4865a7dbc68d8cee4f2ea.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:49.201Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:ac817bad0d0cda0ce885a18f5ac04ca157550bf600ff87eaa639f9418c93d75a",
+      "sha256": "ac817bad0d0cda0ce885a18f5ac04ca157550bf600ff87eaa639f9418c93d75a",
+      "byteLength": 1386,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/ac/ac817bad0d0cda0ce885a18f5ac04ca157550bf600ff87eaa639f9418c93d75a.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:40.136Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:b36a8a7009d859fe8ac8207ddf82eb6dc0d3654b5499cbfec1716ca8a9fda262",
+      "sha256": "b36a8a7009d859fe8ac8207ddf82eb6dc0d3654b5499cbfec1716ca8a9fda262",
+      "byteLength": 1305,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/b3/b36a8a7009d859fe8ac8207ddf82eb6dc0d3654b5499cbfec1716ca8a9fda262.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:50.726Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:b8e96a164e441a090cfaf190d1ab020cedb36df54516cf08b3903467666e5efb",
+      "sha256": "b8e96a164e441a090cfaf190d1ab020cedb36df54516cf08b3903467666e5efb",
+      "byteLength": 1371,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/b8/b8e96a164e441a090cfaf190d1ab020cedb36df54516cf08b3903467666e5efb.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:59.343Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:bab84ea24f1652d1a29619a1a5631b409e027b796cd85f5372d07706877c86e6",
+      "sha256": "bab84ea24f1652d1a29619a1a5631b409e027b796cd85f5372d07706877c86e6",
+      "byteLength": 1333,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/ba/bab84ea24f1652d1a29619a1a5631b409e027b796cd85f5372d07706877c86e6.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:36.190Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:bae87e0807279a0fb2bf0431ed6d7d5fe416c3290388875ae02f16a5c045c87f",
+      "sha256": "bae87e0807279a0fb2bf0431ed6d7d5fe416c3290388875ae02f16a5c045c87f",
+      "byteLength": 1243,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/ba/bae87e0807279a0fb2bf0431ed6d7d5fe416c3290388875ae02f16a5c045c87f.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:05:16.782Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiAssert",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:bfa094422dbec889652bf1fa627f60f8924bfd21579f105bc8ed71c326e60e55",
+      "sha256": "bfa094422dbec889652bf1fa627f60f8924bfd21579f105bc8ed71c326e60e55",
+      "byteLength": 1318,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/bf/bfa094422dbec889652bf1fa627f60f8924bfd21579f105bc8ed71c326e60e55.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:43.375Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:c39ac264b3cd9e1fb73a340dabf0349b799d6dbc78a13a45f4f4eaec4bff7683",
+      "sha256": "c39ac264b3cd9e1fb73a340dabf0349b799d6dbc78a13a45f4f4eaec4bff7683",
+      "byteLength": 5064,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/c3/c39ac264b3cd9e1fb73a340dabf0349b799d6dbc78a13a45f4f4eaec4bff7683.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:05:08.396Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiQuery",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:d3b85d3922255a5cfd4b4e6d36d932d6d115df117f02d59b4890b90eed584163",
+      "sha256": "d3b85d3922255a5cfd4b4e6d36d932d6d115df117f02d59b4890b90eed584163",
+      "byteLength": 1334,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/d3/d3b85d3922255a5cfd4b4e6d36d932d6d115df117f02d59b4890b90eed584163.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:05:21.082Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:d6f841877d49593ee62bf9873d9be8e05657abfd6fd34ec9dbba9abe5abeb872",
+      "sha256": "d6f841877d49593ee62bf9873d9be8e05657abfd6fd34ec9dbba9abe5abeb872",
+      "byteLength": 1315,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/d6/d6f841877d49593ee62bf9873d9be8e05657abfd6fd34ec9dbba9abe5abeb872.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:44.873Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:dcc5399a42245599753d9905dadbf3471965cb77a3bcc1ab12f46fd2892b06e9",
+      "sha256": "dcc5399a42245599753d9905dadbf3471965cb77a3bcc1ab12f46fd2892b06e9",
+      "byteLength": 1312,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/dc/dcc5399a42245599753d9905dadbf3471965cb77a3bcc1ab12f46fd2892b06e9.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:36.722Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:e2e71634d57d62fac7bfaabb74a3ef1b3159e782016c83bb79e8854863e69d22",
+      "sha256": "e2e71634d57d62fac7bfaabb74a3ef1b3159e782016c83bb79e8854863e69d22",
+      "byteLength": 516114,
+      "mediaType": "image/png",
+      "uri": "raw-evidence/resources/sha256/e2/e2e71634d57d62fac7bfaabb74a3ef1b3159e782016c83bb79e8854863e69d22.png",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied",
+        "reason": "local_authorized_exploration"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:05:33.396Z",
+      "evidenceRole": "full_page_screenshot",
+      "metadata": {
+        "captureSource": "midscene.AndroidDevice.screenshotBase64",
+        "stateKeyHint": "messages.root.with_special_follow_unread"
+      },
+      "dimensions": {
+        "width": 1152,
+        "height": 2376
+      }
+    },
+    {
+      "id": "sha256:e4a0fbc82878e7575ece6aed34ff64f0f043c98dc2701ded6a3abb069c985427",
+      "sha256": "e4a0fbc82878e7575ece6aed34ff64f0f043c98dc2701ded6a3abb069c985427",
+      "byteLength": 1350,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/e4/e4a0fbc82878e7575ece6aed34ff64f0f043c98dc2701ded6a3abb069c985427.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:36.732Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:e64c2ebb776cba82fb12affd345e81cbfda21b1642c200ede1614939c282150c",
+      "sha256": "e64c2ebb776cba82fb12affd345e81cbfda21b1642c200ede1614939c282150c",
+      "byteLength": 1327,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/e6/e64c2ebb776cba82fb12affd345e81cbfda21b1642c200ede1614939c282150c.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:35.276Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:ee97e4c9a6edeb8b40082f310d67f7c1119aad0a1c2d7c24cdd9143dcd54bda1",
+      "sha256": "ee97e4c9a6edeb8b40082f310d67f7c1119aad0a1c2d7c24cdd9143dcd54bda1",
+      "byteLength": 1339,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/ee/ee97e4c9a6edeb8b40082f310d67f7c1119aad0a1c2d7c24cdd9143dcd54bda1.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:33.173Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    },
+    {
+      "id": "sha256:f16620e864b2a87be713c66a0542526f44bad2cdd6647df755ba04a5c5050d1e",
+      "sha256": "f16620e864b2a87be713c66a0542526f44bad2cdd6647df755ba04a5c5050d1e",
+      "byteLength": 1316,
+      "mediaType": "application/json",
+      "uri": "raw-evidence/resources/sha256/f1/f16620e864b2a87be713c66a0542526f44bad2cdd6647df755ba04a5c5050d1e.json",
+      "dataClassification": "confidential",
+      "redaction": {
+        "status": "not_applied"
+      },
+      "encryption": {
+        "status": "none"
+      },
+      "retentionClass": "local_exploration_evidence",
+      "createdAt": "2026-07-27T15:07:26.358Z",
+      "evidenceRole": "midscene_semantic_decision",
+      "metadata": {
+        "provider": "midscene",
+        "operation": "aiLocate",
+        "status": "pass"
+      }
+    }
+  ],
+  "rootHash": "sha256:c1814433468f8425aa93af1e71db6dc0ba4d4b40007c448c119dfa601b70e11f",
+  "contentHash": "sha256:fd5a86d0b3d81f847748d5008d8b9d7732bd9cdfb665b2b2d210c7015248c5e2"
+}

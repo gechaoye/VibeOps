@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYGXH87XMB5R2X59SBPKWZA6",
+  "sessionRef": "01KYGXD0C957YB101AG2F9X7HC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYGXF4VHSGHXM8H100HJEYXD",
+  "sourceScreenshotRef": "sha256:3765081045c7f0a37b70f3a5fdafdaf87a0ab835ec650f1a34a130fa49028cee",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"特别关注入口\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注",
+    "visibleResultContent": [
+      "空状态插图",
+      "包含特别关注人消息的会话会展示在这里",
+      "设置特别关注 >"
+    ],
+    "supportedFunctionDescription": "激活“特别关注入口”后进入“特别关注”页面；该页面用于展示包含特别关注人消息的会话，并提供“设置特别关注”入口。当前列表为空。",
+    "evidenceBasis": [
+      "任务上下文明确给出 messages.toolbar.heart 的功能名称为“特别关注”",
+      "页面顶部可见标题“特别关注”",
+      "页面中央可见说明“包含特别关注人消息的会话会展示在这里”",
+      "页面中央可见蓝色操作文字“设置特别关注 >”",
+      "屏幕未显示任何会话条目，仅显示空状态内容"
+    ],
+    "unresolvedMeaning": "仅凭当前静态画面无法确认“设置特别关注”被激活后的具体设置流程、可选对象范围、规则限制，以及左上角向下控件关闭后返回的确切层级。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T04:32:22.879Z",
+  "endedAt": "2026-07-27T04:32:36.605Z",
+  "durationMs": 13726.320166,
+  "captureCoupling": "sequential_non_atomic",
+  "contentHash": "sha256:2d8e733f632302f8b1c91798ff15272ad6e89ede51fec92e35a7a83a081c9049"
+}

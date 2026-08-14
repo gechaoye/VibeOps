@@ -1,0 +1,36 @@
+task:
+  id: zto-connect-fat-first-level-normalization-20260728
+  requestedAt: '2026-07-28T08:27:31Z'
+  objective: 使用 explore-app-ui-graph 技能重新规范现有的知识图谱
+application:
+  key: zto.connect
+  packageId: com.zto.connect.fat
+  build:
+    environment: test
+    versionName: 8.58.0.10542
+    versionCode: '10542'
+entry:
+  description: existing first-level graph
+  knownFacts:
+  - Only published first-level canonical entities are normalized.
+  - Special-follow records remain unmaterialized evidence.
+scope:
+  mode: normalization_only
+  deviceActions: none
+  reason: No new UI exploration was requested; this migration must not fabricate dual-model evidence.
+graph:
+  root: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph
+  mergePolicy: additive-upsert
+  preserveHistoricalEntities: true
+  stageBeforePublish: true
+  baseline:
+    fileCount: 110
+    contentHash: sha256:f6a6f51e22f485e90df83f3af680dfa4ca29375a4b193a1b892e7e2b70cda238
+    entityIdsHash: sha256:6f955ceab2a4ca01b90ca0d5d79ae7f30b4ddd4b60bd7d94a325667402184ab9
+    protectedSharedNavigationRefs:
+    - 01KY6Z7BD84VK4BNARMMSEET0K
+    - 01KY9E733GCWPPT489SF5YPP3B
+completion:
+  status: incomplete
+  reason: Legacy first-level evidence was normalized, but it has not undergone fresh Scout/GPT reconciliation and atomic transition
+    closure.

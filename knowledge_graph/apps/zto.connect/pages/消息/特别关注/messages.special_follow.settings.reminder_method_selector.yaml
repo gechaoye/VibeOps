@@ -1,0 +1,100 @@
+schemaVersion: 3.0.0
+entityType: Page
+id: 01KYKA3ENB80X4G3EYDN53XKYA
+key: messages.special_follow.settings.reminder_method_selector
+label: 特别关注-特别关注提醒-提醒方式选择
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+surfaceType: overlay
+status: observed_dual_model_verified_with_legacy_evidence
+summary: 在短信和电话两种提醒方式之间选择。
+states:
+- key: selected_sms
+  summary: 当前选中短信
+  frameRefs:
+  - 01KYHNBY25VBJ9YYP6BHG284HM
+- key: selected_phone
+  summary: 当前选中电话
+  frameRefs:
+  - sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570
+elementRefs:
+- 01KYKA3ENB0VNZWQ6HTPQ6XX4T
+- 01KYKA3ENBNZQ775EX5QX5CENW
+- 01KYKA3ENBQNEGVZ80QGGWWE0X
+inboundTransitionRefs:
+- 01KYKA3ENB7KBXWPHE5AERG8PB
+outboundTransitionRefs:
+- 01KYKA3ENB835QTWSG8TDR6JJB
+- 01KYKA3ENBRQAZYP9XVZT5VEQZ
+- 01KYKA3ENBRYEPAQ71VBZ78Z2J
+observations:
+- frameRef: 01KYHNBY25VBJ9YYP6BHG284HM
+  observedAt: '2026-07-27T11:29:11.025Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.method.selector
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:2d3f91910567d5eeb2b7ce6d3dd033754231fa7a9301b744d8778a0f3809c21a
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch27-attempt1/raw-evidence/sessions/01KYHN8S4VCAVNFXMZSEKJ13T7
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHRCSJ3HACWART4W8YZXG41
+  observedAt: '2026-07-27T12:22:04.756Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.method.selector_phone
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:44cb30ab92783661e178c5763a73362ad40fb8a54e1bc49bd81f05a333f44c63
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch30-attempt1/raw-evidence/sessions/01KYHR8DFGG6PD70AVJAZ2X0PW
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: sha256:2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c
+  observedAt: '2026-07-31T03:02:45.587Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.reminder_method_selector
+    independentScout: complete
+    gptReconciliation: complete
+  screenshotRef: sha256:2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+- frameRef: sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570
+  observedAt: '2026-07-31T06:49:37.230Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.remaining.reminder_method_selector
+    independentScout: complete
+    gptReconciliation: complete
+  screenshotRef: sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+provenance:
+  sourceType: mixed_verified_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRefs:
+  - zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  - zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  limitations:
+  - some historical states remain GPT-only pending independent Scout

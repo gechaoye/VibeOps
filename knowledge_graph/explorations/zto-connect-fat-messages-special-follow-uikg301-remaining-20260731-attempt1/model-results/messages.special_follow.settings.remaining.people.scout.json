@@ -1,0 +1,93 @@
+{
+  "frameId": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+  "page": {
+    "name": "全部成员",
+    "surfaceType": "page",
+    "stateSummary": "显示单个成员及其移除操作",
+    "scrollableRegions": []
+  },
+  "elements": [
+    {
+      "candidateKey": "member-row-container",
+      "label": null,
+      "visualDescription": "包含头像、姓名和移除按钮的水平布局容器，占据屏幕顶部区域",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.12,
+        "width": 0.92,
+        "height": 0.1
+      },
+      "meaning": {
+        "status": "known",
+        "description": "成员列表中的一行容器",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "member-name-label",
+      "label": "练良伟",
+      "visualDescription": "位于头像右侧的黑色文本标签，显示成员姓名",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.18,
+        "y": 0.135,
+        "width": 0.3,
+        "height": 0.04
+      },
+      "meaning": {
+        "status": "known",
+        "description": "成员姓名标签",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "member-remove-button",
+      "label": "移除",
+      "visualDescription": "位于成员行最右侧的灰色圆角矩形按钮，内含中文‘移除’",
+      "controlType": "button",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.84,
+        "y": 0.13,
+        "width": 0.12,
+        "height": 0.05
+      },
+      "meaning": {
+        "status": "known",
+        "description": "移除该成员的操作按钮",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    }
+  ],
+  "relationships": [
+    {
+      "fromCandidateKey": "member-row-container",
+      "type": "contains",
+      "toCandidateKey": "member-name-label"
+    },
+    {
+      "fromCandidateKey": "member-row-container",
+      "type": "contains",
+      "toCandidateKey": "member-remove-button"
+    }
+  ],
+  "uncertainties": []
+}

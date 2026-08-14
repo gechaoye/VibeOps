@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ2YGNEXMTG0P3SJHBNKE1J",
+  "sessionRef": "01KYJ2T4PCJW41VRZ1GB5ZYW0A",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ2VEMV4714XXTPNP86TB7P",
+  "sourceScreenshotRef": "sha256:af2cc1d24661325c8e6e34c320a8ffd5670eac455604bb884cd6eaec856fae90",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前已进入刚才点击的练良伟相关会话页面，顶部标题、返回控件和消息历史可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:26:23.425Z",
+  "endedAt": "2026-07-27T15:26:28.526Z",
+  "durationMs": 5101.245542,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:44914aa5f1ba2f7b478c833b66e426535ab85d836c10572f6e0b80695da2d992"
+}

@@ -1,0 +1,159 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch27-attempt1
+title: 短信电话提醒方式面板第二十七批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.member_with_unread, predicate: conversation_visibility, value: 设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: configured_visual_state, value: 设置特别关注人员后，入口爱心图标显示为橙黄色。, source: user}
+    - {subjectKey: messages.special_follow.settings, predicate: exploration_authorization, value: 用户明确允许操作开关和设置，探索阶段无需恢复业务状态。, source: user}
+    - {subjectKey: messages.special_follow.settings.sms_phone_reminder, predicate: enabled_children, value: 开启短信/电话提醒后新增独立间隔时间、提醒方式和夜间免打扰设置。, source: verified_evidence}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings.sms_phone_reminder.method.sms
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 设备位于短信/电话提醒已开启的长设置页，提醒方式当前为短信；本批打开提醒方式面板并盘点。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 10
+  include: [messages.special_follow.settings, messages.special_follow.settings.sms_phone_reminder.method]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low]
+  allowedSideEffects: [temporary_display_state]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, persistent_setting_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 1800
+  allowedTargetScopes: [settings_navigation]
+  allowedTapRegions:
+    - key: reminder-method-row-region
+      space: current_display_px
+      rect: {x: 0, y: 1350, width: 1152, height: 450}
+      purpose: 短信/电话提醒分区“提醒方式”整行的实时 Midscene 定位范围。
+
+expectedStates:
+  - key: messages.special_follow.settings.sms_phone_reminder.method.sms
+    label: 短信提醒方式设置页
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 页面标题为“特别关注提醒”；蓝色短信/电话提醒开关下方可见“提醒方式”，右侧值为“短信”。
+    inspection:
+      queryPrompt: 完整盘点当前视口中拥有完整点击区域的交互控件，确认“提醒方式 短信”位于短信/电话提醒间隔行与夜间免打扰之间；屏幕底边裁切行只记录为内容，不作为当前可操作控件。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [open_reminder_method_selector]
+    postcondition: 已记录提醒方式当前为短信。
+  - key: messages.special_follow.settings.sms_phone_reminder.method.selector
+    label: 短信电话提醒方式面板
+    kind: dialog
+    expectedStablePageKey: messages.special_follow.settings.sms_phone_reminder.method
+    requiredSemanticAssertions:
+      - 已打开“提醒方式”底部面板，完整准确记录全部方式选项、当前选中项、取消及是否可滚动。
+    inspection:
+      queryPrompt: 完整盘点提醒方式底部面板的全部可见选项、当前选中项、取消按钮及滚动性；背景遮罩只记录为呈现，背景页控件不作为当前可操作控件。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, list_entry, radio, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已记录提醒方式面板全部内容，选项进入递归队列。
+
+actions:
+  - id: capture-reminder-method-sms
+    kind: capture
+    state: messages.special_follow.settings.sms_phone_reminder.method.sms
+    depth: 4
+  - id: open-reminder-method-selector
+    kind: tap
+    semanticAction: open_reminder_method_selector
+    fromState: messages.special_follow.settings.sms_phone_reminder.method.sms
+    toState: messages.special_follow.settings.sms_phone_reminder.method.selector
+    depth: 4
+    risk: low
+    sideEffects: [temporary_display_state]
+    waitMs: 1800
+    target:
+      key: reminder_method
+      label: 提醒方式 短信
+      scope: settings_navigation
+      locatorPrompt: 定位短信/电话提醒开关下方、间隔时间行之后、夜间免打扰之前，左侧为“提醒方式”、右侧显示“短信”和右箭头的整行。
+      allowedRegionRef: reminder-method-row-region
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 提醒方式底部面板已打开，准确记录全部方式选项及当前选中项。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch27-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBKS9722Z9ZCW7F088
+key: messages.special_follow.settings.open_sound_selector
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBQ16E65EW76H2368D
+action: aiTap
+capability: open_sound_selector
+targetRef: 01KYKA3ENBH55299C13ABP9088
+reversible: true
+risk: safe
+verificationStatus: success_dual_model_live
+evidence:
+  actionTraceRef: open-sound-via-label-area-uikg301
+  actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-sound-via-label-area-uikg301.json
+  beforeFrameRef: sha256:38318987a38ef73111214c5721629e45d397e1789679b273f7cb94d1f07ef65a
+  afterFrameRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  postcondition: pass
+  semanticAssertions:
+  - sha256:ab528041a4cee7948c99bb3cf406b2d52a0f0d50b08d867c4745ef5b35823f73
+provenance:
+  sourceType: midscene_dual_model_live_action_trace
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1

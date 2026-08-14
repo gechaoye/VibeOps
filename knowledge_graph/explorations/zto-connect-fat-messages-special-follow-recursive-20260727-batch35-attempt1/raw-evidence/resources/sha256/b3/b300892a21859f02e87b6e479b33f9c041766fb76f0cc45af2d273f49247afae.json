@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHY3TC2ZW6S8QDZY89WVYW8",
+  "sessionRef": "01KYHXWRA5CNQ6EAH24XQV0YW8",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHY1V9069RHE7WJZS708BDN",
+  "sourceScreenshotRef": "sha256:fa14da614d630a925033e4585813979e550d300b0298ee658791a7e0851d96c1",
+  "operation": "aiLocate",
+  "prompt": "定位第一个“间隔时间”整行，其右侧当前值显示“1小时”",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 563,
+      "y": 1007
+    },
+    "rect": {
+      "x": 48,
+      "y": 937,
+      "width": 1032,
+      "height": 141
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:01:56.757Z",
+  "endedAt": "2026-07-27T14:01:59.426Z",
+  "durationMs": 2669.183333,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:980d46439809f301eaf286adea42cb7b86011934021ef710ee352b6654f1e01b"
+}

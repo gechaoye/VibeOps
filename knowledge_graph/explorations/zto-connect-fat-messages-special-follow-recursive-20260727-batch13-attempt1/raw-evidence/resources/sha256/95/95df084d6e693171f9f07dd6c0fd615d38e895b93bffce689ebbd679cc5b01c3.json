@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHDCE1MKB5TTNTHVZW4549H",
+  "sessionRef": "01KYHDAF7NCMTJ1X1HGNMRAA89",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHDATJ6SRAT393VYPSTA8VF",
+  "sourceScreenshotRef": "sha256:154445e28d8a64af05f794240bf658d8f39322c1f56b855585641f2595670d18",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前屏幕标题为“特别关注”，“我的特别关注”、蓝色“设置”、“添加”和至少一条会话记录均可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:09:31.215Z",
+  "endedAt": "2026-07-27T09:09:35.924Z",
+  "durationMs": 4708.515625,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:1a169895c2c5af9b6ee3d690cd61dee05d0fa928d92e7d00dcd03655c3b4c369"
+}

@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBRYEPAQ71VBZ78Z2J
+key: transition.messages.special_follow.settings.reminder_method_selector.cancel
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB80X4G3EYDN53XKYA
+triggerElementRef: 01KYKA3ENBNZQ775EX5QX5CENW
+action: aiTap
+capability: cancel_reminder_method_selector
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHRPANCDPZ4DRSX4J3F3AQ9
+  beforeFrameRef: 01KYHRM2R1Y4C28D2PAA5X4FQ1
+  afterFrameRef: 01KYHRPYD094Q7P84A9QKK20RT
+  postcondition: pass
+  semanticAssertions:
+  - sha256:ff97287799b359033cd4ed3d43734b527f39fb8031ec6f3a175fbdc841e9922f
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

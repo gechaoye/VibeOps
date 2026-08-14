@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK5E2PTYSSE6XXA0C0ETWQG",
+  "sessionRef": "01KYK56EAS2G50YYZCS42HQWRP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK5A76HPDG0D99Z27DX9AJX",
+  "sourceScreenshotRef": "sha256:5985a4dc3ba151f850d6a26732562bee0ff6406759a1c6379b9d9df4149bb59f",
+  "operation": "aiLocate",
+  "prompt": "定位调查横幅下方第一排工具栏中从左至右第3个、位于灰色时钟图标右侧和橙色方框图标左侧的橙黄色空心爱心按钮；当前截图 bbox 约为(258,558,66,54)。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 291,
+      "y": 607
+    },
+    "rect": {
+      "x": 264,
+      "y": 581,
+      "width": 56,
+      "height": 53
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:28:58.313Z",
+  "endedAt": "2026-07-28T01:29:10.106Z",
+  "durationMs": 11793.66125,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:486a88598b5d6e40fc666e83438d9be36fc3727d25e33931344e0618ce0e5225"
+}

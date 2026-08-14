@@ -1,0 +1,191 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch23-attempt1
+title: 单聊未读弹窗提醒开关第二十三批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.member_with_unread, predicate: conversation_visibility, value: 设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: configured_visual_state, value: 设置特别关注人员后，入口爱心图标显示为橙黄色。, source: user}
+    - {subjectKey: messages.special_follow.settings, predicate: exploration_authorization, value: 用户明确允许操作开关和设置，探索阶段无需恢复业务状态。, source: user}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings.popup_reminder.on
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 设备位于“特别关注提醒”设置页，单聊未读弹窗提醒当前开启；本批覆盖关闭与再次开启状态。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 10
+  include: [messages.special_follow.settings, messages.special_follow.settings.popup_reminder]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [persistent_setting_change]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 1800
+  allowedTargetScopes: [persistent_setting_control]
+  allowedTapRegions:
+    - key: popup-reminder-toggle-region
+      space: current_display_px
+      rect: {x: 850, y: 760, width: 302, height: 260}
+      purpose: 单聊未读弹窗提醒开关的实时 Midscene 定位范围。
+
+expectedStates:
+  - key: messages.special_follow.settings.popup_reminder.on
+    label: 单聊未读弹窗提醒开启状态
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 页面标题为“特别关注提醒”，“单聊消息未读，弹窗提醒我”开关为蓝色开启状态。
+    inspection:
+      queryPrompt: 完整盘点设置页全部可见控件和当前设置状态，重点记录单聊未读弹窗提醒为开启，以及间隔时间和短信/电话提醒当前呈现。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [disable_popup_reminder]
+    postcondition: 已记录单聊未读弹窗提醒开启状态。
+  - key: messages.special_follow.settings.popup_reminder.off
+    label: 单聊未读弹窗提醒关闭状态
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 页面仍为“特别关注提醒”，“单聊消息未读，弹窗提醒我”开关为灰色关闭状态。
+    inspection:
+      queryPrompt: 完整盘点关闭单聊未读弹窗提醒后的设置页全部控件；准确记录间隔时间、短信/电话提醒及其他设置是隐藏、禁用还是保持，不根据依赖关系猜测。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [enable_popup_reminder]
+    postcondition: 已记录关闭状态及所有关联设置的真实呈现。
+  - key: messages.special_follow.settings.popup_reminder.on_again
+    label: 单聊未读弹窗提醒再次开启状态
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 页面仍为“特别关注提醒”，“单聊消息未读，弹窗提醒我”开关恢复为蓝色开启状态。
+    inspection:
+      queryPrompt: 完整盘点再次开启单聊未读弹窗提醒后的设置页全部控件，记录关联设置是否恢复及其当前值。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已验证该开关可关闭并再次开启。
+
+actions:
+  - id: capture-popup-reminder-on
+    kind: capture
+    state: messages.special_follow.settings.popup_reminder.on
+    depth: 3
+  - id: disable-popup-reminder
+    kind: tap
+    semanticAction: disable_popup_reminder
+    fromState: messages.special_follow.settings.popup_reminder.on
+    toState: messages.special_follow.settings.popup_reminder.off
+    depth: 3
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 1800
+    target:
+      key: single_chat_popup_toggle
+      label: 单聊消息未读，弹窗提醒我
+      scope: persistent_setting_control
+      locatorPrompt: 定位“单聊消息未读，弹窗提醒我”这一行最右侧的蓝色开启开关；不要定位旁边的圆圈问号图标。
+      allowedRegionRef: popup-reminder-toggle-region
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 单聊消息未读弹窗提醒开关已变为灰色关闭状态，准确记录关联设置当前呈现。
+  - id: enable-popup-reminder-again
+    kind: tap
+    semanticAction: enable_popup_reminder
+    fromState: messages.special_follow.settings.popup_reminder.off
+    toState: messages.special_follow.settings.popup_reminder.on_again
+    depth: 3
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 1800
+    target:
+      key: single_chat_popup_toggle
+      label: 单聊消息未读，弹窗提醒我
+      scope: persistent_setting_control
+      locatorPrompt: 定位“单聊消息未读，弹窗提醒我”这一行最右侧的灰色关闭开关；不要定位旁边的圆圈问号图标。
+      allowedRegionRef: popup-reminder-toggle-region
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 单聊消息未读弹窗提醒开关已恢复为蓝色开启状态，准确记录关联设置当前呈现。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch23-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

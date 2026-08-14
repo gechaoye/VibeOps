@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHHGS42MBKP316YKPNBDPDQ",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHHFBA6FRB5MJ42CF887DXR",
+  "sourceScreenshotRef": "sha256:0073f611c0c6ad24c4a7773c493c7a2d435d48cb7b12f3d8c60c019b630b6b1b",
+  "operation": "aiLocate",
+  "prompt": "定位底部白色提示音面板第二行左侧、文本为“波浪”的单选项，不要定位该行右侧的圆形试听按钮",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 195,
+      "y": 1758
+    },
+    "rect": {
+      "x": 145,
+      "y": 1731,
+      "width": 102,
+      "height": 55
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:21:42.272Z",
+  "endedAt": "2026-07-27T10:21:52.642Z",
+  "durationMs": 10369.570958,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:b5a2c1a214c9f6903814081bf6ffaa52437ea550c847751d1d4821d5c4744bee"
+}

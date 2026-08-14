@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHHEBDC5V883CX4QAEW612E",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHHCNBTFGKMP9S032K099B3",
+  "sourceScreenshotRef": "sha256:e6d7092291efd2365a30c486118510807635658a253cf50663e3d630ca32940c",
+  "operation": "aiLocate",
+  "prompt": "定位文字“弹窗消息未读，短信/电话提醒我”所在行最右侧的灰色关闭开关。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 1030,
+      "y": 1190
+    },
+    "rect": {
+      "x": 958,
+      "y": 1155,
+      "width": 146,
+      "height": 72
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:20:26.506Z",
+  "endedAt": "2026-07-27T10:20:33.068Z",
+  "durationMs": 6562.119625,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:4d7a1232622003f89bfc5194931134cd0dd221c480800dbb43702d573e1a578c"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHDVFKXV9MM05XS3VAC4WC5",
+  "sessionRef": "01KYHDMQ8EFWPC0S4DZ8YYJSH7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHDR4R5V2A92E3MC2CA7T8P",
+  "sourceScreenshotRef": "sha256:ba11d642dc22f1b0b657ae2dc7c34a33aac315e1a3216026b9c312d8dc5280c7",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前画面出现由第一项灰色问号打开的帮助说明文字或说明层。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:17:40.864Z",
+  "endedAt": "2026-07-27T09:17:49.053Z",
+  "durationMs": 8188.975458,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:075b1c094f6d4dbf26aea0489e870339eaf9a8f6c934c3bdfec829a0e7054f0b"
+}

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHAKB3M855X6VR97ZAE8CZD",
+  "sessionRef": "01KYHAC69YW8MBBVJKFVYZ0TD8",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHAGPAVGSG8C4KC32WF36K3",
+  "sourceScreenshotRef": "sha256:84fd72faf89cce6433b8170825f52d82fa686ca5417c31210109d74587f201c5",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"我的特别关注右侧进入箭头\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.add\",\"predicate\":\"opens_common_component\",\"value\":\"通用选人组件\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "全部成员",
+    "visibleResultContent": [
+      "成员：练良伟",
+      "操作：移除",
+      "顶部提供返回控件和关闭控件"
+    ],
+    "supportedFunctionDescription": "进入特别关注的全部成员管理界面；当前可查看特别关注成员并通过“移除”按钮移除成员。根据给定权威上下文，特别关注设置中的添加操作会打开通用选人组件，且允许操作设置和成员。",
+    "evidenceBasis": [
+      "截图顶部居中可见标题“全部成员”",
+      "截图成员列表中可见姓名“练良伟”及头像",
+      "该成员右侧可见“移除”按钮",
+      "截图顶部可见返回和关闭控件",
+      "“功能名称为特别关注”“添加打开通用选人组件”“允许操作设置和成员”均来自题目提供的权威非视觉上下文"
+    ],
+    "unresolvedMeaning": "仅凭当前静态画面无法确认顶部返回与关闭控件各自的具体目标，也无法确认该结果以独立页面、模态页还是其他容器形式承载；当前画面未显示添加入口，因此无法从像素确认其位置、样式或即时交互结果。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:20:35.357Z",
+  "endedAt": "2026-07-27T08:20:56.564Z",
+  "durationMs": 21206.682041,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:95f4a2e930eb63cd2f441d7630e073ec2d7dca1f0cdb8cdade2fdb9435d52cf1"
+}

@@ -1,0 +1,15 @@
+{
+  "name": "vibeops",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.3.0",
+  "scripts": {
+    "dev": "pnpm --filter uikg-workbench dev",
+    "dev:server": "pnpm --filter uikg-workbench dev:server",
+    "build": "pnpm --filter uikg-workbench build",
+    "typecheck": "pnpm --filter uikg-workbench typecheck",
+    "test": "pnpm --filter uikg-workbench test",
+    "graph:validate": "python knowledge_graph/tools/validate_normalized_zto_graph.py --root knowledge_graph",
+    "graph:query": "node knowledge_graph/tools/query_navigation_paths.mjs"
+  }
+}

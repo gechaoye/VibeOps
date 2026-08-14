@@ -1,0 +1,61 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBS0K27728HFHXSJMM
+key: messages.special_follow.settings.popup_interval_chevron
+label: 特别关注-特别关注提醒-单聊弹窗提醒间隔-选择箭头提示
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENBJ4XNNW97FZQQ2Y6P
+parentElementRef: 01KYKA3ENBJ4XNNW97FZQQ2Y6P
+controlType: icon
+role: affordance
+capabilities: []
+summary: 表示父行可进入间隔选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
+relationshipRefs:
+- owner:01KYKA3ENBJ4XNNW97FZQQ2Y6P
+- parent:01KYKA3ENBJ4XNNW97FZQQ2Y6P
+observations:
+- frameRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  observedAt: '2026-07-31T06:19:26.974Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 1042.0
+      top: 1019.0
+      width: 26.0
+      height: 41.0
+    center:
+    - 1054.0
+    - 1039.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:1539e005a274e9073b1a789da812bff7a9decb33966635da0108705c013fa248
+  state: visible_non_actionable_affordance
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBS0K27728HFHXSJMM-sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329.png
+coverage: observed_not_activated_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: false
+  function: indicates_parent_selector_row_action

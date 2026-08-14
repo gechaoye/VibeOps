@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHYBG51E1ZJVG94AB74R2MC",
+  "sessionRef": "01KYHXWRA5CNQ6EAH24XQV0YW8",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHY8SZ9RVS0RDV1PY1BSCSJ",
+  "sourceScreenshotRef": "sha256:03c2726d332af3d379e53b15c0fae162a28c4e5fc5e9efe096b14853f293817e",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"波浪\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"visible_options\",\"value\":\"提示音面板包含默认、波浪、简报、门铃、各自试听按钮和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "当前未显示提示音选择面板、弹窗或遮罩",
+      "“特别关注提示音”的当前值为“波浪”",
+      "“我的特别关注”区域显示“添加”入口",
+      "“单聊消息未读，弹窗提醒我”已开启，间隔时间为1小时",
+      "“弹窗消息未读，短信/电话提醒我”已开启，间隔时间为30分钟，提醒方式为电话",
+      "“夜间免打扰”未开启",
+      "“免打扰群通知”未开启"
+    ],
+    "supportedFunctionDescription": "立即 preceding activation of “波浪” results in returning to the “特别关注提醒” settings page with “波浪” shown as the selected special-follow alert sound. The supplied context states that the sound panel supports 默认、波浪、简报、门铃, individual preview buttons, and 取消. The visible settings also support adding special-follow members and configuring unread reminders, reminder intervals/method, night do-not-disturb, and group-notification do-not-disturb.",
+    "evidenceBasis": [
+      "像素证据：页面顶部标题为“特别关注提醒”",
+      "像素证据：“特别关注提示音”右侧可见“波浪”",
+      "像素证据：当前画面没有提示音面板、弹窗或遮罩",
+      "像素证据：两个未读提醒开关为蓝色开启状态，两个免打扰开关为灰色关闭状态",
+      "供给上下文：提示音面板包含默认、波浪、简报、门铃、各自试听按钮和取消",
+      "供给上下文：特别关注人员有未读消息时，其会话显示在特别关注列表",
+      "供给上下文：特别关注列表展示未读会话时，入口爱心图标变为橙黄色"
+    ],
+    "unresolvedMeaning": "当前静态画面只能确认“波浪”已显示为选定提示音；无法仅凭画面确认声音是否已实际播放、音频内容与音量，也无法确认该选择是否需要额外保存或是否已持久化。当前画面未展示特别关注人员的未读会话或工具栏爱心入口，因此无法观察本次状态下会话展示及入口变色效果。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:05:55.497Z",
+  "endedAt": "2026-07-27T14:06:11.105Z",
+  "durationMs": 15607.547125,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:4ba561ea1a9ca304c422792099554cbd38817400f442d4d075f91c0dce11e61d"
+}

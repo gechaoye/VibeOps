@@ -1,0 +1,61 @@
+schemaVersion: 3.0.0
+recordType: LegacyTransitionLedger
+status: requires_current_frame_reconciliation
+reason: UIKG 2.0 generic navigation-scope transitions cannot be represented as closed Page/state atomic edges without fabricating
+  source or before/after evidence.
+records:
+- id: 01KY9E733GYRPS1167J0R8PH3G
+  key: nav.bottom_tab.workbench
+  triggerElementRef: 01KY6Z7BD8REPP64M7DHA5T9VD
+  targetPageRef: 01KY6Z7BD8K54XW7XRQW41AN96
+  legacySourceSelector:
+    kind: navigation_scope
+    navigationScopeRef: 01KY9E733GCWPPT489SF5YPP3B
+    requiresActionableElementRef: 01KY6Z7BD8REPP64M7DHA5T9VD
+  legacyObservationRefs: []
+  importStatus: unresolved_legacy_generic_source_without_closed_before_after_evidence
+- id: 01KY6Z7BD86NZRZ20Y8RHBGJAE
+  key: nav.bottom_tab.messages
+  triggerElementRef: 01KY6Z7BD8SARP45HKXM379XZG
+  targetPageRef: 01KY6Z7BD8D0X91GX7D73CBFMH
+  legacySourceSelector:
+    kind: navigation_scope
+    navigationScopeRef: 01KY9E733GCWPPT489SF5YPP3B
+    requiresActionableElementRef: 01KY6Z7BD8SARP45HKXM379XZG
+  legacyObservationRefs:
+  - 01KY6YFDR53ZZ7Q1W3A70DB29V
+  - 01KY6YGTYWWSHT37CBRDQ7H0PE
+  importStatus: unresolved_legacy_generic_source_without_closed_before_after_evidence
+- id: 01KY6Z7BD84SC19WE0TSNCZ3SM
+  key: nav.bottom_tab.contacts
+  triggerElementRef: 01KY6Z7BD84AJ4MQDV639KF07R
+  targetPageRef: 01KY6Z7BD839P6GQZJVEBQXRPX
+  legacySourceSelector:
+    kind: navigation_scope
+    navigationScopeRef: 01KY9E733GCWPPT489SF5YPP3B
+    requiresActionableElementRef: 01KY6Z7BD84AJ4MQDV639KF07R
+  legacyObservationRefs:
+  - 01KY6YFR89RCXQ8J8GDMMDF9ZP
+  importStatus: unresolved_legacy_generic_source_without_closed_before_after_evidence
+- id: 01KY6Z7BD851N6GV3087YNXVD6
+  key: nav.bottom_tab.news
+  triggerElementRef: 01KY6Z7BD86F49V3VCXWPSR1BB
+  targetPageRef: 01KY6Z7BD8NMJRG60C21NC67KP
+  legacySourceSelector:
+    kind: navigation_scope
+    navigationScopeRef: 01KY9E733GCWPPT489SF5YPP3B
+    requiresActionableElementRef: 01KY6Z7BD86F49V3VCXWPSR1BB
+  legacyObservationRefs:
+  - 01KY6YG3FKCBNG6DRGQ11F7ASR
+  importStatus: unresolved_legacy_generic_source_without_closed_before_after_evidence
+- id: 01KY6Z7BD8FYMNHMSDAZW1A33W
+  key: nav.bottom_tab.more
+  triggerElementRef: 01KY6Z7BD89DJT00X43WZAFNAR
+  targetPageRef: 01KY9E733GYTS9YD68AEBZA188
+  legacySourceSelector:
+    kind: navigation_scope
+    navigationScopeRef: 01KY9E733GCWPPT489SF5YPP3B
+    requiresActionableElementRef: 01KY6Z7BD89DJT00X43WZAFNAR
+  legacyObservationRefs:
+  - 01KY6YGEA8HP8F1RVWTXRSVT6R
+  importStatus: unresolved_legacy_generic_source_without_closed_before_after_evidence

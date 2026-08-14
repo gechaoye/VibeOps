@@ -1,0 +1,116 @@
+recordType: UiGraphNormalizationPolicy
+sourceSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+status: reviewed
+navigationRoot: 底部导航
+businessPagesUseOwnFeatureRoot: true
+topLevelSharedElementOwner: application
+sharedOwnerRefsUseStableIds: true
+moreDrawerMode: shared_element_state
+featurePaths:
+  messages.root: [消息]
+  messages.special_follow: [消息, 特别关注]
+  messages.special_follow.settings: [消息, 特别关注]
+  messages.special_follow.people: [消息, 特别关注]
+  messages.special_follow.people.remove_confirmation: [消息, 特别关注]
+  messages.special_follow.settings.popup_interval_selector: [消息, 特别关注]
+  messages.special_follow.settings.sms_phone_interval_selector: [消息, 特别关注]
+  messages.special_follow.settings.reminder_method_selector: [消息, 特别关注]
+  messages.special_follow.settings.sound_selector: [消息, 特别关注]
+  boundary.common.person_picker: [通用组件, 选人]
+  boundary.common.conversation: [通用组件, 会话]
+pageFeatureOverrides:
+  messages.root: [消息]
+  workbench.root: [工作台]
+  contacts.root: [通讯录]
+  news.root: [资讯]
+sharedNavigation:
+  rootElementKey: shared.bottom_navigation
+  tabElementKeys:
+    - shared.bottom_tab.contacts
+    - shared.bottom_tab.messages
+    - shared.bottom_tab.more
+    - shared.bottom_tab.news
+    - shared.bottom_tab.workbench
+  availablePageKeys: [messages.root, workbench.root, contacts.root, news.root]
+  moreTriggerElementKey: shared.bottom_tab.more
+  moreStateSourceElementKey: shared.app_drawer
+  moreEntryKeyPrefix: shared.app_drawer.
+  rootFeaturePath: [底部导航]
+  moreFeaturePath: [底部导航, 更多]
+  moreEntryLabelPrefixFrom: 更多应用抽屉-
+  moreEntryLabelPrefixTo: 更多-
+canonicalMigrations:
+  navigation.bottom_navigation:
+    targetElementKey: shared.bottom_navigation
+    targetStateKey: null
+    reason: 底部导航是 Application 持有的顶层共享 Element，不是 Page。
+    reviewedBy: user_context_2026-07-28
+  app-drawer.root:
+    targetElementKey: shared.bottom_tab.more
+    targetStateKey: open
+    reason: 更多应用抽屉是“更多”共享 Element 的打开状态，不是 Page。
+    reviewedBy: user_context_2026-07-28
+  shared.app_drawer:
+    targetElementKey: shared.bottom_tab.more
+    targetStateKey: open
+    reason: “更多”本身持有抽屉状态和入口，不再为同一抽屉建立包装 Element。
+    reviewedBy: user_context_2026-07-28
+  messages.special_follow.settings.members_entry:
+    targetElementKey: messages.special_follow.settings.members_container
+    targetStateKey: null
+    reason: 用户确认旧实体把总容器、说明文案和箭头入口错误合并；Canonical 应为页面持有总容器，总容器分别持有不可点击文案和可点击箭头。
+    reviewedBy: user_context_2026-07-30
+  messages.special_follow.settings.help:
+    targetPageKey: messages.special_follow.settings
+    targetStateKey: null
+    reason: 三个帮助气泡是特别关注提醒设置页中对应设置项容器的瞬时子元素状态，不是独立页面。
+    reviewedBy: user_context_2026-07-31
+  messages.special_follow.settings.help.popup:
+    targetElementKey: messages.special_follow.settings.popup_reminder_help
+    targetStateKey: expanded
+    reason: 旧实体重复框选了单聊弹窗提醒的同一个问号图标；保留设置项容器内的唯一帮助图标，帮助文案气泡另建帮助浮层子元素。
+    reviewedBy: user_context_2026-07-31
+  messages.special_follow.settings.help.sms_phone:
+    targetElementKey: messages.special_follow.settings.sms_phone_help
+    targetStateKey: expanded
+    reason: 旧实体重复框选了短信或电话提醒的同一个问号图标；保留设置项容器内的唯一帮助图标，帮助文案气泡另建帮助浮层子元素。
+    reviewedBy: user_context_2026-07-31
+  messages.special_follow.settings.help.group_dnd:
+    targetElementKey: messages.special_follow.settings.group_dnd_help
+    targetStateKey: expanded
+    reason: 旧实体重复框选了免打扰群通知的同一个问号图标；保留设置项容器内的唯一帮助图标，帮助文案气泡另建帮助浮层子元素。
+    reviewedBy: user_context_2026-07-31
+deprecatedTransitions:
+  messages.special_follow.settings.help.dismiss_popup:
+    reason: 当前构建实测再次点击同一帮助图标、点击页面说明区域及 Android Back 均未关闭帮助浮层，旧成功边不能继续作为可执行事实。
+    status: contradicted_by_current_build
+    buildRef: android-package:com.zto.connect.fat@10542
+    evidenceRefs:
+      - explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/dismiss-popup-reminder-help-live-repair.json
+      - explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/dismiss-popup-help-via-description-live-repair.json
+      - explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/dismiss-popup-help-via-android-back-live-repair.json
+cardLabels:
+  messages.root: 消息
+  messages.special_follow: 特别关注
+  messages.special_follow.settings: 特别关注-特别关注提醒
+  messages.special_follow.people: 特别关注-全部成员
+  messages.special_follow.people.remove_confirmation: 特别关注-全部成员-移除确认
+  messages.special_follow.settings.popup_interval_selector: 特别关注-特别关注提醒-弹窗提醒间隔选择
+  messages.special_follow.settings.sms_phone_interval_selector: 特别关注-特别关注提醒-短信或电话提醒间隔选择
+  messages.special_follow.settings.reminder_method_selector: 特别关注-特别关注提醒-提醒方式选择
+  messages.special_follow.settings.sound_selector: 特别关注-特别关注提醒-提示音选择
+  boundary.common.person_picker: 通用组件-选人
+  boundary.common.conversation: 通用组件-会话
+boundaryPolicies:
+  boundary.common.person_picker: 仅记录入口、完成目标流程和返回，不递归探索内部。
+  boundary.common.conversation: 仅记录入口和返回，不递归探索会话内部。
+evidencePolicy:
+  requireRecognitionStatus: complete
+  requireControlInventoryStatus: pass
+  requireFrameQuality: complete
+  requireSettledFrame: true
+  requireObservationSemanticStatus: complete
+  requireSuccessfulPostcondition: true
+  requireIndependentScout: true
+  legacyScoutStatus: missing
+  publicationStatusWhenScoutMissing: incomplete

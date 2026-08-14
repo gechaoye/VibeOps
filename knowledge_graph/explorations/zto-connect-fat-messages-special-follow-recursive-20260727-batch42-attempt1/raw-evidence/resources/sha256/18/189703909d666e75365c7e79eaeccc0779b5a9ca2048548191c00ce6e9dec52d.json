@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ1CTRS7CSE3GD3T4DKDK7H",
+  "sessionRef": "01KYJ19MFC10HTQ2RNTZ46F8YZ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ1BFTAY9CMANA3SB86XW5K",
+  "sourceScreenshotRef": "sha256:285ab6fb2ce636f095daee92a8ca9161e55a72ee79d544a3d4f88a7e5dc02034",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前页面标题为特别关注，左上返回按钮可见；如有练良伟的未读会话则如实记录会话、未读徽标和全部可见控件，如无则如实记录空状态。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:59:13.020Z",
+  "endedAt": "2026-07-27T14:59:20.473Z",
+  "durationMs": 7453.167584,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:99f2e0ecbdada22e0f6fee4e6fefc89adcc8e5221d861b5ecb67be9ad749e46f"
+}

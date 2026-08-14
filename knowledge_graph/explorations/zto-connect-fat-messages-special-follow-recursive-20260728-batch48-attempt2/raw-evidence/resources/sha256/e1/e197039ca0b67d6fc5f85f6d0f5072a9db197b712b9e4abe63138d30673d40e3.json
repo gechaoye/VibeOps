@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK69D93KAXP0J6SJ1Z2N86X",
+  "sessionRef": "01KYK660P4DEBSA3NGF1SET476",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK67VX792MACW0PT0MR3S48",
+  "sourceScreenshotRef": "sha256:54ea07eaf3db76a8e3efcf5c107a98f64ec7957c9b8a9f71c4804671fab74436",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"特别关注\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注",
+    "visibleResultContent": [
+      "我的特别关注",
+      "设置",
+      "特别关注成员：这是练...",
+      "会话标题：这是练工练工练工练...",
+      "发送者：🥳 努力工...",
+      "消息摘要：[特别关注]练良伟 创建了待办 循环待办...",
+      "时间：09:00",
+      "红色未读角标：3"
+    ],
+    "supportedFunctionDescription": "激活“特别关注”后进入特别关注结果页；页面支持查看我的特别关注成员、进入设置，以及查看特别关注会话及其时间、消息摘要和实时未读数量。依据给定上下文，可操作设置和成员；特别关注人员存在未读消息时，消息页入口爱心图标会变为橙黄色。",
+    "evidenceBasis": [
+      "屏幕顶部居中显示“特别关注”。",
+      "页面显示“我的特别关注”及右侧“设置”。",
+      "成员区域可见头像和截断名称“这是练...”。",
+      "会话行可见截断标题、发送者、消息摘要及时间“09:00”。",
+      "会话行右侧可见红色角标数字“3”。",
+      "给定上下文明确：红色角标展示特别关注会话当前实时未读消息数量。",
+      "给定上下文明确：存在未读消息时，消息页入口爱心图标变为橙黄色。",
+      "给定上下文授权可操作设置和成员。"
+    ],
+    "unresolvedMeaning": "由于界面文本被省略号截断，成员全名、会话完整标题、发送者全名和完整消息摘要无法从当前屏幕确定；当前屏幕也未展示消息页入口，因此无法仅凭本图确认爱心图标此刻的实际颜色状态。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:43:50.435Z",
+  "endedAt": "2026-07-28T01:44:05.667Z",
+  "durationMs": 15232.234041,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:731d355811b05c5ba56557bda02724a268a22eb4afccff51840cc0963e912229"
+}

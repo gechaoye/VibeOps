@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSJYSWGZ5X4AME44WJ8ZZF",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSH0CRCH2M72SBG1W97JD4",
+  "sourceScreenshotRef": "sha256:bf7c98e4351e4efeaf628455502b7e61aa13e7225becc863bb16fadd70b3b9c1",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面标题为“特别关注提醒”；夜间免打扰与免打扰群通知开关均为灰色关闭状态。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:42:48.631Z",
+  "endedAt": "2026-07-27T12:42:52.603Z",
+  "durationMs": 3972.696291,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:704a2e9eebc2a162bccabdd05be0148a2f87aaa7b207eec8a7426552d37c6392"
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHRV8CGCNR6MR2E9W306XCY",
+  "sessionRef": "01KYHR8DFGG6PD70AVJAZ2X0PW",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHRPYD094Q7P84A9QKK20RT",
+  "sourceScreenshotRef": "sha256:b934f096b7bbc6b3c61941b9d8fc41afd257aadcac21598d187af15f3bbea4af",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"取消\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.method\",\"predicate\":\"visible_options\",\"value\":\"提醒方式面板包含短信、电话和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "当前显示“特别关注提醒”设置页，无可见弹窗或遮罩。",
+      "“单聊消息未读，弹窗提醒我”已开启，间隔时间为30分钟。",
+      "“弹窗消息未读，短信/电话提醒我”已开启，间隔时间为30分钟。",
+      "提醒方式当前显示为“短信”。",
+      "“夜间免打扰”已关闭。",
+      "“免打扰群通知”已关闭。",
+      "“特别关注提示音”当前显示为“简报”。"
+    ],
+    "supportedFunctionDescription": "结合供应的上下文，提醒方式面板包含“短信”“电话”和“取消”；在紧邻此次截图之前激活“取消”后，选择面板关闭且未更改当前可见提醒方式，页面返回“特别关注提醒”设置状态。",
+    "evidenceBasis": [
+      "供应的权威上下文明确说明提醒方式面板包含短信、电话和取消。",
+      "当前屏幕标题为“特别关注提醒”。",
+      "当前屏幕未显示提醒方式面板、遮罩或弹窗。",
+      "设置行“提醒方式”的当前可见值为“短信”。",
+      "两个蓝色开关及两个“30分钟”值在当前页面可见。",
+      "“夜间免打扰”和“免打扰群通知”开关均呈关闭状态。"
+    ],
+    "unresolvedMeaning": "截图不能单独证明“取消”在所有进入状态下是否始终保留原选择，也不能确定关闭面板是否伴随动画、提示或其他不可见副作用。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:29:34.479Z",
+  "endedAt": "2026-07-27T12:29:55.984Z",
+  "durationMs": 21506.327084,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e9d6a6ebd96c35bc691b53e539a73455eff162f17ac02bd6f2820feac757db6e"
+}

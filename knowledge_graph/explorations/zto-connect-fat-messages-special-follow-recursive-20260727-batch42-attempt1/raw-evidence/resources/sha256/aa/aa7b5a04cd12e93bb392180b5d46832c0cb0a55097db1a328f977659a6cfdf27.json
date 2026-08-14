@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ1CKBZ720CRMM2278TC8V6",
+  "sessionRef": "01KYJ19MFC10HTQ2RNTZ46F8YZ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ1BFTAY9CMANA3SB86XW5K",
+  "sourceScreenshotRef": "sha256:285ab6fb2ce636f095daee92a8ca9161e55a72ee79d544a3d4f88a7e5dc02034",
+  "operation": "aiLocate",
+  "prompt": "定位灰色分隔带下方唯一的会话行：左侧为花纹头像，标题以“这是练工练工练工练”开头，右侧时间为“10:28”，并带红色“58”徽标",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 575,
+      "y": 725
+    },
+    "rect": {
+      "x": 0,
+      "y": 637,
+      "width": 1152,
+      "height": 177
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:59:07.736Z",
+  "endedAt": "2026-07-27T14:59:12.895Z",
+  "durationMs": 5158.355625,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:a7d83d445ce5f77ba608104ca5559db875dd16497a7e7e6d62b48d2bd25b8618"
+}

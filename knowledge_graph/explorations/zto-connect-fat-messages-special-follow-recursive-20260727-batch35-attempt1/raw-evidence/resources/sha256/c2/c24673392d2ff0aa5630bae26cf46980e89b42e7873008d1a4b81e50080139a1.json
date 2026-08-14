@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHY8ADJJ5PRWNKD94VP217F",
+  "sessionRef": "01KYHXWRA5CNQ6EAH24XQV0YW8",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHY65TSAT6HEDX3TS86EGE6",
+  "sourceScreenshotRef": "sha256:536d85b18f0b371b3ecf28454f589552c37006790978be5b60a6019d08b67d5f",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"特别关注提示音默认\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"visible_options\",\"value\":\"提示音面板包含默认、波浪、简报、门铃、各自试听按钮和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "提示音选择面板已打开",
+      "默认（当前选中）",
+      "波浪",
+      "简报",
+      "门铃",
+      "每个提示音选项右侧均有试听按钮",
+      "取消",
+      "背景页面处于灰色遮罩状态"
+    ],
+    "supportedFunctionDescription": "紧接着激活“特别关注提示音默认”控件后，页面以底部弹层展示特别关注提示音选项。用户可在默认、波浪、简报、门铃之间选择，并可通过各项右侧按钮试听；当前提示音为“默认”，也可点击“取消”关闭面板。根据提供的权威任务上下文，“特别关注”用于在相关人员存在未读消息时将其会话显示在特别关注列表，并在该会话展示条件成立时使入口爱心图标变为橙黄色。",
+    "evidenceBasis": [
+      "截图顶部标题显示“特别关注提醒”。",
+      "截图底部白色弹层列出“默认”“波浪”“简报”“门铃”和“取消”。",
+      "“默认”左侧有蓝色勾选标记且文字为蓝色，表明当前选中。",
+      "四个提示音选项右侧都显示试听按钮。",
+      "弹层外的原页面被半透明灰色遮罩覆盖。",
+      "特别关注的会话显示规则和入口高亮条件来自用户提供的权威非视觉任务上下文。",
+      "提示音选项构成也与提供的 verified_evidence 一致。"
+    ],
+    "unresolvedMeaning": "截图未显示选择其他提示音后的保存方式、是否即时生效、试听时的播放状态或声音内容；也无法仅凭当前画面确认点击遮罩是否能关闭弹层。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:04:10.194Z",
+  "endedAt": "2026-07-27T14:04:26.930Z",
+  "durationMs": 16734.967459,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:a661f962e56e77ee4dd27bf8c75fb36675a6d3ac2c4eb86fed3d3dcb9df5a736"
+}

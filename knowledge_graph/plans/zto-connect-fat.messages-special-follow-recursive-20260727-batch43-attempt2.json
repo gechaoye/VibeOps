@@ -1,0 +1,220 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch43-attempt2:plan",
+  "sourceScopeHash": "sha256:1f90ca4e7ed5e7a2bafe1e445369c2ab7c1335d32b8f0edda50c6e6bf6c4f037",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从包含58条未读提示的特别关注页返回消息页，验证顶部快捷工具栏爱心入口呈橙黄色。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.conversation.lian_liangwei",
+        "predicate": "unread_badge",
+        "value": "58",
+        "source": "verified_evidence"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sound",
+        "predicate": "current_value",
+        "value": "门铃",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.with_unread_lian_liangwei",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-back-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 100.0,
+          "width": 170.0,
+          "height": 180.0
+        },
+        "purpose": "特别关注页左上返回按钮。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.with_unread_lian_liangwei": {
+      "key": "messages.special_follow.with_unread_lian_liangwei",
+      "label": "特别关注页练良伟未读会话状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注，练良伟相关会话可见，红色未读徽标显示58，左上收起按钮可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本批次仅复核并定位标题栏左上黑色向下折线收起按钮；练良伟相关会话、设置、成员和未读徽标58已在上一成功批次完成全控件盘点，不要在本次 visibleControls 中重复返回它们。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "icon_button",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "back_to_messages"
+      ],
+      "postcondition": "已记录特别关注未读会话状态。"
+    },
+    "messages.root.with_special_follow_unread": {
+      "key": "messages.root.with_special_follow_unread",
+      "label": "特别关注未读时的消息页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.root",
+      "requiredSemanticAssertions": [
+        "当前底部消息Tab已选中，会话列表和顶部快捷工具栏可见，用户确认的特别关注爱心入口呈橙黄色。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点返回后的消息页全部可见交互控件；用户确认顶部快捷工具栏爱心图标为特别关注入口，准确记录其橙黄色填充或高亮状态及当前未读呈现。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "tab",
+          "menu",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证特别关注页返回消息页。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-with-unread",
+      "kind": "capture",
+      "state": "messages.special_follow.with_unread_lian_liangwei",
+      "depth": 1
+    },
+    {
+      "id": "tap-special-follow-back",
+      "kind": "tap",
+      "semanticAction": "back_to_messages",
+      "fromState": "messages.special_follow.with_unread_lian_liangwei",
+      "toState": "messages.root.with_special_follow_unread",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "special_follow_back",
+        "label": "返回",
+        "scope": "page_navigation",
+        "locatorPrompt": "定位标题为“特别关注”的页面顶栏最左侧黑色向左箭头返回按钮。",
+        "allowedRegionRef": "special-follow-back-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前已返回消息页，底部消息Tab已选中，顶部快捷工具栏中特别关注爱心入口呈橙黄色。"
+        ]
+      }
+    }
+  ]
+}

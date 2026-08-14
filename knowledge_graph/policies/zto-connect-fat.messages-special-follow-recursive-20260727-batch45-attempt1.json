@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt1:policy",
+  "sourceScopeHash": "sha256:03c6bb4370cc26874cc66e81f895e2488ae7731601f9b75af4e6ab197b29de91",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 2,
+  "allowedRiskLevels": [
+    "low",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "page_content"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "special-follow-member-entry",
+      "space": "current_display_px",
+      "rect": {
+        "x": 20.0,
+        "y": 350.0,
+        "width": 220.0,
+        "height": 260.0
+      },
+      "purpose": "特别关注页我的特别关注区域成员头像与截断名称条目。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "temporary_display_state"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 2,
+    "include": [
+      "messages.special_follow"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSRBSV3T5VKBFHKK17YSGJ",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSPF75Q4T9XTQKT7GSD7G6",
+  "sourceScreenshotRef": "sha256:2c857b8f4e759c906ad7821c11e8f4c49049c0daf85d0a59a90511ab7c9a4015",
+  "operation": "aiLocate",
+  "prompt": "定位“夜间免打扰”这一行最右侧的浅灰色关闭开关；其下方说明以“开启后，在22:00至次日06:00期间”开头。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 1006,
+      "y": 1628
+    },
+    "rect": {
+      "x": 934,
+      "y": 1592,
+      "width": 146,
+      "height": 74
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:45:44.700Z",
+  "endedAt": "2026-07-27T12:45:49.755Z",
+  "durationMs": 5055.060583,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:7f30d6b7875400766449d6a4999be3cb857458568497c405cbb97b60008d9466"
+}

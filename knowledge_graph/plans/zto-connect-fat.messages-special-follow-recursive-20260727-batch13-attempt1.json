@@ -1,0 +1,229 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch13-attempt1:plan",
+  "sourceScopeHash": "sha256:a2ffadd4ed76026366b6c175942b741f23abc524ea2a88f036074ebed86611ec",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.home.nonempty",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-home-settings",
+        "space": "current_display_px",
+        "rect": {
+          "x": 900.0,
+          "y": 230.0,
+          "width": 230.0,
+          "height": 180.0
+        },
+        "purpose": "特别关注首页“我的特别关注”标题右侧蓝色“设置”按钮的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 96.0,
+          "width": 1152.0,
+          "height": 2184.0
+        },
+        "purpose": "经风险策略允许的应用内导航和临时状态控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.home.nonempty": {
+      "key": "messages.special_follow.home.nonempty",
+      "label": "特别关注首页当前非空状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“特别关注”，“我的特别关注”、蓝色“设置”、“添加”和至少一条会话记录均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点“特别关注”首页当前视口的标题、顶部图标、“设置”“添加”、全部可见会话条目、未读状态和真实可辨滚动区域；不根据图标形状猜测未知功能。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_special_follow_settings"
+      ],
+      "postcondition": "特别关注首页当前非空状态完成全控件盘点。"
+    },
+    "messages.special_follow.settings.from_home": {
+      "key": "messages.special_follow.settings.from_home",
+      "label": "从特别关注首页进入提醒设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“特别关注提醒”，可见“我的特别关注”“提醒方式设置”和“特别关注提示音”。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点“特别关注提醒”当前视口的返回、成员入口、添加、三个帮助图标、三个开关、间隔时间和提示音；逐项记录可见状态。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证首页蓝色“设置”进入特别关注提醒设置页。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-home-nonempty",
+      "kind": "capture",
+      "state": "messages.special_follow.home.nonempty",
+      "depth": 1
+    },
+    {
+      "id": "open-special-follow-settings-from-home",
+      "kind": "tap",
+      "semanticAction": "open_special_follow_settings",
+      "fromState": "messages.special_follow.home.nonempty",
+      "toState": "messages.special_follow.settings.from_home",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 3000,
+      "target": {
+        "key": "special_attention_settings",
+        "label": "设置",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位标题为“特别关注”的页面中，“我的特别关注”同一行最右侧的蓝色文字按钮“设置”；不要定位下方“添加”。",
+        "allowedRegionRef": "special-follow-home-settings"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕标题为“特别关注提醒”，页面中可见“我的特别关注”“提醒方式设置”和“特别关注提示音”。"
+        ]
+      }
+    }
+  ]
+}

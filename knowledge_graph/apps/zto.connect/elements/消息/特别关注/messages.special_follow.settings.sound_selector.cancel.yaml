@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB66P4S6137G5DSM1Z
+key: messages.special_follow.settings.sound_selector.cancel
+label: 特别关注-特别关注提醒-提示音选择-取消
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENBH55299C13ABP9088
+parentElementRef: null
+controlType: close
+role: navigation
+capabilities:
+- cancel_sound_selector
+summary: 取消提示音选择并关闭面板。
+relationshipRefs:
+- owner:01KYKA3ENBH55299C13ABP9088
+- transition:01KYKA3ENBWKGMC4FJWMGTE7QW
+observations:
+- frameRef: 01KYHYBY2V1DWA1YC0D7HMNCX1
+  observedAt: '2026-07-27T14:06:28.143Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:4aae95e1aba208a12ad00ee6e6b2ac26772c698de35ffa4b1b115f4ece434ccd
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 521.0
+      top: 2267.0
+      width: 111.0
+      height: 65.0
+    center:
+    - 576.5
+    - 2299.5
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:76730bda80983e7bbbf37e9fd5f76adf3c23351399b67b2016950012227e9c71
+  state: 可用
+  dynamicValue: 可用
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENB66P4S6137G5DSM1Z-01KYHYBY2V1DWA1YC0D7HMNCX1.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: cancel_sound_selector

@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1:policy",
+  "sourceScopeHash": "sha256:0e15514c7cc6aa5a51c384d1a1b6a01e9a7a7780b40f519f3a08a31e3c21b4f1",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 8,
+  "allowedRiskLevels": [
+    "low",
+    "medium",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "persistent_setting_control",
+    "settings_navigation"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "sound-setting-row",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0,
+        "y": 2020,
+        "width": 1152,
+        "height": 356
+      },
+      "purpose": "当前长设置页底部“特别关注提示音”整行入口。"
+    },
+    {
+      "key": "sound-picker-panel",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0,
+        "y": 1300,
+        "width": 1152,
+        "height": 1076
+      },
+      "purpose": "提示音底部面板四个选项、试听按钮和取消。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "persistent_setting_change",
+    "temporary_display_state"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 1800,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 8,
+    "include": [
+      "messages.special_follow.settings",
+      "messages.special_follow.settings.sound"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

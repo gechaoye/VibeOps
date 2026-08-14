@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBYB4514X5S781K4WX
+key: transition.messages.special_follow.settings.sound_selector.preview_default
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENBH55299C13ABP9088
+triggerElementRef: 01KYKA3ENBDZFZT31XYDH0P2WV
+action: aiTap
+capability: preview_sound_default
+targetRef: 01KYKA3ENBH55299C13ABP9088
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHHHYGFENX22VAGW1AFT7HR
+  beforeFrameRef: 01KYHHFBA6FRB5MJ42CF887DXR
+  afterFrameRef: 01KYHHJH0TF71WZ6HSSQ89F3HD
+  postcondition: pass
+  semanticAssertions:
+  - sha256:772f2f504b751dbf83dcdeb407c00604bcddfa1674646abbf963218068383491
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

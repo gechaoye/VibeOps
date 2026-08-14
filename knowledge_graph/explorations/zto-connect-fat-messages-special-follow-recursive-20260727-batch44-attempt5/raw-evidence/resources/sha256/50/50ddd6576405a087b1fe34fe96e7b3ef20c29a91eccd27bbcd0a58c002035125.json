@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ3AK7R42YB16YXXX3HVEA2",
+  "sessionRef": "01KYJ35DNE8CXJRFYN2KJQEZPA",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ39R3JMEAJG93SJSZEQZ3P",
+  "sourceScreenshotRef": "sha256:8e9e69f2932a3057e86294d19af4adf28e2bd1397ea2125aad6eae2f434c57d1",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"icon_button\",\"link\",\"list_entry\",\"back\",\"close\",\"scroll_region\"]. 完整盘点从通用会话返回后的特别关注页面，记录标题、收起按钮、设置、特别关注成员、会话行、时间10:28以及未读徽标的实际状态。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.conversation.lian_liangwei\",\"predicate\":\"unread_badge\",\"value\":\"58\",\"source\":\"verified_evidence\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_open_special_follow_conversation\",\"value\":\"true\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"current_value\",\"value\":\"门铃\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "特别关注成员：这是练…",
+      "会话：这是练工练工练工练…",
+      "会话右侧文本：🥰 努力工…",
+      "会话摘要：练良伟 创建了待办 循环待办每天",
+      "时间：10:28",
+      "当前视口未见未读数字徽标"
+    ],
+    "visibleNavigationState": "当前位于特别关注页面；从通用会话返回后的特别关注列表视图，显示1名特别关注成员和1条会话。",
+    "visibleControls": [
+      {
+        "candidateKey": "collapse_special_follow",
+        "label": "无文字标签的向下折线图标",
+        "controlType": "icon_button",
+        "visibleState": "可见，位于标题栏左侧，未显示按下或禁用状态",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "当前视觉证据及给定上下文未明确该图标的实际功能。",
+        "locatorPrompt": "定位页面顶部白色标题栏最左侧、标题“特别关注”左边的黑色向下折线图标控件"
+      },
+      {
+        "candidateKey": "special_follow_settings",
+        "label": "设置",
+        "controlType": "button",
+        "visibleState": "蓝色文字，可见且未显示禁用状态",
+        "semanticRole": "settings",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "进入设置可能修改特别关注相关配置",
+        "functionDescription": "打开特别关注设置。",
+        "locatorPrompt": "定位“我的特别关注”标题同一行最右侧的蓝色文字按钮“设置”"
+      },
+      {
+        "candidateKey": "special_follow_member_lian",
+        "label": "这是练…",
+        "controlType": "list_entry",
+        "visibleState": "成员头像及截断名称可见，未显示选中或禁用状态",
+        "semanticRole": "special_follow_member",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能打开成员资料或相关会话，具体跳转目标未由当前视觉证据确定",
+        "functionDescription": "特别关注成员条目。",
+        "locatorPrompt": "定位“我的特别关注”区块内左侧棕紫色头像及其下方名称“这是练…”组成的成员条目"
+      },
+      {
+        "candidateKey": "special_follow_conversation_lian_liangwei",
+        "label": "这是练工练工练工练…",
+        "controlType": "list_entry",
+        "visibleState": "会话行可见；右侧时间为10:28；当前视口未见数字未读徽标",
+        "semanticRole": "conversation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "打开会话可能改变未读状态",
+        "functionDescription": "打开练良伟相关的特别关注会话。",
+        "locatorPrompt": "定位灰色分隔带下方唯一会话行：左侧棕紫色头像，主标题“这是练工练工练工练…”，副标题“练良伟 创建了待办 循环待办每天”，右侧时间“10:28”"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "special_follow_page_scroll",
+        "label": "特别关注页面主体",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位标题栏下方包含“我的特别关注”、成员条目和10:28会话行的整页主体内容区域"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "标题栏左侧向下折线图标的功能无法仅凭当前截图和给定上下文确定。",
+      "当前视口没有可见的未读数字徽标，无法从像素确认权威上下文中的未读徽标58在此刻的实际显示状态。",
+      "成员条目“这是练…”的完整名称被省略号截断。",
+      "会话主标题“这是练工练工练工练…”及右侧“🥰 努力工…”均被截断，完整文本不可见。",
+      "页面主体是否实际可滚动未由可见滚动条明确证明。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:32:39.303Z",
+  "endedAt": "2026-07-27T15:33:04.376Z",
+  "durationMs": 25063.335959,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:a1a8e39b487da3c017f22041bc2b8a4dbb59b8cc746dc29fbc2b2fd39275257e"
+}

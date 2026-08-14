@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ3BZE7SRRZ1F92M4Y7ZTW0",
+  "sessionRef": "01KYJ35DNE8CXJRFYN2KJQEZPA",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ39R3JMEAJG93SJSZEQZ3P",
+  "sourceScreenshotRef": "sha256:8e9e69f2932a3057e86294d19af4adf28e2bd1397ea2125aad6eae2f434c57d1",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"navigate_back\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.conversation.lian_liangwei\",\"predicate\":\"unread_badge\",\"value\":\"58\",\"source\":\"verified_evidence\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_open_special_follow_conversation\",\"value\":\"true\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"current_value\",\"value\":\"门铃\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注",
+    "visibleResultContent": [
+      "我的特别关注",
+      "设置",
+      "这是练…",
+      "这是练工练工练工练…",
+      "🥰努力工…",
+      "练良伟 创建了待办 循环待办每天",
+      "10:28"
+    ],
+    "supportedFunctionDescription": "立即在此前激活“navigate_back”后显示“特别关注”主页面，无可见覆盖层。页面支持查看特别关注对象及其会话列表，并可通过“设置”进入相关配置；授权上下文允许打开特别关注会话。根据提供的权威上下文，设置为特别关注的人员存在未读消息时，其会话会显示在该列表中；当该未读会话展示时，工具栏特别关注入口的爱心图标会变为橙黄色。练良伟会话的已验证未读角标为58，特别关注提示音当前为“门铃”。",
+    "evidenceBasis": [
+      "当前截图顶部标题明确显示“特别关注”。",
+      "页面主体可见“我的特别关注”和蓝色“设置”入口。",
+      "当前画面是完整列表页面，未见遮罩、对话框、抽屉或其他覆盖层。",
+      "列表中可见一个特别关注对象和一条会话记录，时间显示为10:28。",
+      "会话预览可见“练良伟 创建了待办 循环待办每天”。",
+      "未读角标58、允许打开会话、提示音“门铃”、未读会话展示规则及入口橙黄色高亮条件均来自题目提供的权威非视觉上下文。"
+    ],
+    "unresolvedMeaning": "仅凭当前截图无法确定此前“navigate_back”是从哪个具体子页面返回，也无法从图标外形推断额外功能；当前截图中未直接显示未读角标58、橙黄色爱心入口或“门铃”设置值。部分名称因界面省略号截断，无法仅按像素还原完整文本。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:33:22.209Z",
+  "endedAt": "2026-07-27T15:33:49.639Z",
+  "durationMs": 27429.098167,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:a27cda8b020988bb173f3004bc860d5af8835f81f1235b42ebe8cc3393bb528a"
+}

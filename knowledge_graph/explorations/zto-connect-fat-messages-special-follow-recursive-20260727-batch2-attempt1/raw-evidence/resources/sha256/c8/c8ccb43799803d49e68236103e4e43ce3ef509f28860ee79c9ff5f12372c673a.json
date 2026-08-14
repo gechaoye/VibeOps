@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH6VV74DQNTMY3Q836D1110",
+  "sessionRef": "01KYH6NHN6076HNCGH2DPQ39KC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH6R5437V1PV16TGESQZ4YY",
+  "sourceScreenshotRef": "sha256:bd3b69114e2cc092d6c39383c6b1d9e22248e4087123af641406dc4bc03b0ede",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"设置特别关注\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我：已开启",
+      "间隔时间：10",
+      "弹窗消息未读，短信/电话提醒我：已关闭",
+      "免打扰群通知：已关闭",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "supportedFunctionDescription": "激活“设置特别关注”后进入“特别关注提醒”设置页。该页 visibly 支持添加或管理特别关注对象，并可配置来自特别关注对象的未读消息提醒方式，包括单聊未读弹窗提醒、提醒间隔、短信/电话提醒、免打扰群通知以及特别关注提示音。当前单聊未读弹窗提醒开启，其余两个可见开关关闭，提示音设为“波浪”。",
+    "evidenceBasis": [
+      "权威任务上下文明确给出 messages.toolbar.heart 的功能名称为“特别关注”。",
+      "页面顶部可见标题“特别关注提醒”。",
+      "“我的特别关注”区域可见“添加”文字及可进入下一层的指示符。",
+      "说明文字显示“来自「特别关注」的未读消息，自定义提醒方式”。",
+      "“单聊消息未读，弹窗提醒我”右侧开关呈蓝色开启状态。",
+      "“间隔时间”右侧显示数值“10”。",
+      "短信/电话提醒和免打扰群通知右侧开关均呈灰色关闭状态。",
+      "“特别关注提示音”右侧显示“波浪”。"
+    ],
+    "unresolvedMeaning": "屏幕未显示“间隔时间 10”的计量单位，也未展开问号帮助内容；因此无法仅凭当前画面确定间隔单位、短信/电话提醒的具体触发条件或相关服务限制。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:15:20.713Z",
+  "endedAt": "2026-07-27T07:15:40.900Z",
+  "durationMs": 20186.903291,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:a98ff57aa835ef0bd353762d08de7befff6961a77d82d1d42d31083b7414578b"
+}

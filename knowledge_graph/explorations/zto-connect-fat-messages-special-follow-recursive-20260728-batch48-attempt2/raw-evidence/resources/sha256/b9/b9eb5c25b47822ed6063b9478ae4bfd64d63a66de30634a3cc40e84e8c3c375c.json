@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK6FN18C8A7PNP48FG30Q4D",
+  "sessionRef": "01KYK660P4DEBSA3NGF1SET476",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK6DK5A5GBNPT26DP3ZV4Y3",
+  "sourceScreenshotRef": "sha256:db0b9a6cca5588aa9336fb19512171c007338b8426556984468151173dbc74bf",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"练良伟成员主体\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "全部成员",
+    "visibleResultContent": [
+      "成员：练良伟",
+      "右侧显示“移除”按钮",
+      "顶部显示返回控件和关闭控件"
+    ],
+    "supportedFunctionDescription": "激活“练良伟成员主体”后，当前显示“全部成员”成员管理页面；页面支持通过“移除”按钮对成员练良伟执行移除操作，并可使用顶部控件返回或关闭当前页面。依据用户提供的权威上下文，特别关注功能名为“特别关注”；其会话红色角标显示当前实时未读消息数量，且存在特别关注人员未读消息时，消息页入口爱心图标会变为橙黄色。当前用户获授权操作设置与成员。",
+    "evidenceBasis": [
+      "当前屏幕顶部居中可见标题“全部成员”",
+      "列表中可见成员姓名“练良伟”及头像",
+      "成员行右侧可见“移除”按钮",
+      "页面顶部左侧可见返回控件，右侧可见关闭控件",
+      "特别关注名称、未读角标语义、爱心高亮条件及操作授权来自用户提供的权威非视觉任务上下文，不是从截图像素推断"
+    ],
+    "unresolvedMeaning": "当前画面未显示特别关注入口、红色未读角标、橙黄色高亮状态或成员的特别关注设置状态，因此无法仅据当前屏幕判断练良伟是否已被特别关注、是否存在未读消息，也无法确认点击“移除”后是否还会出现确认步骤。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:47:08.368Z",
+  "endedAt": "2026-07-28T01:47:30.216Z",
+  "durationMs": 21847.596666,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:7de3a79c07f938f59d4db0b3e6718bd667a8c0133c1d41c675dd9e833bc5418a"
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHN36VA07RVFFGGDXV7CZE3",
+  "sessionRef": "01KYHMMSAR8NZXY6JC450Q617D",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHN123VFFT43E9GWFTQ2XZN",
+  "sourceScreenshotRef": "sha256:918ecd5df7d837b3b89cc28be36f428da84766947ef1f939aa586e1c43106ec8",
+  "operation": "aiLocate",
+  "prompt": "定位第一个开启的蓝色提醒开关下方那一行，左侧文字“间隔时间”、右侧显示“30分钟”和浅灰右箭头的完整列表项。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 564,
+      "y": 1040
+    },
+    "rect": {
+      "x": 49,
+      "y": 970,
+      "width": 1031,
+      "height": 142
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:24:14.605Z",
+  "endedAt": "2026-07-27T11:24:22.250Z",
+  "durationMs": 7644.495125,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:780712506f8cdce0af3899f46713fe57b633cf8b6d23c4ce14ab0d8d3cfa1e96"
+}

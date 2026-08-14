@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHRC55BMSW01F3M5AREXP2V",
+  "sessionRef": "01KYHR8DFGG6PD70AVJAZ2X0PW",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHR8SYNPPR89QZQ4TXSVAV7",
+  "sourceScreenshotRef": "sha256:9632c183088e9d5192767c2fc051455244fe20ba8cb7250513c8346e0033e7da",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面标题为“特别关注提醒”；短信/电话提醒开关开启，“提醒方式”行右侧显示“电话”。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:21:31.882Z",
+  "endedAt": "2026-07-27T12:21:41.163Z",
+  "durationMs": 9281.180708,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:dcea3bf9aa66708b33234ab8beb890766b4168b9b0b8d08c8748462b148baf57"
+}

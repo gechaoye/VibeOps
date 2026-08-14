@@ -1,0 +1,223 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch25-attempt3:plan",
+  "sourceScopeHash": "sha256:05ee2127edd8da8c38ce09a71b2e844777cb5ac773f98739dbf1b2841bb34745",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "设置特别关注人员后，入口爱心图标显示为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sms_phone_reminder",
+        "predicate": "enabled_children",
+        "value": "开启短信/电话提醒后新增独立间隔时间、提醒方式和夜间免打扰设置。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.sms_phone_reminder.on",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "sms-phone-settings-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 1000,
+          "width": 1152,
+          "height": 650
+        },
+        "purpose": "短信/电话提醒分区下第二个间隔时间入口的实时 Midscene 定位范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.sms_phone_reminder.on": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.on",
+      "label": "短信电话提醒开启扩展设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为“特别关注提醒”，短信/电话提醒开关为蓝色开启状态。",
+        "短信/电话提醒开关下方可见“间隔时间 30分钟”“提醒方式 短信”和“夜间免打扰”。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整可见点击区域的全部交互控件，区分两个同名间隔时间入口。屏幕底边只露出一部分且点击区域被裁切的“特别关注提示音”行记录到页面内容，不作为本 Frame 可操作控件返回；该行已有其他完整 Frame 证据。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_sms_phone_interval_selector"
+      ],
+      "postcondition": "已记录当前视口内完整可操作的短信电话提醒扩展设置。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder.interval.selector": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.interval.selector",
+      "label": "短信电话提醒间隔选择面板",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sms_phone_reminder.interval",
+      "requiredSemanticAssertions": [
+        "已打开来自短信/电话提醒分区第二个“间隔时间”的底部选项面板，完整准确记录全部选项、选中态和取消。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点底部间隔时间面板的全部可见选项、当前选中项、取消按钮及滚动性；背景遮罩只记录为呈现，不作为交互控件。背景中被屏幕边缘裁切的控件不作为当前可操作控件返回。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "radio",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已记录短信电话提醒间隔面板的全部内容，后续选项进入递归队列。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-sms-phone-expanded-settings",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.sms_phone_reminder.on",
+      "depth": 3
+    },
+    {
+      "id": "open-sms-phone-interval-selector",
+      "kind": "tap",
+      "semanticAction": "open_sms_phone_interval_selector",
+      "fromState": "messages.special_follow.settings.sms_phone_reminder.on",
+      "toState": "messages.special_follow.settings.sms_phone_reminder.interval.selector",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "sms_phone_interval",
+        "label": "短信电话提醒下的间隔时间 30分钟",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位蓝色开启的“弹窗消息未读，短信/电话提醒我”开关正下方、左侧为“间隔时间”、右侧显示“30分钟”和右箭头的第二个间隔时间整行；不要定位页面上方第一个间隔时间。",
+        "allowedRegionRef": "sms-phone-settings-content"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "短信/电话提醒分区第二个间隔时间的底部选项面板已打开，完整记录全部选项和当前选中项。"
+        ]
+      }
+    }
+  ]
+}

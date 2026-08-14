@@ -1,0 +1,214 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH9CGM7S8GXV0E83M87J312",
+  "sessionRef": "01KYH968JYQV42VTDTNP831WSJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH9AQ08T9T9DJVSEJQ6VZMV",
+  "sourceScreenshotRef": "sha256:03cc966f43013213548f7ac12170904ae1f874b7e090a5b237befa8aa7ef7a1d",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"icon_button\",\"link\",\"menu\",\"list_entry\",\"toggle\",\"checkbox\",\"radio\",\"segmented_control\",\"tab\",\"slider\",\"stepper\",\"input\",\"back\",\"close\",\"scroll_region\"]. 盘点“全部成员”选择页当前视口全部成员候选、列表行、头像、选择状态、搜索、确认、返回、关闭和真实可辨滚动区域；主体空白时如实记录，不推断原因，不在本批选择成员。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_setting_toggles\",\"value\":\"true\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "选择人员",
+    "visiblePrimaryContent": [
+      "中通集团",
+      "组织架构",
+      "质量管理部",
+      "条线",
+      "个人标签",
+      "我的群组",
+      "最近联系人",
+      "练良伟（可见头像，空心选择圆圈）",
+      "葛超烨（可见机器人样式头像，灰色实心圆）",
+      "贾宗婷（可见头像，空心选择圆圈）",
+      "郭虹利（可见头像，空心选择圆圈）",
+      "已选择:（当前未显示已选成员）",
+      "确定(0/10)"
+    ],
+    "visibleNavigationState": "当前位于选择人员页；最近联系人列表处于可见区域；当前选择计数为0/10。",
+    "visibleControls": [
+      {
+        "candidateKey": "close_member_picker",
+        "label": "关闭",
+        "controlType": "close",
+        "visibleState": "顶部左侧可见X图标",
+        "semanticRole": "关闭选择人员页",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "可能退出当前选择页；当前没有已选成员",
+        "functionDescription": "关闭当前选择人员页面",
+        "locatorPrompt": "定位选择人员页顶部左上角的X形关闭图标"
+      },
+      {
+        "candidateKey": "search_members",
+        "label": "搜索",
+        "controlType": "icon_button",
+        "visibleState": "顶部右侧可见放大镜图标",
+        "semanticRole": "搜索人员",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "无明显风险",
+        "functionDescription": "打开人员搜索入口",
+        "locatorPrompt": "定位选择人员页标题右侧的放大镜搜索图标"
+      },
+      {
+        "candidateKey": "organization_structure",
+        "label": "组织架构",
+        "controlType": "list_entry",
+        "visibleState": "可用，右侧有向右箭头",
+        "semanticRole": "进入组织架构",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅导航到下一级候选范围",
+        "functionDescription": "浏览中通集团组织架构中的成员",
+        "locatorPrompt": "定位中通集团标题下第一行、文字为组织架构且右侧有箭头的列表项"
+      },
+      {
+        "candidateKey": "quality_management_department",
+        "label": "质量管理部",
+        "controlType": "list_entry",
+        "visibleState": "可用，右侧有向右箭头",
+        "semanticRole": "进入质量管理部",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅导航到下一级候选范围",
+        "functionDescription": "浏览质量管理部中的成员",
+        "locatorPrompt": "定位组织架构下方、文字为质量管理部且右侧有箭头的列表项"
+      },
+      {
+        "candidateKey": "business_lines",
+        "label": "条线",
+        "controlType": "list_entry",
+        "visibleState": "可用，右侧有向右箭头",
+        "semanticRole": "进入条线分类",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅导航到候选分类",
+        "functionDescription": "按条线浏览成员候选",
+        "locatorPrompt": "定位质量管理部下方独立分组中、文字为条线且右侧有箭头的列表项"
+      },
+      {
+        "candidateKey": "personal_tags",
+        "label": "个人标签",
+        "controlType": "list_entry",
+        "visibleState": "可用，右侧有向右箭头",
+        "semanticRole": "进入个人标签",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅导航到候选分类",
+        "functionDescription": "按个人标签浏览成员候选",
+        "locatorPrompt": "定位条线下方、文字为个人标签且右侧有箭头的列表项"
+      },
+      {
+        "candidateKey": "my_groups",
+        "label": "我的群组",
+        "controlType": "list_entry",
+        "visibleState": "可用，右侧有向右箭头",
+        "semanticRole": "进入我的群组",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "仅导航到候选分类",
+        "functionDescription": "从我的群组中浏览成员候选",
+        "locatorPrompt": "定位个人标签下方、文字为我的群组且右侧有箭头的列表项"
+      },
+      {
+        "candidateKey": "select_lian_liangwei",
+        "label": "练良伟",
+        "controlType": "list_entry",
+        "visibleState": "未选择；左侧为空心圆；中间可见棕色纹理头像",
+        "semanticRole": "成员候选",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "点击可能切换该成员的选择状态",
+        "functionDescription": "选择或取消选择最近联系人练良伟",
+        "locatorPrompt": "定位最近联系人区域第一行、姓名为练良伟、带棕色纹理头像且左侧为空心圆的成员行"
+      },
+      {
+        "candidateKey": "select_ge_chaoye",
+        "label": "葛超烨",
+        "controlType": "list_entry",
+        "visibleState": "选择状态不明；左侧为灰色实心圆；中间可见蓝色机器人样式头像",
+        "semanticRole": "成员候选",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "该成员行的可操作性和灰色实心圆含义无法仅凭当前画面确认",
+        "locatorPrompt": "定位最近联系人区域第二行、姓名为葛超烨、带蓝色机器人样式头像且左侧为灰色实心圆的成员行"
+      },
+      {
+        "candidateKey": "select_jia_zongting",
+        "label": "贾宗婷",
+        "controlType": "list_entry",
+        "visibleState": "未选择；左侧为空心圆；中间可见人物插画头像",
+        "semanticRole": "成员候选",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "点击可能切换该成员的选择状态",
+        "functionDescription": "选择或取消选择最近联系人贾宗婷",
+        "locatorPrompt": "定位最近联系人区域第三行、姓名为贾宗婷、带人物插画头像且左侧为空心圆的成员行"
+      },
+      {
+        "candidateKey": "select_guo_hongli",
+        "label": "郭虹利",
+        "controlType": "list_entry",
+        "visibleState": "未选择；左侧为空心圆；中间可见儿童照片头像",
+        "semanticRole": "成员候选",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "点击可能切换该成员的选择状态",
+        "functionDescription": "选择或取消选择最近联系人郭虹利",
+        "locatorPrompt": "定位最近联系人区域第四行、姓名为郭虹利、带儿童照片头像且左侧为空心圆的成员行"
+      },
+      {
+        "candidateKey": "confirm_member_selection",
+        "label": "确定(0/10)",
+        "controlType": "button",
+        "visibleState": "灰色禁用态；当前计数0/10",
+        "semanticRole": "确认成员选择",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "当前不可操作；启用后可能提交成员选择",
+        "functionDescription": "确认当前选择的成员",
+        "locatorPrompt": "定位页面底部右侧灰色按钮，文字为确定(0/10)"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "member_picker_main_list",
+        "label": "选择人员主体列表",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位顶部标题栏与底部已选择操作栏之间、包含组织入口和最近联系人行的主体列表区域"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "葛超烨行左侧灰色实心圆的确切含义无法从当前画面确认；底部计数为0/10，因此不将其推断为已选择。",
+      "当前画面未显示独立滚动条，无法确认主体列表的精确滚动位置或下方尚有多少内容。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:58:48.136Z",
+  "endedAt": "2026-07-27T07:59:44.263Z",
+  "durationMs": 56126.646,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:4dc3d16756be088a6f966c44986b4e6879b96bdd5a33f94a74a30ee438205b98"
+}

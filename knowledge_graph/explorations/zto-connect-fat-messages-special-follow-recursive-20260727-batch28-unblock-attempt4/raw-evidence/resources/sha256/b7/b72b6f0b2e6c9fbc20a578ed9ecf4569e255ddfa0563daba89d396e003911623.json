@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQ7PWGXP7VQATW115H1CG3",
+  "sessionRef": "01KYHQ21JG97TA7ZN1AR477GQE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQ4SPZ1NC5JX38XZA11XZP",
+  "sourceScreenshotRef": "sha256:978d66126b621d2e08225a889f09b5e533d9f9187824efc6abea352757b3f4fe",
+  "operation": "aiLocate",
+  "prompt": "定位最近使用区域下方、以蓝色“消息”开头并显示“会议通知: 宝盒”、右侧红色“41”的整行入口",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 576,
+      "y": 937
+    },
+    "rect": {
+      "x": 35,
+      "y": 903,
+      "width": 1083,
+      "height": 70
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:01:36.986Z",
+  "endedAt": "2026-07-27T12:01:46.896Z",
+  "durationMs": 9910.166334,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:cdb0be8677edd4170d924caaf1d953e5704c2788f5538e32ffe9d7a3c6e6df94"
+}

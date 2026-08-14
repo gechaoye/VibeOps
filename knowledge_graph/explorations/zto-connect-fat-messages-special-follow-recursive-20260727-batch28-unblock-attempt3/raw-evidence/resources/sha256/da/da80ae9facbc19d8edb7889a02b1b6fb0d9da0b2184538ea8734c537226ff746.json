@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHPWHBAQEXWA6VBD07G0444",
+  "sessionRef": "01KYHPTTGF5EFQQ3PKGYAVRB0S",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHPV8Q7PQS9Y8A784172NV6",
+  "sourceScreenshotRef": "sha256:7e6d95d56063e347fe4585148a442efdf80bb836e45f582593ae5bef51ab43c8",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "前景显示标题“日程”和“您有一个新日程”的弹窗，底部按钮依次为忽略、拒绝、接受。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:55:29.582Z",
+  "endedAt": "2026-07-27T11:55:40.778Z",
+  "durationMs": 11195.737084,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:0174a7bf9703e1d7f8ae97d78f0826b8864172d22b3de3f508cea5ca871b1142"
+}

@@ -1,0 +1,72 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBQMKY9P85B76KS89E
+key: messages.special_follow.settings.sound_selector.briefing
+label: 特别关注-特别关注提醒-提示音选择-简报提示音
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENBH55299C13ABP9088
+parentElementRef: null
+controlType: container
+role: selection_option_group
+capabilities:
+- select_sound_briefing
+summary: 简报提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
+relationshipRefs:
+- owner:01KYKA3ENBH55299C13ABP9088
+- child:01KYKA3ENBNWYW7E9QDBGZ86TW
+- child:01KYKA3ENBXG6XT1YH7W0TF7RS
+- transition:01KYKA3ENBM5QWH5HY0P4XTX75
+observations:
+- frameRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  observedAt: '2026-07-31T06:55:23.472Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 0.0
+      top: 1847.0
+      width: 1152.0
+      height: 172.0
+    center:
+    - 575.0
+    - 1932.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:3b3811d0c7e19406163ace332765cabc0d87bdca62a375c39691cb58f9d09c5a
+  state: visible
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBQMKY9P85B76KS89E-sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0.png
+coverage: executed_verified_dual_model_live
+status: dual_model_verified_live
+risk: low
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: true
+  function: selects_briefing_sound_outside_preview_button
+childElementRefs:
+- 01KYKA3ENBNWYW7E9QDBGZ86TW
+- 01KYKA3ENBXG6XT1YH7W0TF7RS
+composition:
+  roles:
+    selectionTrigger: 01KYKA3ENBQMKY9P85B76KS89E
+    label: 01KYKA3ENBNWYW7E9QDBGZ86TW
+    previewTrigger: 01KYKA3ENBXG6XT1YH7W0TF7RS

@@ -1,0 +1,324 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260728-batch51-attempt1:plan",
+  "sourceScopeHash": "sha256:ec859ff7f825da146a22374c2e483586adcaa952e93680ab797d3e1dbe90c5cb",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从当前特别关注页进入设置，打开单聊弹窗提醒帮助，再次点击同一帮助图标关闭帮助层并验证返回设置状态。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "特别关注人员存在未读消息时，消息页入口爱心图标显示为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.unread_badge",
+        "predicate": "value_semantics",
+        "value": "红色角标展示当前实时未读消息数量；具体数字只属于 Runtime 呈现。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.with_unread_before_help_close",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-settings-entry",
+        "space": "current_display_px",
+        "rect": {
+          "x": 800,
+          "y": 180,
+          "width": 340,
+          "height": 260
+        },
+        "purpose": "特别关注页右上“设置”入口的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "popup-reminder-help-icon",
+        "space": "current_display_px",
+        "rect": {
+          "x": 500,
+          "y": 780,
+          "width": 220,
+          "height": 190
+        },
+        "purpose": "第一项提醒设置右侧灰色圆圈问号的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经风险策略允许的应用内导航和临时状态控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.with_unread_before_help_close": {
+      "key": "messages.special_follow.with_unread_before_help_close",
+      "label": "带未读会话的特别关注页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "页面标题为“特别关注”，右上蓝色“设置”可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本批为补充往返证据，visibleControls 只返回右上蓝色“设置”按钮，candidateKey 固定为 special_follow_settings_for_help_close；其他控件省略。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_special_follow_settings"
+      ],
+      "postcondition": "已定位特别关注设置入口。"
+    },
+    "messages.special_follow.settings.before_help_close": {
+      "key": "messages.special_follow.settings.before_help_close",
+      "label": "打开帮助前的特别关注提醒页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为“特别关注提醒”，单聊消息未读弹窗提醒右侧第一个灰色问号可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本批为补充往返证据，visibleControls 只返回“单聊消息未读，弹窗提醒我”右侧第一个灰色问号，candidateKey 固定为 popup_reminder_help_for_close；其他控件省略。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "icon_button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_popup_reminder_help"
+      ],
+      "postcondition": "已定位单聊弹窗提醒帮助问号。"
+    },
+    "messages.special_follow.settings.help.popup_before_close": {
+      "key": "messages.special_follow.settings.help.popup_before_close",
+      "label": "等待关闭的单聊弹窗提醒帮助",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.help",
+      "requiredSemanticAssertions": [
+        "单聊消息未读弹窗提醒的帮助气泡已展开，并指向第一枚灰色问号。"
+      ],
+      "inspection": {
+        "queryPrompt": "本批为补充关闭证据，visibleControls 只返回帮助气泡所指向的第一枚灰色问号，candidateKey 固定为 popup_reminder_help_toggle_close；locatorPrompt 必须定位问号本身而不是气泡正文，其他控件省略。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "icon_button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "dismiss_popup_reminder_help"
+      ],
+      "postcondition": "已定位可再次点击以关闭帮助气泡的同一问号。"
+    },
+    "messages.special_follow.settings.after_help_dismissed": {
+      "key": "messages.special_follow.settings.after_help_dismissed",
+      "label": "帮助关闭后的特别关注提醒页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为“特别关注提醒”，单聊弹窗提醒帮助气泡已关闭且不再显示。"
+      ],
+      "inspection": {
+        "queryPrompt": "只确认帮助气泡已关闭并返回特别关注提醒设置状态，visibleControls 必须返回空数组。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "icon_button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证帮助层关闭并回到设置页。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-before-help-close-flow",
+      "kind": "capture",
+      "state": "messages.special_follow.with_unread_before_help_close",
+      "depth": 1
+    },
+    {
+      "id": "open-settings-for-help-close",
+      "kind": "tap",
+      "semanticAction": "open_special_follow_settings",
+      "fromState": "messages.special_follow.with_unread_before_help_close",
+      "toState": "messages.special_follow.settings.before_help_close",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2200,
+      "target": {
+        "key": "special_follow_settings_for_help_close",
+        "label": "设置",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位“特别关注”页“我的特别关注”同一行最右侧的蓝色“设置”按钮。",
+        "allowedRegionRef": "special-follow-settings-entry"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面标题为“特别关注提醒”。"
+        ]
+      }
+    },
+    {
+      "id": "open-popup-help-for-close",
+      "kind": "tap",
+      "semanticAction": "open_popup_reminder_help",
+      "fromState": "messages.special_follow.settings.before_help_close",
+      "toState": "messages.special_follow.settings.help.popup_before_close",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1600,
+      "target": {
+        "key": "popup_reminder_help_for_close",
+        "label": "单聊弹窗提醒帮助",
+        "scope": "temporary_state_control",
+        "locatorPrompt": "定位“特别关注提醒”页“单聊消息未读，弹窗提醒我”文字紧右侧的第一枚灰色圆圈问号；不要定位下方问号。",
+        "allowedRegionRef": "popup-reminder-help-icon"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "单聊弹窗提醒帮助气泡已展开。"
+        ]
+      }
+    },
+    {
+      "id": "dismiss-popup-help-by-same-icon",
+      "kind": "tap",
+      "semanticAction": "dismiss_popup_reminder_help",
+      "fromState": "messages.special_follow.settings.help.popup_before_close",
+      "toState": "messages.special_follow.settings.after_help_dismissed",
+      "depth": 2,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1600,
+      "target": {
+        "key": "popup_reminder_help_toggle_close",
+        "label": "关闭单聊弹窗提醒帮助",
+        "scope": "temporary_state_control",
+        "locatorPrompt": "定位当前帮助气泡尖角所指向的第一枚灰色圆圈问号本身；再次点击该问号以关闭气泡，不点击气泡正文或其他问号。",
+        "allowedRegionRef": "popup-reminder-help-icon"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "帮助气泡已关闭，当前为“特别关注提醒”设置页。"
+        ]
+      }
+    }
+  ]
+}

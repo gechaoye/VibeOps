@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch19-attempt1:policy",
+  "sourceScopeHash": "sha256:76333d0f2d6f3d7e1e627ac1b51dbd527c16dc751341f98301e91fc938de6876",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 40,
+  "allowedRiskLevels": [
+    "low",
+    "medium",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "feature_entry",
+    "page_content",
+    "page_navigation",
+    "persistent_setting_control",
+    "scroll_region",
+    "settings_navigation",
+    "temporary_state_control"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "special-follow-sound-row",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0.0,
+        "y": 1580.0,
+        "width": 1152.0,
+        "height": 230.0
+      },
+      "purpose": "“特别关注提示音”整行入口的实时 Midscene 定位范围。"
+    },
+    {
+      "key": "app-visible-content",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0.0,
+        "y": 96.0,
+        "width": 1152.0,
+        "height": 2184.0
+      },
+      "purpose": "经风险策略允许的应用内导航、临时状态和已授权持久设置控件范围。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "persistent_setting_change",
+    "temporary_display_state",
+    "viewport_scroll"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2200,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 40,
+    "include": [
+      "messages.special_follow.settings",
+      "messages.special_follow.settings.sound"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

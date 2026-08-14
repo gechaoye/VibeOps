@@ -1,0 +1,195 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch22-attempt1
+title: 间隔时间取消第二十二批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.member_with_unread, predicate: conversation_visibility, value: 设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: configured_visual_state, value: 设置特别关注人员后，入口爱心图标显示为橙黄色。, source: user}
+    - {subjectKey: messages.special_follow.settings, predicate: exploration_authorization, value: 用户明确允许操作开关和设置，探索阶段无需恢复业务状态。, source: user}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 设备位于“特别关注提醒”设置页，间隔时间当前为30分钟；本批验证间隔面板“取消”。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 10
+  include: [messages.special_follow.settings, messages.special_follow.settings.reminder_interval]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low]
+  allowedSideEffects: [navigation_history, temporary_display_state]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, persistent_setting_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 1800
+  allowedTargetScopes: [settings_navigation, temporary_state_control]
+  allowedTapRegions:
+    - key: settings-reminder-content
+      space: current_display_px
+      rect: {x: 0, y: 850, width: 1152, height: 350}
+      purpose: 设置页“间隔时间”入口的实时 Midscene 定位范围。
+    - key: reminder-interval-sheet
+      space: current_display_px
+      rect: {x: 0, y: 1320, width: 1152, height: 1056}
+      purpose: 间隔时间底部面板选项和取消按钮的实时 Midscene 定位范围。
+
+expectedStates:
+  - key: messages.special_follow.settings
+    label: 特别关注提醒设置页
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 页面标题为“特别关注提醒”，“间隔时间”行右侧显示“30分钟”，当前没有底部间隔时间面板。
+    inspection:
+      queryPrompt: 完整盘点“特别关注提醒”设置页全部可见交互控件和设置状态，确认间隔时间当前为30分钟。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [open_reminder_interval_selector]
+    postcondition: 设置页完成全控件盘点。
+  - key: messages.special_follow.settings.reminder_interval.sheet
+    label: 间隔时间底部选项面板
+    kind: dialog
+    expectedStablePageKey: messages.special_follow.settings.reminder_interval
+    requiredSemanticAssertions:
+      - 底部白色面板完整显示“10分钟”“30分钟”“1小时”“4小时”和“取消”。
+    inspection:
+      queryPrompt: 完整盘点四个时间选项和“取消”；背景遮罩只记录为呈现，不作为交互控件或滚动区域。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, list_entry, radio, close]
+      requireScrollCoverage: false
+    allowedActions: [dismiss_reminder_interval_selector]
+    postcondition: 间隔时间面板完成全控件盘点。
+  - key: messages.special_follow.settings.reminder_interval.dismissed
+    label: 取消间隔面板后的设置页
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 间隔时间面板已关闭，页面标题为“特别关注提醒”，“间隔时间”仍显示“30分钟”。
+    inspection:
+      queryPrompt: 完整盘点点击间隔时间面板“取消”后的设置页，确认面板关闭且间隔时间没有改变。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已验证取消关闭面板且不改变间隔时间。
+
+actions:
+  - id: capture-settings-before-interval-cancel
+    kind: capture
+    state: messages.special_follow.settings
+    depth: 3
+  - id: open-reminder-interval-selector
+    kind: tap
+    semanticAction: open_reminder_interval_selector
+    fromState: messages.special_follow.settings
+    toState: messages.special_follow.settings.reminder_interval.sheet
+    depth: 3
+    risk: low
+    sideEffects: [temporary_display_state]
+    waitMs: 1800
+    target:
+      key: reminder_interval
+      label: 间隔时间
+      scope: settings_navigation
+      locatorPrompt: 定位左侧为“间隔时间”、右侧显示“30分钟”和右箭头的整行设置入口。
+      allowedRegionRef: settings-reminder-content
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 底部间隔时间面板已打开，显示10分钟、30分钟、1小时、4小时和取消。
+  - id: cancel-reminder-interval-selector
+    kind: tap
+    semanticAction: dismiss_reminder_interval_selector
+    fromState: messages.special_follow.settings.reminder_interval.sheet
+    toState: messages.special_follow.settings.reminder_interval.dismissed
+    depth: 4
+    risk: safe
+    sideEffects: [temporary_display_state]
+    waitMs: 1800
+    target:
+      key: interval.cancel
+      label: 取消
+      scope: temporary_state_control
+      locatorPrompt: 定位间隔时间底部白色面板最底部中央的“取消”按钮。
+      allowedRegionRef: reminder-interval-sheet
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 间隔时间面板已关闭，间隔时间仍为30分钟。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch22-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

@@ -1,0 +1,58 @@
+update:
+  explorationRef: zto-connect-fat-uikg3-container-closure-20260730
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+  baseGraphHash: sha256:d3461555b1d4c964433221cd0394ab7b360f714f331dc11e76561d2c0adb1e1f
+  mergePolicy: additive-relationship-closure
+  deletions: []
+  migrations: []
+  normativeSpec:
+    index: spec/README.md
+    version: UIKG 3.0.0
+    schemaVersion: 3.0.0
+    contentHash: sha256:fc9a3506804b4a77e7a4a05c83a2eeabdaccfe5fb7ac5ab89ab88b9dd05fd35a
+preservation:
+  existingEntityIdsHash: sha256:9ccdd5604eed9372af84de2fec6a37990b032ab60717774c510b11891e7b848d
+  protectedSharedNavigationRefs:
+  - 01KY6Z7BD84VK4BNARMMSEET0K
+  - 01KY6Z7BD89DJT00X43WZAFNAR
+elements:
+- operation: relationship_upsert
+  id: 01KY6Z7BD84VK4BNARMMSEET0K
+  key: shared.bottom_navigation
+  childElementKeys:
+  - shared.bottom_tab.contacts
+  - shared.bottom_tab.messages
+  - shared.bottom_tab.more
+  - shared.bottom_tab.news
+  - shared.bottom_tab.workbench
+- operation: relationship_upsert
+  id: 01KY6Z7BD89DJT00X43WZAFNAR
+  key: shared.bottom_tab.more
+  childElementKeys:
+  - shared.app_drawer.check_in
+  - shared.app_drawer.cloud_space
+  - shared.app_drawer.department_space
+  - shared.app_drawer.documents
+  - shared.app_drawer.duty
+  - shared.app_drawer.favorites
+  - shared.app_drawer.live
+  - shared.app_drawer.lottery
+  - shared.app_drawer.meeting_live
+  - shared.app_drawer.project_management
+  - shared.app_drawer.quick_notes
+  - shared.app_drawer.recent
+  - shared.app_drawer.schedule
+  - shared.app_drawer.super_forms
+  - shared.app_drawer.todos
+specConformance:
+  normativeSpecHash: sha256:fc9a3506804b4a77e7a4a05c83a2eeabdaccfe5fb7ac5ab89ab88b9dd05fd35a
+  schemaValidation:
+    status: pass
+    recordsChecked: 149
+  graphInvariants: pass
+  evidenceAndCoverage: incomplete
+  obsidianProjection: pass
+  migrationAndHistory: pass
+  deterministicPathQuery: pass
+  idempotentMaterialization: pass
+

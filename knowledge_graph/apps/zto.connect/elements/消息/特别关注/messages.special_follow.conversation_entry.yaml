@@ -1,0 +1,67 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB2VG2WSYHD5MYXA0V
+key: messages.special_follow.conversation_entry
+label: 特别关注-特别关注会话
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB431TAGYEEA0BJYYZ
+parentElementRef: null
+controlType: list_entry
+role: navigation
+capabilities:
+- open_special_follow_conversation
+summary: 展示存在于特别关注列表中的会话，并可进入通用会话页。
+relationshipRefs:
+- owner:01KYKA3ENB431TAGYEEA0BJYYZ
+- child:01KYKA3ENBGFNT0VFVP5RFDC9S
+- transition:01KYKA3ENBYTSP4PV02ECTRZ09
+observations:
+- frameRef: 01KYJ39R3JMEAJG93SJSZEQZ3P
+  observedAt: '2026-07-27T15:32:39.303Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:8e9e69f2932a3057e86294d19af4adf28e2bd1397ea2125aad6eae2f434c57d1
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch44-attempt5/raw-evidence/sessions/01KYJ35DNE8CXJRFYN2KJQEZPA
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 0.0
+      top: 637.0
+      width: 1152.0
+      height: 176.0
+    center:
+    - 576.0
+    - 725.0
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:dd13aad539f37af905301b23a9f3e2e467113e3a794266abadbc747958d14979
+  state: 会话行可见；右侧时间为10:28；当前视口未见数字未读徽标
+  dynamicValue: 会话行可见；右侧时间为10:28；当前视口未见数字未读徽标
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENB2VG2WSYHD5MYXA0V-01KYJ39R3JMEAJG93SJSZEQZ3P.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: open_special_follow_conversation
+childElementRefs:
+- 01KYKA3ENBGFNT0VFVP5RFDC9S

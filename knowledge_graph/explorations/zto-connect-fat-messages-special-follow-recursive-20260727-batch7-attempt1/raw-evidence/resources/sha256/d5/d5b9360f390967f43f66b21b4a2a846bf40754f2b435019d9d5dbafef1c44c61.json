@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH9WWHWA10F83H2P8N59T8M",
+  "sessionRef": "01KYH9T8PKX1QA0E8CPC4Q0K45",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH9TR45WWTZSHTGXFJWV698",
+  "sourceScreenshotRef": "sha256:b265732d81d0d49bb3c817a23ec0c20138dc549e5978e5be93a2e67f1c868ddb",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前屏幕标题为“选择人员”，“最近联系人”中“练良伟”可见，底部确定按钮显示“确定(0/10)”。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:08:28.077Z",
+  "endedAt": "2026-07-27T08:08:40.764Z",
+  "durationMs": 12687.2705,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f17b6771c04fea66fadd23ea7bd3749a80a45d9e107bd8a3051252c30d8f4fa5"
+}

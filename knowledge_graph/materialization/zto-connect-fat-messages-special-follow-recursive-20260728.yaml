@@ -1,0 +1,2425 @@
+recordType: UiGraphMaterializationSpec
+
+application:
+  id: 01KY6Z7BD8J607T07GS5NCN9RN
+  key: zto.connect
+  name: 中通宝盒
+  platform: android
+  packageId: com.zto.connect.fat
+  channel: test
+
+revision:
+  id: 01KYKA3ENBJPK50A5Y5X5GE0QQ
+  createdAt: '2026-07-28T02:51:35Z'
+  parentRevision: 01KY9548Z070C4WJ7CTRYZRSTH
+
+exploration:
+  title: 消息页特别关注功能递归探索
+  rootPageKey: messages.special_follow
+  scopeRef: zto-connect-fat-messages-special-follow-recursive-20260727-batch1
+  completeness: recursive_queue_exhausted
+  stopReason: no_new_safe_reversible_targets
+
+liveEvidenceSources:
+  - explorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+    evidenceIndexRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/evidence-index.json
+    bindings:
+      popup_reminder_row: {stateKey: messages.special_follow.settings.popup_help_visible, locatorKey: popup_reminder_row}
+      popup_reminder_label: {stateKey: messages.special_follow.settings.popup_help_visible, locatorKey: popup_reminder_label}
+      popup_reminder_help: {stateKey: messages.special_follow.settings.popup_help_visible, locatorKey: popup_reminder_help}
+      popup_reminder_toggle: {stateKey: messages.special_follow.settings.popup_help_visible, locatorKey: popup_reminder_toggle}
+      popup_reminder_help_popover: {stateKey: messages.special_follow.settings.popup_help_visible, locatorKey: popup_reminder_help_popover}
+      sms_phone_row: {stateKey: messages.special_follow.settings.sms_phone_help_visible, locatorKey: sms_phone_row}
+      sms_phone_label: {stateKey: messages.special_follow.settings.sms_phone_help_visible, locatorKey: sms_phone_label}
+      sms_phone_help: {stateKey: messages.special_follow.settings.sms_phone_help_visible, locatorKey: sms_phone_help}
+      sms_phone_toggle: {stateKey: messages.special_follow.settings.sms_phone_help_visible, locatorKey: sms_phone_toggle}
+      sms_phone_help_popover: {stateKey: messages.special_follow.settings.sms_phone_help_visible, locatorKey: sms_phone_help_popover}
+      group_dnd_row: {stateKey: messages.special_follow.settings.group_dnd_help_visible, locatorKey: group_dnd_row}
+      group_dnd_label: {stateKey: messages.special_follow.settings.group_dnd_help_visible, locatorKey: group_dnd_label}
+      group_dnd_help: {stateKey: messages.special_follow.settings.group_dnd_help_visible, locatorKey: group_dnd_help}
+      group_dnd_toggle: {stateKey: messages.special_follow.settings.group_dnd_help_visible, locatorKey: group_dnd_toggle}
+      group_dnd_help_popover: {stateKey: messages.special_follow.settings.group_dnd_help_visible, locatorKey: group_dnd_help_popover}
+    transitions:
+      messages.special_follow.settings.open_popup_help:
+        actionRecordRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/open-popup-reminder-help-live-repair.json
+        afterStateKey: messages.special_follow.settings.popup_help_visible
+      messages.special_follow.settings.help.show_sms_phone:
+        actionRecordRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/open-sms-phone-help-live-repair.json
+        afterStateKey: messages.special_follow.settings.sms_phone_help_visible
+      messages.special_follow.settings.help.show_group_dnd:
+        actionRecordRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/open-group-dnd-help-live-repair.json
+        afterStateKey: messages.special_follow.settings.group_dnd_help_visible
+
+  - explorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+    evidenceIndexRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/evidence-index.json
+    bindings:
+      members_container_v301: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: members_container}
+      members_label_v301: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: members_label}
+      members_chevron_v301: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: members_chevron}
+      popup_interval_row: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: popup_interval_row}
+      popup_interval_label: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: popup_interval_label}
+      popup_interval_value: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: popup_interval_value}
+      popup_interval_chevron: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: popup_interval_chevron}
+      sms_interval_row: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: sms_interval_row}
+      sms_interval_label: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: sms_interval_label}
+      sms_interval_value: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: sms_interval_value}
+      sms_interval_chevron: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: sms_interval_chevron}
+      reminder_method_row: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: reminder_method_row}
+      reminder_method_label: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: reminder_method_label}
+      reminder_method_value: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: reminder_method_value}
+      reminder_method_chevron: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: reminder_method_chevron}
+      night_dnd_row: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: night_dnd_row}
+      night_dnd_label: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: night_dnd_label}
+      night_dnd_secondary_text: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: night_dnd_secondary_text}
+      night_dnd_toggle: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: night_dnd_toggle}
+      sound_row: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: sound_row}
+      sound_label: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: sound_label}
+      sound_value: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: sound_value}
+      sound_chevron: {stateKey: messages.special_follow.settings.remaining.main_model, locatorKey: sound_chevron}
+      popup_option_10: {stateKey: messages.special_follow.settings.remaining.popup_interval_selector, locatorKey: popup_option_10_minutes}
+      popup_option_30: {stateKey: messages.special_follow.settings.remaining.popup_interval_selector, locatorKey: popup_option_30_minutes}
+      popup_option_1h: {stateKey: messages.special_follow.settings.remaining.popup_interval_selector, locatorKey: popup_option_1_hour}
+      popup_option_4h: {stateKey: messages.special_follow.settings.remaining.popup_interval_selector, locatorKey: popup_option_4_hours}
+      sms_option_10: {stateKey: messages.special_follow.settings.remaining.sms_interval_selector, locatorKey: sms_option_10_minutes}
+      sms_option_30: {stateKey: messages.special_follow.settings.remaining.sms_interval_selector, locatorKey: sms_option_30_minutes}
+      reminder_method_sms_row: {stateKey: messages.special_follow.settings.remaining.reminder_method_selector, locatorKey: reminder_method_sms_row}
+      reminder_method_phone_row: {stateKey: messages.special_follow.settings.remaining.reminder_method_selector, locatorKey: reminder_method_phone_row}
+      sound_default_row: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_default_row}
+      sound_default_label: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_default_label}
+      sound_default_preview: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_default_preview}
+      sound_wave_row: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_wave_row}
+      sound_wave_label: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_wave_label}
+      sound_wave_preview: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_wave_preview}
+      sound_briefing_row: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_briefing_row}
+      sound_briefing_label: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_briefing_label}
+      sound_briefing_preview: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_briefing_preview}
+      sound_bell_row: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_bell_row}
+      sound_bell_label: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_bell_label}
+      sound_bell_preview: {stateKey: messages.special_follow.settings.remaining.sound_selector, locatorKey: sound_bell_preview}
+      people_member_row: {stateKey: messages.special_follow.settings.remaining.people, locatorKey: member_row}
+      people_remove: {stateKey: messages.special_follow.settings.remaining.people, locatorKey: member_remove}
+    transitions:
+      messages.special_follow.settings.open_popup_interval_selector:
+        actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-popup-interval-via-label-area-uikg301.json
+        afterStateKey: messages.special_follow.settings.remaining.popup_interval_selector
+      messages.special_follow.settings.open_sms_phone_interval_selector:
+        actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-sms-interval-via-label-area-uikg301.json
+        afterStateKey: messages.special_follow.settings.remaining.sms_interval_selector
+      messages.special_follow.settings.open_reminder_method_selector:
+        actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-reminder-method-via-label-area-uikg301.json
+        afterStateKey: messages.special_follow.settings.remaining.reminder_method_selector
+      messages.special_follow.settings.open_sound_selector:
+        actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-sound-via-label-area-uikg301.json
+        afterStateKey: messages.special_follow.settings.remaining.sound_selector
+      messages.special_follow.settings.open_people:
+        actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-all-members-via-chevron-uikg301.json
+        afterStateKey: messages.special_follow.settings.remaining.people
+
+  - explorationRef: zto-connect-fat-messages-special-follow-popup-backdrop-repair-20260731-attempt1
+    evidenceIndexRef: explorations/zto-connect-fat-messages-special-follow-popup-backdrop-repair-20260731-attempt1/evidence-index.json
+    pageProvenanceEligible: false
+    bindings:
+      popup_backdrop_v301: {stateKey: messages.special_follow.settings.popup_backdrop_repair.overlay, locatorKey: popup_backdrop}
+
+pages:
+  - key: messages.root
+    title: 消息
+    kind: page
+    summary: 消息一级页；顶部工具栏提供特别关注入口，并以橙黄色高亮表示特别关注人员存在未读消息。
+    hostPageKey: null
+    defaultStateKey: special_follow_inactive
+    states:
+      - key: special_follow_inactive
+        label: 特别关注入口未高亮
+        expectedElementKeys:
+          - messages.root.special_follow_entry
+        stateHints:
+          - messages.root
+          - messages.root.no_special_follow_unread
+          - messages.root.returned_from_special_follow
+      - key: special_follow_unread_highlighted
+        label: 特别关注入口因存在未读消息而橙黄色高亮
+        expectedElementKeys:
+          - messages.root.special_follow_entry
+        stateHints:
+          - messages.root.with_special_follow_unread_highlight
+
+  - key: messages.special_follow
+    title: 特别关注
+    kind: page
+    summary: 展示特别关注成员与其会话；特别关注人员存在未读消息时展示对应会话和实时未读数量角标。
+    hostPageKey: null
+    defaultStateKey: empty
+    states:
+      - key: empty
+        label: 暂无特别关注成员或会话
+        expectedElementKeys:
+          - messages.special_follow.collapse
+          - messages.special_follow.settings_entry
+        stateHints:
+          - messages.special_follow.initial
+          - messages.special_follow.empty
+          - messages.special_follow.empty_after_people_close
+          - messages.special_follow.empty_returned
+      - key: read_conversation
+        label: 已关注成员及已读会话
+        expectedElementKeys:
+          - messages.special_follow.collapse
+          - messages.special_follow.settings_entry
+          - messages.special_follow.member_entry
+          - messages.special_follow.conversation_entry
+        stateHints:
+          - messages.special_follow.with_read_lian_liangwei
+          - messages.special_follow.with_read_lian_liangwei_after_return
+          - messages.special_follow.with_read_lian_liangwei_after_member_return
+      - key: unread_conversation
+        label: 已关注成员及含实时未读数量的会话
+        expectedElementKeys:
+          - messages.special_follow.collapse
+          - messages.special_follow.settings_entry
+          - messages.special_follow.member_entry
+          - messages.special_follow.conversation_entry
+          - messages.special_follow.unread_badge
+        stateHints:
+          - messages.special_follow.with_unread_member
+          - messages.special_follow.with_dynamic_unread_after_settings
+          - messages.special_follow.with_dynamic_unread_for_people
+          - messages.special_follow.with_dynamic_unread_badge_located
+          - messages.special_follow.with_unread_before_help_close
+
+  - key: messages.special_follow.settings
+    title: 特别关注提醒
+    kind: page
+    summary: 管理特别关注成员、弹窗提醒、短信或电话提醒、提醒间隔、提醒方式、免打扰和提示音。
+    hostPageKey: null
+    defaultStateKey: baseline
+    states:
+      - key: baseline
+        label: 基础提醒设置
+        liveStateKey: messages.special_follow.settings.remaining.main_model
+        stateHints:
+          - messages.special_follow.settings
+          - messages.special_follow.settings.initial
+          - messages.special_follow.settings.returned_from_people
+      - key: configured_top
+        label: 设置页顶部配置状态
+        stateHints:
+          - messages.special_follow.settings.top
+      - key: with_member
+        label: 已有特别关注成员
+        stateHints:
+          - messages.special_follow.settings.with_member
+          - messages.special_follow.settings.with_member_after_selector_return
+          - messages.special_follow.settings.with_member_before_unread_return
+          - messages.special_follow.settings.with_member_for_add
+          - messages.special_follow.settings.with_member_for_people
+          - messages.special_follow.settings.before_help_close
+          - messages.special_follow.settings.after_help_dismissed
+      - key: popup_interval_30_minutes
+        label: 单聊弹窗提醒间隔30分钟
+        stateHints:
+          - messages.special_follow.settings.interval_30
+          - messages.special_follow.settings.reminder_interval.dismissed
+      - key: popup_reminder_on
+        label: 单聊未读弹窗提醒开启
+        stateHints:
+          - messages.special_follow.settings.popup_reminder.on
+          - messages.special_follow.settings.popup_reminder.on_again
+      - key: popup_reminder_off
+        label: 单聊未读弹窗提醒关闭
+        stateHints:
+          - messages.special_follow.settings.popup_reminder.off
+      - key: sms_phone_off
+        label: 短信或电话提醒关闭
+        stateHints:
+          - messages.special_follow.settings.sms_phone.disabled
+          - messages.special_follow.settings.sms_phone_reminder.off
+      - key: sms_phone_on
+        label: 短信或电话提醒开启
+        stateHints:
+          - messages.special_follow.settings.sms_phone.enabled
+          - messages.special_follow.settings.sms_phone.enabled_restored
+          - messages.special_follow.settings.sms_phone_reminder.activation_result
+          - messages.special_follow.settings.sms_phone_reminder.on
+      - key: sms_phone_interval_10_minutes
+        label: 短信或电话提醒间隔10分钟
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder.interval_10
+          - messages.special_follow.settings.sms_phone_reminder.interval_10_selected
+      - key: sms_phone_interval_30_minutes
+        label: 短信或电话提醒间隔30分钟
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder.interval.dismissed
+          - messages.special_follow.settings.sms_phone_reminder.interval_30
+          - messages.special_follow.settings.sms_phone_reminder.interval_30_before_select_10
+          - messages.special_follow.settings.sms_phone_reminder.interval_30_final
+      - key: reminder_method_sms
+        label: 提醒方式为短信
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder.method.dismissed_sms
+          - messages.special_follow.settings.sms_phone_reminder.method.sms
+      - key: reminder_method_phone
+        label: 提醒方式为电话
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder.method.phone
+      - key: dnd_both_off
+        label: 夜间免打扰与免打扰群通知均关闭
+        stateHints:
+          - messages.special_follow.settings.dnd.both_off
+          - messages.special_follow.settings.dnd.both_off_final
+          - messages.special_follow.settings.dnd.night_off_again
+      - key: dnd_night_on
+        label: 夜间免打扰开启
+        stateHints:
+          - messages.special_follow.settings.dnd.night_on
+      - key: dnd_group_on
+        label: 免打扰群通知开启
+        stateHints:
+          - messages.special_follow.settings.dnd.group_on
+      - key: popup_interval_10_minutes
+        label: 单聊弹窗提醒间隔10分钟
+        stateHints:
+          - messages.special_follow.settings.popup_interval_10
+      - key: popup_interval_1_hour
+        label: 单聊弹窗提醒间隔1小时
+        stateHints:
+          - messages.special_follow.settings.popup_interval_1_hour
+      - key: popup_interval_4_hours
+        label: 单聊弹窗提醒间隔4小时
+        stateHints:
+          - messages.special_follow.settings.popup_interval_4_hours
+      - key: sound_briefing
+        label: 特别关注提示音为简报
+        stateHints:
+          - messages.special_follow.settings.sound.briefing
+      - key: sound_default
+        label: 特别关注提示音为默认
+        stateHints:
+          - messages.special_follow.settings.sound.default
+      - key: sound_wave
+        label: 特别关注提示音为波浪
+        stateHints:
+          - messages.special_follow.settings.sound.wave
+      - key: sound_bell
+        label: 特别关注提示音为门铃
+        stateHints:
+          - messages.special_follow.settings.sound.bell
+      - key: sound_selector_dismissed
+        label: 提示音选择器已取消
+        stateHints:
+          - messages.special_follow.settings.sound.dismissed
+      - key: sound_visible_after_scroll
+        label: 滚动后完整显示提示音入口
+        stateHints:
+          - messages.special_follow.settings.sound_visible
+      - key: popup_reminder_help_visible
+        label: 单聊弹窗提醒帮助浮层已显示
+        liveStateKey: messages.special_follow.settings.popup_help_visible
+        stateHints:
+          - messages.special_follow.settings.popup_reminder_help
+          - messages.special_follow.settings.transient_help_tolerant
+          - messages.special_follow.settings.help.popup_before_close
+      - key: sms_phone_reminder_help_visible
+        label: 短信或电话提醒帮助浮层已显示
+        liveStateKey: messages.special_follow.settings.sms_phone_help_visible
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder_help
+      - key: group_dnd_help_visible
+        label: 免打扰群通知帮助浮层已显示
+        liveStateKey: messages.special_follow.settings.group_dnd_help_visible
+        stateHints:
+          - messages.special_follow.settings.dnd_group_help
+
+  - key: messages.special_follow.people
+    title: 全部成员
+    kind: page
+    summary: 展示全部特别关注成员，并提供成员查看、移除、关闭和返回操作。
+    hostPageKey: null
+    defaultStateKey: empty
+    states:
+      - key: empty
+        label: 无成员
+        stateHints:
+          - messages.special_follow.people.empty
+          - messages.special_follow.people.empty_after_remove
+      - key: nonempty
+        label: 有成员
+        liveStateKey: messages.special_follow.settings.remaining.people
+        stateHints:
+          - messages.special_follow.people.after_cancel_remove
+          - messages.special_follow.people.nonempty
+          - messages.special_follow.people.nonempty_after_member_tap
+          - messages.special_follow.people.nonempty_before_member_tap
+          - messages.special_follow.people.nonempty_for_interval_return
+
+  - key: messages.special_follow.people.remove_confirmation
+    title: 移除特别关注确认
+    kind: dialog
+    summary: 确认或取消移除当前特别关注成员。
+    hostPageKey: messages.special_follow.people
+    defaultStateKey: awaiting_confirmation
+    states:
+      - key: awaiting_confirmation
+        label: 等待确认
+        stateHints:
+          - messages.special_follow.people.remove_dialog
+          - messages.special_follow.people.remove_dialog_again
+
+  - key: messages.special_follow.settings.popup_interval_selector
+    title: 单聊弹窗提醒间隔选择
+    kind: overlay
+    summary: 选择单聊未读弹窗提醒的时间间隔，支持10分钟、30分钟、1小时和4小时。
+    hostPageKey: messages.special_follow.settings
+    defaultStateKey: observed_selection
+    states:
+      - key: observed_selection
+        label: 已观测的当前间隔选项
+        liveStateKey: messages.special_follow.settings.remaining.popup_interval_selector
+        stateHints:
+          - messages.special_follow.settings.reminder_interval.sheet
+      - key: selected_10_minutes
+        label: 当前选中10分钟
+        stateHints:
+          - messages.special_follow.settings.popup_interval.selector_10
+      - key: selected_1_hour
+        label: 当前选中1小时
+        stateHints:
+          - messages.special_follow.settings.popup_interval.selector_1_hour
+      - key: selected_4_hours
+        label: 当前选中4小时
+        stateHints:
+          - messages.special_follow.settings.popup_interval.selector_4_hours
+
+  - key: messages.special_follow.settings.sms_phone_interval_selector
+    title: 短信或电话提醒间隔选择
+    kind: overlay
+    summary: 选择短信或电话提醒的时间间隔，支持10分钟和30分钟。
+    hostPageKey: messages.special_follow.settings
+    defaultStateKey: selected_30_minutes
+    states:
+      - key: selected_30_minutes
+        label: 当前选中30分钟
+        liveStateKey: messages.special_follow.settings.remaining.sms_interval_selector
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder.interval.selector
+          - messages.special_follow.settings.sms_phone_reminder.interval.selector_30_again
+          - messages.special_follow.settings.sms_phone_reminder.interval.selector_30_before_select_10
+      - key: selected_10_minutes
+        label: 当前选中10分钟
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder.interval.selector_10
+          - messages.special_follow.settings.sms_phone_reminder.interval.selector_10_selected
+
+  - key: messages.special_follow.settings.reminder_method_selector
+    title: 提醒方式选择
+    kind: overlay
+    summary: 在短信和电话两种提醒方式之间选择。
+    hostPageKey: messages.special_follow.settings
+    defaultStateKey: selected_sms
+    states:
+      - key: selected_sms
+        label: 当前选中短信
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder.method.selector
+          - messages.special_follow.settings.sms_phone_reminder.method.selector_sms
+          - messages.special_follow.settings.sms_phone_reminder.method.selector_sms_again
+      - key: selected_phone
+        label: 当前选中电话
+        liveStateKey: messages.special_follow.settings.remaining.reminder_method_selector
+        stateHints:
+          - messages.special_follow.settings.sms_phone_reminder.method.selector_phone
+
+  - key: messages.special_follow.settings.sound_selector
+    title: 特别关注提示音选择
+    kind: overlay
+    summary: 选择或试听默认、波浪、简报和门铃提示音，也可取消选择。
+    hostPageKey: messages.special_follow.settings
+    defaultStateKey: observed_selection
+    states:
+      - key: observed_selection
+        label: 已观测的当前提示音选项
+        liveStateKey: messages.special_follow.settings.remaining.sound_selector
+        stateHints:
+          - messages.special_follow.settings.sound.selector
+      - key: selected_briefing
+        label: 当前选中简报
+        stateHints:
+          - messages.special_follow.settings.sound.selector_briefing
+      - key: selected_default
+        label: 当前选中默认
+        stateHints:
+          - messages.special_follow.settings.sound.selector_default
+      - key: selected_wave
+        label: 当前选中波浪
+        stateHints:
+          - messages.special_follow.settings.sound.selector_wave
+      - key: preview_default
+        label: 已试听默认
+        stateHints:
+          - messages.special_follow.settings.sound.preview_default
+      - key: preview_wave
+        label: 已试听波浪
+        stateHints:
+          - messages.special_follow.settings.sound.preview_wave
+      - key: preview_briefing
+        label: 已试听简报
+        stateHints:
+          - messages.special_follow.settings.sound.preview_briefing
+      - key: preview_bell
+        label: 已试听门铃
+        stateHints:
+          - messages.special_follow.settings.sound.preview_bell
+
+  - key: boundary.common.person_picker
+    title: 通用选人组件
+    kind: page
+    summary: APP级通用选人边界；本次仅记录特别关注添加入口、选择一人、确认和返回流程，不探索组件内部。
+    hostPageKey: null
+    defaultStateKey: none_selected
+    states:
+      - key: none_selected
+        label: 未选择人员
+        stateHints:
+          - common.person_picker.initial
+          - boundary.common.person_selector.from_special_follow_add
+      - key: one_selected
+        label: 已选择一人
+        stateHints:
+          - common.person_picker.one_selected
+
+  - key: boundary.common.conversation
+    title: 通用会话页
+    kind: page
+    summary: APP级通用会话边界；本次只记录从特别关注会话或成员进入以及系统返回，不探索会话内部。
+    hostPageKey: null
+    defaultStateKey: opened_from_conversation
+    states:
+      - key: opened_from_conversation
+        label: 从特别关注会话进入
+        stateHints:
+          - boundary.common.conversation.lian_liangwei
+      - key: opened_from_member
+        label: 从特别关注成员进入
+        stateHints:
+          - boundary.common.conversation.lian_liangwei_from_member
+
+elements:
+  - key: messages.root.special_follow_entry
+    pageKey: messages.root
+    label: 特别关注
+    description: 打开特别关注功能；特别关注人员存在未读消息时，该爱心入口呈橙黄色高亮。
+    controlType: icon_button
+    semanticRole: navigation
+    capabilities: [open_special_follow]
+    risk: safe
+    targetKeyPatterns:
+      - 'messages\.toolbar\.heart'
+      - 'messages_toolbar_(?:heart|special_follow_highlighted)'
+      - 'toolbar\.special_follow'
+    activation: executed_verified
+
+  - key: messages.special_follow.collapse
+    pageKey: messages.special_follow
+    label: 返回消息页
+    description: 收起特别关注页面并返回消息页。
+    controlType: icon_button
+    semanticRole: navigation
+    capabilities: [close_special_follow]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:header_left_unlabeled_icon|top_left_(?:down_chevron|chevron)|collapse_special_follow|special_follow(?:\.|_)back|special_follow_collapse_with_unread)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings_entry
+    pageKey: messages.special_follow
+    label: 特别关注设置
+    description: 打开特别关注提醒设置；空状态中显示为“设置特别关注”，有成员时显示为“设置”。
+    controlType: button
+    semanticRole: navigation
+    capabilities: [open_special_follow_settings]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:special_attention_setup|configure_special_follow|set_special_follow|special_follow\.settings_entry|special_follow_settings|special_follow_setup|special_follow_settings_from_unread|special_follow_settings_for_people|special_follow_settings_for_help_close)'
+    activation: executed_verified
+
+  - key: messages.special_follow.member_entry
+    pageKey: messages.special_follow
+    label: 特别关注成员
+    description: 展示特别关注成员，并可进入该成员的通用会话页。
+    controlType: list_entry
+    semanticRole: navigation
+    capabilities: [open_followed_member_conversation]
+    risk: safe
+    targetKeyPatterns:
+      - 'special_follow_member_(?:lian|lian_liangwei)'
+    activation: executed_verified
+
+  - key: messages.special_follow.conversation_entry
+    pageKey: messages.special_follow
+    label: 特别关注会话
+    description: 展示存在于特别关注列表中的会话，并可进入通用会话页。
+    controlType: list_entry
+    semanticRole: navigation
+    capabilities: [open_special_follow_conversation]
+    risk: safe
+    targetKeyPatterns:
+      - 'special_follow_(?:conversation_lian_liangwei|read_conversation_time_1028)'
+    activation: executed_verified
+
+  - key: messages.special_follow.unread_badge
+    ownerElementKey: messages.special_follow.conversation_entry
+    label: 实时未读消息数量角标
+    description: 展示该特别关注会话当前实时未读消息数量；具体数字仅属于每个 Runtime ElementInstance 的当帧呈现。
+    controlType: status_badge
+    semanticRole: state_indicator
+    capabilities: []
+    risk: safe
+    targetKeys: [special_follow_unread_badge]
+    activation: observed_not_activated
+
+  - key: messages.special_follow.settings.back
+    pageKey: messages.special_follow.settings
+    label: 返回特别关注
+    description: 返回特别关注页面。
+    controlType: back
+    semanticRole: navigation
+    capabilities: [navigate_back]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:back|nav[._]back|special_follow(?:\.|_)back|settings_back)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.members_container
+    pageKey: messages.special_follow.settings
+    label: 我的特别关注
+    aliases: [我的特别关注入口容器]
+    description: “我的特别关注”复合入口的总容器；页面只直接引用该容器，容器持有不可点击的说明文案和可点击的右侧箭头两个子元素。
+    controlType: container
+    semanticRole: navigation_group
+    capabilities: []
+    childElementKeys:
+      - messages.special_follow.settings.members_label
+      - messages.special_follow.settings.members_chevron
+    compositionProfile: action_row
+    compositionRoles:
+      explanatoryContent: messages.special_follow.settings.members_label
+      actionTrigger: messages.special_follow.settings.members_chevron
+    interactionBoundary:
+      actionable: false
+      function: groups_label_and_sibling_trigger
+    observationState: visible_non_actionable_container
+    observationStateProperties:
+      enabled: null
+      actionable: false
+    observationDynamicValue: null
+    liveLocatorBinding: members_container_v301
+    userContextCertifiedFact: 页面只直接引用该总容器；容器本身不触发导航，导航由其右侧箭头子元素触发。
+    targetKeys: [specialFollow.openList]
+    candidateSource: visible_control
+    activation: observed
+    risk: safe
+
+  - key: messages.special_follow.settings.members_label
+    ownerElementKey: messages.special_follow.settings.members_container
+    label: 说明文字
+    aliases: [我的特别关注文案]
+    description: 显示“我的特别关注”，用于说明右侧箭头入口的业务含义；该文案不可点击，不触发导航。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary:
+      actionable: false
+      function: describes_sibling_trigger
+    observationState: visible_non_actionable_label
+    observationStateProperties:
+      enabled: null
+      actionable: false
+    observationDynamicValue: null
+    liveLocatorBinding: members_label_v301
+    userContextCertifiedFact: “我的特别关注”是入口说明文案，不可点击，不触发导航。
+    targetKeys: [special_follows_entry]
+    candidateSource: visible_control
+    activation: observed
+    risk: safe
+
+  - key: messages.special_follow.settings.members_chevron
+    ownerElementKey: messages.special_follow.settings.members_container
+    label: 右侧箭头
+    aliases: [我的特别关注入口, 我的特别关注列表入口]
+    description: 位于“我的特别关注”说明文案右侧；这是打开全部特别关注成员列表的独立可点击入口。
+    controlType: icon_button
+    semanticRole: navigation
+    capabilities: [open_special_follow_people]
+    presentation:
+      visibleLabel: 我的特别关注
+      triggerAffordance: 向右箭头
+      spatialRelations:
+        - subject: trigger_affordance
+          predicate: right_of
+          object: visible_label
+    interactionBoundary:
+      actionable: true
+      function: opens_all_special_follow_members
+      actionablePart: trailing_chevron
+      labelTextActionable: false
+      otherRowRegions: unspecified
+      commonMisinterpretation: 用户可能按常见列表行惯例误以为“我的特别关注”文字或整行都是入口。
+    risk: safe
+    liveLocatorBinding: members_chevron_v301
+    targetKeyPatterns:
+      - '(?:special_follows_chevron|special_follow_members_chevron|special_follow_members_chevron_for_member_row|special_follow_members_chevron_only|special_follow\.members_chevron)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.member
+    pageKey: messages.special_follow.settings
+    label: 已关注成员
+    description: 展示当前特别关注成员。
+    controlType: list_entry
+    semanticRole: state
+    capabilities: []
+    risk: safe
+    targetKeyPatterns:
+      - '(?:member_lian_liangwei|special_follow_member_lian_liangwei)'
+    activation: observed_not_activated
+
+  - key: messages.special_follow.settings.add_member
+    pageKey: messages.special_follow.settings
+    label: 添加特别关注
+    description: 进入APP级通用选人组件以添加特别关注成员。
+    controlType: button
+    semanticRole: navigation
+    capabilities: [open_person_picker]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:add_special_(?:follow|attention)|member_add|specialFollow\.addMember|special_follow(?:\.add(?:_person)?|_add)|special_follow_add_person|add_special_follow_from_nonempty_settings)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.remove_member
+    pageKey: messages.special_follow.settings
+    label: 移除特别关注
+    description: 打开成员移除流程入口。
+    controlType: button
+    semanticRole: action
+    capabilities: [open_remove_member_flow]
+    risk: low
+    targetKeys: [member_remove]
+    activation: observed_not_activated
+
+  - key: messages.special_follow.settings.popup_reminder_row
+    pageKey: messages.special_follow.settings
+    label: 单聊消息未读弹窗提醒设置项
+    aliases: [单聊弹窗提醒设置项]
+    description: 单聊消息未读弹窗提醒的总容器；页面只直接引用该容器，容器持有设置名称、帮助图标、帮助浮层和开关。
+    controlType: container
+    semanticRole: setting_group
+    capabilities: []
+    childElementKeys:
+      - messages.special_follow.settings.popup_reminder_label
+      - messages.special_follow.settings.popup_reminder_help
+      - messages.special_follow.settings.popup_reminder_help_popover
+      - messages.special_follow.settings.popup_reminder_toggle
+    compositionRoles:
+      label: messages.special_follow.settings.popup_reminder_label
+      helpTrigger: messages.special_follow.settings.popup_reminder_help
+      helpPopover: messages.special_follow.settings.popup_reminder_help_popover
+      settingControl: messages.special_follow.settings.popup_reminder_toggle
+    compositionProfile: help_toggle_row
+    interactionBoundary:
+      actionable: false
+      function: groups_setting_label_help_and_toggle
+    liveLocatorBinding: popup_reminder_row
+    observationState: visible_with_help_popover
+    observationStateProperties: {enabled: null, actionable: false, helpPopoverVisible: true}
+    observationDynamicValue: null
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.popup_reminder_label
+    ownerElementKey: messages.special_follow.settings.popup_reminder_row
+    label: 名称文案
+    aliases: [单聊消息未读弹窗提醒名称]
+    description: 显示设置名称“单聊消息未读，弹窗提醒我”；该文案只说明设置含义，不承担帮助或开关动作。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: describes_sibling_controls}
+    liveLocatorBinding: popup_reminder_label
+    observationState: visible_non_actionable_label
+    observationStateProperties: {enabled: null, actionable: false}
+    observationDynamicValue: 单聊消息未读，弹窗提醒我
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.popup_reminder_toggle
+    ownerElementKey: messages.special_follow.settings.popup_reminder_row
+    label: 开关
+    description: 开启或关闭单聊消息未读时的弹窗提醒。
+    controlType: toggle
+    semanticRole: setting
+    capabilities: [toggle_popup_reminder]
+    liveLocatorBinding: popup_reminder_toggle
+    risk: low
+    targetKeyPatterns:
+      - '(?:popup_reminder_toggle|unread_popup_toggle|popup_unread_toggle|popupReminder\.toggle|reminder\.popup(?:_unread)?(?:(?:\.|_)toggle)?|single_chat_(?:popup(?:_unread)?_toggle|unread_popup_toggle|popup_reminder|popup)|single_chat_popup\.toggle)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_reminder_help
+    ownerElementKey: messages.special_follow.settings.popup_reminder_row
+    label: 帮助图标
+    description: 显示单聊消息未读弹窗提醒的帮助浮层；当前构建未验证再次点击同一图标可收起浮层。
+    controlType: icon_button
+    semanticRole: help
+    capabilities: [open_popup_reminder_help]
+    liveLocatorBinding: popup_reminder_help
+    risk: safe
+    targetKeyPatterns:
+      - '(?:popup_reminder_help(?:_for_close)?|unread_popup_help|popup_unread_help|popupReminder\.help|reminder\.popup(?:_unread)?(?:\.|_)help|single_chat_(?:popup|unread)_help|single_chat_popup\.help)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_reminder_help_popover
+    ownerElementKey: messages.special_follow.settings.popup_reminder_row
+    label: 帮助浮层
+    aliases: [单聊弹窗提醒帮助说明文案泡泡框]
+    description: 展示单聊消息未读弹窗提醒规则的深灰色说明气泡；该浮层不是第二个帮助图标。
+    controlType: help_popover
+    semanticRole: help_content
+    capabilities: []
+    interactionBoundary: {actionable: false, function: presents_help_content}
+    liveLocatorBinding: popup_reminder_help_popover
+    observationState: visible
+    observationStateProperties: {enabled: null, actionable: false, visible: true}
+    observationDynamicValue: 当特别关注人的单聊消息在一段时间内未被阅读时，系统将再次通过全局弹窗的形式进行提醒。
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.popup_interval
+    pageKey: messages.special_follow.settings
+    label: 单聊弹窗提醒间隔
+    description: 单聊弹窗提醒间隔选择行总容器；名称区域实测可触发父行，因此由容器承担选择动作，当前值与箭头仅呈现状态和可操作提示。
+    controlType: container
+    semanticRole: setting_group
+    capabilities: [open_popup_interval_selector]
+    childElementKeys:
+      - messages.special_follow.settings.popup_interval_label
+      - messages.special_follow.settings.popup_interval_value
+      - messages.special_follow.settings.popup_interval_chevron
+    compositionProfile: selector_row
+    compositionRoles:
+      label: messages.special_follow.settings.popup_interval_label
+      currentValue: messages.special_follow.settings.popup_interval_value
+      settingTrigger: '@self'
+      affordance: messages.special_follow.settings.popup_interval_chevron
+    interactionBoundary: {actionable: true, function: opens_popup_interval_selector_from_parent_row_hit_area}
+    liveLocatorBinding: popup_interval_row
+    risk: safe
+    targetKeyPatterns:
+      - '(?:reminder_interval|reminder\.interval|popup_interval(?:_30m)?|popup_reminder_interval|single_chat_interval(?:\.entry)?|single_chat_popup(?:\.|_)interval)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_interval_label
+    ownerElementKey: messages.special_follow.settings.popup_interval
+    label: 名称文案
+    description: 显示第一组“间隔时间”设置名称；名称区域属于父选择行命中范围，但不是独立 Trigger。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_parent_selector_row}
+    liveLocatorBinding: popup_interval_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 间隔时间
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.popup_interval_value
+    ownerElementKey: messages.special_follow.settings.popup_interval
+    label: 当前值
+    description: 显示单聊弹窗提醒的当前间隔；具体值仅进入观测，不承担独立动作。
+    controlType: text_label
+    semanticRole: current_value
+    capabilities: []
+    interactionBoundary: {actionable: false, function: presents_current_selector_value}
+    liveLocatorBinding: popup_interval_value
+    observationState: visible_non_actionable_current_value
+    observationDynamicValue: 1小时
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.popup_interval_chevron
+    ownerElementKey: messages.special_follow.settings.popup_interval
+    label: 选择箭头提示
+    description: 表示父行可进入间隔选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
+    controlType: icon
+    semanticRole: affordance
+    capabilities: []
+    interactionBoundary: {actionable: false, function: indicates_parent_selector_row_action}
+    liveLocatorBinding: popup_interval_chevron
+    observationState: visible_non_actionable_affordance
+    observationDynamicValue: null
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sms_phone_row
+    pageKey: messages.special_follow.settings
+    label: 短信或电话提醒设置项
+    description: 短信或电话提醒的总容器；页面只直接引用该容器，容器持有设置名称、帮助图标、帮助浮层和开关。
+    controlType: container
+    semanticRole: setting_group
+    capabilities: []
+    childElementKeys:
+      - messages.special_follow.settings.sms_phone_label
+      - messages.special_follow.settings.sms_phone_help
+      - messages.special_follow.settings.sms_phone_help_popover
+      - messages.special_follow.settings.sms_phone_toggle
+    compositionRoles:
+      label: messages.special_follow.settings.sms_phone_label
+      helpTrigger: messages.special_follow.settings.sms_phone_help
+      helpPopover: messages.special_follow.settings.sms_phone_help_popover
+      settingControl: messages.special_follow.settings.sms_phone_toggle
+    compositionProfile: help_toggle_row
+    interactionBoundary:
+      actionable: false
+      function: groups_setting_label_help_and_toggle
+    liveLocatorBinding: sms_phone_row
+    observationState: visible_with_help_popover
+    observationStateProperties: {enabled: null, actionable: false, helpPopoverVisible: true}
+    observationDynamicValue: null
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sms_phone_label
+    ownerElementKey: messages.special_follow.settings.sms_phone_row
+    label: 名称文案
+    aliases: [短信或电话提醒名称]
+    description: 显示设置名称“弹窗消息未读，短信/电话提醒我”；该文案只说明设置含义，不承担帮助或开关动作。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: describes_sibling_controls}
+    liveLocatorBinding: sms_phone_label
+    observationState: visible_non_actionable_label
+    observationStateProperties: {enabled: null, actionable: false}
+    observationDynamicValue: 弹窗消息未读，短信/电话提醒我
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sms_phone_toggle
+    ownerElementKey: messages.special_follow.settings.sms_phone_row
+    label: 开关
+    description: 开启或关闭弹窗消息未读时的短信或电话提醒。
+    controlType: toggle
+    semanticRole: setting
+    capabilities: [toggle_sms_phone_reminder]
+    liveLocatorBinding: sms_phone_toggle
+    risk: low
+    targetKeyPatterns:
+      - '(?:sms_phone_(?:reminder(?:[._]toggle)?|toggle|unread_toggle|alert(?:\.toggle)?|alert_toggle)|smsPhoneReminder\.toggle|sms_call_unread_toggle|reminder\.sms_phone|reminder\.sms_call_toggle|popup_sms_phone(?:_unread)?_toggle|external_reminder_toggle)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sms_phone_help
+    ownerElementKey: messages.special_follow.settings.sms_phone_row
+    label: 帮助图标
+    description: 显示短信或电话提醒的帮助浮层。
+    controlType: icon_button
+    semanticRole: help
+    capabilities: [open_sms_phone_help]
+    liveLocatorBinding: sms_phone_help
+    risk: safe
+    targetKeyPatterns:
+      - '(?:sms_phone_(?:reminder(?:\.help|_help)|help|unread_help|alert(?:\.help|_help))|smsPhoneReminder\.help|sms_call_unread_help|reminder\.sms_phone\.help|reminder\.sms_call(?:\.|_)help|popup_sms_phone_help|external_reminder_help)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sms_phone_help_popover
+    ownerElementKey: messages.special_follow.settings.sms_phone_row
+    label: 帮助浮层
+    aliases: [短信或电话提醒帮助说明文案泡泡框]
+    description: 展示短信或电话提醒规则的深灰色说明气泡；该浮层不是第二个帮助图标。
+    controlType: help_popover
+    semanticRole: help_content
+    capabilities: []
+    interactionBoundary: {actionable: false, function: presents_help_content}
+    liveLocatorBinding: sms_phone_help_popover
+    observationState: visible
+    observationStateProperties: {enabled: null, actionable: false, visible: true}
+    observationDynamicValue: 当特别关注人的弹窗消息在一段时间内未被处理时，系统将自动转换为电话或短信通知；每个特别关注人的消息每天最多可以提醒三次。
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sms_phone_interval
+    pageKey: messages.special_follow.settings
+    label: 短信或电话提醒间隔
+    description: 短信或电话提醒间隔选择行总容器；名称区域实测可触发父行，当前值与箭头不承担独立动作。
+    controlType: container
+    semanticRole: setting_group
+    capabilities: [open_sms_phone_interval_selector]
+    childElementKeys:
+      - messages.special_follow.settings.sms_phone_interval_label
+      - messages.special_follow.settings.sms_phone_interval_value
+      - messages.special_follow.settings.sms_phone_interval_chevron
+    compositionProfile: selector_row
+    compositionRoles:
+      label: messages.special_follow.settings.sms_phone_interval_label
+      currentValue: messages.special_follow.settings.sms_phone_interval_value
+      settingTrigger: '@self'
+      affordance: messages.special_follow.settings.sms_phone_interval_chevron
+    interactionBoundary: {actionable: true, function: opens_sms_phone_interval_selector_from_parent_row_hit_area}
+    liveLocatorBinding: sms_interval_row
+    risk: safe
+    targetKeyPatterns:
+      - '(?:sms_phone_interval(?:\.entry|_30m|_30_before_select_10|_10_selected)?|sms_phone_reminder(?:\.interval|_interval)|popup_sms_phone_interval|external_reminder_interval)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sms_phone_interval_label
+    ownerElementKey: messages.special_follow.settings.sms_phone_interval
+    label: 名称文案
+    description: 显示第二组“间隔时间”设置名称；名称区域属于父选择行命中范围，但不是独立 Trigger。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_parent_selector_row}
+    liveLocatorBinding: sms_interval_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 间隔时间
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sms_phone_interval_value
+    ownerElementKey: messages.special_follow.settings.sms_phone_interval
+    label: 当前值
+    description: 显示短信或电话提醒的当前间隔；具体值仅进入观测，不承担独立动作。
+    controlType: text_label
+    semanticRole: current_value
+    capabilities: []
+    interactionBoundary: {actionable: false, function: presents_current_selector_value}
+    liveLocatorBinding: sms_interval_value
+    observationState: visible_non_actionable_current_value
+    observationDynamicValue: 30分钟
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sms_phone_interval_chevron
+    ownerElementKey: messages.special_follow.settings.sms_phone_interval
+    label: 选择箭头提示
+    description: 表示父行可进入间隔选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
+    controlType: icon
+    semanticRole: affordance
+    capabilities: []
+    interactionBoundary: {actionable: false, function: indicates_parent_selector_row_action}
+    liveLocatorBinding: sms_interval_chevron
+    observationState: visible_non_actionable_affordance
+    observationDynamicValue: null
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.reminder_method
+    pageKey: messages.special_follow.settings
+    label: 提醒方式
+    description: 提醒方式选择行总容器；名称区域实测可触发父行，当前值与箭头不承担独立动作。
+    controlType: container
+    semanticRole: setting_group
+    capabilities: [open_reminder_method_selector]
+    childElementKeys:
+      - messages.special_follow.settings.reminder_method_label
+      - messages.special_follow.settings.reminder_method_value
+      - messages.special_follow.settings.reminder_method_chevron
+    compositionProfile: selector_row
+    compositionRoles:
+      label: messages.special_follow.settings.reminder_method_label
+      currentValue: messages.special_follow.settings.reminder_method_value
+      settingTrigger: '@self'
+      affordance: messages.special_follow.settings.reminder_method_chevron
+    interactionBoundary: {actionable: true, function: opens_reminder_method_selector_from_parent_row_hit_area}
+    liveLocatorBinding: reminder_method_row
+    risk: safe
+    targetKeyPatterns:
+      - '(?:reminder_method(?:_sms)?|sms_phone_method|sms_phone_reminder\.method|notification_method|alert_method\.entry)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.reminder_method_label
+    ownerElementKey: messages.special_follow.settings.reminder_method
+    label: 名称文案
+    description: 显示“提醒方式”名称；名称区域属于父选择行命中范围，但不是独立 Trigger。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_parent_selector_row}
+    liveLocatorBinding: reminder_method_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 提醒方式
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.reminder_method_value
+    ownerElementKey: messages.special_follow.settings.reminder_method
+    label: 当前值
+    description: 显示当前提醒方式；具体值仅进入观测，不承担独立动作。
+    controlType: text_label
+    semanticRole: current_value
+    capabilities: []
+    interactionBoundary: {actionable: false, function: presents_current_selector_value}
+    liveLocatorBinding: reminder_method_value
+    observationState: visible_non_actionable_current_value
+    observationDynamicValue: 电话
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.reminder_method_chevron
+    ownerElementKey: messages.special_follow.settings.reminder_method
+    label: 选择箭头提示
+    description: 表示父行可进入提醒方式选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
+    controlType: icon
+    semanticRole: affordance
+    capabilities: []
+    interactionBoundary: {actionable: false, function: indicates_parent_selector_row_action}
+    liveLocatorBinding: reminder_method_chevron
+    observationState: visible_non_actionable_affordance
+    observationDynamicValue: null
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.night_dnd_row
+    pageKey: messages.special_follow.settings
+    label: 夜间免打扰
+    description: 夜间免打扰设置行总容器，持有名称、说明文案和独立开关。
+    controlType: container
+    semanticRole: setting_group
+    capabilities: []
+    childElementKeys:
+      - messages.special_follow.settings.night_dnd_label
+      - messages.special_follow.settings.night_dnd_secondary_text
+      - messages.special_follow.settings.night_dnd_toggle
+    compositionProfile: toggle_row
+    compositionRoles:
+      label: messages.special_follow.settings.night_dnd_label
+      secondaryText: messages.special_follow.settings.night_dnd_secondary_text
+      settingControl: messages.special_follow.settings.night_dnd_toggle
+    interactionBoundary: {actionable: false, function: groups_night_dnd_label_explanation_and_toggle}
+    liveLocatorBinding: night_dnd_row
+    observationState: visible_non_actionable_container
+    observationDynamicValue: null
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.night_dnd_label
+    ownerElementKey: messages.special_follow.settings.night_dnd_row
+    label: 名称文案
+    description: 显示“夜间免打扰”设置名称，不承担开关动作。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_sibling_toggle}
+    liveLocatorBinding: night_dnd_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 夜间免打扰
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.night_dnd_secondary_text
+    ownerElementKey: messages.special_follow.settings.night_dnd_row
+    label: 说明文案
+    description: 说明夜间免打扰生效时段与通知行为，不承担动作。
+    controlType: text_label
+    semanticRole: secondary_text
+    capabilities: []
+    interactionBoundary: {actionable: false, function: explains_sibling_setting_control}
+    liveLocatorBinding: night_dnd_secondary_text
+    observationState: visible_non_actionable_secondary_text
+    observationDynamicValue: 开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.night_dnd_toggle
+    ownerElementKey: messages.special_follow.settings.night_dnd_row
+    label: 开关
+    description: 开启或关闭夜间免打扰。
+    controlType: toggle
+    semanticRole: setting
+    capabilities: [toggle_night_dnd]
+    liveLocatorBinding: night_dnd_toggle
+    risk: low
+    targetKeyPatterns:
+      - '(?:night_dnd(?:\.toggle|_toggle)?|night_do_not_disturb(?:_toggle)?|night_quiet\.toggle)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.group_dnd_row
+    pageKey: messages.special_follow.settings
+    label: 免打扰群通知设置项
+    description: 免打扰群通知的总容器；页面只直接引用该容器，容器持有设置名称、帮助图标、帮助浮层和开关。
+    controlType: container
+    semanticRole: setting_group
+    capabilities: []
+    childElementKeys:
+      - messages.special_follow.settings.group_dnd_label
+      - messages.special_follow.settings.group_dnd_help
+      - messages.special_follow.settings.group_dnd_help_popover
+      - messages.special_follow.settings.group_dnd_toggle
+    compositionRoles:
+      label: messages.special_follow.settings.group_dnd_label
+      helpTrigger: messages.special_follow.settings.group_dnd_help
+      helpPopover: messages.special_follow.settings.group_dnd_help_popover
+      settingControl: messages.special_follow.settings.group_dnd_toggle
+    compositionProfile: help_toggle_row
+    interactionBoundary:
+      actionable: false
+      function: groups_setting_label_help_and_toggle
+    liveLocatorBinding: group_dnd_row
+    observationState: visible_with_help_popover
+    observationStateProperties: {enabled: null, actionable: false, helpPopoverVisible: true}
+    observationDynamicValue: null
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.group_dnd_label
+    ownerElementKey: messages.special_follow.settings.group_dnd_row
+    label: 名称文案
+    aliases: [免打扰群通知名称]
+    description: 显示设置名称“免打扰群通知”；该文案只说明设置含义，不承担帮助或开关动作。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: describes_sibling_controls}
+    liveLocatorBinding: group_dnd_label
+    observationState: visible_non_actionable_label
+    observationStateProperties: {enabled: null, actionable: false}
+    observationDynamicValue: 免打扰群通知
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.group_dnd_toggle
+    ownerElementKey: messages.special_follow.settings.group_dnd_row
+    label: 开关
+    description: 开启或关闭免打扰群的特别关注通知。
+    controlType: toggle
+    semanticRole: setting
+    capabilities: [toggle_group_dnd]
+    liveLocatorBinding: group_dnd_toggle
+    risk: low
+    targetKeyPatterns:
+      - '(?:dnd_group_(?:notice_|notification_|notifications_)?toggle|dnd_group_notification|group_dnd(?:\.toggle|_toggle|_notification)?|group_do_not_disturb(?:_toggle)?|group_notification_(?:dnd|dnd_toggle|do_not_disturb)|group_quiet\.toggle|reminder\.muted_group)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.group_dnd_help
+    ownerElementKey: messages.special_follow.settings.group_dnd_row
+    label: 帮助图标
+    description: 显示免打扰群通知的帮助浮层。
+    controlType: icon_button
+    semanticRole: help
+    capabilities: [open_group_dnd_help]
+    liveLocatorBinding: group_dnd_help
+    risk: safe
+    targetKeyPatterns:
+      - '(?:dnd_group_(?:notice_|notification_|notifications_)?help|group_dnd(?:\.help|_help|_notification_help)|group_do_not_disturb_help|group_notification_(?:dnd_help|do_not_disturb_help|help)|group_quiet\.help|reminder\.muted_group\.help)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.group_dnd_help_popover
+    ownerElementKey: messages.special_follow.settings.group_dnd_row
+    label: 帮助浮层
+    aliases: [免打扰群通知帮助说明文案泡泡框]
+    description: 展示免打扰群通知规则的深灰色说明气泡；该浮层不是第二个帮助图标。
+    controlType: help_popover
+    semanticRole: help_content
+    capabilities: []
+    interactionBoundary: {actionable: false, function: presents_help_content}
+    liveLocatorBinding: group_dnd_help_popover
+    observationState: visible
+    observationStateProperties: {enabled: null, actionable: false, visible: true}
+    observationDynamicValue: 开启后，设置消息免打扰的群，特别关注人新消息保持正常通知。
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sound
+    pageKey: messages.special_follow.settings
+    label: 特别关注提示音
+    description: 特别关注提示音选择行总容器；名称区域实测可触发父行，当前值与箭头不承担独立动作。
+    controlType: container
+    semanticRole: setting_group
+    capabilities: [open_sound_selector]
+    childElementKeys:
+      - messages.special_follow.settings.sound_label
+      - messages.special_follow.settings.sound_value
+      - messages.special_follow.settings.sound_chevron
+    compositionProfile: selector_row
+    compositionRoles:
+      label: messages.special_follow.settings.sound_label
+      currentValue: messages.special_follow.settings.sound_value
+      settingTrigger: '@self'
+      affordance: messages.special_follow.settings.sound_chevron
+    interactionBoundary: {actionable: true, function: opens_sound_selector_from_parent_row_hit_area}
+    liveLocatorBinding: sound_row
+    risk: safe
+    targetKeyPatterns:
+      - '(?:special_follow_sound(?:\.entry|_entry)?|reminder\.sound)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_label
+    ownerElementKey: messages.special_follow.settings.sound
+    label: 名称文案
+    description: 显示“特别关注提示音”设置名称；名称区域属于父选择行命中范围，但不是独立 Trigger。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_parent_selector_row}
+    liveLocatorBinding: sound_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 特别关注提示音
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sound_value
+    ownerElementKey: messages.special_follow.settings.sound
+    label: 当前值
+    description: 显示当前特别关注提示音；具体值仅进入观测，不承担独立动作。
+    controlType: text_label
+    semanticRole: current_value
+    capabilities: []
+    interactionBoundary: {actionable: false, function: presents_current_selector_value}
+    liveLocatorBinding: sound_value
+    observationState: visible_non_actionable_current_value
+    observationDynamicValue: 门铃
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sound_chevron
+    ownerElementKey: messages.special_follow.settings.sound
+    label: 选择箭头提示
+    description: 表示父行可进入提示音选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
+    controlType: icon
+    semanticRole: affordance
+    capabilities: []
+    interactionBoundary: {actionable: false, function: indicates_parent_selector_row_action}
+    liveLocatorBinding: sound_chevron
+    observationState: visible_non_actionable_affordance
+    observationDynamicValue: null
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.scroll
+    pageKey: messages.special_follow.settings
+    label: 设置页纵向滚动
+    description: 纵向滚动设置页以查看视口外设置项。
+    controlType: scroll_region
+    semanticRole: navigation
+    capabilities: [scroll_settings]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:page_vertical_scroll|special_follow_settings_scroll)'
+    activation: executed_verified
+
+  - key: messages.special_follow.people.back
+    pageKey: messages.special_follow.people
+    label: 返回设置
+    description: 返回特别关注提醒设置页。
+    controlType: back
+    semanticRole: navigation
+    capabilities: [navigate_back]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:back|members\.back|all_members_back)'
+    activation: observed_not_activated
+
+  - key: messages.special_follow.people.close
+    pageKey: messages.special_follow.people
+    label: 关闭全部成员
+    description: 关闭全部成员页面并返回特别关注页。
+    controlType: close
+    semanticRole: navigation
+    capabilities: [close_people]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:close|members\.close|all_members_close)'
+    activation: executed_verified
+
+  - key: messages.special_follow.people.member
+    pageKey: messages.special_follow.people
+    label: 特别关注成员
+    description: 成员行总容器；成员头像和姓名是动态业务内容，成员行与右侧移除按钮是两个独立动作边界。
+    controlType: container
+    semanticRole: member_row
+    capabilities: [activate_member_row]
+    childElementKeys:
+      - messages.special_follow.people.remove
+    compositionRoles:
+      memberTrigger: '@self'
+      removeTrigger: messages.special_follow.people.remove
+    interactionBoundary: {actionable: true, function: activates_member_row_outside_remove_button}
+    liveLocatorBinding: people_member_row
+    risk: safe
+    targetKeyPatterns:
+      - '(?:member_lian_liangwei|members\.member_lian_liangwei|member\.lianliangwei\.row|all_members_lian_liangwei_row_body)'
+    activation: executed_verified
+
+  - key: messages.special_follow.people.remove
+    ownerElementKey: messages.special_follow.people.member
+    label: 移除成员
+    description: 打开移除特别关注成员确认弹窗。
+    controlType: button
+    semanticRole: action
+    capabilities: [open_remove_confirmation]
+    interactionBoundary: {actionable: true, function: opens_remove_confirmation}
+    liveLocatorBinding: people_remove
+    risk: low
+    targetKeyPatterns:
+      - '(?:remove_(?:member_)?lian_liangwei|members\.remove_lian_liangwei|member\.lianliangwei\.remove)'
+    activation: executed_verified
+
+  - key: messages.special_follow.people.remove_confirmation.cancel
+    pageKey: messages.special_follow.people.remove_confirmation
+    label: 取消移除
+    description: 取消移除并返回保留该成员的全部成员页。
+    controlType: button
+    semanticRole: action
+    capabilities: [cancel_remove_member]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:remove_confirmation\.cancel|remove_confirm\.cancel|cancel_remove_member)'
+    activation: executed_verified
+
+  - key: messages.special_follow.people.remove_confirmation.confirm
+    pageKey: messages.special_follow.people.remove_confirmation
+    label: 确定移除
+    description: 确认移除该特别关注成员。
+    controlType: button
+    semanticRole: action
+    capabilities: [confirm_remove_member]
+    risk: low
+    targetKeyPatterns:
+      - '(?:remove_confirmation\.confirm|remove_confirm\.confirm|confirm_remove_member)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_interval_selector.option_10_minutes
+    pageKey: messages.special_follow.settings.popup_interval_selector
+    label: 10分钟
+    description: 将单聊弹窗提醒间隔设为10分钟。
+    controlType: radio
+    semanticRole: setting
+    capabilities: [select_popup_interval_10_minutes]
+    interactionBoundary: {actionable: true, function: selects_popup_interval_10_minutes_from_full_option_row}
+    liveLocatorBinding: popup_option_10
+    risk: low
+    targetKeyPatterns:
+      - '(?:interval\.option_10m|interval_10_minutes|interval_10m|reminder_interval_10m|popup_interval_10)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_interval_selector.option_30_minutes
+    pageKey: messages.special_follow.settings.popup_interval_selector
+    label: 30分钟
+    description: 将单聊弹窗提醒间隔设为30分钟。
+    controlType: radio
+    semanticRole: setting
+    capabilities: [select_popup_interval_30_minutes]
+    interactionBoundary: {actionable: true, function: selects_popup_interval_30_minutes_from_full_option_row}
+    liveLocatorBinding: popup_option_30
+    risk: low
+    targetKeyPatterns:
+      - '(?:interval\.option_30m|interval_30_minutes|interval_30m|reminder_interval_30m)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_interval_selector.option_1_hour
+    pageKey: messages.special_follow.settings.popup_interval_selector
+    label: 1小时
+    description: 将单聊弹窗提醒间隔设为1小时。
+    controlType: radio
+    semanticRole: setting
+    capabilities: [select_popup_interval_1_hour]
+    interactionBoundary: {actionable: true, function: selects_popup_interval_1_hour_from_full_option_row}
+    liveLocatorBinding: popup_option_1h
+    risk: low
+    targetKeyPatterns:
+      - '(?:interval\.option_1h|interval_1_hour|interval_1h|reminder_interval_1h|popup_interval_1_hour)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_interval_selector.option_4_hours
+    pageKey: messages.special_follow.settings.popup_interval_selector
+    label: 4小时
+    description: 将单聊弹窗提醒间隔设为4小时。
+    controlType: radio
+    semanticRole: setting
+    capabilities: [select_popup_interval_4_hours]
+    interactionBoundary: {actionable: true, function: selects_popup_interval_4_hours_from_full_option_row}
+    liveLocatorBinding: popup_option_4h
+    risk: low
+    targetKeyPatterns:
+      - '(?:interval\.option_4h|interval_4_hours|interval_4h|reminder_interval_4h|popup_interval_4_hours)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_interval_selector.cancel
+    pageKey: messages.special_follow.settings.popup_interval_selector
+    label: 取消
+    description: 取消间隔选择并关闭面板。
+    controlType: close
+    semanticRole: navigation
+    capabilities: [cancel_popup_interval_selector]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:interval\.cancel|cancel_interval_(?:panel|picker))'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.popup_interval_selector.backdrop
+    pageKey: messages.special_follow.settings.popup_interval_selector
+    label: 背景遮罩
+    description: 选择面板外的背景遮罩关闭区域。
+    controlType: close
+    semanticRole: navigation
+    capabilities: [dismiss_popup_interval_selector]
+    liveLocatorBinding: popup_backdrop_v301
+    risk: safe
+    targetKeys: [interval.backdrop]
+    activation: observed_not_activated
+
+  - key: messages.special_follow.settings.sms_phone_interval_selector.option_10_minutes
+    pageKey: messages.special_follow.settings.sms_phone_interval_selector
+    label: 10分钟
+    description: 将短信或电话提醒间隔设为10分钟。
+    controlType: radio
+    semanticRole: setting
+    capabilities: [select_sms_phone_interval_10_minutes]
+    interactionBoundary: {actionable: true, function: selects_sms_phone_interval_10_minutes_from_full_option_row}
+    liveLocatorBinding: sms_option_10
+    risk: low
+    targetKeyPatterns:
+      - '(?:interval_10_minutes|sms_phone_interval_10_minutes)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sms_phone_interval_selector.option_30_minutes
+    pageKey: messages.special_follow.settings.sms_phone_interval_selector
+    label: 30分钟
+    description: 将短信或电话提醒间隔设为30分钟。
+    controlType: radio
+    semanticRole: setting
+    capabilities: [select_sms_phone_interval_30_minutes]
+    interactionBoundary: {actionable: true, function: selects_sms_phone_interval_30_minutes_from_full_option_row}
+    liveLocatorBinding: sms_option_30
+    risk: low
+    targetKeyPatterns:
+      - '(?:interval_30_minutes|sms_phone_interval_30_minutes)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sms_phone_interval_selector.cancel
+    pageKey: messages.special_follow.settings.sms_phone_interval_selector
+    label: 取消
+    description: 取消短信或电话提醒间隔选择并关闭面板。
+    controlType: close
+    semanticRole: navigation
+    capabilities: [cancel_sms_phone_interval_selector]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:cancel_interval_(?:panel|picker)|close_interval_panel)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.reminder_method_selector.sms
+    pageKey: messages.special_follow.settings.reminder_method_selector
+    label: 短信
+    description: 将提醒方式设为短信。
+    controlType: radio
+    semanticRole: setting
+    capabilities: [select_reminder_method_sms]
+    interactionBoundary: {actionable: true, function: selects_sms_from_full_option_row}
+    liveLocatorBinding: reminder_method_sms_row
+    risk: low
+    targetKeys: [reminder_method_sms]
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.reminder_method_selector.phone
+    pageKey: messages.special_follow.settings.reminder_method_selector
+    label: 电话
+    description: 将提醒方式设为电话。
+    controlType: radio
+    semanticRole: setting
+    capabilities: [select_reminder_method_phone]
+    interactionBoundary: {actionable: true, function: selects_phone_from_full_option_row}
+    liveLocatorBinding: reminder_method_phone_row
+    risk: low
+    targetKeys: [reminder_method_phone]
+    preferredFrameRefs: [01KYHRM2R1Y4C28D2PAA5X4FQ1]
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.reminder_method_selector.cancel
+    pageKey: messages.special_follow.settings.reminder_method_selector
+    label: 取消
+    description: 取消提醒方式选择并关闭面板。
+    controlType: close
+    semanticRole: navigation
+    capabilities: [cancel_reminder_method_selector]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:cancel_reminder_method|reminder_method_cancel)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.default
+    pageKey: messages.special_follow.settings.sound_selector
+    label: 默认提示音
+    description: 默认提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
+    controlType: container
+    semanticRole: selection_option_group
+    capabilities: [select_sound_default]
+    childElementKeys:
+      - messages.special_follow.settings.sound_selector.default_label
+      - messages.special_follow.settings.sound_selector.preview_default
+    compositionRoles:
+      selectionTrigger: '@self'
+      label: messages.special_follow.settings.sound_selector.default_label
+      previewTrigger: messages.special_follow.settings.sound_selector.preview_default
+    interactionBoundary: {actionable: true, function: selects_default_sound_outside_preview_button}
+    liveLocatorBinding: sound_default_row
+    risk: low
+    targetKeyPatterns:
+      - '(?:sound_default(?:_option|_radio)?|sound\.default\.(?:option|radio|select))'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.wave
+    pageKey: messages.special_follow.settings.sound_selector
+    label: 波浪提示音
+    description: 波浪提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
+    controlType: container
+    semanticRole: selection_option_group
+    capabilities: [select_sound_wave]
+    childElementKeys:
+      - messages.special_follow.settings.sound_selector.wave_label
+      - messages.special_follow.settings.sound_selector.preview_wave
+    compositionRoles:
+      selectionTrigger: '@self'
+      label: messages.special_follow.settings.sound_selector.wave_label
+      previewTrigger: messages.special_follow.settings.sound_selector.preview_wave
+    interactionBoundary: {actionable: true, function: selects_wave_sound_outside_preview_button}
+    liveLocatorBinding: sound_wave_row
+    risk: low
+    targetKeyPatterns:
+      - '(?:sound_wave(?:_option|_radio)?|sound\.wave\.(?:option|radio|select))'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.briefing
+    pageKey: messages.special_follow.settings.sound_selector
+    label: 简报提示音
+    description: 简报提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
+    controlType: container
+    semanticRole: selection_option_group
+    capabilities: [select_sound_briefing]
+    childElementKeys:
+      - messages.special_follow.settings.sound_selector.briefing_label
+      - messages.special_follow.settings.sound_selector.preview_briefing
+    compositionRoles:
+      selectionTrigger: '@self'
+      label: messages.special_follow.settings.sound_selector.briefing_label
+      previewTrigger: messages.special_follow.settings.sound_selector.preview_briefing
+    interactionBoundary: {actionable: true, function: selects_briefing_sound_outside_preview_button}
+    liveLocatorBinding: sound_briefing_row
+    risk: low
+    targetKeyPatterns:
+      - '(?:sound_briefing(?:_option|_radio)?|sound\.brief(?:ing)?\.(?:option|radio|select))'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.bell
+    pageKey: messages.special_follow.settings.sound_selector
+    label: 门铃提示音
+    description: 门铃提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
+    controlType: container
+    semanticRole: selection_option_group
+    capabilities: [select_sound_bell]
+    childElementKeys:
+      - messages.special_follow.settings.sound_selector.bell_label
+      - messages.special_follow.settings.sound_selector.preview_bell
+    compositionRoles:
+      selectionTrigger: '@self'
+      label: messages.special_follow.settings.sound_selector.bell_label
+      previewTrigger: messages.special_follow.settings.sound_selector.preview_bell
+    interactionBoundary: {actionable: true, function: selects_bell_sound_outside_preview_button}
+    liveLocatorBinding: sound_bell_row
+    risk: low
+    targetKeyPatterns:
+      - '(?:sound_(?:doorbell|bell)(?:_option|_radio)?|sound\.doorbell\.(?:option|radio|select))'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.default_label
+    ownerElementKey: messages.special_follow.settings.sound_selector.default
+    label: 名称文案
+    description: 显示“默认”提示音选项名称，不承担独立动作。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_parent_sound_option}
+    liveLocatorBinding: sound_default_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 默认
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sound_selector.wave_label
+    ownerElementKey: messages.special_follow.settings.sound_selector.wave
+    label: 名称文案
+    description: 显示“波浪”提示音选项名称，不承担独立动作。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_parent_sound_option}
+    liveLocatorBinding: sound_wave_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 波浪
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sound_selector.briefing_label
+    ownerElementKey: messages.special_follow.settings.sound_selector.briefing
+    label: 名称文案
+    description: 显示“简报”提示音选项名称，不承担独立动作。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_parent_sound_option}
+    liveLocatorBinding: sound_briefing_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 简报
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sound_selector.bell_label
+    ownerElementKey: messages.special_follow.settings.sound_selector.bell
+    label: 名称文案
+    description: 显示“门铃”提示音选项名称，不承担独立动作。
+    controlType: text_label
+    semanticRole: description
+    capabilities: []
+    interactionBoundary: {actionable: false, function: labels_parent_sound_option}
+    liveLocatorBinding: sound_bell_label
+    observationState: visible_non_actionable_label
+    observationDynamicValue: 门铃
+    activation: observed_not_activated
+    risk: safe
+
+  - key: messages.special_follow.settings.sound_selector.preview_default
+    ownerElementKey: messages.special_follow.settings.sound_selector.default
+    label: 试听默认提示音
+    description: 试听默认提示音。
+    controlType: icon_button
+    semanticRole: action
+    capabilities: [preview_sound_default]
+    liveLocatorBinding: sound_default_preview
+    risk: safe
+    targetKeyPatterns:
+      - '(?:preview_(?:sound_)?default|sound_default_preview|sound\.default\.preview)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.preview_wave
+    ownerElementKey: messages.special_follow.settings.sound_selector.wave
+    label: 试听波浪提示音
+    description: 试听波浪提示音。
+    controlType: icon_button
+    semanticRole: action
+    capabilities: [preview_sound_wave]
+    liveLocatorBinding: sound_wave_preview
+    risk: safe
+    targetKeyPatterns:
+      - '(?:preview_(?:sound_)?wave|sound_wave_preview|sound\.wave\.preview)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.preview_briefing
+    ownerElementKey: messages.special_follow.settings.sound_selector.briefing
+    label: 试听简报提示音
+    description: 试听简报提示音。
+    controlType: icon_button
+    semanticRole: action
+    capabilities: [preview_sound_briefing]
+    liveLocatorBinding: sound_briefing_preview
+    risk: safe
+    targetKeyPatterns:
+      - '(?:preview_(?:sound_)?briefing|sound_briefing_preview|sound\.brief(?:ing)?\.preview)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.preview_bell
+    ownerElementKey: messages.special_follow.settings.sound_selector.bell
+    label: 试听门铃提示音
+    description: 试听门铃提示音。
+    controlType: icon_button
+    semanticRole: action
+    capabilities: [preview_sound_bell]
+    liveLocatorBinding: sound_bell_preview
+    risk: safe
+    targetKeyPatterns:
+      - '(?:preview_(?:sound_)?(?:doorbell|bell)|sound_(?:doorbell|bell)_preview|sound\.(?:doorbell|bell)\.preview)'
+    activation: executed_verified
+
+  - key: messages.special_follow.settings.sound_selector.cancel
+    pageKey: messages.special_follow.settings.sound_selector
+    label: 取消
+    description: 取消提示音选择并关闭面板。
+    controlType: close
+    semanticRole: navigation
+    capabilities: [cancel_sound_selector]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:cancel_sound_(?:panel|picker)|sound_panel_cancel|sound\.panel\.cancel|sound\.cancel)'
+    activation: executed_verified
+
+  - key: boundary.common.person_picker.close
+    pageKey: boundary.common.person_picker
+    label: 关闭选人组件
+    description: 关闭APP级通用选人组件。
+    controlType: close
+    semanticRole: navigation
+    capabilities: [close_person_picker]
+    risk: safe
+    targetKeys: [close_person_picker]
+    activation: observed_not_activated
+
+  - key: boundary.common.person_picker.person
+    pageKey: boundary.common.person_picker
+    label: 选择人员
+    description: 在通用选人组件中选择一名人员，以完成特别关注添加流程。
+    controlType: checkbox
+    semanticRole: action
+    capabilities: [select_person]
+    risk: safe
+    targetKeyPatterns:
+      - '(?:select_lian_liangwei|person_lian_liangwei_checkbox)'
+    activation: executed_verified
+
+  - key: boundary.common.person_picker.confirm
+    pageKey: boundary.common.person_picker
+    label: 确定选择
+    description: 确认已选择人员并返回特别关注提醒设置页。
+    controlType: button
+    semanticRole: action
+    capabilities: [confirm_person_selection]
+    risk: low
+    targetKeyPatterns:
+      - '(?:confirm_person_selection|confirm_selected_people|confirm_member_selection)'
+    activation: executed_verified
+
+  - key: boundary.common.conversation.back
+    pageKey: boundary.common.conversation
+    label: 返回特别关注
+    description: 会话页可见的返回控件；本次实际往返使用 AndroidAgent 系统返回动作。
+    controlType: back
+    semanticRole: navigation
+    capabilities: [navigate_back]
+    risk: safe
+    targetKeys: [conversation_back]
+    activation: observed_not_activated
+
+transitions:
+  - key: messages.open_special_follow
+    fromPageKey: messages.root
+    triggerElementKey: messages.root.special_follow_entry
+    capability: open_special_follow
+    toPageKey: messages.special_follow
+    actionTargetKeys: [messages.toolbar.heart, messages_toolbar_heart, messages_toolbar_special_follow_highlighted]
+    fromStateHints: [messages.root, messages.root.no_special_follow_unread, messages.root.with_special_follow_unread_highlight]
+    toStateHints: [messages.special_follow.initial, messages.special_follow.empty, messages.special_follow.with_dynamic_unread_for_people]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.close
+    fromPageKey: messages.special_follow
+    triggerElementKey: messages.special_follow.collapse
+    capability: close_special_follow
+    toPageKey: messages.root
+    actionTargetKeys: [special_follow_back, special_follow_collapse_with_unread]
+    fromStateHints: [messages.special_follow.empty_returned, messages.special_follow.with_dynamic_unread_after_settings]
+    toStateHints: [messages.root.returned_from_special_follow, messages.root.with_special_follow_unread_highlight]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.open_settings
+    fromPageKey: messages.special_follow
+    triggerElementKey: messages.special_follow.settings_entry
+    capability: open_special_follow_settings
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [special_follow_setup, special_follow_settings_from_unread, special_follow_settings_for_people, special_follow_settings_for_help_close]
+    fromStateHints: [messages.special_follow.empty, messages.special_follow.with_unread_member, messages.special_follow.with_dynamic_unread_for_people, messages.special_follow.with_unread_before_help_close]
+    toStateHints: [messages.special_follow.settings.top, messages.special_follow.settings.with_member_for_add, messages.special_follow.settings.with_member_for_people, messages.special_follow.settings.before_help_close]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.return_via_ui
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.back
+    capability: navigate_back
+    toPageKey: messages.special_follow
+    actionTargetKeys: [settings_back]
+    fromStateHints: [messages.special_follow.settings.sound.bell]
+    toStateHints: [messages.special_follow.empty_returned]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.open_people
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.members_chevron
+    capability: open_special_follow_people
+    toPageKey: messages.special_follow.people
+    actionTargetKeys: [special_follows_chevron, special_follow_members_chevron, special_follow_members_chevron_for_member_row]
+    fromStateHints: [messages.special_follow.settings.top, messages.special_follow.settings.with_member, messages.special_follow.settings.with_member_for_people]
+    toStateHints: [messages.special_follow.people.empty, messages.special_follow.people.nonempty, messages.special_follow.people.nonempty_before_member_tap]
+    reversible: true
+    risk: safe
+
+  - key: transition.messages.special_follow.people.close
+    fromPageKey: messages.special_follow.people
+    triggerElementKey: messages.special_follow.people.close
+    capability: close_people
+    toPageKey: messages.special_follow
+    actionTargetKeys: [all_members_close]
+    fromStateHints: [messages.special_follow.people.empty]
+    toStateHints: [messages.special_follow.empty_after_people_close]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.people.activate_member
+    fromPageKey: messages.special_follow.people
+    triggerElementKey: messages.special_follow.people.member
+    capability: activate_member_row
+    toPageKey: messages.special_follow.people
+    actionTargetKeys: [all_members_lian_liangwei_row_body]
+    fromStateHints: [messages.special_follow.people.nonempty_before_member_tap]
+    toStateHints: [messages.special_follow.people.nonempty_after_member_tap]
+    reversible: true
+    risk: safe
+    sideEffects: []
+
+  - key: messages.special_follow.people.open_remove_confirmation
+    fromPageKey: messages.special_follow.people
+    triggerElementKey: messages.special_follow.people.remove
+    capability: open_remove_confirmation
+    toPageKey: messages.special_follow.people.remove_confirmation
+    actionTargetKeys: [remove_member_lian_liangwei]
+    fromStateHints: [messages.special_follow.people.after_cancel_remove]
+    toStateHints: [messages.special_follow.people.remove_dialog_again]
+    reversible: true
+    risk: low
+
+  - key: transition.messages.special_follow.people.remove_confirmation.cancel
+    fromPageKey: messages.special_follow.people.remove_confirmation
+    triggerElementKey: messages.special_follow.people.remove_confirmation.cancel
+    capability: cancel_remove_member
+    toPageKey: messages.special_follow.people
+    actionTargetKeys: [cancel_remove_member]
+    fromStateHints: [messages.special_follow.people.remove_dialog]
+    toStateHints: [messages.special_follow.people.after_cancel_remove]
+    reversible: true
+    risk: safe
+
+  - key: transition.messages.special_follow.people.remove_confirmation.confirm
+    fromPageKey: messages.special_follow.people.remove_confirmation
+    triggerElementKey: messages.special_follow.people.remove_confirmation.confirm
+    capability: confirm_remove_member
+    toPageKey: messages.special_follow.people
+    actionTargetKeys: [confirm_remove_member]
+    fromStateHints: [messages.special_follow.people.remove_dialog_again]
+    toStateHints: [messages.special_follow.people.empty_after_remove]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_membership_change]
+
+  - key: messages.special_follow.open_conversation_from_row
+    fromPageKey: messages.special_follow
+    triggerElementKey: messages.special_follow.conversation_entry
+    capability: open_special_follow_conversation
+    toPageKey: boundary.common.conversation
+    actionTargetKeys: [special_follow_read_conversation_time_1028]
+    fromStateHints: [messages.special_follow.with_read_lian_liangwei]
+    toStateHints: [boundary.common.conversation.lian_liangwei]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.open_conversation_from_member
+    fromPageKey: messages.special_follow
+    triggerElementKey: messages.special_follow.member_entry
+    capability: open_followed_member_conversation
+    toPageKey: boundary.common.conversation
+    actionTargetKeys: [special_follow_member_lian_liangwei]
+    fromStateHints: [messages.special_follow.with_read_lian_liangwei]
+    toStateHints: [boundary.common.conversation.lian_liangwei_from_member]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.open_person_picker
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.add_member
+    capability: open_person_picker
+    toPageKey: boundary.common.person_picker
+    actionTargetKeys: [add_special_follow_from_nonempty_settings]
+    fromStateHints: [messages.special_follow.settings.with_member_for_add]
+    toStateHints: [boundary.common.person_selector.from_special_follow_add]
+    reversible: true
+    risk: safe
+
+  - key: boundary.common.person_picker.select_person
+    fromPageKey: boundary.common.person_picker
+    triggerElementKey: boundary.common.person_picker.person
+    capability: select_person
+    toPageKey: boundary.common.person_picker
+    actionTargetKeys: [select_lian_liangwei]
+    fromStateHints: [common.person_picker.initial]
+    toStateHints: [common.person_picker.one_selected]
+    reversible: true
+    risk: safe
+    sideEffects: [temporary_selection]
+
+  - key: transition.boundary.common.person_picker.confirm
+    fromPageKey: boundary.common.person_picker
+    triggerElementKey: boundary.common.person_picker.confirm
+    capability: confirm_person_selection
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [confirm_member_selection]
+    fromStateHints: [common.person_picker.one_selected]
+    toStateHints: [messages.special_follow.settings.with_member]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_membership_change]
+
+  - key: messages.special_follow.settings.open_popup_help
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.popup_reminder_help
+    capability: open_popup_reminder_help
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [popup_reminder_help, popup_reminder_help_for_close]
+    fromStateHints: [messages.special_follow.settings, messages.special_follow.settings.before_help_close]
+    toStateHints: [messages.special_follow.settings.popup_reminder_help, messages.special_follow.settings.help.popup_before_close]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.help.dismiss_popup
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.popup_reminder_help
+    capability: dismiss_popup_help
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [popup_reminder_help_toggle_close]
+    fromStateHints: [messages.special_follow.settings.help.popup_before_close]
+    toStateHints: [messages.special_follow.settings.after_help_dismissed]
+    reversible: true
+    risk: safe
+    sideEffects: [temporary_display_state]
+
+  - key: messages.special_follow.settings.help.show_sms_phone
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.sms_phone_help
+    capability: open_sms_phone_help
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [sms_phone_reminder_help]
+    fromStateHints: [messages.special_follow.settings.transient_help_tolerant]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder_help]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.help.show_group_dnd
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.group_dnd_help
+    capability: open_group_dnd_help
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [dnd_group_help]
+    fromStateHints: [messages.special_follow.settings.transient_help_tolerant]
+    toStateHints: [messages.special_follow.settings.dnd_group_help]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.open_popup_interval_selector
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.popup_interval
+    capability: open_popup_interval_selector
+    toPageKey: messages.special_follow.settings.popup_interval_selector
+    actionTargetKeys: [reminder_interval, popup_interval]
+    fromStateHints: [messages.special_follow.settings, messages.special_follow.settings.popup_interval_10, messages.special_follow.settings.popup_interval_1_hour, messages.special_follow.settings.popup_interval_4_hours]
+    toStateHints: [messages.special_follow.settings.reminder_interval.sheet, messages.special_follow.settings.popup_interval.selector_10, messages.special_follow.settings.popup_interval.selector_1_hour, messages.special_follow.settings.popup_interval.selector_4_hours]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.popup_interval_selector.select_30_minutes
+    fromPageKey: messages.special_follow.settings.popup_interval_selector
+    triggerElementKey: messages.special_follow.settings.popup_interval_selector.option_30_minutes
+    capability: select_popup_interval_30_minutes
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [interval_30_minutes]
+    fromStateHints: [messages.special_follow.settings.reminder_interval.sheet]
+    toStateHints: [messages.special_follow.settings.interval_30]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.popup_interval_selector.select_10_minutes
+    fromPageKey: messages.special_follow.settings.popup_interval_selector
+    triggerElementKey: messages.special_follow.settings.popup_interval_selector.option_10_minutes
+    capability: select_popup_interval_10_minutes
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [popup_interval_10]
+    fromStateHints: [messages.special_follow.settings.popup_interval.selector_4_hours]
+    toStateHints: [messages.special_follow.settings.popup_interval_10]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.popup_interval_selector.select_1_hour
+    fromPageKey: messages.special_follow.settings.popup_interval_selector
+    triggerElementKey: messages.special_follow.settings.popup_interval_selector.option_1_hour
+    capability: select_popup_interval_1_hour
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [popup_interval_1_hour]
+    fromStateHints: [messages.special_follow.settings.popup_interval.selector_10]
+    toStateHints: [messages.special_follow.settings.popup_interval_1_hour]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.popup_interval_selector.select_4_hours
+    fromPageKey: messages.special_follow.settings.popup_interval_selector
+    triggerElementKey: messages.special_follow.settings.popup_interval_selector.option_4_hours
+    capability: select_popup_interval_4_hours
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [popup_interval_4_hours]
+    fromStateHints: [messages.special_follow.settings.popup_interval.selector_1_hour]
+    toStateHints: [messages.special_follow.settings.popup_interval_4_hours]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: transition.messages.special_follow.settings.popup_interval_selector.cancel
+    fromPageKey: messages.special_follow.settings.popup_interval_selector
+    triggerElementKey: messages.special_follow.settings.popup_interval_selector.cancel
+    capability: cancel_popup_interval_selector
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [interval.cancel]
+    fromStateHints: [messages.special_follow.settings.reminder_interval.sheet]
+    toStateHints: [messages.special_follow.settings.reminder_interval.dismissed]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.toggle_popup_reminder
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.popup_reminder_toggle
+    capability: toggle_popup_reminder
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [single_chat_popup_toggle]
+    fromStateHints: [messages.special_follow.settings.popup_reminder.on, messages.special_follow.settings.popup_reminder.off]
+    toStateHints: [messages.special_follow.settings.popup_reminder.off, messages.special_follow.settings.popup_reminder.on_again]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.toggle_sms_phone_reminder
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.sms_phone_toggle
+    capability: toggle_sms_phone_reminder
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [sms_phone_toggle, sms_phone_reminder_toggle]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.off, messages.special_follow.settings.sms_phone.enabled, messages.special_follow.settings.sms_phone.disabled]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.activation_result, messages.special_follow.settings.sms_phone.disabled, messages.special_follow.settings.sms_phone.enabled_restored]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.open_sms_phone_interval_selector
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.sms_phone_interval
+    capability: open_sms_phone_interval_selector
+    toPageKey: messages.special_follow.settings.sms_phone_interval_selector
+    actionTargetKeys: [sms_phone_interval, sms_phone_interval_30_before_select_10, sms_phone_interval_10_selected]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.on, messages.special_follow.settings.sms_phone_reminder.interval_10, messages.special_follow.settings.sms_phone_reminder.interval_30, messages.special_follow.settings.sms_phone_reminder.interval_30_before_select_10, messages.special_follow.settings.sms_phone_reminder.interval_10_selected]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.interval.selector, messages.special_follow.settings.sms_phone_reminder.interval.selector_10, messages.special_follow.settings.sms_phone_reminder.interval.selector_30_again, messages.special_follow.settings.sms_phone_reminder.interval.selector_30_before_select_10, messages.special_follow.settings.sms_phone_reminder.interval.selector_10_selected]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.sms_phone_interval_selector.select_10_minutes
+    fromPageKey: messages.special_follow.settings.sms_phone_interval_selector
+    triggerElementKey: messages.special_follow.settings.sms_phone_interval_selector.option_10_minutes
+    capability: select_sms_phone_interval_10_minutes
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [sms_phone_interval_10_minutes]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.interval.selector_30_before_select_10]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.interval_10_selected]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.sms_phone_interval_selector.select_30_minutes
+    fromPageKey: messages.special_follow.settings.sms_phone_interval_selector
+    triggerElementKey: messages.special_follow.settings.sms_phone_interval_selector.option_30_minutes
+    capability: select_sms_phone_interval_30_minutes
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [interval_30_minutes, sms_phone_interval_30_minutes]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.interval.selector_10, messages.special_follow.settings.sms_phone_reminder.interval.selector_10_selected]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.interval_30, messages.special_follow.settings.sms_phone_reminder.interval_30_final]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: transition.messages.special_follow.settings.sms_phone_interval_selector.cancel
+    fromPageKey: messages.special_follow.settings.sms_phone_interval_selector
+    triggerElementKey: messages.special_follow.settings.sms_phone_interval_selector.cancel
+    capability: cancel_sms_phone_interval_selector
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [cancel_interval_panel]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.interval.selector_30_again]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.interval.dismissed]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.open_reminder_method_selector
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.reminder_method
+    capability: open_reminder_method_selector
+    toPageKey: messages.special_follow.settings.reminder_method_selector
+    actionTargetKeys: [reminder_method]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.method.sms, messages.special_follow.settings.sms_phone_reminder.method.phone]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.method.selector, messages.special_follow.settings.sms_phone_reminder.method.selector_sms, messages.special_follow.settings.sms_phone_reminder.method.selector_sms_again, messages.special_follow.settings.sms_phone_reminder.method.selector_phone]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.reminder_method_selector.select_sms
+    fromPageKey: messages.special_follow.settings.reminder_method_selector
+    triggerElementKey: messages.special_follow.settings.reminder_method_selector.sms
+    capability: select_reminder_method_sms
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [reminder_method_sms]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.method.selector_phone]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.method.sms]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.reminder_method_selector.select_phone
+    fromPageKey: messages.special_follow.settings.reminder_method_selector
+    triggerElementKey: messages.special_follow.settings.reminder_method_selector.phone
+    capability: select_reminder_method_phone
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [reminder_method_phone]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.method.selector_sms]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.method.phone]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: transition.messages.special_follow.settings.reminder_method_selector.cancel
+    fromPageKey: messages.special_follow.settings.reminder_method_selector
+    triggerElementKey: messages.special_follow.settings.reminder_method_selector.cancel
+    capability: cancel_reminder_method_selector
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [cancel_reminder_method]
+    fromStateHints: [messages.special_follow.settings.sms_phone_reminder.method.selector_sms_again]
+    toStateHints: [messages.special_follow.settings.sms_phone_reminder.method.dismissed_sms]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.toggle_night_dnd
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.night_dnd_toggle
+    capability: toggle_night_dnd
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [night_dnd_toggle]
+    fromStateHints: [messages.special_follow.settings.dnd.both_off, messages.special_follow.settings.dnd.night_on]
+    toStateHints: [messages.special_follow.settings.dnd.night_on, messages.special_follow.settings.dnd.night_off_again]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.toggle_group_dnd
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.group_dnd_toggle
+    capability: toggle_group_dnd
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [group_dnd_toggle]
+    fromStateHints: [messages.special_follow.settings.dnd.night_off_again, messages.special_follow.settings.dnd.group_on]
+    toStateHints: [messages.special_follow.settings.dnd.group_on, messages.special_follow.settings.dnd.both_off_final]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.open_sound_selector
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.sound
+    capability: open_sound_selector
+    toPageKey: messages.special_follow.settings.sound_selector
+    actionTargetKeys: [special_follow_sound]
+    fromStateHints: [messages.special_follow.settings, messages.special_follow.settings.interval_30, messages.special_follow.settings.sound.briefing, messages.special_follow.settings.sound.default, messages.special_follow.settings.sound.wave]
+    toStateHints: [messages.special_follow.settings.sound.selector, messages.special_follow.settings.sound.selector_briefing, messages.special_follow.settings.sound.selector_default, messages.special_follow.settings.sound.selector_wave]
+    reversible: true
+    risk: safe
+
+  - key: messages.special_follow.settings.sound_selector.select_briefing
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.briefing
+    capability: select_sound_briefing
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [sound_briefing]
+    fromStateHints: [messages.special_follow.settings.sound.selector]
+    toStateHints: [messages.special_follow.settings.sound.briefing]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.sound_selector.select_default
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.default
+    capability: select_sound_default
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [sound_default]
+    fromStateHints: [messages.special_follow.settings.sound.selector_briefing]
+    toStateHints: [messages.special_follow.settings.sound.default]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.sound_selector.select_wave
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.wave
+    capability: select_sound_wave
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [sound_wave]
+    fromStateHints: [messages.special_follow.settings.sound.selector_default]
+    toStateHints: [messages.special_follow.settings.sound.wave]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: messages.special_follow.settings.sound_selector.select_bell
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.bell
+    capability: select_sound_bell
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [sound_bell]
+    fromStateHints: [messages.special_follow.settings.sound.selector_wave]
+    toStateHints: [messages.special_follow.settings.sound.bell]
+    reversible: true
+    risk: low
+    sideEffects: [persistent_setting_change]
+
+  - key: transition.messages.special_follow.settings.sound_selector.preview_default
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.preview_default
+    capability: preview_sound_default
+    toPageKey: messages.special_follow.settings.sound_selector
+    actionTargetKeys: [sound.default.preview]
+    fromStateHints: [messages.special_follow.settings.sound.selector]
+    toStateHints: [messages.special_follow.settings.sound.preview_default]
+    reversible: true
+    risk: safe
+    sideEffects: [temporary_audio_playback]
+
+  - key: transition.messages.special_follow.settings.sound_selector.preview_wave
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.preview_wave
+    capability: preview_sound_wave
+    toPageKey: messages.special_follow.settings.sound_selector
+    actionTargetKeys: [sound.wave.preview]
+    fromStateHints: [messages.special_follow.settings.sound.preview_default]
+    toStateHints: [messages.special_follow.settings.sound.preview_wave]
+    reversible: true
+    risk: safe
+    sideEffects: [temporary_audio_playback]
+
+  - key: transition.messages.special_follow.settings.sound_selector.preview_briefing
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.preview_briefing
+    capability: preview_sound_briefing
+    toPageKey: messages.special_follow.settings.sound_selector
+    actionTargetKeys: [sound.briefing.preview]
+    fromStateHints: [messages.special_follow.settings.sound.preview_wave]
+    toStateHints: [messages.special_follow.settings.sound.preview_briefing]
+    reversible: true
+    risk: safe
+    sideEffects: [temporary_audio_playback]
+
+  - key: transition.messages.special_follow.settings.sound_selector.preview_bell
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.preview_bell
+    capability: preview_sound_bell
+    toPageKey: messages.special_follow.settings.sound_selector
+    actionTargetKeys: [sound.bell.preview]
+    fromStateHints: [messages.special_follow.settings.sound.preview_briefing]
+    toStateHints: [messages.special_follow.settings.sound.preview_bell]
+    reversible: true
+    risk: safe
+    sideEffects: [temporary_audio_playback]
+
+  - key: transition.messages.special_follow.settings.sound_selector.cancel
+    fromPageKey: messages.special_follow.settings.sound_selector
+    triggerElementKey: messages.special_follow.settings.sound_selector.cancel
+    capability: cancel_sound_selector
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [sound.cancel]
+    fromStateHints: [messages.special_follow.settings.sound.preview_bell]
+    toStateHints: [messages.special_follow.settings.sound.dismissed]
+    reversible: true
+    risk: safe
+
+  - key: transition.messages.special_follow.settings.scroll
+    fromPageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.scroll
+    capability: scroll_settings
+    toPageKey: messages.special_follow.settings
+    actionTargetKeys: [special_follow_settings_scroll]
+    fromStateHints: [messages.special_follow.settings.popup_interval_1_hour]
+    toStateHints: [messages.special_follow.settings.sound_visible]
+    reversible: true
+    risk: safe
+    sideEffects: [viewport_scroll]
+
+authorityContracts:
+  - key: messages.special_follow.settings.open_people.via_trailing_chevron
+    sourcePageKey: messages.special_follow.settings
+    triggerElementKey: messages.special_follow.settings.members_chevron
+    expectedTargetPageKey: messages.special_follow.people
+    capability: open_special_follow_people
+    action: aiTap
+    risk: safe
+    planningEligible: true
+    authorityStatus: authority_certified
+    runtimeEvidenceStatus: verified
+    verifiedTransitionKey: messages.special_follow.settings.open_people
+    certifiedFact:
+      containerElementKey: messages.special_follow.settings.members_container
+      labelElementKey: messages.special_follow.settings.members_label
+      triggerElementKey: messages.special_follow.settings.members_chevron
+      visibleLabel: 我的特别关注
+      actionableControl: 文字右侧的向右箭头
+      labelTextActionable: false
+      otherRowRegions: unspecified
+      spatialRelation: right_of_visible_label
+    contradictionPolicy: record_product_defect
+
+navigation:
+  scopeKey: navigation_scope.messages_special_follow
+  label: 消息页特别关注功能导航
+  primaryPageKeys:
+    - messages.root
+    - messages.special_follow
+    - messages.special_follow.settings
+    - messages.special_follow.people
+    - boundary.common.person_picker
+    - boundary.common.conversation
+  overlayPageKeys:
+    - messages.special_follow.people.remove_confirmation
+    - messages.special_follow.settings.popup_interval_selector
+    - messages.special_follow.settings.sms_phone_interval_selector
+    - messages.special_follow.settings.reminder_method_selector
+    - messages.special_follow.settings.sound_selector
+projection:
+  reportTitle: 2026-07-31-特别关注-UIKG-3.0.1-规范化报告
+  language: zh-CN
+  readOnly: true
+
+coverage:
+  expectedControlTargetKeys:
+    - messages.root::messages.toolbar.heart
+    - messages.special_follow::special_follow_unread_badge
+    - messages.special_follow.settings::special_follow_sound
+    - messages.special_follow.people::member_lian_liangwei
+    - boundary.common.person_picker::select_lian_liangwei
+    - boundary.common.conversation::conversation_back
+  outOfScopeControlTargetKeys: []
+  inScopeControlTargetPatterns:
+    - 'messages\.root::(?:messages\.toolbar\.heart|toolbar\.special_follow|messages_toolbar_(?:heart|special_follow_highlighted))'
+    - 'messages\.special_follow::.*'
+    - 'messages\.special_follow\.settings::.*'
+    - 'messages\.special_follow\.people::.*'
+    - 'messages\.special_follow\.people\.remove_confirmation::(?:remove_confirmation\.(?:cancel|confirm)|remove_confirm\.(?:cancel|confirm)|(?:cancel|confirm)_remove_member)'
+    - 'messages\.special_follow\.settings\.help::(?:popupReminder\.help|popup_unread_help|reminder\.popup(?:_unread)?(?:\.|_)help|single_chat_popup_help|popup_reminder_help|popup_reminder_help_toggle_close|smsPhoneReminder\.help|sms_phone_unread_help|reminder\.sms_call(?:\.|_)help|sms_phone_reminder_help|dndGroupNotification\.help|dnd_group_(?:notification_)?help|group_dnd\.help|reminder\.dnd_group_help)'
+    - 'messages\.special_follow\.settings\.popup_interval_selector::(?:interval\.(?:option_(?:10m|30m|1h|4h)|cancel|backdrop)|interval_(?:10_minutes|30_minutes|1_hour|4_hours|10m|30m|1h|4h)|reminder_interval_(?:10m|30m|1h|4h)|cancel_interval_(?:panel|picker)|popup_interval_(?:10|1_hour|4_hours))'
+    - 'messages\.special_follow\.settings\.sms_phone_interval_selector::(?:interval_(?:10_minutes|30_minutes)|sms_phone_interval_(?:10_minutes|30_minutes)|cancel_interval_(?:panel|picker)|close_interval_panel)'
+    - 'messages\.special_follow\.settings\.reminder_method_selector::(?:reminder_method_(?:sms|phone|cancel)|cancel_reminder_method)'
+    - 'messages\.special_follow\.settings\.sound_selector::(?:sound[._](?:default|wave|brief|briefing|doorbell|bell)[._](?:option|radio|select|preview)|sound_(?:default|wave|briefing|doorbell|bell)(?:_option|_radio|_preview)?|preview_(?:sound_)?(?:default|wave|briefing|doorbell|bell)|cancel_sound_(?:panel|picker)|sound_panel_cancel|sound\.panel\.cancel|sound\.cancel)'
+    - 'boundary\.common\.person_picker::.*'
+    - 'boundary\.common\.conversation::conversation_back'
+  requireExplicitElementMapping: true
+  allowedUnvisitedTargetKeys:
+    - messages.special_follow::special_follow_unread_badge
+    - messages.special_follow.settings::member_remove
+    - messages.special_follow.settings.popup_interval_selector::interval.backdrop
+    - boundary.common.person_picker::close_person_picker
+    - boundary.common.conversation::conversation_back
+  unresolvedTargetKeys: []

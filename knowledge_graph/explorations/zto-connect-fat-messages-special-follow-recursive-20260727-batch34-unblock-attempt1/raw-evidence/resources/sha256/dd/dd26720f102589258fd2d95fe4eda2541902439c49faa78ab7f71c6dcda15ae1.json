@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHW0A678B87JB8WC0M7GEJ9",
+  "sessionRef": "01KYHVW0DJYJF1H6DEJEFJGPJ2",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHVXGD0KKJKVG6B9ZX6S3DX",
+  "sourceScreenshotRef": "sha256:aafdafb4d86b280f3d5c29dda272e36026214632c19a276ea0f0c318bd1ba91f",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"忽略\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.transient_schedule_overlay\",\"predicate\":\"scope_boundary\",\"value\":\"日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。\",\"source\":\"task_policy\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注：可添加特别关注对象",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我：已开启",
+      "单聊提醒间隔时间：1小时",
+      "弹窗消息未读，短信/电话提醒我：已开启",
+      "短信/电话提醒间隔时间：30分钟",
+      "提醒方式：电话",
+      "夜间免打扰：未开启",
+      "免打扰群通知：未开启",
+      "个性化提醒",
+      "特别关注提示音：简报"
+    ],
+    "supportedFunctionDescription": "当前页面 visibly 支持管理“特别关注”的对象与提醒规则，包括添加特别关注对象、开启或关闭单聊未读弹窗提醒、设置其提醒间隔、开启或关闭弹窗消息未读时的短信/电话提醒、设置提醒间隔与提醒方式、配置夜间免打扰、免打扰群通知及特别关注提示音。任务上下文指定 messages.toolbar.heart 的功能名称为“特别关注”；日程提醒属于 APP 全局临时遮挡，不属于特别关注功能图谱。当前画面未见覆盖层。",
+    "evidenceBasis": [
+      "页面顶部标题为“特别关注提醒”。",
+      "“我的特别关注”区域显示“添加”入口。",
+      "说明文字为“来自「特别关注」的未读消息，自定义提醒方式”。",
+      "两个未读消息提醒开关均显示为蓝色开启状态。",
+      "间隔时间分别显示“1小时”和“30分钟”，提醒方式显示“电话”。",
+      "“夜间免打扰”和“免打扰群通知”的开关均显示为灰色关闭状态。",
+      "页面底部可见“个性化提醒”及“特别关注提示音：简报”。",
+      "任务提供的权威上下文明确功能名称为“特别关注”，并明确日程提醒遮挡的范围边界。"
+    ],
+    "unresolvedMeaning": "截图未显示标签为“忽略”的控件、其来源界面或激活时的即时反馈，因此无法仅凭当前画面确定“忽略”具体忽略了什么、是否改变了任何设置，或它与进入当前页面之间是否存在直接因果关系。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T13:24:53.197Z",
+  "endedAt": "2026-07-27T13:25:07.399Z",
+  "durationMs": 14203.007042,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:2286a2114fe5d49734da7cfba84f5d3b224c1fb8daad634793c952f72621f817"
+}

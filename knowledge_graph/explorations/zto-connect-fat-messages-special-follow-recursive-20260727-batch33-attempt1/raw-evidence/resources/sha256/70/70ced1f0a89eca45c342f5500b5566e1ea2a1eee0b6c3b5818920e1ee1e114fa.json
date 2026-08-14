@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHT67YN08P8A35406JGBGCW",
+  "sessionRef": "01KYHT43FRH9CQVJ09JS5E1JN7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHT4BT0713AGE02AA0KQN4K",
+  "sourceScreenshotRef": "sha256:6fbc6b2932db913c26acd5e72a90d8b223766bb40149601bfdf23bd740a3817a",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "短信/电话提醒开关为蓝色开启状态；其下独立间隔时间、提醒方式、夜间免打扰和22:00至次日06:00说明均可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:53:20.729Z",
+  "endedAt": "2026-07-27T12:53:24.565Z",
+  "durationMs": 3836.234833,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:b0ff52c998c6754e026a3a0a3ee0cef95a42d9bb48348494c4c0984f1fd41854"
+}

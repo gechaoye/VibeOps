@@ -1,0 +1,274 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch31-attempt1:plan",
+  "sourceScopeHash": "sha256:66ec4d9f54ec6a04787a46c07e734a2a32731f38c4a3bcb0dd3a6ea5d0a80380",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "验证特别关注提醒方式从短信切换为电话。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sms_phone_reminder.method",
+        "predicate": "visible_options",
+        "value": "提醒方式面板包含短信、电话和取消。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.sms_phone_reminder.method.sms",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "reminder-method-row-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 1300,
+          "width": 1152,
+          "height": 500
+        },
+        "purpose": "短信/电话提醒分区提醒方式行。"
+      },
+      {
+        "key": "reminder-method-panel",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 1800,
+          "width": 1152,
+          "height": 576
+        },
+        "purpose": "提醒方式面板短信、电话和取消区域。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.sms_phone_reminder.method.sms": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.method.sms",
+      "label": "提醒方式短信设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为“特别关注提醒”；短信/电话提醒开关开启，“提醒方式”行右侧显示“短信”。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件并确认提醒方式为短信；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_reminder_method_selector"
+      ],
+      "postcondition": "已记录提醒方式为短信。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder.method.selector_sms": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.method.selector_sms",
+      "label": "提醒方式面板短信选中",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sms_phone_reminder.method",
+      "requiredSemanticAssertions": [
+        "底部面板显示短信、电话和取消，短信为当前选中项。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点提醒方式面板的短信、电话和取消；背景页控件不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_reminder_method_phone"
+      ],
+      "postcondition": "已记录短信选中状态。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder.method.phone": {
+      "key": "messages.special_follow.settings.sms_phone_reminder.method.phone",
+      "label": "提醒方式电话设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面没有底部面板；“提醒方式”行右侧显示“电话”。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件并确认提醒方式为电话；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证选择电话并更新提醒方式。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-reminder-method-sms-page",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.sms_phone_reminder.method.sms",
+      "depth": 4
+    },
+    {
+      "id": "open-reminder-method-from-sms",
+      "kind": "tap",
+      "semanticAction": "open_reminder_method_selector",
+      "fromState": "messages.special_follow.settings.sms_phone_reminder.method.sms",
+      "toState": "messages.special_follow.settings.sms_phone_reminder.method.selector_sms",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "reminder_method",
+        "label": "提醒方式 短信",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位短信/电话提醒间隔行下方、夜间免打扰上方，右侧显示“短信”的“提醒方式”整行。",
+        "allowedRegionRef": "reminder-method-row-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "提醒方式面板已打开，短信为当前选中项。"
+        ]
+      }
+    },
+    {
+      "id": "select-reminder-method-phone",
+      "kind": "tap",
+      "semanticAction": "select_reminder_method_phone",
+      "fromState": "messages.special_follow.settings.sms_phone_reminder.method.selector_sms",
+      "toState": "messages.special_follow.settings.sms_phone_reminder.method.phone",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "reminder_method_phone",
+        "label": "电话",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位提醒方式底部面板第二行“电话”单选项。",
+        "allowedRegionRef": "reminder-method-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，提醒方式行右侧显示电话。"
+        ]
+      }
+    }
+  ]
+}

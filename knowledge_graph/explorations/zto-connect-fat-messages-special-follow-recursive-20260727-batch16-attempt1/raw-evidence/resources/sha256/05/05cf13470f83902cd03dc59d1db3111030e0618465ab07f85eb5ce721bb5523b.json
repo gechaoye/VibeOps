@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHF02CX34MQG1R3SCBKJZ7B",
+  "sessionRef": "01KYHESC3YYSAZZFY17D287R2P",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHEWQ90E7BQ08GB3SQCEM1M",
+  "sourceScreenshotRef": "sha256:bab46ac6266427f39ed33a3585426db05178c80a2b245a2f8bb0a3f2939da9ce",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"免打扰群通知帮助问号\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "免打扰群通知帮助说明",
+    "visibleResultContent": [
+      "开启后，设置消息免打扰的群，特别关注人新消息保持正常通知。"
+    ],
+    "supportedFunctionDescription": "该帮助问号支持在当前“特别关注提醒”页面内打开说明气泡，不发生页面跳转。可见说明表明：开启“免打扰群通知”后，对于已设置消息免打扰的群，特别关注人员的新消息仍保持正常通知。结合用户提供的权威上下文：此功能名为“特别关注”；被设为特别关注的人员存在未读消息时，其相关会话会显示在特别关注列表；设置特别关注人员后，入口爱心图标显示为橙黄色。",
+    "evidenceBasis": [
+      "屏幕顶部可见页面标题“特别关注提醒”。",
+      "“免打扰群通知”右侧可见帮助问号，且其上方出现带指向尖角的深色说明气泡。",
+      "气泡中文字为“开启后，设置消息免打扰的群，特别关注人新消息保持正常通知。”",
+      "“免打扰群通知”开关当前呈灰色关闭状态。",
+      "用户提供的权威上下文明确给出功能名、未读会话在特别关注列表中的显示规则，以及配置后爱心入口呈橙黄色；这些不是从截图像素推断所得。"
+    ],
+    "unresolvedMeaning": "截图未说明“正常通知”具体包含哪些通知渠道或提醒形式，也未说明帮助气泡的关闭方式、开启该开关后的实际运行结果，或群内特别关注消息是否受其他通知设置影响。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:37:30.175Z",
+  "endedAt": "2026-07-27T09:37:47.933Z",
+  "durationMs": 17757.27475,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:cfdb508102d9c078cdbcc37b3342cc9d4f1c7b6c246e631437b6b3438a93a7ce"
+}

@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBHT7R52HVB3R24ZD7
+key: messages.special_follow.settings.sms_phone_interval_selector.select_10_minutes
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENBV34YV6RCVMV9BTG3
+triggerElementRef: 01KYKA3ENB8W59XXC5JJZ3DDK2
+action: aiTap
+capability: select_sms_phone_interval_10_minutes
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYK7B5MNP16T5KYJY99ZZPNA
+  beforeFrameRef: 01KYK793EJ1B3QJ2X48D1KE34Z
+  afterFrameRef: 01KYK7BKTN8DGGE7QFP7NMSV88
+  postcondition: pass
+  semanticAssertions:
+  - sha256:a526718ccc8ecc5788ac3e080bef2566c184e79f0576c9e56ee3a0781e36d770
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

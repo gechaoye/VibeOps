@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHD4KB549D6KQZYS8FSV8X1",
+  "sessionRef": "01KYHD0YFZEZ4NFERXP1ZE7BHX",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHD2FWWDDG736WZY4E1RWCK",
+  "sourceScreenshotRef": "sha256:e48c01101d658c01aed25030df8eb90b54da690f061d7f8d49955ec7f716932c",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"右上关闭 X\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注",
+    "visibleResultContent": [
+      "我的特别关注",
+      "设置",
+      "添加",
+      "这是练工练工练工练...",
+      "练良伟 创建了待办 循环待办每天",
+      "10:28",
+      "58"
+    ],
+    "supportedFunctionDescription": "激活标注为“右上关闭 X”的控件后，当前可见界面不再显示弹窗、遮罩或浮层，而是显示“特别关注”页面；页面支持查看特别关注会话、进入设置以及添加特别关注。给定权威上下文说明 messages.toolbar.heart 的功能名称为“特别关注”。",
+    "evidenceBasis": [
+      "像素证据：页面顶部居中可见标题“特别关注”。",
+      "像素证据：当前画面未见弹窗、遮罩或浮层，主体页面完整可见。",
+      "像素证据：可见“我的特别关注”“设置”“添加”以及一条会话记录、时间“10:28”和红色数字“58”。",
+      "供应上下文：messages.toolbar.heart 的 function_name 为“特别关注”；此事实并非由像素或图标形状推断。"
+    ],
+    "unresolvedMeaning": "仅凭当前结果画面无法确定“右上关闭 X”具体关闭了哪一个先前界面或浮层，也无法确认关闭动作是返回、收起还是解除某种临时状态。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:05:02.697Z",
+  "endedAt": "2026-07-27T09:05:19.205Z",
+  "durationMs": 16507.207334,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:a60aa4c5bd6b6441106befb2a52dd197ac7e34a8b31aff0633220cebbf195151"
+}

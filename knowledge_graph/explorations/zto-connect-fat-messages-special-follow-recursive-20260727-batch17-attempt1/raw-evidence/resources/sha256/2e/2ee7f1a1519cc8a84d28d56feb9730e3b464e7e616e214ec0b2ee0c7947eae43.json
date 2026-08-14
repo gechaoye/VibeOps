@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHFA2DJQXVZV87TGJXQB4KE",
+  "sessionRef": "01KYHF4AGPYZRHN8D90W2V16EY",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHF7D9BV9CQYCF92QH2QBH4",
+  "sourceScreenshotRef": "sha256:378e8ae23c17dba95fa428b62b23e8f22061d9429e95578872ea5291ca82983f",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前屏幕显示由“间隔时间”行打开的独立时间选项页，至少一个可选时间值可见。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:43:08.038Z",
+  "endedAt": "2026-07-27T09:43:15.634Z",
+  "durationMs": 7596.66025,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:8669b4c6b8d3f7276c4c390bcfc314a64f163d00cab4afd1470a6685a4db9b59"
+}

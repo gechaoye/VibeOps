@@ -1,0 +1,69 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBSMTCBWJJYCW34TXV
+key: messages.special_follow.people.member
+label: 特别关注-全部成员-特别关注成员
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENBX0Y8425JT9CK70DK
+parentElementRef: null
+controlType: container
+role: member_row
+capabilities:
+- activate_member_row
+summary: 成员行总容器；成员头像和姓名是动态业务内容，成员行与右侧移除按钮是两个独立动作边界。
+relationshipRefs:
+- owner:01KYKA3ENBX0Y8425JT9CK70DK
+- child:01KYKA3ENBM58Q41K771RESDSY
+- transition:01KYKA3ENBDKMZ8WX59YFX1PB4
+observations:
+- frameRef: sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a
+  observedAt: '2026-07-31T07:19:45.942Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 48.0
+      top: 289.0
+      width: 1057.0
+      height: 131.0
+    center:
+    - 576.0
+    - 354.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:10c2caf100e4318a804ba6a6bcedbd5b057e1c46f383b4ffa3c542592a467c21
+  state: visible
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBSMTCBWJJYCW34TXV-sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a.png
+coverage: executed_verified_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: true
+  function: activates_member_row_outside_remove_button
+childElementRefs:
+- 01KYKA3ENBM58Q41K771RESDSY
+composition:
+  roles:
+    memberTrigger: 01KYKA3ENBSMTCBWJJYCW34TXV
+    removeTrigger: 01KYKA3ENBM58Q41K771RESDSY

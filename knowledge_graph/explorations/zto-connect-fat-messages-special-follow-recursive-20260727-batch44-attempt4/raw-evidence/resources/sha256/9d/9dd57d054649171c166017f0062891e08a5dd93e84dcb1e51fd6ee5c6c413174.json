@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ2ZT3JH12FDN85AFE4HFNT",
+  "sessionRef": "01KYJ2T4PCJW41VRZ1GB5ZYW0A",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ2YMNHX3V05D0HR4BF2T1H",
+  "sourceScreenshotRef": "sha256:4cd4ef040c2709937d11ce4a01e61777b9de6e93766acff1c2b000c7a88a9dc3",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前已返回标题为特别关注的页面；按实际画面记录练良伟相关会话及未读徽标是否仍存在。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:27:05.634Z",
+  "endedAt": "2026-07-27T15:27:10.962Z",
+  "durationMs": 5328.393833,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:03b987f2d654477edd16dcdd517a716168fe3232cbc3da71b82f1e2bb8f6cd20"
+}

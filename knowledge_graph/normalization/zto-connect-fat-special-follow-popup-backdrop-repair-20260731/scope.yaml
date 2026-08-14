@@ -1,0 +1,64 @@
+task:
+  id: zto-connect-fat-special-follow-popup-backdrop-repair-20260731
+  requestedAt: '2026-07-31T17:01:00+08:00'
+  objective: 按 UIKG 3.0.1 修正弹窗提醒间隔选择器背景遮罩的实时 locator 与红框，并保持既有容器模型不变。
+application:
+  key: zto.connect
+  packageId: com.zto.connect.fat
+  build:
+    environment: test
+    versionCode: '10542'
+entry:
+  description: 特别关注提醒页面“我的特别关注”复合入口容器
+  knownFacts:
+  - 页面只直接引用“我的特别关注”总容器元素。
+  - 总容器持有说明文案和右侧箭头两个子元素。
+  - “我的特别关注”文案用于说明入口，不可点击。
+  - 右侧箭头是打开全部特别关注成员列表的独立可点击入口。
+  authorityContracts:
+  - id: 01KYKA3ENBFD65M644D2KD5QF3
+    sourceType: user_context
+    authorityStatus: authority_certified
+    planningEligible: true
+    sourceSelector:
+      kind: exact_page
+      ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+    triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+    expectedTarget:
+      kind: page
+      ref: 01KYKA3ENBX0Y8425JT9CK70DK
+      stateKey: null
+    runtimeEvidenceStatus: verified
+scope:
+  mode: uikg_3_0_1_popup_backdrop_redbox_repair
+  deviceActions: 20 verified Midscene actions; no ADB UI actions
+  reason: 设备已连接；弹窗提醒间隔选择器的完整背景遮罩已获得实时帧、独立 Scout、GPT 对账和独立 locator。
+graph:
+  root: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph
+  normativeSpec:
+    index: spec/README.md
+    version: UIKG 3.0.1
+    schemaVersion: 3.0.0
+    contentHash: sha256:03904e083f55a42e36b035db877d2bf575f6973426a2abde089326b51833969f
+    schemaFiles:
+    - spec/schemas/application.schema.json
+    - spec/schemas/authority-contract.schema.json
+    - spec/schemas/common.schema.json
+    - spec/schemas/element.schema.json
+    - spec/schemas/manifest.schema.json
+    - spec/schemas/page.schema.json
+    - spec/schemas/supporting-record.schema.json
+    - spec/schemas/transition.schema.json
+    relationshipRules: spec/relationship-invariants.md
+    precedenceAccepted: true
+  mergePolicy: reviewed-migration-plus-additive-upsert
+  preserveHistoricalEntities: true
+  stageBeforePublish: true
+  baseline:
+    fileCount: 562
+    contentHash: sha256:92d6f179b2163a6c01f587400555117c3c189275e3a219ff085e61005982d278
+    entityIdsHash: sha256:63df686a51ed349a7167840f579a1fa81b8ded1d5636d3d086045c37ecdb60f9
+completion:
+  correctionStatus: complete
+  resultingGraphStatus: incomplete
+  remainingLimitation: 本次模型规范化与实时范围已闭合；历史特别关注状态仍有 GPT-only 证据，整体图谱继续标记 incomplete。

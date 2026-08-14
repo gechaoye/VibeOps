@@ -1,0 +1,60 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBX544RVBP72A3ASWD
+key: boundary.common.person_picker.close
+label: 通用组件-选人-关闭选人组件
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 通用组件
+- 选人
+owner:
+  kind: page
+  ref: 01KYKA3ENBCMSXNBZDYXZ7PJSM
+parentElementRef: null
+controlType: close
+role: navigation
+capabilities:
+- close_person_picker
+summary: 关闭APP级通用选人组件。
+relationshipRefs:
+- owner:01KYKA3ENBCMSXNBZDYXZ7PJSM
+observations:
+- frameRef: 01KYJ0ZN10XXR1M9TCC9B23830
+  observedAt: '2026-07-27T14:52:11.450Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:f8ca555adc2de1f74cb6678b2aafca9594fc54a726b2a7733dc2d2f81f3c2af1
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 36.0
+      top: 157.0
+      width: 61.0
+      height: 58.0
+    center:
+    - 66.5
+    - 186.0
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:0a3df5b40a563b9003e2beca4d0eb5c95d8e32d83f5a234f3fe796c84656c005
+  state: 左上角显示X形关闭图标，未按下
+  dynamicValue: 左上角显示X形关闭图标，未按下
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBX544RVBP72A3ASWD-01KYJ0ZN10XXR1M9TCC9B23830.png
+coverage: observed_not_activated_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ12D2P1E9G6MB3H42KQ0ZK",
+  "sessionRef": "01KYJ0ZBGHS38PARSMY4TVCBRC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ113NK6S3GQY2NZ128FPRQ",
+  "sourceScreenshotRef": "sha256:c1a2abd820aa8be093cf320f31308521847815dd8e103ac74dafddc157f8aa40",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"练良伟\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.add\",\"predicate\":\"opens_common_component\",\"value\":\"通用选人组件\",\"source\":\"user\"},{\"subjectKey\":\"common.person_picker\",\"predicate\":\"scope_role\",\"value\":\"通用组件边界_不递归探索\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "选择人员",
+    "visibleResultContent": [
+      "当前处于通用选人组件页面",
+      "练良伟已被勾选",
+      "已选择：1人",
+      "确定(1/10)",
+      "可见候选人员：贾宗婷、葛超烨、练良伟、郭虹利",
+      "可见选人入口：组织架构、质量管理部、条线、个人标签、我的群组",
+      "可见搜索入口"
+    ],
+    "supportedFunctionDescription": "立即点击“练良伟”后，该人员进入已选择状态，蓝色勾选标记出现，已选人数更新为1，确认按钮计数更新为1/10；用户可继续从当前可见范围选择人员，或点击“确定(1/10)”提交当前选择。根据 supplied authoritative context，此通用选人组件由“特别关注”设置的新增操作打开。",
+    "evidenceBasis": [
+      "页面顶部标题清晰显示“选择人员”",
+      "“练良伟”所在行左侧显示蓝色圆形勾选标记",
+      "底部左侧清晰显示“已选择：1人”",
+      "底部右侧按钮清晰显示“确定(1/10)”",
+      "页面中可见搜索图标及组织架构、质量管理部、条线、个人标签、我的群组入口",
+      "题目提供的权威上下文明确说明 messages.special_follow.settings.add 打开“通用选人组件”",
+      "题目提供的权威上下文授权可新增特别关注人员，并规定通用组件边界不递归探索"
+    ],
+    "unresolvedMeaning": "当前截图尚未显示点击“确定(1/10)”后的提交结果，因此无法仅凭当前画面确认练良伟是否已最终加入特别关注；也无法从当前画面确认其是否存在未读消息、会话是否出现在特别关注列表，或特别关注入口爱心是否已变为橙黄色。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:53:25.169Z",
+  "endedAt": "2026-07-27T14:53:38.774Z",
+  "durationMs": 13604.499708,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:fb8eb6ca688b17e5005f5659676a3b78ef3bf9393ffc4f0e52890187f0515286"
+}

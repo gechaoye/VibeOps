@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Page
+id: 01KYKA3ENB1Q64N45J08PD75X9
+key: boundary.common.conversation
+label: 通用组件-会话
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 通用组件
+- 会话
+surfaceType: page
+status: observed_gpt_only_pending_scout
+summary: APP级通用会话边界；本次只记录从特别关注会话或成员进入以及系统返回，不探索会话内部。
+states:
+- key: opened_from_conversation
+  summary: 从特别关注会话进入
+  frameRefs:
+  - 01KYJ4G6ZA83WEQYN2R6AHS21B
+- key: opened_from_member
+  summary: 从特别关注成员进入
+  frameRefs:
+  - 01KYJ4RSHBHNHX2XJZASNB6YRC
+elementRefs:
+- 01KYKA3ENB2NKGZ35TEY285N93
+inboundTransitionRefs:
+- 01KYKA3ENBP1EJZNJBC0VT6KV3
+- 01KYKA3ENBYTSP4PV02ECTRZ09
+outboundTransitionRefs: []
+observations:
+- frameRef: 01KYJ4G6ZA83WEQYN2R6AHS21B
+  observedAt: '2026-07-27T15:53:39.708Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: boundary.common.conversation.lian_liangwei
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:4f734320b288191469f77c3199349f85efdef26e97d6d6d5b93f51542554dc3c
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt4/raw-evidence/sessions/01KYJ4FXEX0ZV2MQDJVS4B3MYB
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYJ4RSHBHNHX2XJZASNB6YRC
+  observedAt: '2026-07-27T15:58:20.973Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: boundary.common.conversation.lian_liangwei_from_member
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:bc7955fdf29ea9d6bfda44e4cd078aa11249c13687f4654107c99979d229d3b7
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5/raw-evidence/sessions/01KYJ4QEBBQZP44ANFGP77NE7J
+  evidenceStatus: gpt_verified_pending_independent_scout
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+boundaryNote: 仅记录入口和返回，不递归探索会话内部。

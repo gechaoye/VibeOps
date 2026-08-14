@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHJED6RA6MSSZVF8ERB3QXT",
+  "sessionRef": "01KYHJ90Y09R87C9B2E1SVSHMK",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHJCC0XQD36T2VA7RSF2RQ5",
+  "sourceScreenshotRef": "sha256:5e1f241715960d8744081d3bfe44dbf1b81e3d27e4ab253831acdebe955a1c6a",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"间隔时间\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "间隔时间选择面板",
+    "visibleResultContent": [
+      "10分钟",
+      "30分钟（当前选中）",
+      "1小时",
+      "4小时",
+      "取消"
+    ],
+    "supportedFunctionDescription": "立即激活“间隔时间”后，页面保持在“特别关注提醒”设置页并显示底部模态选择面板，同时用遮罩弱化背景。用户可在10分钟、30分钟、1小时和4小时之间选择提醒间隔；当前间隔为30分钟，并可点击“取消”关闭面板。根据提供的权威上下文，特别关注人员存在未读消息时，其相关会话会显示在特别关注列表；设置特别关注人员后，入口爱心图标显示为橙黄色。",
+    "evidenceBasis": [
+      "截图顶部标题为“特别关注提醒”。",
+      "背景设置项“间隔时间”右侧显示“30分钟”。",
+      "底部面板可见10分钟、30分钟、1小时、4小时四个时间选项。",
+      "30分钟以蓝色文字显示，左侧有蓝色对勾。",
+      "底部面板最下方可见“取消”。",
+      "背景区域被灰色半透明遮罩覆盖，表明选择面板处于模态打开状态。",
+      "权威非视觉上下文明确提供了特别关注会话可见性及入口爱心图标配置后颜色状态。"
+    ],
+    "unresolvedMeaning": "截图未展示选择其他时间后的即时反馈、设置是否自动保存，以及该间隔具体作用于哪一种提醒渠道；这些含义无法仅依据当前可见画面确定。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:37:48.042Z",
+  "endedAt": "2026-07-27T10:38:03.480Z",
+  "durationMs": 15437.997542,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:790d2ae66acca9fb141563408bc16a13bfb4b9141e7df103951a221fc6036539"
+}

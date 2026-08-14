@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHKTV80FWD8AY1E8DDCF896",
+  "sessionRef": "01KYHKM7QXE6P2ZQ09P9AV3ZYV",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHKMHJ9EBVAZ7E8RZ1B93VW",
+  "sourceScreenshotRef": "sha256:f2df785a9175b3c1eb836b58c616bfe84ae1c6d666c0f1c68b33c9e7d2e72a26",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "短信/电话提醒开关下方可见“间隔时间 30分钟”“提醒方式 短信”和“夜间免打扰”。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:01:56.574Z",
+  "endedAt": "2026-07-27T11:02:19.648Z",
+  "durationMs": 23073.155042,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d103b961d9b56df78131c37714d29b7ca02e5ffdf4cd54fd9a2dbf0c59a1c9fb"
+}

@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "open-group-dnd-help-live-repair",
+  "method": "aiTap",
+  "prompt": "只定位“免打扰群通知”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或上方问号。",
+  "beforeFrameRef": "sha256:c9c9f9dba0f0cae5fa42609dbe995ea8cb22f8b95ac9f9ae9ff3598f41011d50",
+  "locator": {
+    "rect": {
+      "left": 324,
+      "top": 1972,
+      "width": 55,
+      "height": 55
+    },
+    "center": [
+      351,
+      1999
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T04:13:00.447Z",
+  "completedAt": "2026-07-31T04:13:23.262Z",
+  "postcondition": "“免打扰群通知”问号附近已显示深色帮助说明气泡，且仍停留在特别关注提醒页面。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图顶部标题为“特别关注提醒”，表明当前仍停留在特别关注提醒页面；“免打扰群通知”旁的问号上方已显示深色帮助说明气泡，内容为开启消息免打扰的群仍可正常通知特别关注人的新消息。"
+  },
+  "status": "executed_verified"
+}

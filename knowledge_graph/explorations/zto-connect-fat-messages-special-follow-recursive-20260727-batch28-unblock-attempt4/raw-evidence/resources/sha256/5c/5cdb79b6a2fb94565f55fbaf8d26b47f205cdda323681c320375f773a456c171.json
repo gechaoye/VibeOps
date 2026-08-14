@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQ88Y0N2YWH2G9TF8JST2G",
+  "sessionRef": "01KYHQ21JG97TA7ZN1AR477GQE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQ4SPZ1NC5JX38XZA11XZP",
+  "sourceScreenshotRef": "sha256:978d66126b621d2e08225a889f09b5e533d9f9187824efc6abea352757b3f4fe",
+  "operation": "aiLocate",
+  "prompt": "定位视频区域最左侧、白裙女性与花海封面、左下角显示播放图标和“105”的视频卡片",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 228,
+      "y": 1822
+    },
+    "rect": {
+      "x": 65,
+      "y": 1566,
+      "width": 328,
+      "height": 514
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:01:56.660Z",
+  "endedAt": "2026-07-27T12:02:05.376Z",
+  "durationMs": 8715.430542,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:36949e8603d52dcaadd846e5e347200453f9baf199d303ccb8d027fb9f5d727d"
+}

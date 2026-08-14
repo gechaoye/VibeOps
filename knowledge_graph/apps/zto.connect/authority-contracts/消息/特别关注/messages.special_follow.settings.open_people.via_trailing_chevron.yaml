@@ -1,0 +1,40 @@
+schemaVersion: 3.0.0
+entityType: AuthorityContract
+id: 01KYKA3ENBFD65M644D2KD5QF3
+key: messages.special_follow.settings.open_people.via_trailing_chevron
+edgeKind: authority_contract
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceSelector:
+  kind: exact_page
+  ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+action: aiTap
+capability: open_special_follow_people
+expectedTarget:
+  kind: page
+  ref: 01KYKA3ENBX0Y8425JT9CK70DK
+  stateKey: null
+risk: safe
+sourceType: user_context
+authorityStatus: authority_certified
+planningEligible: true
+runtimeEvidenceStatus: verified
+verifiedTransitionRef: 01KYKA3ENB8T48CZ7P9W57GGE3
+defectRef: null
+certifiedFact:
+  visibleLabel: 我的特别关注
+  actionableControl: 文字右侧的向右箭头
+  labelTextActionable: false
+  otherRowRegions: unspecified
+  spatialRelation: right_of_visible_label
+  containerElementRef: 01KYKA3ENB96ERX3FZW7HWSD16
+  labelElementRef: 01KYKA3ENBFXPDZGEBV0MNG0HV
+  triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+contradictionPolicy: record_product_defect
+provenance:
+  sourceType: user_context
+  recordedAt: '2026-07-31T15:46:02+08:00'
+  reviewedBy: user_context_2026-07-30

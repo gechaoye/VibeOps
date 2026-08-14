@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHAFZ3N191DHKQZQ1VZD7QC",
+  "sessionRef": "01KYHAC69YW8MBBVJKFVYZ0TD8",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHACNP4EZ6VTKFJA8VJJSX2",
+  "sourceScreenshotRef": "sha256:50ae27e4437e89240b3e8769be8f24fbc724dfac4b9fa72768868c8cf5c0d8b0",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前屏幕标题为“特别关注提醒”，“我的特别关注”显示“1人”，成员“练良伟”、添加和移除均可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:18:54.605Z",
+  "endedAt": "2026-07-27T08:19:05.973Z",
+  "durationMs": 11367.622292,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:0f979a90f11d2067e60cc015bbd5a79e567a7d78da63996027ca90ccb34b2031"
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHRT0D063MGA4V2FYXNXT5E",
+  "sessionRef": "01KYHR8DFGG6PD70AVJAZ2X0PW",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHRPYD094Q7P84A9QKK20RT",
+  "sourceScreenshotRef": "sha256:b934f096b7bbc6b3c61941b9d8fc41afd257aadcac21598d187af15f3bbea4af",
+  "operation": "aiLocate",
+  "prompt": "定位第二个“间隔时间”下方写有“提醒方式”的整行入口，右侧当前值为“短信”并带灰色向右箭头",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 564,
+      "y": 1480
+    },
+    "rect": {
+      "x": 49,
+      "y": 1411,
+      "width": 1031,
+      "height": 139
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:28:56.839Z",
+  "endedAt": "2026-07-27T12:29:15.040Z",
+  "durationMs": 18201.346875,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:64dfd625f7fa60f99996aac7ce99b33076b1e6cfa8be63d8274431493807eef1"
+}

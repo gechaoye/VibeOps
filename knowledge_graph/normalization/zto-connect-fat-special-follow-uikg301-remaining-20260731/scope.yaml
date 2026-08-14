@@ -1,0 +1,64 @@
+task:
+  id: zto-connect-fat-special-follow-uikg301-remaining-20260731
+  requestedAt: '2026-07-31T15:46:02+08:00'
+  objective: 按 UIKG 3.0.1 统一容器模型规范化特别关注剩余 Page/Element，并用实时双模型证据闭合设置行 profile 和交互边界。
+application:
+  key: zto.connect
+  packageId: com.zto.connect.fat
+  build:
+    environment: test
+    versionCode: '10542'
+entry:
+  description: 特别关注提醒页面“我的特别关注”复合入口容器
+  knownFacts:
+  - 页面只直接引用“我的特别关注”总容器元素。
+  - 总容器持有说明文案和右侧箭头两个子元素。
+  - “我的特别关注”文案用于说明入口，不可点击。
+  - 右侧箭头是打开全部特别关注成员列表的独立可点击入口。
+  authorityContracts:
+  - id: 01KYKA3ENBFD65M644D2KD5QF3
+    sourceType: user_context
+    authorityStatus: authority_certified
+    planningEligible: true
+    sourceSelector:
+      kind: exact_page
+      ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+    triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+    expectedTarget:
+      kind: page
+      ref: 01KYKA3ENBX0Y8425JT9CK70DK
+      stateKey: null
+    runtimeEvidenceStatus: verified
+scope:
+  mode: uikg_3_0_1_remaining_page_element_normalization
+  deviceActions: 18 verified Midscene actions; no ADB UI actions
+  reason: 设备已连接；帮助设置、选择设置、提示音选项、成员行和我的特别关注入口均已获得实时帧、独立 Scout、GPT 对账、locator 与安全动作证据。
+graph:
+  root: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph
+  normativeSpec:
+    index: spec/README.md
+    version: UIKG 3.0.1
+    schemaVersion: 3.0.0
+    contentHash: sha256:03904e083f55a42e36b035db877d2bf575f6973426a2abde089326b51833969f
+    schemaFiles:
+    - spec/schemas/application.schema.json
+    - spec/schemas/authority-contract.schema.json
+    - spec/schemas/common.schema.json
+    - spec/schemas/element.schema.json
+    - spec/schemas/manifest.schema.json
+    - spec/schemas/page.schema.json
+    - spec/schemas/supporting-record.schema.json
+    - spec/schemas/transition.schema.json
+    relationshipRules: spec/relationship-invariants.md
+    precedenceAccepted: true
+  mergePolicy: reviewed-migration-plus-additive-upsert
+  preserveHistoricalEntities: true
+  stageBeforePublish: true
+  baseline:
+    fileCount: 469
+    contentHash: sha256:8f56c6475d736e73f9b96dafaa345a0adc49469dc0c8a2d8a266dbf73b5ea217
+    entityIdsHash: sha256:b41fd685a33d45e0dfc9d47473b1c6a9cf762d852e654fac28a048f2345d86aa
+completion:
+  correctionStatus: complete
+  resultingGraphStatus: incomplete
+  remainingLimitation: 本次模型规范化与实时范围已闭合；历史特别关注状态仍有 GPT-only 证据，整体图谱继续标记 incomplete。

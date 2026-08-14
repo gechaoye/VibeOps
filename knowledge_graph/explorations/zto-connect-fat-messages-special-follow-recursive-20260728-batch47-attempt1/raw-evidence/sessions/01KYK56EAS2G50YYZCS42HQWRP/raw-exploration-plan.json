@@ -1,0 +1,262 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260728-batch47-attempt1:plan",
+  "sourceScopeHash": "sha256:d0c7a6ee996904eefd239863f6899db213e599923af89ed94ee56f11a29bd403",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注设置返回未读会话状态，再收起到消息页，验证特别关注入口爱心的橙黄色高亮状态。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.unread_badge",
+        "predicate": "value_semantics",
+        "value": "红色角标展示特别关注会话当前实时未读消息数量；具体数字是 Runtime 呈现，不属于稳定身份或固定规则。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，消息页入口爱心图标变为橙黄色。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.with_member_before_unread_return",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-collapse",
+        "space": "current_display_px",
+        "rect": {
+          "x": 15,
+          "y": 105,
+          "width": 150,
+          "height": 150
+        },
+        "purpose": "特别关注页标题栏左侧向下折线收起控件。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经风险策略允许的应用内导航范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.with_member_before_unread_return": {
+      "key": "messages.special_follow.settings.with_member_before_unread_return",
+      "label": "返回前非空特别关注提醒设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注提醒，“我的特别关注”显示1人，练良伟头像、添加和移除可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只输出标题、1人、练良伟头像、添加和移除可见的事实，visibleControls 必须返回空数组。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "navigate_back"
+      ],
+      "postcondition": "已记录返回前设置状态。"
+    },
+    "messages.special_follow.with_dynamic_unread_after_settings": {
+      "key": "messages.special_follow.with_dynamic_unread_after_settings",
+      "label": "从设置返回的动态未读会话状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注，成员头像和特别关注会话可见，会话摘要带橙色特别关注前缀，右侧红色角标显示当前未读消息数量。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只输出标题、成员条目、会话摘要中的橙色特别关注前缀和红色实时未读数量角标可见的事实；如实记录当前数字但明确它是动态呈现，visibleControls 必须返回空数组；收起控件由动作步骤单独实时 aiLocate。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "collapse_special_follow"
+      ],
+      "postcondition": "已记录实时未读角标，不把数字固化为稳定状态。"
+    },
+    "messages.root.with_special_follow_unread_highlight": {
+      "key": "messages.root.with_special_follow_unread_highlight",
+      "label": "特别关注存在未读时的消息页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.root",
+      "requiredSemanticAssertions": [
+        "当前页面为消息页，顶部功能工具栏中的特别关注爱心图标呈橙黄色高亮。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点消息页顶部工具栏，重点记录特别关注爱心图标的橙黄色高亮呈现、其位置和实时 bbox；普通会话列表中的数字角标只作为动态页面内容，不提升为本功能稳定元素。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "tab"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证特别关注存在未读时消息页爱心入口橙黄色高亮。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-settings-before-unread-return",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.with_member_before_unread_return",
+      "depth": 2
+    },
+    {
+      "id": "back-to-special-follow-with-dynamic-unread",
+      "kind": "back",
+      "semanticAction": "navigate_back",
+      "fromState": "messages.special_follow.settings.with_member_before_unread_return",
+      "toState": "messages.special_follow.with_dynamic_unread_after_settings",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 3000,
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面标题为特别关注，会话摘要带橙色特别关注前缀，右侧红色角标显示当前未读消息数量。"
+        ]
+      }
+    },
+    {
+      "id": "collapse-special-follow-to-messages",
+      "kind": "tap",
+      "semanticAction": "collapse_special_follow",
+      "fromState": "messages.special_follow.with_dynamic_unread_after_settings",
+      "toState": "messages.root.with_special_follow_unread_highlight",
+      "depth": 0,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history",
+        "temporary_display_state"
+      ],
+      "waitMs": 3000,
+      "target": {
+        "key": "special_follow_collapse_with_unread",
+        "label": "收起特别关注",
+        "scope": "page_navigation",
+        "locatorPrompt": "定位特别关注页面顶部标题栏最左侧、标题“特别关注”左边的黑色向下折线图标控件。",
+        "allowedRegionRef": "special-follow-collapse"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面为消息页，顶部功能工具栏中的特别关注爱心图标呈橙黄色高亮。"
+        ]
+      }
+    }
+  ]
+}

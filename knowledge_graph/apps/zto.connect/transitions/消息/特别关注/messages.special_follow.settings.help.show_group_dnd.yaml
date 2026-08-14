@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBDNKK787Y5GMQ5QGY
+key: messages.special_follow.settings.help.show_group_dnd
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENB2WFXGWDJAV9HCS2R
+action: aiTap
+capability: open_group_dnd_help
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: safe
+verificationStatus: success_dual_model_live
+evidence:
+  actionTraceRef: open-group-dnd-help-live-repair
+  actionRecordRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/open-group-dnd-help-live-repair.json
+  beforeFrameRef: sha256:c9c9f9dba0f0cae5fa42609dbe995ea8cb22f8b95ac9f9ae9ff3598f41011d50
+  afterFrameRef: sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727
+  postcondition: pass
+  semanticAssertions:
+  - sha256:0692054162110870bceb7f8ee7f7efe8606abca453f499d5a8dc315788210a9b
+provenance:
+  sourceType: midscene_dual_model_live_action_trace
+  liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1

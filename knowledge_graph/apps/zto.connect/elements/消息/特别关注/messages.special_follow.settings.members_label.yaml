@@ -1,0 +1,66 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBFXPDZGEBV0MNG0HV
+key: messages.special_follow.settings.members_label
+label: 特别关注-特别关注提醒-我的特别关注-说明文字
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENB96ERX3FZW7HWSD16
+parentElementRef: 01KYKA3ENB96ERX3FZW7HWSD16
+controlType: text_label
+role: description
+capabilities: []
+summary: 显示“我的特别关注”，用于说明右侧箭头入口的业务含义；该文案不可点击，不触发导航。
+relationshipRefs:
+- owner:01KYKA3ENB96ERX3FZW7HWSD16
+- parent:01KYKA3ENB96ERX3FZW7HWSD16
+observations:
+- frameRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  observedAt: '2026-07-31T06:19:26.974Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: null
+    actionable: false
+  screenshotRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 49.0
+      top: 307.0
+      width: 298.0
+      height: 50.0
+    center:
+    - 197.0
+    - 331.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:dd36dd1ca9a717ef2dbec1241321275ec0c451c58bc0d112c61da14483b92b89
+  state: visible_non_actionable_label
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBFXPDZGEBV0MNG0HV-sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329.png
+coverage: observed_not_activated_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+  userContextCertifiedFact: “我的特别关注”是入口说明文案，不可点击，不触发导航。
+aliases:
+- 我的特别关注文案
+interactionBoundary:
+  actionable: false
+  function: describes_sibling_trigger

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHBDGQPYZYPG7DPNQTHWMJQ",
+  "sessionRef": "01KYHB4AWXSK89EQW5B6WTF2WZ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHBB5C44NE1ZC4ZRH5SDC93",
+  "sourceScreenshotRef": "sha256:30a581ccb1eae33fb2610a961f0cf496830494cdabbfa60b29515b4e735239d0",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "点击“移除”后，当前屏幕出现与移除成员“练良伟”有关的确认状态，或者“全部成员”列表中已不再显示该成员。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:35:02.230Z",
+  "endedAt": "2026-07-27T08:35:14.294Z",
+  "durationMs": 12063.630958,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3ad3da9db57ad47727004c6a401e600edb42aec4aeccedaf2b68cbe2104b3d95"
+}

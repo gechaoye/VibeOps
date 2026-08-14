@@ -1,0 +1,208 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch28-unblock-attempt4:plan",
+  "sourceScopeHash": "sha256:04a96c81350e16799d66da73e9494c5178ae71dabbb014a55ca1ed0b87bb4e47",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口探索期间的通用页面解阻",
+    "userIntent": "关闭与特别关注无关的 APP 账号安全检查通用页面；本会话不进入发布图谱。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.account_security_check",
+        "predicate": "scope_boundary",
+        "value": "账号安全检查是 APP 通用页面，不属于特别关注功能图谱。",
+        "source": "task_policy"
+      }
+    ]
+  },
+  "initialState": "common.account_security_check",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "account-security-close-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 1010.0,
+          "y": 120.0,
+          "width": 120.0,
+          "height": 150.0
+        },
+        "purpose": "账号安全检查页面右上角关闭 X 的局部区域。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "common.account_security_check": {
+      "key": "common.account_security_check",
+      "label": "账号安全检查通用页面",
+      "kind": "page",
+      "expectedStablePageKey": "common.account_security_check",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“账号安全检查”，右上角有关闭 X，并显示账号检查内容。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点账号安全检查页面当前全屏可见控件；右上角 X 可关闭，其他账号处理操作均只记录不可激活。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "close",
+          "list_entry",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "close_common_page"
+      ],
+      "postcondition": "已盘点通用页面且账号处理操作均未激活。"
+    },
+    "zto.main.after_security_check": {
+      "key": "zto.main.after_security_check",
+      "label": "关闭账号安全检查后的实际落点",
+      "kind": "unresolved",
+      "expectedStablePageKey": "zto.main",
+      "requiredSemanticAssertions": [
+        "“账号安全检查”页面已关闭且不再显示，宝盒测试包仍在前台；如实识别实际落点。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点关闭账号安全检查后的实际页面、当前标签页和全部可见交互控件，不激活任何控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "radio",
+          "back",
+          "close",
+          "tab",
+          "menu",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已恢复宝盒主界面或其稳定子页面。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-account-security-check",
+      "kind": "capture",
+      "state": "common.account_security_check",
+      "depth": 0
+    },
+    {
+      "id": "close-account-security-check",
+      "kind": "tap",
+      "semanticAction": "close_common_page",
+      "fromState": "common.account_security_check",
+      "toState": "zto.main.after_security_check",
+      "depth": 0,
+      "risk": "safe",
+      "sideEffects": [
+        "temporary_display_state",
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "account_security.close",
+        "label": "关闭",
+        "scope": "temporary_state_control",
+        "locatorPrompt": "定位“账号安全检查”页面橙色标题区域右上角浅色圆形内的黑色 X 关闭图标；不要定位页面中的“去处理”或底部“暂不处理，先登录”按钮。",
+        "allowedRegionRef": "account-security-close-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "“账号安全检查”页面已关闭且不再显示，宝盒测试包仍在前台。"
+        ]
+      }
+    }
+  ]
+}

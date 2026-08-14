@@ -1,0 +1,211 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch5-attempt2:plan",
+  "sourceScopeHash": "sha256:c1898a5385d9efb05b0f41b0312ee850e6c69771192dda150d007f59e9f5222e",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.people.empty",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经风险策略允许的应用内导航和临时状态控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.people.empty": {
+      "key": "messages.special_follow.people.empty",
+      "label": "全部成员空白状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“全部成员”，左侧返回箭头和右侧关闭 X 均可见，标题栏下方主体为空白。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点“全部成员”页面当前视口的全部图标、按键、返回和关闭控件；主体为空白时如实记录，不推断名单不存在、加载状态或业务原因。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "navigate_back"
+      ],
+      "postcondition": "全部成员空白页面完成全控件盘点。"
+    },
+    "messages.special_follow.settings.returned_from_people": {
+      "key": "messages.special_follow.settings.returned_from_people",
+      "label": "从全部成员返回设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“特别关注提醒”，“我的特别关注”和提醒方式设置均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "复核返回后的设置页并盘点当前视口全部交互控件与状态；不激活任何持久设置，且不把整页设置布局推断为滚动控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证从全部成员返回设置页。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-all-members-empty",
+      "kind": "capture",
+      "state": "messages.special_follow.people.empty",
+      "depth": 3
+    },
+    {
+      "id": "back-from-all-members",
+      "kind": "back",
+      "semanticAction": "navigate_back",
+      "fromState": "messages.special_follow.people.empty",
+      "toState": "messages.special_follow.settings.returned_from_people",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕已返回标题为“特别关注提醒”的设置页，主要提醒设置可见。"
+        ]
+      }
+    }
+  ]
+}

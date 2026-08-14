@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK79ZCAGGE4V0Z88RBPVAV9",
+  "sessionRef": "01KYK75BTZ4TV4ZP32QETPQ4HB",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK793EJ1B3QJ2X48D1KE34Z",
+  "sourceScreenshotRef": "sha256:49ca5f1cde96f160314237b3089b5708896f0a7b437d91d4b7355463915faf06",
+  "operation": "aiLocate",
+  "prompt": "定位底部白色间隔时间选择面板中第二行、左侧有蓝色勾选且文字为蓝色“30分钟”的当前选中选项",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 223,
+      "y": 2106
+    },
+    "rect": {
+      "x": 144,
+      "y": 2082,
+      "width": 159,
+      "height": 49
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T02:01:47.313Z",
+  "endedAt": "2026-07-28T02:01:52.778Z",
+  "durationMs": 5465.522125,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:2209046aa0ace54042e344e90a54e31feec9f6923ed137f3c92837179af22867"
+}

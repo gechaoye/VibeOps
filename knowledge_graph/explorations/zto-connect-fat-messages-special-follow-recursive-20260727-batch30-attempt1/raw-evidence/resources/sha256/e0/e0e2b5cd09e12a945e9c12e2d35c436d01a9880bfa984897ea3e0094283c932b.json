@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHRP0JNAZ0QSTHCT5X5MCP7",
+  "sessionRef": "01KYHR8DFGG6PD70AVJAZ2X0PW",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHRM2R1Y4C28D2PAA5X4FQ1",
+  "sourceScreenshotRef": "sha256:ae44ade206987bfec11c74d4a93a7a2e7e23af525a73204550ae41af00b02520",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"提醒方式 短信\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.method\",\"predicate\":\"visible_options\",\"value\":\"提醒方式面板包含短信、电话和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "底部提醒方式面板已打开",
+      "短信（当前选中）",
+      "电话",
+      "取消",
+      "背景页面被半透明遮罩覆盖",
+      "背景中的提醒方式当前显示为短信"
+    ],
+    "supportedFunctionDescription": "该界面 visibly 支持在提醒方式面板中选择短信或电话；当前短信处于选中状态，并可通过“取消”退出该面板。背景设置页还显示特别关注未读消息的弹窗提醒、短信/电话提醒、间隔时间及夜间免打扰相关设置。",
+    "evidenceBasis": [
+      "截图顶部标题为“特别关注提醒”",
+      "截图底部出现覆盖式选择面板，背景整体变暗",
+      "“短信”文字为蓝色且左侧有蓝色勾选标记",
+      "面板内还清晰显示“电话”和“取消”",
+      "背景设置行清晰显示“提醒方式”和当前值“短信”",
+      "给定权威任务上下文说明功能名称为“特别关注”，并确认提醒方式面板包含短信、电话和取消"
+    ],
+    "unresolvedMeaning": "仅凭当前静态画面无法确认点击已选中的“短信”后是否会立即保存、关闭面板或触发其他反馈，也无法确认点击遮罩区域是否可关闭面板。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:26:43.939Z",
+  "endedAt": "2026-07-27T12:27:04.149Z",
+  "durationMs": 20210.974417,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:eac2ae75dc0595ddca2e4752288b14c8b2846c7cdf7e472b281ef5814f8f316a"
+}

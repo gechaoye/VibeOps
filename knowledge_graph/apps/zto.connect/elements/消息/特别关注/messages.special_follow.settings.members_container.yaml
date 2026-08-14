@@ -1,0 +1,75 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB96ERX3FZW7HWSD16
+key: messages.special_follow.settings.members_container
+label: 特别关注-特别关注提醒-我的特别关注
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+parentElementRef: null
+controlType: container
+role: navigation_group
+capabilities: []
+summary: “我的特别关注”复合入口的总容器；页面只直接引用该容器，容器持有不可点击的说明文案和可点击的右侧箭头两个子元素。
+relationshipRefs:
+- owner:01KYKA3ENB5WR50THMQMPJ4FJZ
+- child:01KYKA3ENBFXPDZGEBV0MNG0HV
+- child:01KYKA3ENBCNJZQ09AHT9YZFF7
+observations:
+- frameRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  observedAt: '2026-07-31T06:19:26.974Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: null
+    actionable: false
+  screenshotRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 48.0
+      top: 278.0
+      width: 1028.0
+      height: 99.0
+    center:
+    - 561.0
+    - 327.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:ecf3f863e3b9e51174b9c43b025954b3753ca64b0411060eb1563fe62f5c95ba
+  state: visible_non_actionable_container
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENB96ERX3FZW7HWSD16-sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329.png
+coverage: observed_not_activated_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+  userContextCertifiedFact: 页面只直接引用该总容器；容器本身不触发导航，导航由其右侧箭头子元素触发。
+aliases:
+- 我的特别关注入口容器
+interactionBoundary:
+  actionable: false
+  function: groups_label_and_sibling_trigger
+childElementRefs:
+- 01KYKA3ENBFXPDZGEBV0MNG0HV
+- 01KYKA3ENBCNJZQ09AHT9YZFF7
+composition:
+  roles:
+    explanatoryContent: 01KYKA3ENBFXPDZGEBV0MNG0HV
+    actionTrigger: 01KYKA3ENBCNJZQ09AHT9YZFF7
+  profile: action_row

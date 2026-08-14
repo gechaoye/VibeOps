@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHDQJGS12Y071YPC9KPCKFE",
+  "sessionRef": "01KYHDMQ8EFWPC0S4DZ8YYJSH7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHDMZM4SNVY0J6S3D6CCE07",
+  "sourceScreenshotRef": "sha256:81149057382a8a664faa8121b23fb58dfed77275a82b78de7770a9a53f2f3db3",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面顶部标题文字为“特别关注提醒”，第一项“单聊消息未读，弹窗提醒我”右侧灰色圆圈问号可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:15:32.407Z",
+  "endedAt": "2026-07-27T09:15:40.953Z",
+  "durationMs": 8546.371625,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f45d47ec1120ee72192f27d521cfc5f77a8258e3c9866aa43e6fd10b790d3da2"
+}

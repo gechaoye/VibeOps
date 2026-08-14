@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBHBMCRQT56973VBET
+key: messages.special_follow.member_entry
+label: 特别关注-特别关注成员
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB431TAGYEEA0BJYYZ
+parentElementRef: null
+controlType: list_entry
+role: navigation
+capabilities:
+- open_followed_member_conversation
+summary: 展示特别关注成员，并可进入该成员的通用会话页。
+relationshipRefs:
+- owner:01KYKA3ENB431TAGYEEA0BJYYZ
+- transition:01KYKA3ENBP1EJZNJBC0VT6KV3
+observations:
+- frameRef: 01KYJ4QSVND1N3RN1BZQDJJHVJ
+  observedAt: '2026-07-27T15:57:48.385Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:8cdae4359c0ac661f07691fadd5a5b513934479445b1150dc7743be33cfa0449
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5/raw-evidence/sessions/01KYJ4QEBBQZP44ANFGP77NE7J
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 42.0
+      top: 400.0
+      width: 149.0
+      height: 168.0
+    center:
+    - 116.5
+    - 484.0
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:64730f1e5291fbe9c75168eea8374e3bb47e27617e3c7034ac4c665df0d26fcf
+  state: visible_and_actionable
+  dynamicValue: null
+  actionTraceRef: 01KYJ4RBREX5GKX3RQR2RAXR5P
+  redboxRef: assets/element-redboxes/01KYKA3ENBHBMCRQT56973VBET-01KYJ4QSVND1N3RN1BZQDJJHVJ.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: open_followed_member_conversation

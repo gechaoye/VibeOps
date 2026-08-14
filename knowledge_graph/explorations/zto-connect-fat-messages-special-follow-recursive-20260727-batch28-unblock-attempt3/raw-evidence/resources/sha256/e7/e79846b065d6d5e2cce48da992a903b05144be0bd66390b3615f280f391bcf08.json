@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHPYNRZ7QS22HXDDRYR8SYZ",
+  "sessionRef": "01KYHPTTGF5EFQQ3PKGYAVRB0S",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHPWTR2HQTH8S4ERBCB0N3H",
+  "sourceScreenshotRef": "sha256:806ff58916a39d21f8b3e9d7ad4990804def2a26c288369efb4c873d93a7e143",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"recover_main_application\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.transient_schedule_overlay\",\"predicate\":\"scope_boundary\",\"value\":\"日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。\",\"source\":\"task_policy\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "账号安全检查",
+    "visibleResultContent": [
+      "检测到账号1项异常",
+      "建议立即处理",
+      "常用聊天账号已设置",
+      "中天账号",
+      "实人已认证",
+      "人员信息已绑定",
+      "暂不处理，先登录（剩余-1534天）"
+    ],
+    "supportedFunctionDescription": "激活“recover_main_application”后，主应用恢复并显示账号安全检查页面；页面支持查看账号检查状态，可通过右上角关闭控件退出，也可选择“暂不处理，先登录”。任务上下文另行指定 messages.toolbar.heart 的功能名称为“特别关注”，且全局临时日程提醒遮挡不属于该功能图谱。",
+    "evidenceBasis": [
+      "屏幕标题清晰显示“账号安全检查”。",
+      "结果区清晰显示“检测到账号1项异常”和“建议立即处理”。",
+      "可见检查项右侧均显示绿色勾选状态。",
+      "右上角可见关闭控件，底部可见“暂不处理，先登录（剩余-1534天）”按钮。",
+      "“特别关注”的功能名称和日程提醒遮挡的范围边界来自权威非视觉任务上下文，而非当前画面像素。"
+    ],
+    "unresolvedMeaning": "异常项目的具体名称及处理方式未在当前可见区域中明确展示；当前画面也未直接显示“特别关注”控件或其交互结果，因此除给定上下文外无法从像素进一步确定其行为。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:56:36.945Z",
+  "endedAt": "2026-07-27T11:56:50.847Z",
+  "durationMs": 13901.925875,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f65447013d4765cd5195114b6cd40ff4a1a99ab69b684998b2f3d48e87e51314"
+}

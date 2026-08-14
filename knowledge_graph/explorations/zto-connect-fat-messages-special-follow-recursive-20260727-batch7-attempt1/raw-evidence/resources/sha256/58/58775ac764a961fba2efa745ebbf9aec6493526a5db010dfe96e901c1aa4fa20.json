@@ -1,0 +1,219 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHA32746258TQ1C3VQSY584",
+  "sessionRef": "01KYH9T8PKX1QA0E8CPC4Q0K45",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHA18X7F2Q5RZB0THKKJWXM",
+  "sourceScreenshotRef": "sha256:af9020e4b4f796f0eed665fa9a22f1f641e11a25c64c2919242b1afa47941785",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"icon_button\",\"link\",\"menu\",\"list_entry\",\"toggle\",\"checkbox\",\"radio\",\"segmented_control\",\"tab\",\"slider\",\"stepper\",\"input\",\"back\",\"close\",\"scroll_region\"]. 完整盘点添加成员后的“特别关注提醒”设置页，记录“我的特别关注”非空呈现、成员入口、添加、全部帮助图标、开关、间隔时间、提示音和返回控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.add\",\"predicate\":\"opens_common_component\",\"value\":\"通用选人组件\",\"source\":\"user\"},{\"subjectKey\":\"common.person_picker\",\"predicate\":\"scope_role\",\"value\":\"通用组件边界_不递归探索\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "我的特别关注：1人",
+      "成员：练良伟",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我：开启",
+      "间隔时间：10",
+      "弹窗消息未读，短信/电话提醒我：关闭",
+      "免打扰群通知：关闭",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "visibleNavigationState": "当前位于“特别关注提醒”设置页；我的特别关注非空，共1人。",
+    "visibleControls": [
+      {
+        "candidateKey": "special_follow_back",
+        "label": "返回",
+        "controlType": "back",
+        "visibleState": "左上角向左箭头",
+        "semanticRole": "navigation",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "离开当前设置页",
+        "functionDescription": "返回上一页",
+        "locatorPrompt": "定位页面左上角、标题“特别关注提醒”左侧的黑色向左箭头控件"
+      },
+      {
+        "candidateKey": "special_follow_members",
+        "label": "我的特别关注 1人",
+        "controlType": "list_entry",
+        "visibleState": "右侧显示“1人”和向右箭头",
+        "semanticRole": "navigation",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "进入成员列表",
+        "functionDescription": "打开我的特别关注成员列表",
+        "locatorPrompt": "定位标题“我的特别关注”同一行右侧显示“1人”和右箭头的整行入口"
+      },
+      {
+        "candidateKey": "special_follow_member_lian_liangwei",
+        "label": "练良伟",
+        "controlType": "list_entry",
+        "visibleState": "显示成员头像和姓名“练良伟”",
+        "semanticRole": "member_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能进入成员相关页面",
+        "functionDescription": "成员入口",
+        "locatorPrompt": "定位“我的特别关注”区域内最左侧、头像下方标注“练良伟”的成员入口"
+      },
+      {
+        "candidateKey": "special_follow_add",
+        "label": "添加",
+        "controlType": "button",
+        "visibleState": "虚线方框内加号，下方文字“添加”",
+        "semanticRole": "add_member",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开通用选人组件并可能添加特别关注成员",
+        "functionDescription": "打开通用选人组件以添加特别关注成员",
+        "locatorPrompt": "定位成员“练良伟”右侧、虚线方框加号且下方标注“添加”的控件"
+      },
+      {
+        "candidateKey": "special_follow_remove",
+        "label": "移除",
+        "controlType": "button",
+        "visibleState": "虚线方框内减号，下方文字“移除”",
+        "semanticRole": "remove_member",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能移除已特别关注的成员",
+        "functionDescription": "进入或执行特别关注成员移除操作",
+        "locatorPrompt": "定位“添加”右侧、虚线方框减号且下方标注“移除”的控件"
+      },
+      {
+        "candidateKey": "popup_reminder_help",
+        "label": "单聊消息未读，弹窗提醒我 帮助",
+        "controlType": "icon_button",
+        "visibleState": "灰色圆圈问号",
+        "semanticRole": "help",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "显示说明信息",
+        "functionDescription": "查看单聊未读弹窗提醒的帮助说明",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”文字末尾、蓝色开关左侧的圆圈问号图标"
+      },
+      {
+        "candidateKey": "popup_reminder_toggle",
+        "label": "单聊消息未读，弹窗提醒我",
+        "controlType": "toggle",
+        "visibleState": "开启，蓝色轨道且滑块在右侧",
+        "semanticRole": "setting_toggle",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "关闭后将不再按此方式弹窗提醒",
+        "functionDescription": "开启或关闭单聊未读消息弹窗提醒",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”这一行最右侧的蓝色开启开关"
+      },
+      {
+        "candidateKey": "reminder_interval",
+        "label": "间隔时间",
+        "controlType": "list_entry",
+        "visibleState": "当前值为10，右侧有箭头",
+        "semanticRole": "setting_navigation",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "修改提醒间隔时间",
+        "functionDescription": "打开间隔时间设置",
+        "locatorPrompt": "定位“间隔时间”整行，右侧显示数值“10”和向右箭头"
+      },
+      {
+        "candidateKey": "sms_phone_reminder_help",
+        "label": "弹窗消息未读，短信/电话提醒我 帮助",
+        "controlType": "icon_button",
+        "visibleState": "灰色圆圈问号",
+        "semanticRole": "help",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "显示说明信息",
+        "functionDescription": "查看短信/电话提醒的帮助说明",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”文字末尾、关闭开关左侧的圆圈问号图标"
+      },
+      {
+        "candidateKey": "sms_phone_reminder_toggle",
+        "label": "弹窗消息未读，短信/电话提醒我",
+        "controlType": "toggle",
+        "visibleState": "关闭，浅灰轨道且滑块在左侧",
+        "semanticRole": "setting_toggle",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "开启后可能触发短信或电话提醒",
+        "functionDescription": "开启或关闭弹窗消息未读后的短信/电话提醒",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”这一行最右侧的浅灰色关闭开关"
+      },
+      {
+        "candidateKey": "dnd_group_notification_help",
+        "label": "免打扰群通知 帮助",
+        "controlType": "icon_button",
+        "visibleState": "灰色圆圈问号",
+        "semanticRole": "help",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "显示说明信息",
+        "functionDescription": "查看免打扰群通知的帮助说明",
+        "locatorPrompt": "定位“免打扰群通知”文字右侧、该行关闭开关左侧的圆圈问号图标"
+      },
+      {
+        "candidateKey": "dnd_group_notification_toggle",
+        "label": "免打扰群通知",
+        "controlType": "toggle",
+        "visibleState": "关闭，浅灰轨道且滑块在左侧",
+        "semanticRole": "setting_toggle",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "开启后可能改变免打扰群的通知行为",
+        "functionDescription": "开启或关闭免打扰群通知",
+        "locatorPrompt": "定位“免打扰群通知”这一行最右侧的浅灰色关闭开关"
+      },
+      {
+        "candidateKey": "special_follow_sound",
+        "label": "特别关注提示音",
+        "controlType": "list_entry",
+        "visibleState": "当前值为“波浪”，右侧有箭头",
+        "semanticRole": "setting_navigation",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "修改特别关注提示音",
+        "functionDescription": "打开提示音选择设置",
+        "locatorPrompt": "定位“个性化提醒”分区下的“特别关注提示音”整行，右侧显示“波浪”和向右箭头"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "special_follow_settings_scroll",
+        "label": "特别关注提醒设置内容",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位标题栏下方、从“我的特别关注”到“特别关注提示音”并延伸至底部空白区域的页面主体滚动区域"
+      }
+    ],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:11:07.358Z",
+  "endedAt": "2026-07-27T08:12:03.172Z",
+  "durationMs": 55813.607667,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:7a2f7fc61528d12a27f4b149b4dc20bdba7cb51bed68f0cc38998807da49273d"
+}

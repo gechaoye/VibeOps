@@ -1,0 +1,68 @@
+schemaVersion: 3.0.0
+entityType: Page
+id: 01KYKA3ENBCMSXNBZDYXZ7PJSM
+key: boundary.common.person_picker
+label: 通用组件-选人
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 通用组件
+- 选人
+surfaceType: page
+status: observed_gpt_only_pending_scout
+summary: APP级通用选人边界；本次仅记录特别关注添加入口、选择一人、确认和返回流程，不探索组件内部。
+states:
+- key: none_selected
+  summary: 未选择人员
+  frameRefs:
+  - 01KYJ0ZN10XXR1M9TCC9B23830
+- key: one_selected
+  summary: 已选择一人
+  frameRefs:
+  - 01KYJ113NK6S3GQY2NZ128FPRQ
+elementRefs:
+- 01KYKA3ENBFEMQ17HJ3CM4ZDZS
+- 01KYKA3ENBPYYSWY1RN4GH3SJ6
+- 01KYKA3ENBX544RVBP72A3ASWD
+inboundTransitionRefs:
+- 01KYKA3ENBDXQZ7JVSBJ4KP68A
+- 01KYKA3ENBX195QB179EVJX1XX
+outboundTransitionRefs:
+- 01KYKA3ENBDXQZ7JVSBJ4KP68A
+- 01KYKA3ENBS86J8YD2ZHKER8BH
+observations:
+- frameRef: 01KYJ0ZN10XXR1M9TCC9B23830
+  observedAt: '2026-07-27T14:52:11.450Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: common.person_picker.initial
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:f8ca555adc2de1f74cb6678b2aafca9594fc54a726b2a7733dc2d2f81f3c2af1
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYJ113NK6S3GQY2NZ128FPRQ
+  observedAt: '2026-07-27T14:52:59.229Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: common.person_picker.one_selected
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:c1a2abd820aa8be093cf320f31308521847815dd8e103ac74dafddc157f8aa40
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
+  evidenceStatus: gpt_verified_pending_independent_scout
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+boundaryNote: 仅记录入口、完成目标流程和返回，不递归探索内部。

@@ -1,0 +1,54 @@
+{
+  "recordType": "FrozenUiFrameEvidence",
+  "stateKey": "messages.special_follow.settings.remaining.people",
+  "frameId": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+  "observedAt": "2026-07-31T07:19:45.942Z",
+  "buildRef": "android-package:com.zto.connect.fat@10542",
+  "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "viewport": {
+    "width": 1152,
+    "height": 2376,
+    "orientation": "portrait"
+  },
+  "screenshotRef": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+  "screenshotPath": "frames/075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a.png",
+  "dpr": 3.501519756838906,
+  "scoutRef": "model-results/messages.special_follow.settings.remaining.people.scout.json",
+  "reconciliationRef": "model-results/messages.special_follow.settings.remaining.people.gpt.json",
+  "locatorRef": "locators/messages.special_follow.settings.remaining.people.json",
+  "evidenceStatus": "dual_model_verified_live_frame",
+  "locators": {
+    "member_row": {
+      "rect": {
+        "left": 48,
+        "top": 289,
+        "width": 1057,
+        "height": 131
+      },
+      "center": [
+        576,
+        354
+      ],
+      "dpr": 3.501519756838906,
+      "frameRef": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+      "prompt": "定位“全部成员”页面中包含成员头像、成员姓名以及最右侧“移除”按钮的完整横向成员行总容器；框住整行但不包含页面标题栏。",
+      "status": "pass"
+    },
+    "member_remove": {
+      "rect": {
+        "left": 968,
+        "top": 310,
+        "width": 137,
+        "height": 87
+      },
+      "center": [
+        1036,
+        353
+      ],
+      "dpr": 3.501519756838906,
+      "frameRef": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+      "prompt": "只定位“全部成员”页面成员行最右侧的“移除”按钮边界；不要包含成员头像、姓名或整行空白。",
+      "status": "pass"
+    }
+  }
+}

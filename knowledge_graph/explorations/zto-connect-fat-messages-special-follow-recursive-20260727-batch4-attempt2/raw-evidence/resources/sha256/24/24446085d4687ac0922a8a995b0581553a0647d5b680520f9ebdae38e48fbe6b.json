@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH80D8E17FJQVZQ85YA01HZ",
+  "sessionRef": "01KYH7TN05DA36ZRG8XTNGH0T2",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH7Y73T6KA6Y4P61CH3WJKD",
+  "sourceScreenshotRef": "sha256:00d84ae1df523f4b80a7c66730cc92f0cbe8a07f24924a517f913c2a3f4825af",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前屏幕已进入由“我的特别关注”打开的页面，标题栏、返回控件和主要内容可见。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:35:30.307Z",
+  "endedAt": "2026-07-27T07:35:39.022Z",
+  "durationMs": 8715.363,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:ddf1060027f702eced2d38a9e257876bfdfa0be89a9f2180c586da3a1fec30f5"
+}

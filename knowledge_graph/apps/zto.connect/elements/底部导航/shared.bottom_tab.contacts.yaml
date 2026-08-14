@@ -1,0 +1,53 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KY6Z7BD84AJ4MQDV639KF07R
+key: shared.bottom_tab.contacts
+label: 底部导航-通讯录
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 底部导航
+owner:
+  kind: shared_component
+  ref: 01KY6Z7BD84VK4BNARMMSEET0K
+parentElementRef: 01KY6Z7BD84VK4BNARMMSEET0K
+controlType: menu-item
+role: role.tab
+capabilities:
+- activate
+summary: 打开通讯录一级页面的共享导航项。
+relationshipRefs:
+- owner:01KY6Z7BD84VK4BNARMMSEET0K
+- legacy-transition:01KY6Z7BD84SC19WE0TSNCZ3SM
+- parent:01KY6Z7BD84VK4BNARMMSEET0K
+observations:
+- frameRef: 01KY6YF0RQY5FPMV6M0JGT5YHZ
+  observedAt: '2026-07-23T07:36:27.671Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  locator:
+    rect:
+      left: 510
+      top: 2206
+      width: 129
+      height: 143
+    center:
+    - 574.5
+    - 2277.5
+    dpr: 1
+    status: legacy_visual_annotation_not_live_locator
+  state: visible
+  stateProperties:
+    enabled: unknown
+    selected: false
+    checked: unknown
+  dynamicValue: null
+  screenshotRef: sha256:5ffd3250f6a267a829dd940877f1e714774901b369e29afbcef8d4fc9487c2a2
+  evidenceStatus: legacy_visual_observation_requires_dual_model_reconciliation
+coverage: legacy_observed_pending_dual_model_reconciliation
+risk: medium
+provenance:
+  sourceType: legacy_uikg_v2_import
+  sourceEntityId: 01KY6Z7BD84AJ4MQDV639KF07R
+  limitations:
+  - legacy observations include OCR-derived semantics
+  - geometry is not a live locator
+status: legacy_observed_pending_dual_model_reconciliation

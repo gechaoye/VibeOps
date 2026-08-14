@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1:policy",
+  "sourceScopeHash": "sha256:a0e270e0f5845df924453b02508b998caa013521e7a5113e4b5a6a240676f1ff",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 40,
+  "allowedRiskLevels": [
+    "low",
+    "medium",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "feature_entry",
+    "page_content",
+    "page_navigation",
+    "scroll_region",
+    "settings_navigation",
+    "temporary_state_control"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "remove-dialog-cancel",
+      "space": "current_display_px",
+      "rect": {
+        "x": 180.0,
+        "y": 1200.0,
+        "width": 410.0,
+        "height": 250.0
+      },
+      "purpose": "移除确认弹窗左侧“取消”按钮的实时 Midscene 定位范围。"
+    },
+    {
+      "key": "remove-dialog-confirm",
+      "space": "current_display_px",
+      "rect": {
+        "x": 570.0,
+        "y": 1200.0,
+        "width": 410.0,
+        "height": 250.0
+      },
+      "purpose": "移除确认弹窗右侧“确定”按钮的实时 Midscene 定位范围。"
+    },
+    {
+      "key": "remove-special-follow-member",
+      "space": "current_display_px",
+      "rect": {
+        "x": 930.0,
+        "y": 250.0,
+        "width": 222.0,
+        "height": 230.0
+      },
+      "purpose": "成员“练良伟”行右侧“移除”按钮的实时 Midscene 定位范围。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "persistent_setting_change",
+    "temporary_display_state",
+    "viewport_scroll"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 40,
+    "include": [
+      "messages.special_follow.people"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

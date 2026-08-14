@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ0V6Z215TQDRW54TQHGZEN",
+  "sessionRef": "01KYJ0PVYJWSF83QGX9Y9ZJ668",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ0S640YCSRAP2JQW4TB0DS",
+  "sourceScreenshotRef": "sha256:fd41d764734963968c6333c4d5309d186ab322c13f04f6753c3ed96594090b4d",
+  "operation": "aiLocate",
+  "prompt": "定位选择人员页最近联系人区域第一行、姓名为练良伟、左侧为空心选择圆圈的完整成员行。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 590,
+      "y": 1910
+    },
+    "rect": {
+      "x": 29,
+      "y": 1835,
+      "width": 1123,
+      "height": 151
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:49:36.998Z",
+  "endedAt": "2026-07-27T14:49:43.138Z",
+  "durationMs": 6140.145791,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:ea37ada32d04443fb79ff97603ec42d047f0d0853821b2abf913b67d10129d69"
+}

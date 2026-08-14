@@ -1,0 +1,245 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch6-attempt1:plan",
+  "sourceScopeHash": "sha256:03e59647aae0d8e0b1dad97fbdb6e91919de8cdd66a190199264c33633a7a90d",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.authorization",
+        "predicate": "may_operate_setting_toggles",
+        "value": "true",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.authorization",
+        "predicate": "may_add_special_follow",
+        "value": "true",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.initial",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "add-special-follow-button",
+        "space": "current_display_px",
+        "rect": {
+          "x": 20,
+          "y": 340,
+          "width": 210,
+          "height": 285
+        },
+        "purpose": "“特别关注提醒”页虚线方框加号和“添加”按钮的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经用户授权和风险策略允许的应用内导航、设置与临时状态控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.initial": {
+      "key": "messages.special_follow.settings.initial",
+      "label": "特别关注提醒设置",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“特别关注提醒”，虚线方框加号和“添加”文字按钮可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点当前视口全部开关、设置项、帮助图标、按键、列表入口和返回控件并记录状态；不把整页设置布局推断为滚动控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_add_special_follow"
+      ],
+      "postcondition": "添加入口状态完成盘点。"
+    },
+    "messages.special_follow.people.selector.initial": {
+      "key": "messages.special_follow.people.selector.initial",
+      "label": "特别关注成员选择初始状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people.selector",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“全部成员”，左侧返回箭头和右侧关闭 X 可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点“全部成员”选择页当前视口全部成员候选、列表行、头像、选择状态、搜索、确认、返回、关闭和真实可辨滚动区域；主体空白时如实记录，不推断原因，不在本批选择成员。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [
+        "select_special_follow",
+        "navigate_back",
+        "close"
+      ],
+      "postcondition": "全部成员选择页完成全控件盘点，成员选择动作进入下一批。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-settings-before-add",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.initial",
+      "depth": 2
+    },
+    {
+      "id": "open-add-special-follow",
+      "kind": "tap",
+      "semanticAction": "open_add_special_follow",
+      "fromState": "messages.special_follow.settings.initial",
+      "toState": "messages.special_follow.people.selector.initial",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 5000,
+      "target": {
+        "key": "add_special_follow",
+        "label": "添加",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位“我的特别关注”区域左下方、虚线方框内有灰色加号且下方写有“添加”的完整按钮。",
+        "allowedRegionRef": "add-special-follow-button"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕标题为“全部成员”，左侧返回箭头和右侧关闭 X 可见。"
+        ]
+      }
+    }
+  ]
+}

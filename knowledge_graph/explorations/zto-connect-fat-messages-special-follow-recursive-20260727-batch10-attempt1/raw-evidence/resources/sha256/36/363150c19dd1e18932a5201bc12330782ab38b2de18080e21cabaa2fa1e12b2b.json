@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHBAAP91RMTKDWXCCBZPB32",
+  "sessionRef": "01KYHB4AWXSK89EQW5B6WTF2WZ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHB7M482Y2GX2P9WJENZKMW",
+  "sourceScreenshotRef": "sha256:ac69e567d50b290406284aba622783d38414b262aac44fb6b340d73433499dba",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前屏幕仍为标题“全部成员”的同一页面，成员“练良伟”和“移除”按钮仍可见，没有打开其他页面。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:33:19.154Z",
+  "endedAt": "2026-07-27T08:33:29.801Z",
+  "durationMs": 10646.70325,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:2af4760711e75d8862df8d90acb59b331aa13d0037462e83f1b60ae78551e13e"
+}

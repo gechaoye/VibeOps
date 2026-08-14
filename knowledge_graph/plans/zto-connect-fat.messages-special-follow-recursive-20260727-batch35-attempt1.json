@@ -1,0 +1,499 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1:plan",
+  "sourceScopeHash": "sha256:0e15514c7cc6aa5a51c384d1a1b6a01e9a7a7780b40f519f3a08a31e3c21b4f1",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "实际选择特别关注提示音的全部尚未验证选项，并记录每次选择后的设置页状态。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sound",
+        "predicate": "visible_options",
+        "value": "提示音面板包含默认、波浪、简报、门铃、各自试听按钮和取消。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.sound.briefing",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "sound-setting-row",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 2020.0,
+          "width": 1152.0,
+          "height": 356.0
+        },
+        "purpose": "当前长设置页底部“特别关注提示音”整行入口。"
+      },
+      {
+        "key": "sound-picker-panel",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 1300.0,
+          "width": 1152.0,
+          "height": 1076.0
+        },
+        "purpose": "提示音底部面板四个选项、试听按钮和取消。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.sound.briefing": {
+      "key": "messages.special_follow.settings.sound.briefing",
+      "label": "特别关注提示音简报",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为特别关注提醒，底部特别关注提示音行右侧显示简报，当前没有提示音面板。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的全部交互控件，确认底部特别关注提示音当前值；底边裁切内容不作为控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_sound_selector_briefing"
+      ],
+      "postcondition": "已记录提示音简报状态。"
+    },
+    "messages.special_follow.settings.sound.selector_briefing": {
+      "key": "messages.special_follow.settings.sound.selector_briefing",
+      "label": "提示音面板简报状态",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sound",
+      "requiredSemanticAssertions": [
+        "底部面板完整显示默认、波浪、简报、门铃、各行右侧试听按钮和取消，简报为当前选中项。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点提示音面板四个左侧单选项、四个右侧试听按钮和取消，准确记录当前选中项；背景页控件不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_sound_default"
+      ],
+      "postcondition": "已记录简报选中面板。"
+    },
+    "messages.special_follow.settings.sound.default": {
+      "key": "messages.special_follow.settings.sound.default",
+      "label": "特别关注提示音默认",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "提示音面板已关闭，特别关注提示音行右侧显示默认。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的全部交互控件，确认底部特别关注提示音当前值；底边裁切内容不作为控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_sound_selector_default"
+      ],
+      "postcondition": "已验证选择默认。"
+    },
+    "messages.special_follow.settings.sound.selector_default": {
+      "key": "messages.special_follow.settings.sound.selector_default",
+      "label": "提示音面板默认状态",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sound",
+      "requiredSemanticAssertions": [
+        "提示音面板已打开，默认为当前选中项，波浪、简报、门铃和取消均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点提示音面板四个左侧单选项、四个右侧试听按钮和取消，准确记录当前选中项；背景页控件不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_sound_wave"
+      ],
+      "postcondition": "已记录默认选中面板。"
+    },
+    "messages.special_follow.settings.sound.wave": {
+      "key": "messages.special_follow.settings.sound.wave",
+      "label": "特别关注提示音波浪",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "提示音面板已关闭，特别关注提示音行右侧显示波浪。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的全部交互控件，确认底部特别关注提示音当前值；底边裁切内容不作为控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_sound_selector_wave"
+      ],
+      "postcondition": "已验证选择波浪。"
+    },
+    "messages.special_follow.settings.sound.selector_wave": {
+      "key": "messages.special_follow.settings.sound.selector_wave",
+      "label": "提示音面板波浪状态",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sound",
+      "requiredSemanticAssertions": [
+        "提示音面板已打开，波浪为当前选中项，默认、简报、门铃和取消均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点提示音面板四个左侧单选项、四个右侧试听按钮和取消，准确记录当前选中项；背景页控件不作为当前可操作控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "radio",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_sound_bell"
+      ],
+      "postcondition": "已记录波浪选中面板。"
+    },
+    "messages.special_follow.settings.sound.bell": {
+      "key": "messages.special_follow.settings.sound.bell",
+      "label": "特别关注提示音门铃",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "提示音面板已关闭，特别关注提示音行右侧显示门铃。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的全部交互控件，确认底部特别关注提示音当前值；底边裁切内容不作为控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证选择门铃。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-sound-briefing",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.sound.briefing",
+      "depth": 4
+    },
+    {
+      "id": "open-sound-selector-briefing",
+      "kind": "tap",
+      "semanticAction": "open_sound_selector_briefing",
+      "fromState": "messages.special_follow.settings.sound.briefing",
+      "toState": "messages.special_follow.settings.sound.selector_briefing",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "special_follow_sound",
+        "label": "特别关注提示音简报",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位页面底部左侧为“特别关注提示音”、右侧显示“简报”和右箭头的整行入口。",
+        "allowedRegionRef": "sound-setting-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "提示音面板已打开，默认、波浪、简报、门铃、试听按钮和取消均可见，简报为当前选中项。"
+        ]
+      }
+    },
+    {
+      "id": "select-sound-default",
+      "kind": "tap",
+      "semanticAction": "select_sound_default",
+      "fromState": "messages.special_follow.settings.sound.selector_briefing",
+      "toState": "messages.special_follow.settings.sound.default",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "sound_default",
+        "label": "默认",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位提示音面板第一行左侧文字“默认”的单选项主体；不要定位该行右侧圆形播放按钮。",
+        "allowedRegionRef": "sound-picker-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，特别关注提示音行右侧显示默认。"
+        ]
+      }
+    },
+    {
+      "id": "open-sound-selector-default",
+      "kind": "tap",
+      "semanticAction": "open_sound_selector_default",
+      "fromState": "messages.special_follow.settings.sound.default",
+      "toState": "messages.special_follow.settings.sound.selector_default",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "special_follow_sound",
+        "label": "特别关注提示音默认",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位页面底部左侧为“特别关注提示音”、右侧显示“默认”和右箭头的整行入口。",
+        "allowedRegionRef": "sound-setting-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "提示音面板已打开，默认为当前选中项。"
+        ]
+      }
+    },
+    {
+      "id": "select-sound-wave",
+      "kind": "tap",
+      "semanticAction": "select_sound_wave",
+      "fromState": "messages.special_follow.settings.sound.selector_default",
+      "toState": "messages.special_follow.settings.sound.wave",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "sound_wave",
+        "label": "波浪",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位提示音面板第二行左侧文字“波浪”的单选项主体；不要定位该行右侧圆形播放按钮。",
+        "allowedRegionRef": "sound-picker-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，特别关注提示音行右侧显示波浪。"
+        ]
+      }
+    },
+    {
+      "id": "open-sound-selector-wave",
+      "kind": "tap",
+      "semanticAction": "open_sound_selector_wave",
+      "fromState": "messages.special_follow.settings.sound.wave",
+      "toState": "messages.special_follow.settings.sound.selector_wave",
+      "depth": 4,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "special_follow_sound",
+        "label": "特别关注提示音波浪",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位页面底部左侧为“特别关注提示音”、右侧显示“波浪”和右箭头的整行入口。",
+        "allowedRegionRef": "sound-setting-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "提示音面板已打开，波浪为当前选中项。"
+        ]
+      }
+    },
+    {
+      "id": "select-sound-bell",
+      "kind": "tap",
+      "semanticAction": "select_sound_bell",
+      "fromState": "messages.special_follow.settings.sound.selector_wave",
+      "toState": "messages.special_follow.settings.sound.bell",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "sound_bell",
+        "label": "门铃",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位提示音面板第四行左侧文字“门铃”的单选项主体；不要定位该行右侧圆形播放按钮。",
+        "allowedRegionRef": "sound-picker-panel"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "面板已关闭，特别关注提示音行右侧显示门铃。"
+        ]
+      }
+    }
+  ]
+}

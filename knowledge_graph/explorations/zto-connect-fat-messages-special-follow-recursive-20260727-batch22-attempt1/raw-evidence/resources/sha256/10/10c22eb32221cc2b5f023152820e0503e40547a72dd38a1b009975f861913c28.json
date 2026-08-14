@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHJBSC7VCW262R8PBGN65Z4",
+  "sessionRef": "01KYHJ90Y09R87C9B2E1SVSHMK",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHJ9CM7M9THDFGJ4NWP6Y2V",
+  "sourceScreenshotRef": "sha256:933ebc7a58f248e6a2ba1c12a2919ae2b7e0a0b9c5c9f4ee27e02fbb66ee9ee6",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面标题为“特别关注提醒”，“间隔时间”行右侧显示“30分钟”，当前没有底部间隔时间面板。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:36:27.835Z",
+  "endedAt": "2026-07-27T10:36:37.639Z",
+  "durationMs": 9803.320541,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:dec10f8c077c5a9887ddd7d6fd70a535b32469452bc051bffe9302d237d0be25"
+}

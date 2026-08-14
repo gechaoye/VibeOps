@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch1:plan",
+  "sourceScopeHash": "sha256:eebe65c4b9d77e21caba6e41adad28b3aa6d1ab01f4a8667782ea9d1a63b25a3",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.root",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "messages-toolbar-heart",
+        "space": "current_display_px",
+        "rect": {
+          "x": 225.0,
+          "y": 545.0,
+          "width": 150.0,
+          "height": 145.0
+        },
+        "purpose": "消息页顶部工具栏中特别关注入口的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 96.0,
+          "width": 1152.0,
+          "height": 2184.0
+        },
+        "purpose": "后续批次中经风险策略允许的应用内导航、临时状态和滚动控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.root": {
+      "key": "messages.root",
+      "label": "消息",
+      "kind": "page",
+      "expectedStablePageKey": "messages.root",
+      "requiredSemanticAssertions": [
+        "当前屏幕是宝盒测试包消息页，底部“消息”Tab 已选中，会话列表可见，顶部工具栏可见用户确认名为“特别关注”的爱心形状入口。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点当前视口全部可见交互控件；用户确认消息页顶部爱心形状入口名为“特别关注”。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [
+        "open_special_follow"
+      ],
+      "postcondition": "消息页入口状态经 Midscene 验证。"
+    },
+    "messages.special_follow.initial": {
+      "key": "messages.special_follow.initial",
+      "label": "特别关注初始状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前屏幕是由消息页特别关注入口打开的稳定页面，页面标题、主要内容、空状态或列表状态以及顶栏控件均可见并可描述。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点特别关注页面当前视口的全部开关、设置、图标、按键、列表入口、返回控件和可滚动区域，不从图标形状猜测未知含义。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [
+        "navigate_back",
+        "activate",
+        "open_settings",
+        "scroll_down",
+        "scroll_up",
+        "show_temporary_state"
+      ],
+      "postcondition": "特别关注初始状态完成全控件盘点，安全目标进入下一批队列。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-prepared-messages-root",
+      "kind": "capture",
+      "state": "messages.root",
+      "depth": 0
+    },
+    {
+      "id": "open-special-follow",
+      "kind": "tap",
+      "semanticAction": "open_special_follow",
+      "fromState": "messages.root",
+      "toState": "messages.special_follow.initial",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "messages.toolbar.heart",
+        "label": "特别关注入口",
+        "scope": "feature_entry",
+        "locatorPrompt": "消息页顶部工具栏内靠左一侧的爱心轮廓图标，即用户确认名为“特别关注”的入口；它位于会话列表上方，不是底部导航图标。",
+        "allowedRegionRef": "messages-toolbar-heart"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕已进入标题或主要语义为“特别关注”的稳定页面，且宝盒测试包仍在前台。"
+        ]
+      }
+    }
+  ]
+}

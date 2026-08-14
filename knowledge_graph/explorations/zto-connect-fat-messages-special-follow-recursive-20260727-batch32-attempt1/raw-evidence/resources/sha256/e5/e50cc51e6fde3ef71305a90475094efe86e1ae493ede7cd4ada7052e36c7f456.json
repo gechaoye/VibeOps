@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSRSN14AMZC3JGK59A2Y3K",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSPF75Q4T9XTQKT7GSD7G6",
+  "sourceScreenshotRef": "sha256:2c857b8f4e759c906ad7821c11e8f4c49049c0daf85d0a59a90511ab7c9a4015",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"夜间免打扰\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.night_dnd\",\"predicate\":\"visible_description\",\"value\":\"开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "夜间免打扰开关当前为关闭状态",
+      "未出现新的页面、弹窗或浮层",
+      "开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知"
+    ],
+    "supportedFunctionDescription": "该设置支持开启或关闭夜间免打扰；开启后，在22:00至次日06:00期间不再通过短信或电话方式通知。",
+    "evidenceBasis": [
+      "权威任务上下文说明刚刚操作的控件标签为“夜间免打扰”",
+      "当前画面标题为“特别关注提醒”",
+      "“夜间免打扰”右侧开关呈灰色且滑块位于左侧",
+      "当前画面未显示弹窗、浮层或页面跳转",
+      "权威任务上下文提供了夜间免打扰的可见说明：开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知"
+    ],
+    "unresolvedMeaning": "仅凭当前画面无法确认激活前的开关状态，也无法确认关闭该设置后夜间短信或电话通知的具体发送规则。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:45:54.211Z",
+  "endedAt": "2026-07-27T12:46:03.937Z",
+  "durationMs": 9726.595708,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f93e495bb6728f3ed9861aca483b489db62dd0fdcd80d9bb4e2d0ee250a178a1"
+}

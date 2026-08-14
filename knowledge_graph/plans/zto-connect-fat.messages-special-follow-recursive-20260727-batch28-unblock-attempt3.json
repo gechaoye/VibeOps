@@ -1,0 +1,199 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch28-unblock-attempt3:plan",
+  "sourceScopeHash": "sha256:38cf6f50a59e0a523a0d514122210ae0a8391c241323ac7884e754c08695740c",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口探索期间的临时遮挡解阻",
+    "userIntent": "使用 AndroidAgent 将宝盒主 Activity 提到前台以离开范围外的全局日程提醒；本会话不进入发布图谱。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.transient_schedule_overlay",
+        "predicate": "scope_boundary",
+        "value": "日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。",
+        "source": "task_policy"
+      }
+    ]
+  },
+  "initialState": "common.schedule_reminder.overlay",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.ping.TopFloatActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "schedule-overlay-actions",
+        "space": "current_display_px",
+        "rect": {
+          "x": 20.0,
+          "y": 550.0,
+          "width": 1112.0,
+          "height": 350.0
+        },
+        "purpose": "仅用于盘点弹窗动作；本会话不点击其中任何按钮。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "common.schedule_reminder.overlay": {
+      "key": "common.schedule_reminder.overlay",
+      "label": "全局日程提醒弹窗",
+      "kind": "dialog",
+      "expectedStablePageKey": "common.schedule_reminder",
+      "requiredSemanticAssertions": [
+        "前景显示标题“日程”和“您有一个新日程”的弹窗，底部按钮依次为忽略、拒绝、接受。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点前景日程提醒弹窗全部可见控件，只把忽略、拒绝、接受识别为按钮；背景特别关注设置页不可操作。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "recover_main_application"
+      ],
+      "postcondition": "已盘点全局遮挡且三个业务动作均未激活。"
+    },
+    "zto.main.recovered": {
+      "key": "zto.main.recovered",
+      "label": "宝盒主界面恢复落点",
+      "kind": "unresolved",
+      "expectedStablePageKey": "zto.main",
+      "requiredSemanticAssertions": [
+        "日程提醒弹窗已不再显示，宝盒测试包主界面可见；如实识别当前标签页和全部可见控件。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点启动宝盒主 Activity 后的实际落点、当前标签页和全部可见交互控件；不激活任何控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "radio",
+          "back",
+          "close",
+          "tab",
+          "menu",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已离开日程浮层并确认恢复后的实际应用落点。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-schedule-overlay-before-main-launch",
+      "kind": "capture",
+      "state": "common.schedule_reminder.overlay",
+      "depth": 0
+    },
+    {
+      "id": "launch-zto-main-activity",
+      "kind": "start_activity",
+      "semanticAction": "recover_main_application",
+      "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+      "fromState": "common.schedule_reminder.overlay",
+      "toState": "zto.main.recovered",
+      "depth": 0,
+      "risk": "safe",
+      "sideEffects": [
+        "temporary_display_state",
+        "navigation_history"
+      ],
+      "waitMs": 3000,
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "日程提醒弹窗已不再显示，宝盒测试包主界面可见。"
+        ]
+      }
+    }
+  ]
+}

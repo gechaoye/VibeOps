@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ36910JQKX4MSAXSPNTK8B",
+  "sessionRef": "01KYJ35DNE8CXJRFYN2KJQEZPA",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ35PNXPVZJAZZ7HRXZ3KBK",
+  "sourceScreenshotRef": "sha256:32b41c7bf03efec014147cb62d0008d00856073d723117ae1e85a3c55ad00ed0",
+  "operation": "aiLocate",
+  "prompt": "定位特别关注页面灰色分隔带下方唯一会话行右侧的时间“10:28”，作为打开该会话的点击锚点。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 1064,
+      "y": 698
+    },
+    "rect": {
+      "x": 1018,
+      "y": 682,
+      "width": 94,
+      "height": 34
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:30:39.907Z",
+  "endedAt": "2026-07-27T15:30:42.848Z",
+  "durationMs": 2940.19,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:0a6cbb324e5a12922cc2a1b58cf315a09344b9111483d8dd40bd90e7b92f000d"
+}

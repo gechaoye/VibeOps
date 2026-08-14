@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHTRA50A4NY5V5SFYKY78N4",
+  "sessionRef": "01KYHTP9AWY4DV9KRMM3YE0VN6",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHTPM6PMPYMS1H581AYYRY4",
+  "sourceScreenshotRef": "sha256:12f5e9b66ed00ad3299ce9a92c13dd37f3a0b6c39d67dbe7f1a48599f646504c",
+  "operation": "aiLocate",
+  "prompt": "定位“我的特别关注”区域左下方，虚线圆角方框加号及下方文字“添加”组成的控件。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 110,
+      "y": 492
+    },
+    "rect": {
+      "x": 48,
+      "y": 398,
+      "width": 126,
+      "height": 189
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T13:03:12.212Z",
+  "endedAt": "2026-07-27T13:03:16.640Z",
+  "durationMs": 4428.776333,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:79c92bec2a3af844ab61f9683b2e4d21b188085110d3336db11fe8ce681a70a5"
+}

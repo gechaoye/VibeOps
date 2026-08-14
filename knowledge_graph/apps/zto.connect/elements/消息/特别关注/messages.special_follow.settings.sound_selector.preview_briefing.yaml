@@ -1,0 +1,63 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBXG6XT1YH7W0TF7RS
+key: messages.special_follow.settings.sound_selector.preview_briefing
+label: 特别关注-特别关注提醒-提示音选择-简报提示音-试听简报提示音
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENBQMKY9P85B76KS89E
+parentElementRef: 01KYKA3ENBQMKY9P85B76KS89E
+controlType: icon_button
+role: action
+capabilities:
+- preview_sound_briefing
+summary: 试听简报提示音。
+relationshipRefs:
+- owner:01KYKA3ENBQMKY9P85B76KS89E
+- parent:01KYKA3ENBQMKY9P85B76KS89E
+- transition:01KYKA3ENBE9N76DA0MBJD9KYS
+observations:
+- frameRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  observedAt: '2026-07-31T06:55:23.472Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 1024.0
+      top: 1901.0
+      width: 64.0
+      height: 65.0
+    center:
+    - 1055.0
+    - 1933.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:37c2c9b9aaedd4d95873a64849f3d1c1e421724b0f392d7f09d0c9f9b434fcb9
+  state: visible
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBXG6XT1YH7W0TF7RS-sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0.png
+coverage: executed_verified_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: true
+  function: preview_sound_briefing

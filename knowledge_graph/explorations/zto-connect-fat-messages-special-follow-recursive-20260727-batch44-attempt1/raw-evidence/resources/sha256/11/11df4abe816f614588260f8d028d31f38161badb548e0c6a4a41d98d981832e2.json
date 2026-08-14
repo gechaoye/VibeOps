@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ2BPBCV9ZGCGZWJWH03VCP",
+  "sessionRef": "01KYJ2933PE5SQBWFPQJ4ZSVBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ2AT020WCB323XQAQ1GBD4",
+  "sourceScreenshotRef": "sha256:6e3dc72990007d47c0cfee76ee1c6f82d84344c8dbfe3f13f028dadb8bead24a",
+  "operation": "aiLocate",
+  "prompt": "定位灰色水平分隔带正下方唯一的会话整行：左侧为棕橙色头像，中部摘要以橙色“[特别关注]”开头并包含“练良伟 创建了待办 循环待办...”，右侧有时间“10:28”和红色数字徽标“58”。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 575,
+      "y": 724
+    },
+    "rect": {
+      "x": 0,
+      "y": 636,
+      "width": 1152,
+      "height": 178
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:16:06.373Z",
+  "endedAt": "2026-07-27T15:16:11.756Z",
+  "durationMs": 5383.105041,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:db2cc676ba8184486c07fa6de7263e85f65e2474122732ad9c21bfae964f0829"
+}

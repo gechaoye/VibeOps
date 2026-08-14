@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBAGTC68TW4NRFDST2
+key: transition.messages.special_follow.settings.sms_phone_interval_selector.cancel
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENBV34YV6RCVMV9BTG3
+triggerElementRef: 01KYKA3ENBH76ERXC3Y6A1C314
+action: aiTap
+capability: cancel_sms_phone_interval_selector
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHN0EKXMGEHKT6AF5BX77CQ
+  beforeFrameRef: 01KYHMYDB078H10HV5JV315AWS
+  afterFrameRef: 01KYHN123VFFT43E9GWFTQ2XZN
+  postcondition: pass
+  semanticAssertions:
+  - sha256:3e32beddeb16c4fa5256e247f0dfe0d0d1d2f74523b23e2a459b234b00df9a3d
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

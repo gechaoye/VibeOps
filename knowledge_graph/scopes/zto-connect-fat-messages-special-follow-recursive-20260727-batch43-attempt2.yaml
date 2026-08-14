@@ -1,0 +1,142 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch43-attempt2
+title: 特别关注未读状态返回消息页第四十三批第二次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 从包含58条未读提示的特别关注页返回消息页，验证顶部快捷工具栏爱心入口呈橙黄色。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.member_with_unread, predicate: conversation_visibility, value: 设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: unread_highlight_condition, value: 已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。, source: user}
+    - {subjectKey: messages.special_follow.conversation.lian_liangwei, predicate: unread_badge, value: "58", source: verified_evidence}
+    - {subjectKey: messages.special_follow.settings.sound, predicate: current_value, value: 门铃, source: verified_evidence}
+
+entry:
+  knownStartPageKey: messages.special_follow.with_unread_lian_liangwei
+  launchComponent: com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity
+  navigationHint: 新预检已确认设备位于特别关注页，练良伟相关会话显示红色未读徽标58，左上收起按钮完整可见。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 2
+  include: [messages.special_follow, messages.root]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low]
+  allowedSideEffects: [navigation_history]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [page_navigation]
+  allowedTapRegions:
+    - {key: special-follow-back-region, space: current_display_px, rect: {x: 0, y: 100, width: 170, height: 180}, purpose: 特别关注页左上返回按钮。}
+
+expectedStates:
+  - key: messages.special_follow.with_unread_lian_liangwei
+    label: 特别关注页练良伟未读会话状态
+    kind: page
+    expectedStablePageKey: messages.special_follow
+    requiredSemanticAssertions: [当前页面标题为特别关注，练良伟相关会话可见，红色未读徽标显示58，左上收起按钮可见。]
+    inspection:
+      queryPrompt: 本批次仅复核并定位标题栏左上黑色向下折线收起按钮；练良伟相关会话、设置、成员和未读徽标58已在上一成功批次完成全控件盘点，不要在本次 visibleControls 中重复返回它们。
+      locateAllInteractiveControls: true
+      includeControlTypes: [icon_button, back, close]
+      requireScrollCoverage: false
+    allowedActions: [back_to_messages]
+    postcondition: 已记录特别关注未读会话状态。
+  - key: messages.root.with_special_follow_unread
+    label: 特别关注未读时的消息页
+    kind: page
+    expectedStablePageKey: messages.root
+    requiredSemanticAssertions: [当前底部消息Tab已选中，会话列表和顶部快捷工具栏可见，用户确认的特别关注爱心入口呈橙黄色。]
+    inspection:
+      queryPrompt: 完整盘点返回后的消息页全部可见交互控件；用户确认顶部快捷工具栏爱心图标为特别关注入口，准确记录其橙黄色填充或高亮状态及当前未读呈现。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, tab, menu, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已验证特别关注页返回消息页。
+
+actions:
+  - {id: capture-special-follow-with-unread, kind: capture, state: messages.special_follow.with_unread_lian_liangwei, depth: 1}
+  - id: tap-special-follow-back
+    kind: tap
+    semanticAction: back_to_messages
+    fromState: messages.special_follow.with_unread_lian_liangwei
+    toState: messages.root.with_special_follow_unread
+    depth: 1
+    risk: safe
+    sideEffects: [navigation_history]
+    waitMs: 2500
+    target: {key: special_follow_back, label: 返回, scope: page_navigation, locatorPrompt: 定位标题为“特别关注”的页面顶栏最左侧黑色向左箭头返回按钮。, allowedRegionRef: special-follow-back-region}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [当前已返回消息页，底部消息Tab已选中，顶部快捷工具栏中特别关注爱心入口呈橙黄色。]}
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch43-attempt2
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

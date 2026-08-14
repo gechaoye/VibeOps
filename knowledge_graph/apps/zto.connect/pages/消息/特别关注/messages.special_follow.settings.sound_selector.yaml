@@ -1,0 +1,211 @@
+schemaVersion: 3.0.0
+entityType: Page
+id: 01KYKA3ENBH55299C13ABP9088
+key: messages.special_follow.settings.sound_selector
+label: 特别关注-特别关注提醒-提示音选择
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+surfaceType: overlay
+status: observed_dual_model_verified_with_legacy_evidence
+summary: 选择或试听默认、波浪、简报和门铃提示音，也可取消选择。
+states:
+- key: observed_selection
+  summary: 已观测的当前提示音选项
+  frameRefs:
+  - sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+- key: selected_briefing
+  summary: 当前选中简报
+  frameRefs:
+  - 01KYHXZFMD4MWC4N5EJRN9XPB0
+- key: selected_default
+  summary: 当前选中默认
+  frameRefs:
+  - 01KYHY65TSAT6HEDX3TS86EGE6
+- key: selected_wave
+  summary: 当前选中波浪
+  frameRefs:
+  - 01KYHYBY2V1DWA1YC0D7HMNCX1
+- key: preview_default
+  summary: 已试听默认
+  frameRefs:
+  - 01KYHHJH0TF71WZ6HSSQ89F3HD
+- key: preview_wave
+  summary: 已试听波浪
+  frameRefs:
+  - 01KYHHNFN5Q24BH4NN78FBT8T0
+- key: preview_briefing
+  summary: 已试听简报
+  frameRefs:
+  - 01KYHHTA0YV3XE1EAH6MVG8CEC
+- key: preview_bell
+  summary: 已试听门铃
+  frameRefs:
+  - 01KYHJ02J33F2PPE1TGTKJWP23
+elementRefs:
+- 01KYKA3ENB66P4S6137G5DSM1Z
+- 01KYKA3ENBFBMGCB2SK1S0EVBP
+- 01KYKA3ENBQMKY9P85B76KS89E
+- 01KYKA3ENBX3F837PHS7BBT0EA
+- 01KYKA3ENBZBSCZ85H3CXBES31
+inboundTransitionRefs:
+- 01KYKA3ENB33RXNMX6JM1SNBQA
+- 01KYKA3ENBE9N76DA0MBJD9KYS
+- 01KYKA3ENBF5X1BEA7SFP13YPP
+- 01KYKA3ENBKS9722Z9ZCW7F088
+- 01KYKA3ENBYB4514X5S781K4WX
+outboundTransitionRefs:
+- 01KYKA3ENB33RXNMX6JM1SNBQA
+- 01KYKA3ENB8Z9GMYKTHA01WGRC
+- 01KYKA3ENBE9N76DA0MBJD9KYS
+- 01KYKA3ENBF5X1BEA7SFP13YPP
+- 01KYKA3ENBM5QWH5HY0P4XTX75
+- 01KYKA3ENBQ8V48C0T9K5TBJ8D
+- 01KYKA3ENBWHM83XY1TK6MMF7F
+- 01KYKA3ENBWKGMC4FJWMGTE7QW
+- 01KYKA3ENBYB4514X5S781K4WX
+observations:
+- frameRef: 01KYHHFBA6FRB5MJ42CF887DXR
+  observedAt: '2026-07-27T10:21:08.501Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sound.selector
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:0073f611c0c6ad24c4a7773c493c7a2d435d48cb7b12f3d8c60c019b630b6b1b
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHXZFMD4MWC4N5EJRN9XPB0
+  observedAt: '2026-07-27T13:59:40.059Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sound.selector_briefing
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:a7f7ecb2f7396bc720d7f91327d25b7f2f9d901d2ff3a6ec3e348f1a5f3d4399
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHY65TSAT6HEDX3TS86EGE6
+  observedAt: '2026-07-27T14:03:19.376Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sound.selector_default
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:536d85b18f0b371b3ecf28454f589552c37006790978be5b60a6019d08b67d5f
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHYBY2V1DWA1YC0D7HMNCX1
+  observedAt: '2026-07-27T14:06:28.143Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sound.selector_wave
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:4aae95e1aba208a12ad00ee6e6b2ac26772c698de35ffa4b1b115f4ece434ccd
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHHJH0TF71WZ6HSSQ89F3HD
+  observedAt: '2026-07-27T10:22:52.676Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sound.preview_default
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:d48663906f403c0dbd62b284c11e92b8e011558e0a3e7c1641fafd1123f2a68d
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHHNFN5Q24BH4NN78FBT8T0
+  observedAt: '2026-07-27T10:24:29.527Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sound.preview_wave
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:79e8bf17753268fdaa9af6aaffd7aaa6db547584d3d36319dd76cdefbf613835
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHHTA0YV3XE1EAH6MVG8CEC
+  observedAt: '2026-07-27T10:27:07.451Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sound.preview_briefing
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:0bf108ed91ea8de7bfac41c48f45e5f7415f5d9f84a8170e86d765c22f230237
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYHJ02J33F2PPE1TGTKJWP23
+  observedAt: '2026-07-27T10:30:16.559Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.sound.preview_bell
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:cdcaf5933caa4fb039a1828d9e635392e1c9e0d3ed84b219629bd96c569549d7
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  observedAt: '2026-07-31T06:55:23.472Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.settings.remaining.sound_selector
+    independentScout: complete
+    gptReconciliation: complete
+  screenshotRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+provenance:
+  sourceType: mixed_verified_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRefs:
+  - zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  - zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  limitations:
+  - some historical states remain GPT-only pending independent Scout

@@ -1,0 +1,266 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch33-attempt1:plan",
+  "sourceScopeHash": "sha256:aab51c4c3516b6294b6f471e80e200329adcecf1357b4049de35b990cd025510",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "验证短信/电话提醒开关关闭和重新开启时其子设置的隐藏与恢复。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sms_phone_reminder",
+        "predicate": "enabled_children",
+        "value": "开启后显示独立间隔时间、提醒方式、夜间免打扰及其说明。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.sms_phone.enabled",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "sms-phone-toggle-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 830.0,
+          "y": 1050.0,
+          "width": 310.0,
+          "height": 300.0
+        },
+        "purpose": "“弹窗消息未读，短信/电话提醒我”行右侧开关区域。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.sms_phone.enabled": {
+      "key": "messages.special_follow.settings.sms_phone.enabled",
+      "label": "短信电话提醒开启且子项可见",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "短信/电话提醒开关为蓝色开启状态；其下独立间隔时间、提醒方式、夜间免打扰和22:00至次日06:00说明均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确记录短信/电话提醒开关及其子项显隐；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "disable_sms_phone_reminder"
+      ],
+      "postcondition": "已记录短信电话提醒开启及子项可见状态。"
+    },
+    "messages.special_follow.settings.sms_phone.disabled": {
+      "key": "messages.special_follow.settings.sms_phone.disabled",
+      "label": "短信电话提醒关闭且子项隐藏",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "短信/电话提醒开关为灰色关闭状态；其独立间隔时间、提醒方式、夜间免打扰和22:00至次日06:00说明均不再显示；单聊弹窗提醒及其间隔仍显示。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确记录短信/电话提醒开关及其子项显隐；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "enable_sms_phone_reminder"
+      ],
+      "postcondition": "已验证短信电话提醒关闭时子项整体隐藏。"
+    },
+    "messages.special_follow.settings.sms_phone.enabled_restored": {
+      "key": "messages.special_follow.settings.sms_phone.enabled_restored",
+      "label": "短信电话提醒重新开启且子项恢复",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "短信/电话提醒开关恢复蓝色开启状态；独立间隔时间、提醒方式、夜间免打扰和22:00至次日06:00说明恢复显示。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确记录短信/电话提醒开关及其子项显隐；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证重新开启时子项恢复。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-sms-phone-enabled",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.sms_phone.enabled",
+      "depth": 4
+    },
+    {
+      "id": "disable-sms-phone-reminder",
+      "kind": "tap",
+      "semanticAction": "disable_sms_phone_reminder",
+      "fromState": "messages.special_follow.settings.sms_phone.enabled",
+      "toState": "messages.special_follow.settings.sms_phone.disabled",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 2000,
+      "target": {
+        "key": "sms_phone_reminder_toggle",
+        "label": "弹窗消息未读，短信/电话提醒我",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”行最右侧当前为蓝色开启状态的开关；不要定位文字右侧问号。",
+        "allowedRegionRef": "sms-phone-toggle-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "短信/电话提醒开关已变为灰色关闭状态，其独立间隔时间、提醒方式、夜间免打扰及说明均不再显示。"
+        ]
+      }
+    },
+    {
+      "id": "enable-sms-phone-reminder",
+      "kind": "tap",
+      "semanticAction": "enable_sms_phone_reminder",
+      "fromState": "messages.special_follow.settings.sms_phone.disabled",
+      "toState": "messages.special_follow.settings.sms_phone.enabled_restored",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 2000,
+      "target": {
+        "key": "sms_phone_reminder_toggle",
+        "label": "弹窗消息未读，短信/电话提醒我",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”行最右侧当前为灰色关闭状态的开关；不要定位文字右侧问号。",
+        "allowedRegionRef": "sms-phone-toggle-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "短信/电话提醒开关已恢复蓝色开启状态，其独立间隔时间、提醒方式、夜间免打扰及说明恢复显示。"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,1124 @@
+update:
+  explorationRef: zto-connect-fat-special-follow-entry-container-model-20260730
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+  mergePolicy: reviewed-migration-plus-additive-upsert
+  deletions:
+  - 01KYKA3ENBF0Y73YQHWS0Z8WNX
+  - 01KY9E733GYTS9YD68AEBZA188
+  - 01KY6Z7BD85G8TC0GDC0EC8F9B
+  - 01KYKA3ENBB9R2TEBWRFE4R5JX
+  status: complete
+  resultingGraphStatus: incomplete
+migrations:
+- oldId: 01KYKA3ENBF0Y73YQHWS0Z8WNX
+  oldKey: navigation.bottom_navigation
+  oldEntityType: Page
+  targetRef: 01KY6Z7BD84VK4BNARMMSEET0K
+  targetKey: shared.bottom_navigation
+  targetEntityType: Element
+  targetStateKey: null
+  reason: 底部导航是 Application 持有的顶层共享 Element，不是 Page。
+  reviewedBy: user_context_2026-07-28
+- oldId: 01KY9E733GYTS9YD68AEBZA188
+  oldKey: app-drawer.root
+  oldEntityType: Page
+  targetRef: 01KY6Z7BD89DJT00X43WZAFNAR
+  targetKey: shared.bottom_tab.more
+  targetEntityType: Element
+  targetStateKey: open
+  reason: 更多应用抽屉是“更多”共享 Element 的打开状态，不是 Page。
+  reviewedBy: user_context_2026-07-28
+- oldId: 01KY6Z7BD85G8TC0GDC0EC8F9B
+  oldKey: shared.app_drawer
+  oldEntityType: Element
+  targetRef: 01KY6Z7BD89DJT00X43WZAFNAR
+  targetKey: shared.bottom_tab.more
+  targetEntityType: Element
+  targetStateKey: open
+  reason: “更多”本身持有抽屉状态和入口，不再为同一抽屉建立包装 Element。
+  reviewedBy: user_context_2026-07-28
+- oldId: 01KYKA3ENBB9R2TEBWRFE4R5JX
+  oldKey: messages.special_follow.settings.members_entry
+  oldEntityType: Element
+  targetRef: 01KYKA3ENB96ERX3FZW7HWSD16
+  targetKey: messages.special_follow.settings.members_container
+  targetEntityType: Element
+  targetStateKey: null
+  reason: 用户确认旧实体把总容器、说明文案和箭头入口错误合并；Canonical 应为页面持有总容器，总容器分别持有不可点击文案和可点击箭头。
+  reviewedBy: user_context_2026-07-30
+pages:
+- operation: upsert
+  schemaVersion: 3.0.0
+  entityType: Page
+  id: 01KYKA3ENB5WR50THMQMPJ4FJZ
+  key: messages.special_follow.settings
+  label: 特别关注-特别关注提醒
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+  featurePath: &id001
+  - 消息
+  - 特别关注
+  surfaceType: page
+  status: observed_gpt_only_pending_scout
+  summary: 管理特别关注成员、弹窗提醒、短信或电话提醒、提醒间隔、提醒方式、免打扰和提示音。
+  states:
+  - key: baseline
+    summary: 基础提醒设置
+    frameRefs:
+    - 01KYHJ9CM7M9THDFGJ4NWP6Y2V
+  - key: configured_top
+    summary: 设置页顶部配置状态
+    frameRefs:
+    - 01KYHZM3PG4J0GQKMGJH4FCNFQ
+  - key: with_member
+    summary: 已有特别关注成员
+    frameRefs:
+    - 01KYJ1300BRDETCNZASH2NHWZ0
+  - key: popup_interval_30_minutes
+    summary: 单聊弹窗提醒间隔30分钟
+    frameRefs:
+    - 01KYHG3F3H61V5WQ22Q3TXXS4F
+  - key: popup_reminder_on
+    summary: 单聊未读弹窗提醒开启
+    frameRefs:
+    - 01KYHJNVD1FVZMAS8HVF76Y5QP
+  - key: popup_reminder_off
+    summary: 单聊未读弹窗提醒关闭
+    frameRefs:
+    - 01KYHJRETDM2RK6P5ER9W5TMQK
+  - key: sms_phone_off
+    summary: 短信或电话提醒关闭
+    frameRefs:
+    - 01KYHT6K4J7QCPJTBZTJ4BDT7Q
+  - key: sms_phone_on
+    summary: 短信或电话提醒开启
+    frameRefs:
+    - 01KYHT4BT0713AGE02AA0KQN4K
+  - key: sms_phone_interval_10_minutes
+    summary: 短信或电话提醒间隔10分钟
+    frameRefs:
+    - 01KYHMN6CVXK36TZZ2MV3GEQQV
+  - key: sms_phone_interval_30_minutes
+    summary: 短信或电话提醒间隔30分钟
+    frameRefs:
+    - 01KYHN123VFFT43E9GWFTQ2XZN
+  - key: reminder_method_sms
+    summary: 提醒方式为短信
+    frameRefs:
+    - 01KYHRPYD094Q7P84A9QKK20RT
+  - key: reminder_method_phone
+    summary: 提醒方式为电话
+    frameRefs:
+    - 01KYHS8MJ046D6J20D3YQ0YS4C
+  - key: dnd_both_off
+    summary: 夜间免打扰与免打扰群通知均关闭
+    frameRefs:
+    - 01KYHSH0CRCH2M72SBG1W97JD4
+  - key: dnd_night_on
+    summary: 夜间免打扰开启
+    frameRefs:
+    - 01KYHSKA6050XNY9HDBYPWPK1J
+  - key: dnd_group_on
+    summary: 免打扰群通知开启
+    frameRefs:
+    - 01KYHSS9G8BZJRVG6B9KMH3891
+  - key: popup_interval_10_minutes
+    summary: 单聊弹窗提醒间隔10分钟
+    frameRefs:
+    - 01KYHX0MFDY4P13V3DM6TJJ4FX
+  - key: popup_interval_1_hour
+    summary: 单聊弹窗提醒间隔1小时
+    frameRefs:
+    - 01KYHXJN3Q386BC6FCBYW2BCT4
+  - key: popup_interval_4_hours
+    summary: 单聊弹窗提醒间隔4小时
+    frameRefs:
+    - 01KYHWNF8JKGCZJ4CG1D9RCZ1Y
+  - key: sound_briefing
+    summary: 特别关注提示音为简报
+    frameRefs:
+    - 01KYHXX310RYKJXVTJ36PC0VBV
+  - key: sound_default
+    summary: 特别关注提示音为默认
+    frameRefs:
+    - 01KYHY1V9069RHE7WJZS708BDN
+  - key: sound_wave
+    summary: 特别关注提示音为波浪
+    frameRefs:
+    - 01KYHY8SZ9RVS0RDV1PY1BSCSJ
+  - key: sound_bell
+    summary: 特别关注提示音为门铃
+    frameRefs:
+    - 01KYHYR7YXD6K3JQDC323XFPVS
+  - key: sound_selector_dismissed
+    summary: 提示音选择器已取消
+    frameRefs:
+    - 01KYHJ36C43GS7B8J5NBZKK55K
+  - key: sound_visible_after_scroll
+    summary: 滚动后完整显示提示音入口
+    frameRefs:
+    - 01KYHXNP9V02W9JQR4ZJB5XPVT
+  elementRefs:
+  - 01KYKA3ENB2WFXGWDJAV9HCS2R
+  - 01KYKA3ENB4BWWND6KPK6B41C4
+  - 01KYKA3ENB5ADYBBTXRBP7BHVJ
+  - 01KYKA3ENB5S9E6EXKAT0H83NP
+  - 01KYKA3ENB6FXFS0TKJT80YAY5
+  - 01KYKA3ENB96ERX3FZW7HWSD16
+  - 01KYKA3ENB9FS02GM1SX9RS47B
+  - 01KYKA3ENBA43VQTMC90S6PBFG
+  - 01KYKA3ENBA5E0GVXQR71XJFP2
+  - 01KYKA3ENBBDFHW8EY0J72KJMK
+  - 01KYKA3ENBJ4XNNW97FZQQ2Y6P
+  - 01KYKA3ENBMYXFAYTP0W6DM5MY
+  - 01KYKA3ENBPHPHGZ5H0SB9AKPA
+  - 01KYKA3ENBQ16E65EW76H2368D
+  - 01KYKA3ENBTAX8RYW8RRD8EHR4
+  - 01KYKA3ENBX0NPQD3YD3CTTDZ6
+  - 01KYKA3ENBXA64NQVNKFF23PR6
+  inboundTransitionRefs:
+  - 01KYKA3ENB26AX3J5NMSWVSW01
+  - 01KYKA3ENB835QTWSG8TDR6JJB
+  - 01KYKA3ENB8Z9GMYKTHA01WGRC
+  - 01KYKA3ENB9P8Z8EZ26APK2HR4
+  - 01KYKA3ENBA895SD8800FGHC5D
+  - 01KYKA3ENBAEQBGWMMW8XC18G7
+  - 01KYKA3ENBAGTC68TW4NRFDST2
+  - 01KYKA3ENBB534HK5R6G54K01F
+  - 01KYKA3ENBD8BX5GW0D1HMTEYG
+  - 01KYKA3ENBF6BR701MECCZ4FCT
+  - 01KYKA3ENBFQ917SQ5VVH58WQR
+  - 01KYKA3ENBHT7R52HVB3R24ZD7
+  - 01KYKA3ENBK8GKAGTP7SYSVHSY
+  - 01KYKA3ENBM5QWH5HY0P4XTX75
+  - 01KYKA3ENBNVW391PTW3529BWG
+  - 01KYKA3ENBQ8V48C0T9K5TBJ8D
+  - 01KYKA3ENBRQAZYP9XVZT5VEQZ
+  - 01KYKA3ENBRYEPAQ71VBZ78Z2J
+  - 01KYKA3ENBS86J8YD2ZHKER8BH
+  - 01KYKA3ENBSA4Q8JDZK0NRT1DW
+  - 01KYKA3ENBSTTJAZ89ZZ6QER6H
+  - 01KYKA3ENBWHM83XY1TK6MMF7F
+  - 01KYKA3ENBWKGMC4FJWMGTE7QW
+  - 01KYKA3ENBZGR91Q1NEYA0YV2D
+  outboundTransitionRefs:
+  - 01KYKA3ENB7KBXWPHE5AERG8PB
+  - 01KYKA3ENB8T48CZ7P9W57GGE3
+  - 01KYKA3ENBB534HK5R6G54K01F
+  - 01KYKA3ENBD8BX5GW0D1HMTEYG
+  - 01KYKA3ENBDGS1AJN4X67RFC7M
+  - 01KYKA3ENBF11VG79QCYEHTWFS
+  - 01KYKA3ENBFQ917SQ5VVH58WQR
+  - 01KYKA3ENBH21T50G11CGVXAKP
+  - 01KYKA3ENBK8GKAGTP7SYSVHSY
+  - 01KYKA3ENBKS9722Z9ZCW7F088
+  - 01KYKA3ENBSTTJAZ89ZZ6QER6H
+  - 01KYKA3ENBX195QB179EVJX1XX
+  - 01KYKA3ENBY8YE1WNGMS05DDQG
+  observations:
+  - frameRef: 01KYHJ9CM7M9THDFGJ4NWP6Y2V
+    observedAt: '2026-07-27T10:35:21.867Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:933ebc7a58f248e6a2ba1c12a2919ae2b7e0a0b9c5c9f4ee27e02fbb66ee9ee6
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch22-attempt1/raw-evidence/sessions/01KYHJ90Y09R87C9B2E1SVSHMK
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHZM3PG4J0GQKMGJH4FCNFQ
+    observedAt: '2026-07-27T14:28:24.605Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.top
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:d0d79aae27d5a8b6ca8a572bd405db41d6406412e2de602fd463dd865770a388
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch40-attempt1/raw-evidence/sessions/01KYHZCNHDWB9DNF17R8JNMBC9
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYJ1300BRDETCNZASH2NHWZ0
+    observedAt: '2026-07-27T14:54:00.915Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.with_member
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:5e1bb52a49ca5c8197683f1df80821986b61a77a239e31af536c7b08f0b28398
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHG3F3H61V5WQ22Q3TXXS4F
+    observedAt: '2026-07-27T09:57:10.595Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.interval_30
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:e093090ce089f0c64927338754a61b92569a11de56326725669f56858c0de141
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch19-attempt1/raw-evidence/sessions/01KYHG33TR66C5GH4VQK4PWFMC
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHJNVD1FVZMAS8HVF76Y5QP
+    observedAt: '2026-07-27T10:42:10.099Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.popup_reminder.on
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:ae177166549b5c20f26fc8eb97608dcfaf7760ebc5df355832fb59a2bb3d11f8
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch23-attempt1/raw-evidence/sessions/01KYHJNH9F2FZV5AKZRQZWGT3T
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHJRETDM2RK6P5ER9W5TMQK
+    observedAt: '2026-07-27T10:43:35.547Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.popup_reminder.off
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:89634e7a5a6611592cabec3e15659fc7b6e2db3d940bdee5dad595d2a98ea324
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch23-attempt1/raw-evidence/sessions/01KYHJNH9F2FZV5AKZRQZWGT3T
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHT6K4J7QCPJTBZTJ4BDT7Q
+    observedAt: '2026-07-27T12:53:38.728Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sms_phone.disabled
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:7838b3c313f2a8fc57f68d270afac585378e1831145e353794c63c5bcb6dbef2
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch33-attempt1/raw-evidence/sessions/01KYHT43FRH9CQVJ09JS5E1JN7
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHT4BT0713AGE02AA0KQN4K
+    observedAt: '2026-07-27T12:52:25.696Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sms_phone.enabled
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:6fbc6b2932db913c26acd5e72a90d8b223766bb40149601bfdf23bd740a3817a
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch33-attempt1/raw-evidence/sessions/01KYHT43FRH9CQVJ09JS5E1JN7
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHMN6CVXK36TZZ2MV3GEQQV
+    observedAt: '2026-07-27T11:16:45.824Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.interval_10
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:7d109eb9dc7864925198ab445302d770af5ed16817a31b023726646f085e2482
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch26-attempt2/raw-evidence/sessions/01KYHMMSAR8NZXY6JC450Q617D
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHN123VFFT43E9GWFTQ2XZN
+    observedAt: '2026-07-27T11:23:14.685Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.interval.dismissed
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:918ecd5df7d837b3b89cc28be36f428da84766947ef1f939aa586e1c43106ec8
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch26-attempt2/raw-evidence/sessions/01KYHMMSAR8NZXY6JC450Q617D
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHRPYD094Q7P84A9QKK20RT
+    observedAt: '2026-07-27T12:27:37.364Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.method.dismissed_sms
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:b934f096b7bbc6b3c61941b9d8fc41afd257aadcac21598d187af15f3bbea4af
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch30-attempt1/raw-evidence/sessions/01KYHR8DFGG6PD70AVJAZ2X0PW
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHS8MJ046D6J20D3YQ0YS4C
+    observedAt: '2026-07-27T12:37:17.225Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.method.phone
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:a124e3e571fd57e5921fdba5eb84f24182e7938d1852e58409e9d89dbf1dc494
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch31-attempt1/raw-evidence/sessions/01KYHS077KZ57TNBA030189KQS
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHSH0CRCH2M72SBG1W97JD4
+    observedAt: '2026-07-27T12:41:51.465Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.dnd.both_off
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:bf7c98e4351e4efeaf628455502b7e61aa13e7225becc863bb16fadd70b3b9c1
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1/raw-evidence/sessions/01KYHSGPGD726FQ3REABKQDMJN
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHSKA6050XNY9HDBYPWPK1J
+    observedAt: '2026-07-27T12:43:07.018Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.dnd.night_on
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:1bf5e3d9d2710c613348981517d31fd76dd8994bc3b30a00aefd1e1dd7792293
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1/raw-evidence/sessions/01KYHSGPGD726FQ3REABKQDMJN
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHSS9G8BZJRVG6B9KMH3891
+    observedAt: '2026-07-27T12:46:22.918Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.dnd.group_on
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:01b70f6b7a4bfa2d5dea6fd4452518f34be95ddfd625e60c466e6f9834026824
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1/raw-evidence/sessions/01KYHSGPGD726FQ3REABKQDMJN
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHX0MFDY4P13V3DM6TJJ4FX
+    observedAt: '2026-07-27T13:42:49.339Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.popup_interval_10
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:aff28dd91bde468559080d6f49ffa065b694f76a6834dcd160f90261f9332a4d
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch37-attempt1/raw-evidence/sessions/01KYHX0BBMR4H0D2NXQNY9ZD52
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHXJN3Q386BC6FCBYW2BCT4
+    observedAt: '2026-07-27T13:52:39.760Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.popup_interval_1_hour
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:5fc36ef08a173e0a13e516171dfe0fa9d890fe07671913384bf63c4b2752a39b
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch38-attempt2/raw-evidence/sessions/01KYHXJCZ09T7F5859VFTBTMX4
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHWNF8JKGCZJ4CG1D9RCZ1Y
+    observedAt: '2026-07-27T13:36:43.521Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.popup_interval_4_hours
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:3b624c7ef1eb19ec58409c47b92064238ca881eedf0fab0a72b5adc5e4dc89a8
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch36-attempt1/raw-evidence/sessions/01KYHWN4F3BD1S2X6EB0CDNWXJ
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHXX310RYKJXVTJ36PC0VBV
+    observedAt: '2026-07-27T13:58:21.705Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sound.briefing
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:f0e96845e8b8ba1f463dfce3d089a80d39a199a7c0cebce30ad99f9ebfd41c25
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHY1V9069RHE7WJZS708BDN
+    observedAt: '2026-07-27T14:00:57.606Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sound.default
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:fa14da614d630a925033e4585813979e550d300b0298ee658791a7e0851d96c1
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHY8SZ9RVS0RDV1PY1BSCSJ
+    observedAt: '2026-07-27T14:04:45.652Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sound.wave
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:03c2726d332af3d379e53b15c0fae162a28c4e5fc5e9efe096b14853f293817e
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHYR7YXD6K3JQDC323XFPVS
+    observedAt: '2026-07-27T14:13:11.434Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sound.bell
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:33cc65b72e360627655654b494362747e1efe537ec2b8c858e7075c5c29f4c60
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch39-attempt1/raw-evidence/sessions/01KYHYQT6XJQ1Y496SNZ495WC0
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHJ36C43GS7B8J5NBZKK55K
+    observedAt: '2026-07-27T10:31:58.749Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sound.dismissed
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:19267b894b74e57dce3835299577d50fe0d55ba345d835a3305e6cd0fe475f45
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
+    evidenceStatus: gpt_verified_pending_independent_scout
+  - frameRef: 01KYHXNP9V02W9JQR4ZJB5XPVT
+    observedAt: '2026-07-27T13:54:19.237Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      planStateKeyHint: messages.special_follow.settings.sound_visible
+      independentScout: missing_from_legacy_capture
+      gptRecognition: complete
+    screenshotRef: sha256:8c77b67ee5b8ab7c542a871ef9ea80e794ebcc56760a0aab3550497556b46233
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch38-attempt2/raw-evidence/sessions/01KYHXJCZ09T7F5859VFTBTMX4
+    evidenceStatus: gpt_verified_pending_independent_scout
+  provenance:
+    sourceType: verified_legacy_midscene_evidence
+    materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+    limitations:
+    - independent aiScout evidence is absent from the historical capture
+  outboundAuthorityContractRefs:
+  - 01KYKA3ENBFD65M644D2KD5QF3
+elements:
+- operation: upsert
+  schemaVersion: 3.0.0
+  entityType: Element
+  id: 01KYKA3ENB96ERX3FZW7HWSD16
+  key: messages.special_follow.settings.members_container
+  label: 特别关注-特别关注提醒-我的特别关注
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+  featurePath: *id001
+  owner:
+    kind: page
+    ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+  parentElementRef: null
+  controlType: container
+  role: navigation_group
+  capabilities: []
+  summary: “我的特别关注”复合入口的总容器；页面只直接引用该容器，容器持有不可点击的说明文案和可点击的右侧箭头两个子元素。
+  relationshipRefs:
+  - owner:01KYKA3ENB5WR50THMQMPJ4FJZ
+  - child:01KYKA3ENBFXPDZGEBV0MNG0HV
+  - child:01KYKA3ENBCNJZQ09AHT9YZFF7
+  observations:
+  - frameRef: 01KYHEEWQ4KNCH4AFEA26F53WN
+    observedAt: '2026-07-27T09:28:27.817Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      enabled: null
+      actionable: false
+    screenshotRef: sha256:a8a6badfbcfd02154ac742f1931c783b837cf2a10a79070a5414fa0a80495452
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch15-attempt3/raw-evidence/sessions/01KYHEEFB49Q61Y0ZTS2SYH5YP
+    evidenceStatus: gpt_verified_pending_independent_scout
+    locator:
+      rect:
+        left: 49.0
+        top: 280.0
+        width: 1047.0
+        height: 99.0
+      center:
+      - 572.5
+      - 329.5
+      dpr: 1
+      status: pass
+      evidenceRef: sha256:0deedc45db823adc202f32425147ee5c4e70dd3ad3bbf7bbe4b839d91d2b25e9
+    state: visible_non_actionable_container
+    dynamicValue: null
+    actionTraceRef: null
+    redboxRef: assets/element-redboxes/01KYKA3ENB96ERX3FZW7HWSD16-01KYHEEWQ4KNCH4AFEA26F53WN.png
+  coverage: observed_not_activated_gpt_only_pending_scout
+  status: gpt_verified_pending_independent_scout
+  risk: safe
+  provenance:
+    sourceType: verified_legacy_midscene_evidence
+    materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+    limitations:
+    - independent aiScout evidence is absent from the historical capture
+    userContextCertifiedFact: 页面只直接引用该总容器；容器本身不触发导航，导航由其右侧箭头子元素触发。
+  aliases:
+  - 我的特别关注入口容器
+  interactionBoundary:
+    actionable: false
+    function: groups_label_and_sibling_trigger
+  childElementRefs:
+  - 01KYKA3ENBFXPDZGEBV0MNG0HV
+  - 01KYKA3ENBCNJZQ09AHT9YZFF7
+  composition:
+    labelElementRef: 01KYKA3ENBFXPDZGEBV0MNG0HV
+    triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+    labelPurpose: describes_trigger
+    triggerActionable: true
+    labelActionable: false
+    containerActionable: false
+- operation: upsert
+  schemaVersion: 3.0.0
+  entityType: Element
+  id: 01KYKA3ENBFXPDZGEBV0MNG0HV
+  key: messages.special_follow.settings.members_label
+  label: 特别关注-特别关注提醒-我的特别关注-说明文字
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+  featurePath: *id001
+  owner:
+    kind: component
+    ref: 01KYKA3ENB96ERX3FZW7HWSD16
+  parentElementRef: 01KYKA3ENB96ERX3FZW7HWSD16
+  controlType: text_label
+  role: description
+  capabilities: []
+  summary: 显示“我的特别关注”，用于说明右侧箭头入口的业务含义；该文案不可点击，不触发导航。
+  relationshipRefs:
+  - owner:01KYKA3ENB96ERX3FZW7HWSD16
+  - parent:01KYKA3ENB96ERX3FZW7HWSD16
+  observations:
+  - frameRef: 01KYH75QHBJANWBM4WPQXKJMK3
+    observedAt: '2026-07-27T07:21:07.558Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      enabled: null
+      actionable: false
+    screenshotRef: sha256:e7bed5a84d2429cc64d30b529feb4c720538cf3a3012b72774cb85c14758d50c
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch3-attempt2/raw-evidence/sessions/01KYH75CJAHFCT0DBEJAS1E359
+    evidenceStatus: gpt_verified_pending_independent_scout
+    locator:
+      rect:
+        left: 49.0
+        top: 303.0
+        width: 295.0
+        height: 56.0
+      center:
+      - 196.5
+      - 331.0
+      dpr: 1
+      status: pass
+      evidenceRef: sha256:9005a51b1dd8f5092e211e6c9fe2e50469c1f88f7fcb99be026bc0403c095ccf
+    state: visible_non_actionable_label
+    dynamicValue: null
+    actionTraceRef: null
+    redboxRef: assets/element-redboxes/01KYKA3ENBFXPDZGEBV0MNG0HV-01KYH75QHBJANWBM4WPQXKJMK3.png
+  coverage: observed_not_activated_gpt_only_pending_scout
+  status: gpt_verified_pending_independent_scout
+  risk: safe
+  provenance:
+    sourceType: verified_legacy_midscene_evidence
+    materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+    limitations:
+    - independent aiScout evidence is absent from the historical capture
+    userContextCertifiedFact: “我的特别关注”是入口说明文案，不可点击，不触发导航。
+  aliases:
+  - 我的特别关注文案
+  interactionBoundary:
+    actionable: false
+    function: describes_sibling_trigger
+- operation: upsert
+  schemaVersion: 3.0.0
+  entityType: Element
+  id: 01KYKA3ENBCNJZQ09AHT9YZFF7
+  key: messages.special_follow.settings.members_chevron
+  label: 特别关注-特别关注提醒-我的特别关注-右侧箭头
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+  featurePath: *id001
+  owner:
+    kind: component
+    ref: 01KYKA3ENB96ERX3FZW7HWSD16
+  parentElementRef: 01KYKA3ENB96ERX3FZW7HWSD16
+  controlType: icon_button
+  role: navigation
+  capabilities:
+  - open_special_follow_people
+  summary: 位于“我的特别关注”说明文案右侧；这是打开全部特别关注成员列表的独立可点击入口。
+  relationshipRefs:
+  - owner:01KYKA3ENB96ERX3FZW7HWSD16
+  - parent:01KYKA3ENB96ERX3FZW7HWSD16
+  - transition:01KYKA3ENB8T48CZ7P9W57GGE3
+  - authority_contract:01KYKA3ENBFD65M644D2KD5QF3
+  observations:
+  - frameRef: 01KYK6A6NM4AS43HDCRWKBH8RP
+    observedAt: '2026-07-28T01:44:34.449Z'
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport:
+      width: 1152
+      height: 2376
+      orientation: portrait
+    stateProperties:
+      enabled: true
+      selected: null
+      checked: null
+    screenshotRef: sha256:6314aa203740c57130b1c96fb89d465fb95223d2870965baf06b1c02be0e9f26
+    rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2/raw-evidence/sessions/01KYK660P4DEBSA3NGF1SET476
+    evidenceStatus: gpt_verified_pending_independent_scout
+    locator:
+      rect:
+        left: 1034.0
+        top: 309.0
+        width: 31.0
+        height: 47.0
+      center:
+      - 1049.5
+      - 332.5
+      dpr: 1
+      status: pass
+      evidenceRef: sha256:373ebda3c7828a08c04b8b6f3803dc85d8f7c0eb8a115331e867e9c4726b9a21
+    state: visible_and_actionable
+    dynamicValue: null
+    actionTraceRef: 01KYK6BJ5H2S9S0PV85V59Y9SQ
+    redboxRef: assets/element-redboxes/01KYKA3ENBCNJZQ09AHT9YZFF7-01KYK6A6NM4AS43HDCRWKBH8RP.png
+  coverage: executed_verified_gpt_only_pending_scout
+  status: gpt_verified_pending_independent_scout
+  risk: safe
+  provenance:
+    sourceType: verified_legacy_midscene_evidence
+    materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+    limitations:
+    - independent aiScout evidence is absent from the historical capture
+  aliases:
+  - 我的特别关注入口
+  - 我的特别关注列表入口
+  presentation:
+    visibleLabel: 我的特别关注
+    triggerAffordance: 向右箭头
+    spatialRelations:
+    - subject: trigger_affordance
+      predicate: right_of
+      object: visible_label
+  interactionBoundary:
+    actionablePart: trailing_chevron
+    labelTextActionable: false
+    otherRowRegions: unspecified
+    commonMisinterpretation: 用户可能按常见列表行惯例误以为“我的特别关注”文字或整行都是入口。
+transitions:
+- operation: upsert
+  schemaVersion: 3.0.0
+  entityType: Transition
+  id: 01KYKA3ENB8T48CZ7P9W57GGE3
+  key: messages.special_follow.settings.open_people
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+  featurePath: *id001
+  sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+  triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+  action: aiTap
+  capability: open_special_follow_people
+  targetRef: 01KYKA3ENBX0Y8425JT9CK70DK
+  reversible: true
+  risk: safe
+  verificationStatus: success_gpt_only_pending_scout
+  evidence:
+    actionTraceRef: 01KYK6BJ5H2S9S0PV85V59Y9SQ
+    beforeFrameRef: 01KYK6A6NM4AS43HDCRWKBH8RP
+    afterFrameRef: 01KYK6C3HD58740YXQZP0AMQE4
+    postcondition: pass
+    semanticAssertions:
+    - sha256:71fd0cea577344ca9bbc9dc40c67711d8ced607e6a85f983555d1dbe4bca2966
+  provenance:
+    sourceType: verified_legacy_midscene_action_trace
+    limitations:
+    - independent aiScout evidence is absent from the historical capture
+authorityContracts:
+- operation: upsert
+  schemaVersion: 3.0.0
+  entityType: AuthorityContract
+  id: 01KYKA3ENBFD65M644D2KD5QF3
+  key: messages.special_follow.settings.open_people.via_trailing_chevron
+  edgeKind: authority_contract
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+  featurePath: *id001
+  sourceSelector:
+    kind: exact_page
+    ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+  triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+  action: aiTap
+  capability: open_special_follow_people
+  expectedTarget:
+    kind: page
+    ref: 01KYKA3ENBX0Y8425JT9CK70DK
+    stateKey: null
+  risk: safe
+  sourceType: user_context
+  authorityStatus: authority_certified
+  planningEligible: true
+  runtimeEvidenceStatus: verified
+  verifiedTransitionRef: 01KYKA3ENB8T48CZ7P9W57GGE3
+  defectRef: null
+  certifiedFact:
+    visibleLabel: 我的特别关注
+    actionableControl: 文字右侧的向右箭头
+    labelTextActionable: false
+    otherRowRegions: unspecified
+    spatialRelation: right_of_visible_label
+    containerElementRef: 01KYKA3ENB96ERX3FZW7HWSD16
+    labelElementRef: 01KYKA3ENBFXPDZGEBV0MNG0HV
+    triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+  contradictionPolicy: record_product_defect
+  provenance:
+    sourceType: user_context
+    recordedAt: '2026-07-30T17:39:32+08:00'
+    reviewedBy: user_context_2026-07-30
+preservation:
+  existingEntityIds:
+  - 01KY6Z7BD839P6GQZJVEBQXRPX
+  - 01KY6Z7BD848Q2DKMA5KA8Z8ND
+  - 01KY6Z7BD84AJ4MQDV639KF07R
+  - 01KY6Z7BD84VK4BNARMMSEET0K
+  - 01KY6Z7BD86F49V3VCXWPSR1BB
+  - 01KY6Z7BD89DJT00X43WZAFNAR
+  - 01KY6Z7BD8BVX41ENCBD6DHP8M
+  - 01KY6Z7BD8CG3J4H9KWET4D3E0
+  - 01KY6Z7BD8D0X91GX7D73CBFMH
+  - 01KY6Z7BD8FEBTGF4XN1P9CKSN
+  - 01KY6Z7BD8G7WD2TPF4G37NBT0
+  - 01KY6Z7BD8J607T07GS5NCN9RN
+  - 01KY6Z7BD8JGBNKN8PDMQHQSKE
+  - 01KY6Z7BD8JRYX27PEYEV645BH
+  - 01KY6Z7BD8K54XW7XRQW41AN96
+  - 01KY6Z7BD8N0P8SJV0Y8G07P6V
+  - 01KY6Z7BD8NMJRG60C21NC67KP
+  - 01KY6Z7BD8PT96FQYPEGDQGBTH
+  - 01KY6Z7BD8R94WTRKQT9H8YPKG
+  - 01KY6Z7BD8REPP64M7DHA5T9VD
+  - 01KY6Z7BD8SARP45HKXM379XZG
+  - 01KY6Z7BD8T1A5A3D6DMB53XCV
+  - 01KY6Z7BD8TR8357760VZEVGC3
+  - 01KY6Z7BD8VY3ZT9WECENEK9DB
+  - 01KY6Z7BD8WAAX2EY75M0RDZH7
+  - 01KY6Z7BD8WK108WM9MQH9KDFH
+  - 01KYKA3ENB056FQR1JXRV47WZ5
+  - 01KYKA3ENB0S9EJNTQG5PX558C
+  - 01KYKA3ENB0VNZWQ6HTPQ6XX4T
+  - 01KYKA3ENB1Q64N45J08PD75X9
+  - 01KYKA3ENB26AX3J5NMSWVSW01
+  - 01KYKA3ENB2N6Q6010ZD4NT6P4
+  - 01KYKA3ENB2NKGZ35TEY285N93
+  - 01KYKA3ENB2VG2WSYHD5MYXA0V
+  - 01KYKA3ENB2WFXGWDJAV9HCS2R
+  - 01KYKA3ENB32RHWSPCWKB9GE6J
+  - 01KYKA3ENB33RXNMX6JM1SNBQA
+  - 01KYKA3ENB36EBNY57Z9J3RV8M
+  - 01KYKA3ENB431TAGYEEA0BJYYZ
+  - 01KYKA3ENB44BC4FWEPKEEY7BK
+  - 01KYKA3ENB4BWWND6KPK6B41C4
+  - 01KYKA3ENB582HKNQ5457NHAR5
+  - 01KYKA3ENB5ADYBBTXRBP7BHVJ
+  - 01KYKA3ENB5S9E6EXKAT0H83NP
+  - 01KYKA3ENB5WR50THMQMPJ4FJZ
+  - 01KYKA3ENB66P4S6137G5DSM1Z
+  - 01KYKA3ENB6C8GCHWWEJBG531S
+  - 01KYKA3ENB6FXFS0TKJT80YAY5
+  - 01KYKA3ENB6QFXR8871C3PEM0H
+  - 01KYKA3ENB72QQADA453C40VHY
+  - 01KYKA3ENB7KBXWPHE5AERG8PB
+  - 01KYKA3ENB7MZTDXKKF4GGTXZD
+  - 01KYKA3ENB80X4G3EYDN53XKYA
+  - 01KYKA3ENB835QTWSG8TDR6JJB
+  - 01KYKA3ENB83A8FJ2AKNQ7SA64
+  - 01KYKA3ENB8T48CZ7P9W57GGE3
+  - 01KYKA3ENB8W59XXC5JJZ3DDK2
+  - 01KYKA3ENB8Z9GMYKTHA01WGRC
+  - 01KYKA3ENB9E7AV6H8NA0H8E6Q
+  - 01KYKA3ENB9FS02GM1SX9RS47B
+  - 01KYKA3ENB9P8Z8EZ26APK2HR4
+  - 01KYKA3ENBA43VQTMC90S6PBFG
+  - 01KYKA3ENBA5E0GVXQR71XJFP2
+  - 01KYKA3ENBA7CQMEZ6CG74MQ6S
+  - 01KYKA3ENBA895SD8800FGHC5D
+  - 01KYKA3ENBAEQBGWMMW8XC18G7
+  - 01KYKA3ENBAGTC68TW4NRFDST2
+  - 01KYKA3ENBB47C7G4NBQSF9W56
+  - 01KYKA3ENBB534HK5R6G54K01F
+  - 01KYKA3ENBBDFHW8EY0J72KJMK
+  - 01KYKA3ENBCMSXNBZDYXZ7PJSM
+  - 01KYKA3ENBCNJZQ09AHT9YZFF7
+  - 01KYKA3ENBD8BX5GW0D1HMTEYG
+  - 01KYKA3ENBDGS1AJN4X67RFC7M
+  - 01KYKA3ENBDKMZ8WX59YFX1PB4
+  - 01KYKA3ENBDNKK787Y5GMQ5QGY
+  - 01KYKA3ENBDXQZ7JVSBJ4KP68A
+  - 01KYKA3ENBDZFZT31XYDH0P2WV
+  - 01KYKA3ENBE9N76DA0MBJD9KYS
+  - 01KYKA3ENBF11VG79QCYEHTWFS
+  - 01KYKA3ENBF5X1BEA7SFP13YPP
+  - 01KYKA3ENBF6BR701MECCZ4FCT
+  - 01KYKA3ENBFBMGCB2SK1S0EVBP
+  - 01KYKA3ENBFD65M644D2KD5QF3
+  - 01KYKA3ENBFEMQ17HJ3CM4ZDZS
+  - 01KYKA3ENBFQ917SQ5VVH58WQR
+  - 01KYKA3ENBGFNT0VFVP5RFDC9S
+  - 01KYKA3ENBH21T50G11CGVXAKP
+  - 01KYKA3ENBH55299C13ABP9088
+  - 01KYKA3ENBH76ERXC3Y6A1C314
+  - 01KYKA3ENBHBMCRQT56973VBET
+  - 01KYKA3ENBHT7R52HVB3R24ZD7
+  - 01KYKA3ENBJ4XNNW97FZQQ2Y6P
+  - 01KYKA3ENBJC1BXEJZGHXC49WB
+  - 01KYKA3ENBK5H9V0Q0GD6C4N4Q
+  - 01KYKA3ENBK8GKAGTP7SYSVHSY
+  - 01KYKA3ENBKS9722Z9ZCW7F088
+  - 01KYKA3ENBM58Q41K771RESDSY
+  - 01KYKA3ENBM5QWH5HY0P4XTX75
+  - 01KYKA3ENBMPWAJ7BFJB5ER46S
+  - 01KYKA3ENBMYXFAYTP0W6DM5MY
+  - 01KYKA3ENBN8DCB50SZ78Q1FMC
+  - 01KYKA3ENBNVW391PTW3529BWG
+  - 01KYKA3ENBNZQ775EX5QX5CENW
+  - 01KYKA3ENBP1EJZNJBC0VT6KV3
+  - 01KYKA3ENBPHPHGZ5H0SB9AKPA
+  - 01KYKA3ENBPYYSWY1RN4GH3SJ6
+  - 01KYKA3ENBQ16E65EW76H2368D
+  - 01KYKA3ENBQ8V48C0T9K5TBJ8D
+  - 01KYKA3ENBQMKY9P85B76KS89E
+  - 01KYKA3ENBQNEGVZ80QGGWWE0X
+  - 01KYKA3ENBQS8R5478TZC0FGDA
+  - 01KYKA3ENBQX0Q626YP6YESFBH
+  - 01KYKA3ENBRQAZYP9XVZT5VEQZ
+  - 01KYKA3ENBRYEPAQ71VBZ78Z2J
+  - 01KYKA3ENBS65Y9X32DWXW2MZ6
+  - 01KYKA3ENBS86J8YD2ZHKER8BH
+  - 01KYKA3ENBSA4Q8JDZK0NRT1DW
+  - 01KYKA3ENBSMTCBWJJYCW34TXV
+  - 01KYKA3ENBSQ1SS5XP248KERAZ
+  - 01KYKA3ENBSTTJAZ89ZZ6QER6H
+  - 01KYKA3ENBTAX8RYW8RRD8EHR4
+  - 01KYKA3ENBTQHXG4XJ1F3NJTFG
+  - 01KYKA3ENBTRQ1SR4HS82Y8KST
+  - 01KYKA3ENBTXHS5MSK2ZV0T48X
+  - 01KYKA3ENBV34YV6RCVMV9BTG3
+  - 01KYKA3ENBVNC72NGWT4VYXRJQ
+  - 01KYKA3ENBW3P1PVFNGS6QKEW3
+  - 01KYKA3ENBWHM83XY1TK6MMF7F
+  - 01KYKA3ENBWKGMC4FJWMGTE7QW
+  - 01KYKA3ENBWVYJJ6DHE7HJXY1N
+  - 01KYKA3ENBX0NPQD3YD3CTTDZ6
+  - 01KYKA3ENBX0Y8425JT9CK70DK
+  - 01KYKA3ENBX195QB179EVJX1XX
+  - 01KYKA3ENBX3F837PHS7BBT0EA
+  - 01KYKA3ENBX544RVBP72A3ASWD
+  - 01KYKA3ENBXA64NQVNKFF23PR6
+  - 01KYKA3ENBXG6XT1YH7W0TF7RS
+  - 01KYKA3ENBY8YE1WNGMS05DDQG
+  - 01KYKA3ENBYB4514X5S781K4WX
+  - 01KYKA3ENBYTSP4PV02ECTRZ09
+  - 01KYKA3ENBZBSCZ85H3CXBES31
+  - 01KYKA3ENBZGR91Q1NEYA0YV2D
+  protectedSharedNavigationRefs:
+  - boundary.common.conversation.back
+  - boundary.common.person_picker.close
+  - boundary.common.person_picker.confirm
+  - boundary.common.person_picker.person
+  - messages.root.special_follow_entry
+  - messages.special_follow.collapse
+  - messages.special_follow.conversation_entry
+  - messages.special_follow.member_entry
+  - messages.special_follow.people.back
+  - messages.special_follow.people.close
+  - messages.special_follow.people.member
+  - messages.special_follow.people.remove
+  - messages.special_follow.people.remove_confirmation.cancel
+  - messages.special_follow.people.remove_confirmation.confirm
+  - messages.special_follow.settings.add_member
+  - messages.special_follow.settings.back
+  - messages.special_follow.settings.group_dnd_help
+  - messages.special_follow.settings.group_dnd_toggle
+  - messages.special_follow.settings.help.group_dnd
+  - messages.special_follow.settings.help.popup
+  - messages.special_follow.settings.help.sms_phone
+  - messages.special_follow.settings.member
+  - messages.special_follow.settings.members_chevron
+  - messages.special_follow.settings.night_dnd_toggle
+  - messages.special_follow.settings.popup_interval
+  - messages.special_follow.settings.popup_interval_selector.backdrop
+  - messages.special_follow.settings.popup_interval_selector.cancel
+  - messages.special_follow.settings.popup_interval_selector.option_10_minutes
+  - messages.special_follow.settings.popup_interval_selector.option_1_hour
+  - messages.special_follow.settings.popup_interval_selector.option_30_minutes
+  - messages.special_follow.settings.popup_interval_selector.option_4_hours
+  - messages.special_follow.settings.popup_reminder_help
+  - messages.special_follow.settings.popup_reminder_toggle
+  - messages.special_follow.settings.reminder_method
+  - messages.special_follow.settings.reminder_method_selector.cancel
+  - messages.special_follow.settings.reminder_method_selector.phone
+  - messages.special_follow.settings.reminder_method_selector.sms
+  - messages.special_follow.settings.remove_member
+  - messages.special_follow.settings.scroll
+  - messages.special_follow.settings.sms_phone_help
+  - messages.special_follow.settings.sms_phone_interval
+  - messages.special_follow.settings.sms_phone_interval_selector.cancel
+  - messages.special_follow.settings.sms_phone_interval_selector.option_10_minutes
+  - messages.special_follow.settings.sms_phone_interval_selector.option_30_minutes
+  - messages.special_follow.settings.sms_phone_toggle
+  - messages.special_follow.settings.sound
+  - messages.special_follow.settings.sound_selector.bell
+  - messages.special_follow.settings.sound_selector.briefing
+  - messages.special_follow.settings.sound_selector.cancel
+  - messages.special_follow.settings.sound_selector.default
+  - messages.special_follow.settings.sound_selector.preview_bell
+  - messages.special_follow.settings.sound_selector.preview_briefing
+  - messages.special_follow.settings.sound_selector.preview_default
+  - messages.special_follow.settings.sound_selector.preview_wave
+  - messages.special_follow.settings.sound_selector.wave
+  - messages.special_follow.settings_entry
+  - messages.special_follow.unread_badge
+  - shared.app_drawer.check_in
+  - shared.app_drawer.cloud_space
+  - shared.app_drawer.department_space
+  - shared.app_drawer.documents
+  - shared.app_drawer.duty
+  - shared.app_drawer.favorites
+  - shared.app_drawer.live
+  - shared.app_drawer.lottery
+  - shared.app_drawer.meeting_live
+  - shared.app_drawer.project_management
+  - shared.app_drawer.quick_notes
+  - shared.app_drawer.recent
+  - shared.app_drawer.schedule
+  - shared.app_drawer.super_forms
+  - shared.app_drawer.todos
+  - shared.bottom_navigation
+  - shared.bottom_tab.contacts
+  - shared.bottom_tab.messages
+  - shared.bottom_tab.more
+  - shared.bottom_tab.news
+  - shared.bottom_tab.workbench
+coverage:
+  recordType: UiGraphMaterializationAudit
+  explorationRef: zto-connect-fat-messages-special-follow-normalization-20260728
+  status: incomplete
+  reason: independent_aiScout_evidence_missing_from_all_legacy_special_follow_batches
+  sourceSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  normalizationPolicy: zto-connect-fat-messages-special-follow-normalization-policy-20260728.yaml
+  evidence:
+    rawFrames: 209
+    qualifiedFrames: 171
+    rawActionTraces: 129
+    qualifiedActionTraces: 101
+    aiScoutFrames: 0
+  materialized:
+    pagesTotal: 15
+    elementsTotal: 80
+    transitions: 48
+    newOrUpdatedSpecialFollowPages: 12
+    newSpecialFollowElements: 59
+  pending:
+    pages: []
+    elements:
+    - messages.special_follow.feature_container
+    - messages.special_follow.settings.system_back
+    - messages.special_follow.people.system_back
+    - boundary.common.person_picker.system_back
+    - boundary.common.conversation.system_back
+    transitions:
+    - messages.special_follow.settings.return_via_system_back
+    - messages.special_follow.people.return_via_system_back
+    - boundary.common.conversation.return_to_special_follow
+    - boundary.common.person_picker.return_via_system_back

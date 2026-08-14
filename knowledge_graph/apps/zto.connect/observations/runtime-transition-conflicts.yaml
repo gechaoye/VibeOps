@@ -1,0 +1,31 @@
+schemaVersion: 3.0.0
+recordType: LegacyTransitionLedger
+status: contradicted_by_current_build
+reason: 旧成功 Transition 与当前构建实时证据冲突，保留历史身份但退出可执行 Canonical 路网。
+records:
+- id: 01KYKA3ENB9P8Z8EZ26APK2HR4
+  key: messages.special_follow.settings.help.dismiss_popup
+  sourcePageRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+  triggerElementRef: 01KYKA3ENB6FXFS0TKJT80YAY5
+  targetPageRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+  previousCapability: dismiss_popup_help
+  canonicalStatus: removed_from_executable_graph
+  runtimeStatus: contradicted_by_current_build
+  buildRef: android-package:com.zto.connect.fat@10542
+  reason: 当前构建实测再次点击同一帮助图标、点击页面说明区域及 Android Back 均未关闭帮助浮层，旧成功边不能继续作为可执行事实。
+  evidence:
+  - evidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/dismiss-popup-reminder-help-live-repair.json
+    actionId: dismiss-popup-reminder-help-live-repair
+    status: unresolved
+    beforeFrameRef: sha256:e0e77d75b63bb1144528698e27379d67c600168467d8cbaff945153ded2974ec
+    actual: 截图顶部标题显示仍停留在“特别关注提醒”页面；但第一项下方的深色帮助说明气泡仍清晰可见，并未消失。因此该陈述整体不成立。
+  - evidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/dismiss-popup-help-via-description-live-repair.json
+    actionId: dismiss-popup-help-via-description-live-repair
+    status: unresolved
+    beforeFrameRef: sha256:e0e77d75b63bb1144528698e27379d67c600168467d8cbaff945153ded2974ec
+    actual: 截图仍位于“特别关注提醒”页面，但画面中仍显示一条深色帮助说明气泡，内容为特别关注人的单聊消息未读提醒说明，因此并非所有深色帮助说明气泡均已关闭。
+  - evidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/dismiss-popup-help-via-android-back-live-repair.json
+    actionId: dismiss-popup-help-via-android-back-live-repair
+    status: unresolved
+    beforeFrameRef: sha256:e0e77d75b63bb1144528698e27379d67c600168467d8cbaff945153ded2974ec
+    actual: 截图仍位于“特别关注提醒”页面，但页面中间仍显示一条深色帮助说明气泡，因此并非所有深色帮助说明气泡均已关闭。

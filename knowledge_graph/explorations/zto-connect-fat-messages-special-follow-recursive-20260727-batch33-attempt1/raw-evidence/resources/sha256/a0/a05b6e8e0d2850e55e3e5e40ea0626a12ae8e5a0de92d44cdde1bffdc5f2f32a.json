@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHT9JZZC0104HX2ZKZRAHFR",
+  "sessionRef": "01KYHT43FRH9CQVJ09JS5E1JN7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHT6K4J7QCPJTBZTJ4BDT7Q",
+  "sourceScreenshotRef": "sha256:7838b3c313f2a8fc57f68d270afac585378e1831145e353794c63c5bcb6dbef2",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"弹窗消息未读，短信/电话提醒我\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder\",\"predicate\":\"enabled_children\",\"value\":\"开启后显示独立间隔时间、提醒方式、夜间免打扰及其说明。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "页面未跳转，未出现弹窗或遮罩层",
+      "“弹窗消息未读，短信/电话提醒我”开关当前为关闭状态",
+      "当前可见“单聊消息未读，弹窗提醒我”已开启",
+      "当前可见间隔时间为“30分钟”",
+      "“免打扰群通知”当前关闭",
+      "“特别关注提示音”当前为“简报”"
+    ],
+    "supportedFunctionDescription": "根据已提供的权威上下文，该开关用于启用特别关注消息在弹窗消息未读时的短信/电话提醒；开启后会显示独立的间隔时间、提醒方式、夜间免打扰及其说明。当前截图中该开关仍为关闭状态，因此这些子设置未显示。",
+    "evidenceBasis": [
+      "截图顶部标题为“特别关注提醒”",
+      "目标开关轨道为浅灰色且滑块位于左侧，视觉上表示关闭",
+      "目标开关下方紧接分区边界，未见其独立子设置",
+      "截图中没有模态框、抽屉、浮层或遮罩",
+      "关于开启后子设置及功能名称的描述来自题目提供的权威非视觉上下文"
+    ],
+    "unresolvedMeaning": "无法仅凭当前截图确定刚才的激活为何未使开关保持开启，例如操作是否未生效、被系统条件阻止或已被再次关闭；截图也未显示相关错误提示或条件说明。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:54:37.713Z",
+  "endedAt": "2026-07-27T12:55:14.175Z",
+  "durationMs": 36462.789375,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:c8505c1e77da7c41f1eafe205c9692a6b313d712a49f64a00d52d591c1f55254"
+}

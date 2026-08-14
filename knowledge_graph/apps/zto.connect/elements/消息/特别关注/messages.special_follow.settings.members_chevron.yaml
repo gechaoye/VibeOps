@@ -1,0 +1,78 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBCNJZQ09AHT9YZFF7
+key: messages.special_follow.settings.members_chevron
+label: 特别关注-特别关注提醒-我的特别关注-右侧箭头
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENB96ERX3FZW7HWSD16
+parentElementRef: 01KYKA3ENB96ERX3FZW7HWSD16
+controlType: icon_button
+role: navigation
+capabilities:
+- open_special_follow_people
+summary: 位于“我的特别关注”说明文案右侧；这是打开全部特别关注成员列表的独立可点击入口。
+relationshipRefs:
+- owner:01KYKA3ENB96ERX3FZW7HWSD16
+- parent:01KYKA3ENB96ERX3FZW7HWSD16
+- transition:01KYKA3ENB8T48CZ7P9W57GGE3
+- authority_contract:01KYKA3ENBFD65M644D2KD5QF3
+observations:
+- frameRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  observedAt: '2026-07-31T06:19:26.974Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 1036.0
+      top: 310.0
+      width: 28.0
+      height: 45.0
+    center:
+    - 1049.0
+    - 332.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:48177e1dddcd8946064a29eaf791648c121b07a2e1ccc933ba041f08376237ce
+  state: visible
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBCNJZQ09AHT9YZFF7-sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329.png
+coverage: executed_verified_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+aliases:
+- 我的特别关注入口
+- 我的特别关注列表入口
+presentation:
+  visibleLabel: 我的特别关注
+  triggerAffordance: 向右箭头
+  spatialRelations:
+  - subject: trigger_affordance
+    predicate: right_of
+    object: visible_label
+interactionBoundary:
+  actionable: true
+  function: opens_all_special_follow_members
+  actionablePart: trailing_chevron
+  labelTextActionable: false
+  otherRowRegions: unspecified
+  commonMisinterpretation: 用户可能按常见列表行惯例误以为“我的特别关注”文字或整行都是入口。

@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch40-attempt1:policy",
+  "sourceScopeHash": "sha256:543b8092d79a9beb0e7f143fc86bf155f52194d4dbb87bc831b64799dba35f77",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 5,
+  "allowedRiskLevels": [
+    "low",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "feature_entry",
+    "page_navigation",
+    "settings_navigation"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "messages-toolbar-heart",
+      "space": "current_display_px",
+      "rect": {
+        "x": 225,
+        "y": 545,
+        "width": 150,
+        "height": 145
+      },
+      "purpose": "消息页顶部快捷工具栏特别关注爱心入口。"
+    },
+    {
+      "key": "special-follow-setup-link",
+      "space": "current_display_px",
+      "rect": {
+        "x": 330,
+        "y": 1390,
+        "width": 480,
+        "height": 210
+      },
+      "purpose": "特别关注空状态页设置特别关注链接。"
+    },
+    {
+      "key": "my-special-follows-row",
+      "space": "current_display_px",
+      "rect": {
+        "x": 980,
+        "y": 245,
+        "width": 172,
+        "height": 165
+      },
+      "purpose": "特别关注提醒页我的特别关注行右侧进入箭头。"
+    },
+    {
+      "key": "all-members-close-region",
+      "space": "current_display_px",
+      "rect": {
+        "x": 1010,
+        "y": 110,
+        "width": 142,
+        "height": 170
+      },
+      "purpose": "全部成员页顶栏右上关闭X。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "temporary_display_state"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 5,
+    "include": [
+      "messages.root",
+      "messages.special_follow",
+      "messages.special_follow.settings",
+      "messages.special_follow.people"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

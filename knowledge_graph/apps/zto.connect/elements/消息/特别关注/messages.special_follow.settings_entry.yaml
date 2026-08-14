@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB72QQADA453C40VHY
+key: messages.special_follow.settings_entry
+label: 特别关注-特别关注设置
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB431TAGYEEA0BJYYZ
+parentElementRef: null
+controlType: button
+role: navigation
+capabilities:
+- open_special_follow_settings
+summary: 打开特别关注提醒设置；空状态中显示为“设置特别关注”，有成员时显示为“设置”。
+relationshipRefs:
+- owner:01KYKA3ENB431TAGYEEA0BJYYZ
+- transition:01KYKA3ENBA895SD8800FGHC5D
+observations:
+- frameRef: 01KYKDM4XEBFKJGGXZAVH9Z9BY
+  observedAt: '2026-07-28T03:52:20.265Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:3def539291f397167216cfae5bab8816fbe4f04c1b44f9828fd2ed77d7345611
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch51-attempt1/raw-evidence/sessions/01KYKDKVV8W2XD0Q80SSMFJZBQ
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 1015.0
+      top: 303.0
+      width: 97.0
+      height: 49.0
+    center:
+    - 1063.5
+    - 327.5
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:86f1fb0a98c372304dfebf25a06fa573d98f0e64d311213a3f9b29026df6e292
+  state: 右上方蓝色文字按钮，可见且未显示按下或禁用状态
+  dynamicValue: 右上方蓝色文字按钮，可见且未显示按下或禁用状态
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENB72QQADA453C40VHY-01KYKDM4XEBFKJGGXZAVH9Z9BY.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: open_special_follow_settings

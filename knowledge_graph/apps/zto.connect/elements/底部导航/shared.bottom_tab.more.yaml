@@ -1,0 +1,117 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KY6Z7BD89DJT00X43WZAFNAR
+key: shared.bottom_tab.more
+label: 底部导航-更多
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 底部导航
+owner:
+  kind: shared_component
+  ref: 01KY6Z7BD84VK4BNARMMSEET0K
+parentElementRef: 01KY6Z7BD84VK4BNARMMSEET0K
+controlType: shared-component-trigger
+role: role.menu
+capabilities:
+- activate
+- open_more
+summary: 打开底部导航中的“更多”共享应用入口抽屉；不创建同名 Page。
+relationshipRefs:
+- owner:01KY6Z7BD84VK4BNARMMSEET0K
+- legacy-transition:01KY6Z7BD8FYMNHMSDAZW1A33W
+- parent:01KY6Z7BD84VK4BNARMMSEET0K
+- child:01KY6Z7BD8R94WTRKQT9H8YPKG
+- child:01KY6Z7BD8FEBTGF4XN1P9CKSN
+- child:01KY6Z7BD8BVX41ENCBD6DHP8M
+- child:01KY6Z7BD8T1A5A3D6DMB53XCV
+- child:01KY6Z7BD8N0P8SJV0Y8G07P6V
+- child:01KY6Z7BD8CG3J4H9KWET4D3E0
+- child:01KY6Z7BD8WAAX2EY75M0RDZH7
+- child:01KY6Z7BD848Q2DKMA5KA8Z8ND
+- child:01KY6Z7BD8WK108WM9MQH9KDFH
+- child:01KY6Z7BD8JGBNKN8PDMQHQSKE
+- child:01KY6Z7BD8G7WD2TPF4G37NBT0
+- child:01KY6Z7BD8TR8357760VZEVGC3
+- child:01KY6Z7BD8VY3ZT9WECENEK9DB
+- child:01KY6Z7BD8JRYX27PEYEV645BH
+- child:01KY6Z7BD8PT96FQYPEGDQGBTH
+observations:
+- frameRef: 01KY6YF0RQY5FPMV6M0JGT5YHZ
+  observedAt: '2026-07-23T07:36:27.671Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  locator:
+    rect:
+      left: 967
+      top: 2199
+      width: 100
+      height: 150
+    center:
+    - 1017.0
+    - 2274.0
+    dpr: 1
+    status: legacy_visual_annotation_not_live_locator
+  state: visible
+  stateProperties:
+    enabled: unknown
+    selected: false
+    checked: unknown
+  dynamicValue:
+    kind: dot
+    text: null
+    semanticMeaning: unknown
+  screenshotRef: sha256:5ffd3250f6a267a829dd940877f1e714774901b369e29afbcef8d4fc9487c2a2
+  evidenceStatus: legacy_visual_observation_requires_dual_model_reconciliation
+- frameRef: 01KY6YGEA89R0S2AG8790J93DS
+  observedAt: '2026-07-23T07:37:14.312Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  locator:
+    rect:
+      left: 0
+      top: 897
+      width: 1152
+      height: 1292
+    center:
+    - 576.0
+    - 1543.0
+    dpr: 1
+    status: legacy_visual_annotation_not_live_locator
+  state: visible
+  stateProperties:
+    enabled: unknown
+    selected: unknown
+    checked: unknown
+    sharedComponentState: open
+  dynamicValue: null
+  screenshotRef: sha256:4d7a92102770747364bfc04a690b6eb45e34262c1c11923d6875c4434292e101
+  evidenceStatus: legacy_visual_observation_requires_dual_model_reconciliation
+  redboxRef: assets/element-redboxes/01KY6Z7BD85G8TC0GDC0EC8F9B.png
+coverage: legacy_observed_pending_dual_model_reconciliation
+risk: medium
+provenance:
+  sourceType: legacy_uikg_v2_import
+  sourceEntityId: 01KY6Z7BD89DJT00X43WZAFNAR
+  limitations:
+  - legacy observations include OCR-derived semantics
+  - geometry is not a live locator
+status: legacy_observed_pending_dual_model_reconciliation
+states:
+- key: open
+  summary: 更多应用抽屉已打开
+  frameRefs:
+  - 01KY6YGEA89R0S2AG8790J93DS
+childElementRefs:
+- 01KY6Z7BD8R94WTRKQT9H8YPKG
+- 01KY6Z7BD8FEBTGF4XN1P9CKSN
+- 01KY6Z7BD8BVX41ENCBD6DHP8M
+- 01KY6Z7BD8T1A5A3D6DMB53XCV
+- 01KY6Z7BD8N0P8SJV0Y8G07P6V
+- 01KY6Z7BD8CG3J4H9KWET4D3E0
+- 01KY6Z7BD8WAAX2EY75M0RDZH7
+- 01KY6Z7BD848Q2DKMA5KA8Z8ND
+- 01KY6Z7BD8WK108WM9MQH9KDFH
+- 01KY6Z7BD8JGBNKN8PDMQHQSKE
+- 01KY6Z7BD8G7WD2TPF4G37NBT0
+- 01KY6Z7BD8TR8357760VZEVGC3
+- 01KY6Z7BD8VY3ZT9WECENEK9DB
+- 01KY6Z7BD8JRYX27PEYEV645BH
+- 01KY6Z7BD8PT96FQYPEGDQGBTH

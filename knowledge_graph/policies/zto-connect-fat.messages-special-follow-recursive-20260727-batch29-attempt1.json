@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch29-attempt1:policy",
+  "sourceScopeHash": "sha256:1f748df1ac4fffb00a514d7b4cfc45fc971665f2a02cbad1045856f2e5a84ba3",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 4,
+  "maxActions": 6,
+  "allowedRiskLevels": [
+    "low",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "feature_entry",
+    "page_navigation",
+    "settings_navigation"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "bottom-messages-tab",
+      "space": "current_display_px",
+      "rect": {
+        "x": 250.0,
+        "y": 2160.0,
+        "width": 220.0,
+        "height": 210.0
+      },
+      "purpose": "宝盒主界面底部“消息”标签区域。"
+    },
+    {
+      "key": "messages-toolbar-heart",
+      "space": "current_display_px",
+      "rect": {
+        "x": 225.0,
+        "y": 545.0,
+        "width": 150.0,
+        "height": 145.0
+      },
+      "purpose": "消息页顶部快捷工具栏中特别关注入口区域。"
+    },
+    {
+      "key": "special-follow-setup-link",
+      "space": "current_display_px",
+      "rect": {
+        "x": 330.0,
+        "y": 1390.0,
+        "width": 480.0,
+        "height": 210.0
+      },
+      "purpose": "特别关注空状态页“设置特别关注 >”入口区域。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "temporary_display_state"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change",
+    "persistent_setting_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 4,
+    "maxActions": 6,
+    "include": [
+      "messages.root",
+      "messages.toolbar.heart",
+      "messages.special_follow",
+      "messages.special_follow.settings"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [
+      "messages.special_follow.settings.recovered"
+    ],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

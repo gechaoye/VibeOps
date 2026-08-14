@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBNZQ775EX5QX5CENW
+key: messages.special_follow.settings.reminder_method_selector.cancel
+label: 特别关注-特别关注提醒-提醒方式选择-取消
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB80X4G3EYDN53XKYA
+parentElementRef: null
+controlType: close
+role: navigation
+capabilities:
+- cancel_reminder_method_selector
+summary: 取消提醒方式选择并关闭面板。
+relationshipRefs:
+- owner:01KYKA3ENB80X4G3EYDN53XKYA
+- transition:01KYKA3ENBRYEPAQ71VBZ78Z2J
+observations:
+- frameRef: 01KYHS58X0BTXZV0AR8PYQP26A
+  observedAt: '2026-07-27T12:35:26.979Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:14e55c8912ec7856e749c9ab74f6c5b4860547d90ba0989824bf22253570a027
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch31-attempt1/raw-evidence/sessions/01KYHS077KZ57TNBA030189KQS
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 520.0
+      top: 2268.0
+      width: 112.0
+      height: 56.0
+    center:
+    - 576.0
+    - 2296.0
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:a673f5cf24be596aa3ec237192b3d97e49cf271e6a1e15f84e40e733a037d8da
+  state: visible
+  dynamicValue: visible
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBNZQ775EX5QX5CENW-01KYHS58X0BTXZV0AR8PYQP26A.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: cancel_reminder_method_selector

@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBD8BX5GW0D1HMTEYG
+key: transition.messages.special_follow.settings.scroll
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBX0NPQD3YD3CTTDZ6
+action: aiAct
+capability: scroll_settings
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHXN2Z3WD1MCY6D8TYAYTPG
+  beforeFrameRef: 01KYHXJN3Q386BC6FCBYW2BCT4
+  afterFrameRef: 01KYHXNP9V02W9JQR4ZJB5XPVT
+  postcondition: pass
+  semanticAssertions:
+  - sha256:18fec2640bd25827ae3ef668e8983ca71c57783bf898ea8782c1c2432b9e3595
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

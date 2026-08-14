@@ -1,0 +1,161 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch8-attempt1
+title: 非空特别关注成员列表探索第八批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 探索添加成员后的特别关注非空列表及其全部控件。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.settings.add, predicate: opens_common_component, value: 通用选人组件, source: user}
+    - {subjectKey: exploration.authorization, predicate: may_operate_settings_and_members, value: "true", source: user}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings.with_member
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 设备已位于添加“练良伟”后的特别关注提醒设置页；本批进入非空“全部成员”列表。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 40
+  include: [messages.special_follow.settings, messages.special_follow.people]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [navigation_history, viewport_scroll, temporary_display_state, persistent_setting_change]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [feature_entry, page_navigation, page_content, settings_navigation, temporary_state_control, scroll_region]
+  allowedTapRegions:
+    - key: special-follow-members-chevron
+      space: current_display_px
+      rect: {x: 970, y: 245, width: 182, height: 170}
+      purpose: 非空“我的特别关注 1人”行右侧进入箭头的实时 Midscene 定位范围。
+    - key: app-visible-content
+      space: current_display_px
+      rect: {x: 0, y: 96, width: 1152, height: 2184}
+      purpose: 经用户授权和风险策略允许的特别关注功能内控件范围。
+
+expectedStates:
+  - key: messages.special_follow.settings.with_member
+    label: 添加成员后的特别关注提醒设置
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 当前屏幕标题为“特别关注提醒”，“我的特别关注”显示“1人”，成员“练良伟”、添加和移除均可见。
+    inspection:
+      queryPrompt: 完整盘点添加成员后的“特别关注提醒”设置页，记录成员“练良伟”、添加、移除、全部帮助图标、开关、间隔时间、提示音和返回控件。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, link, menu, list_entry, toggle, checkbox, radio, segmented_control, tab, slider, stepper, input, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [open_nonempty_special_following_list]
+    postcondition: 非空设置页完成盘点。
+  - key: messages.special_follow.people.nonempty
+    label: 全部成员非空状态
+    kind: page
+    expectedStablePageKey: messages.special_follow.people
+    requiredSemanticAssertions:
+      - 当前屏幕标题为“全部成员”，左侧返回箭头和右侧关闭 X 可见，成员“练良伟”显示在页面主体中。
+    inspection:
+      queryPrompt: 完整盘点特别关注“全部成员”非空页面的成员条目、头像、姓名、可能的操作、返回、关闭和真实可辨滚动区域；记录但不猜测成员点击后的目标。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, link, menu, list_entry, toggle, checkbox, radio, segmented_control, tab, slider, stepper, input, back, close, scroll_region]
+      requireScrollCoverage: true
+    allowedActions: [open_special_follow_member, navigate_back, close]
+    postcondition: 全部成员非空页面完成全控件盘点。
+
+actions:
+  - id: capture-special-follow-settings-with-member
+    kind: capture
+    state: messages.special_follow.settings.with_member
+    depth: 2
+  - id: open-nonempty-special-follow-members
+    kind: tap
+    semanticAction: open_nonempty_special_following_list
+    fromState: messages.special_follow.settings.with_member
+    toState: messages.special_follow.people.nonempty
+    depth: 3
+    risk: low
+    sideEffects: [navigation_history]
+    waitMs: 3000
+    target:
+      key: special_follow_members_chevron
+      label: 我的特别关注右侧进入箭头
+      scope: settings_navigation
+      locatorPrompt: 定位“特别关注提醒”页面“我的特别关注”同一行最右侧、显示“1人”右边的黑色向右尖括号进入箭头；只定位箭头。
+      allowedRegionRef: special-follow-members-chevron
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 当前屏幕标题为“全部成员”，左侧返回箭头、右侧关闭 X 和成员“练良伟”均可见。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch8-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

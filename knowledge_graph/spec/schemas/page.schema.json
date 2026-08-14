@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "page.schema.json",
+  "title": "UIKG 3.0 Page",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "entityType",
+    "id",
+    "key",
+    "label",
+    "applicationRef",
+    "featurePath",
+    "surfaceType",
+    "status",
+    "summary",
+    "states",
+    "elementRefs",
+    "inboundTransitionRefs",
+    "outboundTransitionRefs",
+    "observations",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "entityType": {
+      "const": "Page"
+    },
+    "id": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "key": {
+      "$ref": "common.schema.json#/$defs/stableKey"
+    },
+    "label": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "applicationRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "featurePath": {
+      "$ref": "common.schema.json#/$defs/featurePath"
+    },
+    "surfaceType": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "status": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "summary": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/pageState"
+      }
+    },
+    "elementRefs": {
+      "$ref": "common.schema.json#/$defs/ulidArray"
+    },
+    "inboundTransitionRefs": {
+      "$ref": "common.schema.json#/$defs/ulidArray"
+    },
+    "outboundTransitionRefs": {
+      "$ref": "common.schema.json#/$defs/ulidArray"
+    },
+    "inboundAuthorityContractRefs": {
+      "$ref": "common.schema.json#/$defs/ulidArray"
+    },
+    "outboundAuthorityContractRefs": {
+      "$ref": "common.schema.json#/$defs/ulidArray"
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/pageObservation"
+      }
+    },
+    "boundaryNote": {
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "common.schema.json#/$defs/provenance"
+    }
+  },
+  "additionalProperties": true
+}

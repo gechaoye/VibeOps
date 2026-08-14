@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHR19STNWATHY3RBJYW7JN5",
+  "sessionRef": "01KYHQEMAS8P6HW0Z1AYX5AKRE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQXJXF37P41BS7KB0JDX78",
+  "sourceScreenshotRef": "sha256:36456d0167fd4e96bd9322a81495a68f7a7208833f84fe4d037b92f19e15adf4",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"设置特别关注\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_list\",\"predicate\":\"behavior\",\"value\":\"设置特别关注人员后，该人员存在未读消息时，其会话显示在特别关注列表中。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_visual_state\",\"value\":\"特别关注人员存在未读消息时，入口爱心图标变为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注：可通过“添加”入口设置人员，当前画面未显示已添加人员",
+      "单聊消息未读，弹窗提醒我：已开启",
+      "单聊未读提醒间隔时间：30分钟",
+      "弹窗消息未读，短信/电话提醒我：已开启",
+      "短信/电话提醒间隔时间：30分钟",
+      "提醒方式：电话",
+      "夜间免打扰：已关闭；说明时段为22:00至次日06:00",
+      "免打扰群通知：已关闭",
+      "个性化提醒中的特别关注提示音：简报"
+    ],
+    "supportedFunctionDescription": "该控制进入特别关注提醒设置页，可添加特别关注人员，并配置未读弹窗提醒、短信/电话提醒、提醒间隔、提醒方式、夜间免打扰、免打扰群通知及特别关注提示音。根据提供的权威上下文，设置特别关注人员后，该人员有未读消息时，其会话会显示在特别关注列表中；特别关注人员存在未读消息时，特别关注入口的爱心图标会变为橙黄色。",
+    "evidenceBasis": [
+      "屏幕可见页面标题“特别关注提醒”以及返回按钮，未见遮罩或底层页面，表明结果是独立页面",
+      "屏幕可见“我的特别关注”“添加”及各提醒配置项、当前值和开关状态",
+      "特别关注未读会话进入特别关注列表的行为来自用户提供的权威非视觉上下文",
+      "存在未读消息时入口爱心图标变为橙黄色的状态来自用户提供的权威非视觉上下文"
+    ],
+    "unresolvedMeaning": "当前画面未展示已添加的特别关注人员、实际未读会话列表或橙黄色爱心状态，因此无法仅凭本屏确认当前是否已设置人员、是否存在特别关注未读消息；问号帮助按钮的具体说明内容及页面下方未显示的其他设置也不可见。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:15:23.473Z",
+  "endedAt": "2026-07-27T12:15:45.466Z",
+  "durationMs": 21993.148666,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:fd6c95572db20dceffdf5de14b60123bbfe1a8f95c6fd2f42d746ac0eea167f9"
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQHT8PB2Q1TQM9YTZ2VCEC",
+  "sessionRef": "01KYHQEMAS8P6HW0Z1AYX5AKRE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQF5NRTVEX32GSYGJMVATM",
+  "sourceScreenshotRef": "sha256:de2d5db041be118aac36dd0f2199ab1a5bf5332193c1edfa0a58af50a328471f",
+  "operation": "aiLocate",
+  "prompt": "定位顶部最右侧、日历图标内显示“27”且下方文字为“日程”的入口",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 1087,
+      "y": 160
+    },
+    "rect": {
+      "x": 1057,
+      "y": 131,
+      "width": 61,
+      "height": 60
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:07:07.755Z",
+  "endedAt": "2026-07-27T12:07:18.038Z",
+  "durationMs": 10282.658041,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e30547d6e921428b2dac0053600f59c9721c8e677ac302dc2e3e0a702ae9a4f2"
+}

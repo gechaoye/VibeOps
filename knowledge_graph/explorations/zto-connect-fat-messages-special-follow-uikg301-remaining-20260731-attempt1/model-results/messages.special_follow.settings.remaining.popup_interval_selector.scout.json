@@ -1,0 +1,154 @@
+{
+  "frameId": "sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17",
+  "page": {
+    "name": "特别关注提醒",
+    "surfaceType": "dialog",
+    "stateSummary": "时间间隔选择弹窗处于打开状态，当前选中‘1小时’；背景为特别关注提醒设置页，含两个已启用的提醒规则及对应间隔与方式配置",
+    "scrollableRegions": []
+  },
+  "elements": [
+    {
+      "candidateKey": "popup-option-10-minutes-row",
+      "label": "10分钟",
+      "visualDescription": "白色背景列表项，黑色文字‘10分钟’，位于弹窗顶部",
+      "controlType": "list-item",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0,
+        "y": 0.65,
+        "width": 1,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "选择10分钟作为提醒间隔",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    },
+    {
+      "candidateKey": "popup-option-30-minutes-row",
+      "label": "30分钟",
+      "visualDescription": "白色背景列表项，黑色文字‘30分钟’，位于10分钟下方",
+      "controlType": "list-item",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0,
+        "y": 0.73,
+        "width": 1,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "选择30分钟作为提醒间隔",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    },
+    {
+      "candidateKey": "popup-option-1-hour-row",
+      "label": "1小时",
+      "visualDescription": "白色背景列表项，蓝色文字‘1小时’左侧带蓝色对勾图标，表示当前选中",
+      "controlType": "list-item",
+      "interactive": true,
+      "enabled": true,
+      "state": "selected",
+      "approximateRegion": {
+        "x": 0,
+        "y": 0.81,
+        "width": 1,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "当前选中的提醒间隔为1小时",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    },
+    {
+      "candidateKey": "popup-option-4-hours-row",
+      "label": "4小时",
+      "visualDescription": "白色背景列表项，黑色文字‘4小时’，位于弹窗底部",
+      "controlType": "list-item",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0,
+        "y": 0.89,
+        "width": 1,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "选择4小时作为提醒间隔",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    },
+    {
+      "candidateKey": "reminder-method-phone-option",
+      "label": "电话",
+      "visualDescription": "灰色背景区域中‘提醒方式’右侧显示‘电话’文字，带右箭头，为可点击选项",
+      "controlType": "menu-item",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.82,
+        "y": 0.61,
+        "width": 0.15,
+        "height": 0.04
+      },
+      "meaning": {
+        "status": "known",
+        "description": "当前提醒方式为电话",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.98
+    }
+  ],
+  "relationships": [
+    {
+      "fromCandidateKey": "popup-option-10-minutes-row",
+      "type": "contains",
+      "toCandidateKey": "popup-option-10-minutes-row"
+    },
+    {
+      "fromCandidateKey": "popup-option-30-minutes-row",
+      "type": "contains",
+      "toCandidateKey": "popup-option-30-minutes-row"
+    },
+    {
+      "fromCandidateKey": "popup-option-1-hour-row",
+      "type": "contains",
+      "toCandidateKey": "popup-option-1-hour-row"
+    },
+    {
+      "fromCandidateKey": "popup-option-4-hours-row",
+      "type": "contains",
+      "toCandidateKey": "popup-option-4-hours-row"
+    },
+    {
+      "fromCandidateKey": "reminder-method-phone-option",
+      "type": "belongs-to",
+      "toCandidateKey": "reminder-method-phone-option"
+    }
+  ],
+  "uncertainties": []
+}

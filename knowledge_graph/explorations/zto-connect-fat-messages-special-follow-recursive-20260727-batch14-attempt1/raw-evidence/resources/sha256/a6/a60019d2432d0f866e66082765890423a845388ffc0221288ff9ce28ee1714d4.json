@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHDV7KY8XTBET285FRWH2RM",
+  "sessionRef": "01KYHDMQ8EFWPC0S4DZ8YYJSH7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHDR4R5V2A92E3MC2CA7T8P",
+  "sourceScreenshotRef": "sha256:ba11d642dc22f1b0b657ae2dc7c34a33aac315e1a3216026b9c312d8dc5280c7",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"单聊消息未读弹窗提醒帮助问号\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "我的特别关注",
+      "添加",
+      "单聊消息未读，弹窗提醒我",
+      "当特别关注人的单聊消息在一段时间内未被阅读时，系统将再次通过全局弹窗的形式进行提醒。",
+      "间隔时间：10",
+      "弹窗消息未读，短信/电话提醒我",
+      "免打扰群通知",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "supportedFunctionDescription": "该帮助问号会在当前“特别关注提醒”页面显示说明气泡：当特别关注人员的单聊消息在一段时间内仍未被阅读，系统会再次通过全局弹窗提醒。当前该弹窗提醒开关 visibly 处于开启状态。依据用户提供的权威上下文，该功能名为“特别关注”；设置为特别关注的人员存在未读消息时，其相关会话显示在特别关注列表；设置特别关注人员后，入口爱心图标显示为橙黄色。",
+    "evidenceBasis": [
+      "截图顶部可见页面标题“特别关注提醒”。",
+      "帮助问号上方可见带指向尖角的深色说明气泡，表明控件激活后产生的是当前页覆盖层，而非页面跳转。",
+      "气泡中可直接读到：当特别关注人的单聊消息在一段时间内未被阅读时，系统将再次通过全局弹窗的形式进行提醒。",
+      "“单聊消息未读，弹窗提醒我”右侧开关为蓝色，表示当前开启；其余两个可见开关为灰色，表示当前关闭。",
+      "用户提供的权威非视觉上下文明确给出功能名、未读会话展示规则及入口爱心配置后的橙黄色状态。"
+    ],
+    "unresolvedMeaning": "截图未显示“间隔时间 10”的时间单位，也未说明全局弹窗的具体样式、出现位置、持续时长或重复次数；当前帮助气泡仅解释单聊消息未读后的全局弹窗提醒，不足以确定短信/电话提醒和免打扰群通知的详细触发规则。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:17:21.891Z",
+  "endedAt": "2026-07-27T09:17:40.862Z",
+  "durationMs": 18971.322458,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:1dcca1c824e8613641a5bbc62a40cc221823c2d0ee19bce9ec65e753eba29b79"
+}

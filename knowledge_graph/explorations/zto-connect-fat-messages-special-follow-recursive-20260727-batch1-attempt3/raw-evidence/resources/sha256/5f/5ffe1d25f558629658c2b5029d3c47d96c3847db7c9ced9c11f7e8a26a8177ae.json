@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH6DV8SBEHJ23H1VBG5ETRM",
+  "sessionRef": "01KYH63WB9HEC5SS6RJPRAPGPK",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH6C7EGESBX665Z604YPKAX",
+  "sourceScreenshotRef": "sha256:7857beb27bd58cac5edaf4cf96c2cec7467671878f34c10d4a6435dca6b6a526",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前屏幕是由消息页特别关注入口打开的稳定页面，页面标题、主要内容、空状态或列表状态以及顶栏控件均可见并可描述。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:07:52.269Z",
+  "endedAt": "2026-07-27T07:08:02.201Z",
+  "durationMs": 9932.175,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e562f25f2ab4d289553de9ed885e1dc24ede005d9413ca3aef591ac44549f685"
+}

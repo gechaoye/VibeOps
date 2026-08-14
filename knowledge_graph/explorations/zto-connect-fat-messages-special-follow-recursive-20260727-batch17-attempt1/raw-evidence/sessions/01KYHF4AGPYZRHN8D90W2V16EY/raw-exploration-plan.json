@@ -1,0 +1,241 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch17-attempt1:plan",
+  "sourceScopeHash": "sha256:263e414fb9f2b1a99cf5c342a9ddfea2123b6f419a5f9776db2a36f19d1ba661",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "设置特别关注人员后，入口爱心图标显示为橙黄色。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.transient_help_tolerant",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "reminder-interval-row",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 950,
+          "width": 1152,
+          "height": 190
+        },
+        "purpose": "“间隔时间”整行设置入口的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经风险策略允许的应用内导航和临时状态控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.transient_help_tolerant": {
+      "key": "messages.special_follow.settings.transient_help_tolerant",
+      "label": "特别关注提醒设置页当前状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面顶部标题文字为“特别关注提醒”，“间隔时间”行和当前值“10”可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点“特别关注提醒”当前视口全部交互控件与状态；帮助气泡如仍显示则如实记录，准确定位“间隔时间”整行入口。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_reminder_interval"
+      ],
+      "postcondition": "当前设置页完成盘点。"
+    },
+    "messages.special_follow.settings.reminder_interval": {
+      "key": "messages.special_follow.settings.reminder_interval",
+      "label": "提醒间隔时间选项页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings.reminder_interval",
+      "requiredSemanticAssertions": [
+        "当前屏幕显示由“间隔时间”行打开的独立时间选项页，至少一个可选时间值可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点间隔时间选项页的标题、返回与关闭控件、全部可见时间值、当前选中标记、单位和真实可辨滚动区域；逐项定位所有选项。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [],
+      "postcondition": "已记录间隔时间页的全部可见选项和当前选中态。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-settings-before-reminder-interval",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.transient_help_tolerant",
+      "depth": 2
+    },
+    {
+      "id": "open-reminder-interval",
+      "kind": "tap",
+      "semanticAction": "open_reminder_interval",
+      "fromState": "messages.special_follow.settings.transient_help_tolerant",
+      "toState": "messages.special_follow.settings.reminder_interval",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2200,
+      "target": {
+        "key": "reminder_interval",
+        "label": "间隔时间",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位“特别关注提醒”页左侧文字“间隔时间”、右侧显示当前值“10”和向右箭头的整行入口。",
+        "allowedRegionRef": "reminder-interval-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕已离开“特别关注提醒”主设置页，显示由“间隔时间”打开的时间选项页面，至少一个数值选项可见。"
+        ]
+      }
+    }
+  ]
+}

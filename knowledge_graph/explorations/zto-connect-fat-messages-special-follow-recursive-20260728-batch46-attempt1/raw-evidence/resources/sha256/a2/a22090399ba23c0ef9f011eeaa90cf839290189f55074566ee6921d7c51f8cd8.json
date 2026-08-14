@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK4NW81S2YP9Q3WVRTET9FG",
+  "sessionRef": "01KYK4MYZH0C3R62M164MET7HS",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK4NAGXAAV2ZW3CKHC0QW5H",
+  "sourceScreenshotRef": "sha256:2d24e0d54e7a9e36a3b520ff52be5f0eb8d50490adb76a06ad2ad9973c6aee1c",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前页面标题为特别关注，成员头像条目和一条会话可见，会话摘要带橙色‘[特别关注]’前缀，右侧显示红色未读徽标3。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:15:50.401Z",
+  "endedAt": "2026-07-28T01:15:57.057Z",
+  "durationMs": 6655.253125,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:fb01d508a78ea38125ca7e6bf6cd648c04112b46fe479480026c7cc21a008574"
+}

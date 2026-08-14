@@ -1,0 +1,52 @@
+{
+  "recordType": "MidsceneRecoveryTrace",
+  "id": "reset-settings-after-group-dnd-help-live-repair",
+  "beforeFrameRef": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+  "startedAt": "2026-07-31T04:18:12.307Z",
+  "completedAt": "2026-07-31T04:18:47.495Z",
+  "steps": [
+    {
+      "method": "aiTap",
+      "prompt": "定位标题为“特别关注提醒”的页面顶栏最左侧黑色向左箭头返回按钮。",
+      "locator": {
+        "rect": {
+          "left": 50,
+          "top": 162,
+          "width": 31,
+          "height": 49
+        },
+        "center": [
+          65,
+          186
+        ],
+        "dpr": 3.501519756838906
+      },
+      "assertion": {
+        "pass": true,
+        "thought": "截图顶部标题为“特别关注”，页面右上方可见蓝色“设置”按钮，因此陈述为真。"
+      }
+    },
+    {
+      "method": "aiTap",
+      "prompt": "定位标题为“特别关注”的页面中，“我的特别关注”同一行最右侧的蓝色文字按钮“设置”；不要定位成员、添加按钮或右箭头。",
+      "locator": {
+        "rect": {
+          "left": 1015,
+          "top": 303,
+          "width": 96,
+          "height": 48
+        },
+        "center": [
+          1062,
+          326
+        ],
+        "dpr": 3.501519756838906
+      },
+      "assertion": {
+        "pass": true,
+        "thought": "截图顶部标题为“特别关注提醒”。页面中虽有多个问号帮助图标，但未显示任何深色帮助说明气泡。"
+      }
+    }
+  ],
+  "status": "executed_verified"
+}

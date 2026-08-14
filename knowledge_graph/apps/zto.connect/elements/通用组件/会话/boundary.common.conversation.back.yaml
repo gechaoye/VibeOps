@@ -1,0 +1,60 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB2NKGZ35TEY285N93
+key: boundary.common.conversation.back
+label: 通用组件-会话-返回特别关注
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 通用组件
+- 会话
+owner:
+  kind: page
+  ref: 01KYKA3ENB1Q64N45J08PD75X9
+parentElementRef: null
+controlType: back
+role: navigation
+capabilities:
+- navigate_back
+summary: 会话页可见的返回控件；本次实际往返使用 AndroidAgent 系统返回动作。
+relationshipRefs:
+- owner:01KYKA3ENB1Q64N45J08PD75X9
+observations:
+- frameRef: 01KYJ36HQP0HA783S1YS3AE42N
+  observedAt: '2026-07-27T15:30:54.515Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:ffa63e34c31ca51f9a220914367e2919664561a1c22baf2cb9a4ab81660f2557
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch44-attempt5/raw-evidence/sessions/01KYJ35DNE8CXJRFYN2KJQEZPA
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 45.0
+      top: 154.0
+      width: 37.0
+      height: 63.0
+    center:
+    - 63.5
+    - 185.5
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:81fc1da5536f7ccb59935f726f2491526ccc643fd89fb544cf75c9cb9645d17f
+  state: 可见，左上角左箭头旁显示99+
+  dynamicValue: 可见，左上角左箭头旁显示99+
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENB2NKGZ35TEY285N93-01KYJ36HQP0HA783S1YS3AE42N.png
+coverage: observed_not_activated_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

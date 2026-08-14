@@ -1,0 +1,356 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt3:plan",
+  "sourceScopeHash": "sha256:54e883c6ba800532a74e483aeb8343232618648dd6afad948b8e6ac0c6aa3be4",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注提醒设置页点击添加进入通用选人组件，选择练良伟并确认，记录非空成员状态。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.add",
+        "predicate": "opens_common_component",
+        "value": "点击添加按钮后进入APP通用选人组件。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "common.person_picker",
+        "predicate": "scope_role",
+        "value": "通用组件边界_只执行完成添加所需最小动作_不递归探索",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.authorization",
+        "predicate": "may_add_special_follow",
+        "value": "true",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.empty_members",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "add-special-follow-button",
+        "space": "current_display_px",
+        "rect": {
+          "x": 20.0,
+          "y": 340.0,
+          "width": 210.0,
+          "height": 285.0
+        },
+        "purpose": "特别关注提醒页虚线加号和添加按钮。"
+      },
+      {
+        "key": "first-recent-contact-row",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 1420.0,
+          "width": 1152.0,
+          "height": 230.0
+        },
+        "purpose": "通用选人组件最近联系人首项练良伟。"
+      },
+      {
+        "key": "person-picker-confirm",
+        "space": "current_display_px",
+        "rect": {
+          "x": 820.0,
+          "y": 2150.0,
+          "width": 332.0,
+          "height": 226.0
+        },
+        "purpose": "通用选人组件底部右侧确定按钮。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.empty_members": {
+      "key": "messages.special_follow.settings.empty_members",
+      "label": "设置页无特别关注成员",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为特别关注提醒，我的特别关注区域只显示添加入口，没有成员头像。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点设置页当前视口，准确定位我的特别关注区域虚线加号和添加按钮；记录当前无成员状态，不激活其他设置。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_add_special_follow"
+      ],
+      "postcondition": "已记录添加入口及空成员状态。"
+    },
+    "common.person_picker.initial": {
+      "key": "common.person_picker.initial",
+      "label": "通用选人组件未选择状态",
+      "kind": "page",
+      "expectedStablePageKey": "boundary.common.person_picker",
+      "requiredSemanticAssertions": [
+        "当前标题为选择人员，最近联系人中练良伟可见，底部确定按钮显示0人选择状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "这是范围外的APP通用选人组件；只定位完成当前流程必需的练良伟成员行、底部确定按钮和关闭控件，不递归分析组织架构、搜索或其他入口。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "checkbox",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "select_special_follow_candidate"
+      ],
+      "postcondition": "已记录通用选人组件入口和范围边界。"
+    },
+    "common.person_picker.one_selected": {
+      "key": "common.person_picker.one_selected",
+      "label": "通用选人组件已选择一人",
+      "kind": "page",
+      "expectedStablePageKey": "boundary.common.person_picker",
+      "requiredSemanticAssertions": [
+        "当前仍为选择人员，练良伟已选中，底部确定按钮选择计数为1且可用。"
+      ],
+      "inspection": {
+        "queryPrompt": "只复核练良伟的已选状态和底部可用确定按钮，不探索通用选人组件其他入口。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "checkbox",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "confirm_add_special_follow"
+      ],
+      "postcondition": "已选择练良伟，确定按钮可用。"
+    },
+    "messages.special_follow.settings.with_member_lian_liangwei": {
+      "key": "messages.special_follow.settings.with_member_lian_liangwei",
+      "label": "添加练良伟后的设置页非空成员状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前已回到特别关注提醒设置页，我的特别关注区域显示练良伟或其成员头像，添加入口仍可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点添加成员后的设置页，记录我的特别关注非空呈现、练良伟成员头像或名称、添加入口和当前全部可见交互控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证练良伟添加成功并记录非空成员状态。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-settings-empty-members-before-add",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.empty_members",
+      "depth": 2
+    },
+    {
+      "id": "open-common-person-picker",
+      "kind": "tap",
+      "semanticAction": "open_add_special_follow",
+      "fromState": "messages.special_follow.settings.empty_members",
+      "toState": "common.person_picker.initial",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 5000,
+      "target": {
+        "key": "add_special_follow",
+        "label": "添加",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位我的特别关注区域左下方、虚线方框内灰色加号及下方“添加”组成的完整按钮。",
+        "allowedRegionRef": "add-special-follow-button"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前进入标题为选择人员的APP通用选人组件，最近联系人和底部确定按钮可见。"
+        ]
+      }
+    },
+    {
+      "id": "select-lian-liangwei",
+      "kind": "tap",
+      "semanticAction": "select_special_follow_candidate",
+      "fromState": "common.person_picker.initial",
+      "toState": "common.person_picker.one_selected",
+      "depth": 3,
+      "risk": "medium",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1500,
+      "target": {
+        "key": "select_lian_liangwei",
+        "label": "练良伟",
+        "scope": "page_content",
+        "locatorPrompt": "定位选择人员页最近联系人区域第一行、姓名为练良伟、左侧为空心选择圆圈的完整成员行。",
+        "allowedRegionRef": "first-recent-contact-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前仍为选择人员，练良伟已选中，底部确定按钮选择计数为1且可用。"
+        ]
+      }
+    },
+    {
+      "id": "confirm-selected-special-follow",
+      "kind": "tap",
+      "semanticAction": "confirm_add_special_follow",
+      "fromState": "common.person_picker.one_selected",
+      "toState": "messages.special_follow.settings.with_member_lian_liangwei",
+      "depth": 2,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change",
+        "navigation_history"
+      ],
+      "waitMs": 5000,
+      "target": {
+        "key": "confirm_member_selection",
+        "label": "确定",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位选择人员页底部右侧、选择一人后显示计数1且处于蓝色可用状态的确定按钮。",
+        "allowedRegionRef": "person-picker-confirm"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前已回到特别关注提醒设置页，我的特别关注区域显示练良伟或其成员头像，添加入口仍可见。"
+        ]
+      }
+    }
+  ]
+}

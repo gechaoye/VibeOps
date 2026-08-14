@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "manifest.schema.json",
+  "title": "UIKG 3.0 App Manifest",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "manifestType",
+    "applicationRef",
+    "generatedAt",
+    "status",
+    "entries",
+    "entityIds"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "$ref": "common.schema.json#/$defs/schemaVersion"
+    },
+    "manifestType": {
+      "const": "NormalizedUiKnowledgeGraph"
+    },
+    "applicationRef": {
+      "$ref": "common.schema.json#/$defs/ulid"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "graphRevision": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "incomplete"
+      ]
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "entityIds": {
+      "$ref": "common.schema.json#/$defs/ulidArray"
+    },
+    "rootHash": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

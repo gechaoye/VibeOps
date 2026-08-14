@@ -1,0 +1,272 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch44-attempt3:plan",
+  "sourceScopeHash": "sha256:62e2652c620f3d0319a348cbf98af7b8e82b9105951764744d6780247eb432d0",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从橙黄色爱心入口进入特别关注页，打开练良伟相关未读会话，将通用会话页作为边界记录并返回。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.conversation.lian_liangwei",
+        "predicate": "unread_badge",
+        "value": "58",
+        "source": "verified_evidence"
+      },
+      {
+        "subjectKey": "exploration.authorization",
+        "predicate": "may_open_special_follow_conversation",
+        "value": "true",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sound",
+        "predicate": "current_value",
+        "value": "门铃",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.with_unread_lian_liangwei",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-unread-conversation",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 600,
+          "width": 1152,
+          "height": 260
+        },
+        "purpose": "特别关注页练良伟相关未读会话整行。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.with_unread_lian_liangwei": {
+      "key": "messages.special_follow.with_unread_lian_liangwei",
+      "label": "特别关注页练良伟未读会话状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注，练良伟相关会话可见，红色未读徽标显示58，左上收起按钮可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本批次仅复核灰色分隔带下方唯一的练良伟相关未读会话，并以该行最右侧红色圆形数字徽标“58”作为可点击定位锚点；visibleControls 只返回这个未读徽标所在的会话入口，不要重复返回该页其他控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_special_follow_conversation"
+      ],
+      "postcondition": "已复核特别关注未读会话入口。"
+    },
+    "boundary.common.conversation.lian_liangwei": {
+      "key": "boundary.common.conversation.lian_liangwei",
+      "label": "练良伟相关通用会话边界",
+      "kind": "page",
+      "expectedStablePageKey": "boundary.common.conversation",
+      "requiredSemanticAssertions": [
+        "当前已进入刚才点击的练良伟相关会话页面，顶部标题、返回控件和消息历史可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "这是 APP 通用会话页面边界；只记录顶部标题、返回控件、消息历史区域以及底部输入/发送区域的存在和禁用策略，不递归探索聊天内功能，不执行输入或发送。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "input",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "navigate_back"
+      ],
+      "postcondition": "已记录通用会话页边界和返回入口。"
+    },
+    "messages.special_follow.after_conversation_visit": {
+      "key": "messages.special_follow.after_conversation_visit",
+      "label": "从通用会话返回特别关注页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前已返回标题为特别关注的页面；按实际画面记录练良伟相关会话及未读徽标是否仍存在。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点从通用会话返回后的特别关注页面，记录标题、收起按钮、设置、特别关注成员、会话列表和未读徽标的实际状态；不假定会话已读或仍未读。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "list_entry",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证通用会话边界返回特别关注页。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-with-unread",
+      "kind": "capture",
+      "state": "messages.special_follow.with_unread_lian_liangwei",
+      "depth": 1
+    },
+    {
+      "id": "open-special-follow-unread-conversation",
+      "kind": "tap",
+      "semanticAction": "open_special_follow_conversation",
+      "fromState": "messages.special_follow.with_unread_lian_liangwei",
+      "toState": "boundary.common.conversation.lian_liangwei",
+      "depth": 2,
+      "risk": "medium",
+      "sideEffects": [
+        "navigation_history",
+        "persistent_message_read_state"
+      ],
+      "waitMs": 4000,
+      "target": {
+        "key": "special_follow_conversation_unread_badge_58",
+        "label": "未读徽标58所在的练良伟相关会话",
+        "scope": "page_content",
+        "locatorPrompt": "定位特别关注页面灰色分隔带下方唯一会话行最右侧的红色圆形数字徽标“58”；该徽标位于时间“10:28”正下方，作为打开这条会话的点击锚点。",
+        "allowedRegionRef": "special-follow-unread-conversation"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前已进入刚才点击的练良伟相关会话页面，顶部标题、返回控件和消息历史可见。"
+        ]
+      }
+    },
+    {
+      "id": "back-from-common-conversation",
+      "kind": "back",
+      "semanticAction": "navigate_back",
+      "fromState": "boundary.common.conversation.lian_liangwei",
+      "toState": "messages.special_follow.after_conversation_visit",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前已返回标题为特别关注的页面。"
+        ]
+      }
+    }
+  ]
+}

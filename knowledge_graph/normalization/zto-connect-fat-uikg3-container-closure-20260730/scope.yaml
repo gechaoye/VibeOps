@@ -1,0 +1,33 @@
+task:
+  id: zto-connect-fat-uikg3-container-closure-20260730
+  requestedAt: '2026-07-30T19:01:51+08:00'
+  objective: 按 UIKG 3.0 统一容器规则补齐共享导航父子闭包，并修正校验器和阅读投影。
+application:
+  key: zto.connect
+  applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+graph:
+  root: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph
+  baseGraphHash: sha256:d3461555b1d4c964433221cd0394ab7b360f714f331dc11e76561d2c0adb1e1f
+  resultingRootHash: sha256:bc28aee1ad0a737f35c9aa3e0fd95033fe8b60d2bba46214588d6f2817d98f9b
+  graphRevision: zto-connect-uikg3-20260730.1
+  entityIdsHash: sha256:9ccdd5604eed9372af84de2fec6a37990b032ab60717774c510b11891e7b848d
+  mergePolicy: additive-relationship-closure
+  stagingRoot: knowledge_graph/.staging/zto-connect-fat-uikg3-conformance-20260730
+  idempotenceRoot: knowledge_graph/.staging/zto-connect-fat-uikg3-conformance-20260730-idempotence
+  normativeSpec:
+    index: spec/README.md
+    version: UIKG 3.0.0
+    schemaVersion: 3.0.0
+    contentHash: sha256:fc9a3506804b4a77e7a4a05c83a2eeabdaccfe5fb7ac5ab89ab88b9dd05fd35a
+    precedenceAccepted: true
+scope:
+  deviceActions: none
+  canonicalIdentityChanges: none
+  evidenceChanges: none
+  relationshipChanges:
+  - 底部导航补齐 5 个直接 Tab 的 childElementRefs 与 child 关系。
+  - 更多补齐 15 个直接抽屉入口的 childElementRefs 与 child 关系。
+  projectionChanges:
+  - 两张共享父容器卡片展示全部直接子元素。
+  - 首页、导航索引和 Manifest 使用同一 Graph Revision。
+

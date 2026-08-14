@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawExplorationSession",
+  "id": "01KYH72RN0RVCBFYXHJ6J3KY23",
+  "observedApplicationBuild": {
+    "platform": "android",
+    "packageId": "com.zto.connect.fat",
+    "versionName": "8.58.0.10542",
+    "versionCode": "10542",
+    "source": "adb_read_only_dumpsys_package",
+    "semantics": "raw_observed_metadata_not_graph_identity"
+  },
+  "rawDeviceContext": {
+    "serialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+    "serialRecordedSeparately": false,
+    "platform": "android",
+    "manufacturer": "HUAWEI",
+    "model": "NOH-AN01",
+    "buildCharacteristics": "default",
+    "android": {
+      "release": "12",
+      "apiLevel": 31
+    },
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "densityDpi": {
+      "physical": 560,
+      "override": null,
+      "effective": 560
+    },
+    "logicalCoordinateSizePx": {
+      "width": 329,
+      "height": 679
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "observedApplicationBuild": {
+      "platform": "android",
+      "packageId": "com.zto.connect.fat",
+      "versionName": "8.58.0.10542",
+      "versionCode": "10542",
+      "source": "adb_read_only_dumpsys_package",
+      "semantics": "raw_observed_metadata_not_graph_identity"
+    }
+  },
+  "policyRef": "zto-connect-fat-messages-special-follow-recursive-20260727-batch3-attempt1:policy",
+  "planRef": "zto-connect-fat-messages-special-follow-recursive-20260727-batch3-attempt1:plan",
+  "sourceScopeHash": "sha256:d0b108fe39c173a1fe440b1df5bd23ee58b2b9cd3a73860471530e52df7de25e",
+  "startedAt": "2026-07-27T07:19:27.648Z",
+  "endedAt": "2026-07-27T07:19:41.168Z",
+  "mode": "recursive_feature_evidence_capture",
+  "status": "aborted",
+  "failure": {
+    "code": "BOOTSTRAP_ACTIVITY_MISMATCH",
+    "category": "ExplorerError",
+    "stage": "bootstrap"
+  },
+  "bootstrap": null,
+  "deviceOrchestration": {
+    "stayAwake": {
+      "status": "enabled",
+      "mechanism": "adb_global_stay_on_while_plugged_in",
+      "originalValue": 7,
+      "appliedValue": 7,
+      "changed": false,
+      "restoration": {
+        "status": "not_required",
+        "verifiedValue": 7
+      }
+    }
+  },
+  "executionAuthorization": {
+    "physicalActionsAllowed": true,
+    "visualInspectionConfirmed": true,
+    "offlineFixture": false
+  },
+  "semanticModelSummary": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "credentialsPersisted": false,
+    "serviceLocationPersisted": false
+  },
+  "frameCount": 0,
+  "actionCount": 0,
+  "contractValidation": {
+    "status": "compatible",
+    "executionFramework": "midscene",
+    "semanticProvider": "midscene",
+    "stepCount": 1,
+    "actionCount": 0,
+    "sourceScopeHash": "sha256:d0b108fe39c173a1fe440b1df5bd23ee58b2b9cd3a73860471530e52df7de25e"
+  },
+  "outputKind": "raw_exploration_evidence",
+  "recordNamespace": "uikg.raw-evidence",
+  "graphMaterialization": "none",
+  "producesGraphEntities": false,
+  "semanticAndActionFramework": "midscene.AndroidAgent",
+  "adbPolicy": "read_only_runtime_context_plus_reversible_stay_awake",
+  "requiredDownstreamProcessing": [
+    "evidence_fusion",
+    "semantic_identity_resolution",
+    "page_and_state_resolution",
+    "graph_materialization"
+  ],
+  "producer": {
+    "id": "midscene-android-uikg-evidence-producer",
+    "midsceneVersion": "1.10.6"
+  },
+  "contentHash": "sha256:90538924eed0d855f5725675230fa24225cf85ea14b72af7e936978e2f4b570d"
+}

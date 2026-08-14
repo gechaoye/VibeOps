@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSJR2XJ7XGMWMXC39637EJ",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSH0CRCH2M72SBG1W97JD4",
+  "sourceScreenshotRef": "sha256:bf7c98e4351e4efeaf628455502b7e61aa13e7225becc863bb16fadd70b3b9c1",
+  "operation": "aiLocate",
+  "prompt": "定位第二个蓝色提醒开关正下方，左侧文字“间隔时间”、右侧值“30分钟”及向右箭头所在的整行",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 564,
+      "y": 1341
+    },
+    "rect": {
+      "x": 48,
+      "y": 1272,
+      "width": 1033,
+      "height": 140
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:42:41.473Z",
+  "endedAt": "2026-07-27T12:42:45.725Z",
+  "durationMs": 4252.119583,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d6eea04623c35b4c252abe55eb234bba130884354e086068c7b25664986b9ae8"
+}

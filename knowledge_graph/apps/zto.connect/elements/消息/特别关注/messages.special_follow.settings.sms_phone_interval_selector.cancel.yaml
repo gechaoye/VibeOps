@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBH76ERXC3Y6A1C314
+key: messages.special_follow.settings.sms_phone_interval_selector.cancel
+label: 特别关注-特别关注提醒-短信或电话提醒间隔选择-取消
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENBV34YV6RCVMV9BTG3
+parentElementRef: null
+controlType: close
+role: navigation
+capabilities:
+- cancel_sms_phone_interval_selector
+summary: 取消短信或电话提醒间隔选择并关闭面板。
+relationshipRefs:
+- owner:01KYKA3ENBV34YV6RCVMV9BTG3
+- transition:01KYKA3ENBAGTC68TW4NRFDST2
+observations:
+- frameRef: 01KYK7D9HKV7Y99NDN97J8762D
+  observedAt: '2026-07-28T02:03:44.243Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:5ef168cef91caed85e94c20a422d9f8d761ce7041d62dccfbf6eb98710920df8
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch49-attempt1/raw-evidence/sessions/01KYK75BTZ4TV4ZP32QETPQ4HB
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 522.0
+      top: 2267.0
+      width: 110.0
+      height: 60.0
+    center:
+    - 577.0
+    - 2297.0
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:1713bffd69ad9f5e1a84522eab82106957fdc3645860f5d52d902ba7eca8138e
+  state: visible; unselected
+  dynamicValue: visible; unselected
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBH76ERXC3Y6A1C314-01KYK7D9HKV7Y99NDN97J8762D.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: cancel_sms_phone_interval_selector

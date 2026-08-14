@@ -1,0 +1,153 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch5-attempt2
+title: 全部成员空白页探索第五批第二次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。
+  environment: fat
+  knownFacts:
+    - subjectKey: messages.toolbar.heart
+      predicate: function_name
+      value: 特别关注
+      source: user
+
+entry:
+  knownStartPageKey: messages.special_follow.people.empty
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 设备已位于标题为“全部成员”的空白页面；本批盘点页面并验证返回设置页。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 40
+  include: [messages.special_follow.people, messages.special_follow.settings]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low]
+  allowedSideEffects: [navigation_history, viewport_scroll, temporary_display_state]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, persistent_setting_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [feature_entry, page_navigation, page_content, settings_navigation, temporary_state_control, scroll_region]
+  allowedTapRegions:
+    - key: app-visible-content
+      space: current_display_px
+      rect: {x: 0, y: 96, width: 1152, height: 2184}
+      purpose: 经风险策略允许的应用内导航和临时状态控件范围。
+
+expectedStates:
+  - key: messages.special_follow.people.empty
+    label: 全部成员空白状态
+    kind: page
+    expectedStablePageKey: messages.special_follow.people
+    requiredSemanticAssertions:
+      - 当前屏幕标题为“全部成员”，左侧返回箭头和右侧关闭 X 均可见，标题栏下方主体为空白。
+    inspection:
+      queryPrompt: 盘点“全部成员”页面当前视口的全部图标、按键、返回和关闭控件；主体为空白时如实记录，不推断名单不存在、加载状态或业务原因。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, link, menu, list_entry, toggle, checkbox, radio, segmented_control, tab, slider, stepper, input, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [navigate_back]
+    postcondition: 全部成员空白页面完成全控件盘点。
+  - key: messages.special_follow.settings.returned_from_people
+    label: 从全部成员返回设置页
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 当前屏幕标题为“特别关注提醒”，“我的特别关注”和提醒方式设置均可见。
+    inspection:
+      queryPrompt: 复核返回后的设置页并盘点当前视口全部交互控件与状态；不激活任何持久设置，且不把整页设置布局推断为滚动控件。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, link, menu, list_entry, toggle, checkbox, radio, segmented_control, tab, slider, stepper, input, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已验证从全部成员返回设置页。
+
+actions:
+  - id: capture-all-members-empty
+    kind: capture
+    state: messages.special_follow.people.empty
+    depth: 3
+  - id: back-from-all-members
+    kind: back
+    semanticAction: navigate_back
+    fromState: messages.special_follow.people.empty
+    toState: messages.special_follow.settings.returned_from_people
+    depth: 2
+    risk: safe
+    sideEffects: [navigation_history]
+    waitMs: 2500
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 当前屏幕已返回标题为“特别关注提醒”的设置页，主要提醒设置可见。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch5-attempt2
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true
+

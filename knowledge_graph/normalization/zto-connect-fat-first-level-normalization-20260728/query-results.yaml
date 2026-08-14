@@ -1,0 +1,20 @@
+queries:
+- name: verified_atomic_transitions
+  filter: entityType=Transition AND evidenceStatus=executed_verified
+  resultCount: 0
+  reason: No legacy generic navigation declaration is upgraded to a closed atomic Transition.
+- name: preserved_legacy_navigation
+  filter: recordType=LegacyTransitionLedger
+  resultCount: 5
+  ids:
+  - 01KY9E733GYRPS1167J0R8PH3G
+  - 01KY6Z7BD86NZRZ20Y8RHBGJAE
+  - 01KY6Z7BD84SC19WE0TSNCZ3SM
+  - 01KY6Z7BD851N6GV3087YNXVD6
+  - 01KY6Z7BD8FYMNHMSDAZW1A33W
+- name: normalized_canonical_entities
+  filter: entityType in (Page, Element)
+  resultCount: 27
+  breakdown:
+    pages: 5
+    elements: 22

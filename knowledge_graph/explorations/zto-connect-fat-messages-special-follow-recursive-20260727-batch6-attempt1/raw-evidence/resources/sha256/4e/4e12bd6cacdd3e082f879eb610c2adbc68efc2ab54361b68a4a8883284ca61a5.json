@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH9EYAVZNZ99DA147AR4DNX",
+  "sessionRef": "01KYH968JYQV42VTDTNP831WSJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH9AQ08T9T9DJVSEJQ6VZMV",
+  "sourceScreenshotRef": "sha256:03cc966f43013213548f7ac12170904ae1f874b7e090a5b237befa8aa7ef7a1d",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"添加\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_setting_toggles\",\"value\":\"true\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "选择人员",
+    "visibleResultContent": [
+      "中通集团",
+      "组织架构",
+      "质量管理部",
+      "条线",
+      "个人标签",
+      "我的群组",
+      "最近联系人",
+      "练良伟",
+      "葛超烨",
+      "贾宗婷",
+      "郭虹利",
+      "已选择：",
+      "确定(0/10)"
+    ],
+    "supportedFunctionDescription": "在“特别关注”功能中，激活“添加”后进入人员选择页；可通过搜索、组织架构、部门、条线、个人标签、群组或最近联系人查找并选择人员，当前界面显示最多可确认10人，选中后可通过“确定”提交添加。",
+    "evidenceBasis": [
+      "像素可见：页面标题为“选择人员”。",
+      "像素可见：右上角存在搜索控件，列表中存在多个带右向指示的分类入口。",
+      "像素可见：“最近联系人”下列出4名人员，每行左侧有圆形选择控件。",
+      "像素可见：底部按钮为灰色“确定(0/10)”，且“已选择：”后无人员信息，支持当前选择数为0、上限为10的判断。",
+      "supplied context：messages.toolbar.heart 的功能名称为“特别关注”，且已授权操作设置开关和添加特别关注；这些不是从像素推断的。"
+    ],
+    "unresolvedMeaning": "截图未显示完成选择或确认后的状态，因此无法仅凭当前画面确认添加成功后的反馈、人员是否立即出现在特别关注列表中，也无法确定葛超烨行左侧实心灰色圆点表示已选、不可选还是其他状态。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:00:38.739Z",
+  "endedAt": "2026-07-27T08:01:03.835Z",
+  "durationMs": 25094.773833,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d8aa13b8f3dc5c63f1075ed284d6dc26b10559ce05480292bc5011aca4612171"
+}

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYGXE3CX2GWJPA4FF4VFERHH",
+  "sessionRef": "01KYGXD0C957YB101AG2F9X7HC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYGXDC4RC5VXPYNKN1CJ1GMD",
+  "sourceScreenshotRef": "sha256:9ecd839e4cd0c2ae7813624f39e58ee8a2b9d19869de1686ca27561d445ce7f5",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleToolbarControls: string[], visibleNavigationState: string, unresolvedVisualMeanings: string[]}, describe only visible facts on the current screen. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "消息",
+    "visiblePrimaryContent": [
+      "葛超烨",
+      "中通快递",
+      "宝盒民意调查",
+      "您有1条重要消息未读，点击查看",
+      "上海总部IT部网点老板…｜直播会议预警｜必看｜经理｜07-25｜未读1",
+      "四个必看群｜张提撤回了一条消息｜必看｜经理｜07-24｜未读21",
+      "一个必看群｜[@所有人]王宝顺: https://mini-box.test…｜必看｜经理｜07-24｜未读39",
+      "三个必看群22233｜宝盒小秘书: 测试消息 @董益超 @张提｜必看｜经理｜07-01",
+      "龚帆｜1232313｜07-07",
+      "超级表单｜超级表单｜昨天｜未读72",
+      "我（葛超烨）｜努力工作中｜葛超烨 创建了待办 测试｜昨天"
+    ],
+    "visibleToolbarControls": [
+      "特别关注",
+      "未标明功能的时钟样式图标",
+      "未标明功能的信封样式图标",
+      "未标明功能的闪电样式图标",
+      "未标明功能的邮件样式图标",
+      "未标明功能的铃铛样式图标（55）",
+      "更多（三点）",
+      "关闭重要消息提示"
+    ],
+    "visibleNavigationState": "底部导航“消息”处于选中状态（蓝色，99+）；同屏可见“工作台”(25)、“通讯录”、“资讯”、“更多”(52)。消息分类中“全部”处于选中状态，另可见“未读、必看、置顶、单聊、群聊、服务”。",
+    "unresolvedVisualMeanings": [
+      "顶部机器人样式图标的具体功能未标明",
+      "顶部放大镜样式图标的具体功能未标明",
+      "顶部加号样式图标的具体功能未标明",
+      "消息工具栏中除“特别关注”外各图标的准确功能名称未由可见文字说明",
+      "会话右侧蓝色折角标记的含义未标明",
+      "“必看”和“经理”标签的完整业务规则未显示"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T04:30:32.540Z",
+  "endedAt": "2026-07-27T04:30:53.341Z",
+  "durationMs": 20800.8145,
+  "captureCoupling": "sequential_non_atomic",
+  "contentHash": "sha256:6b2b0e11f4b90ac17474b352b65bdf165af413230ef1150305c19d1c2876d318"
+}

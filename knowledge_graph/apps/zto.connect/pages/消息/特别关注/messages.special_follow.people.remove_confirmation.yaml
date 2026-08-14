@@ -1,0 +1,46 @@
+schemaVersion: 3.0.0
+entityType: Page
+id: 01KYKA3ENBTQHXG4XJ1F3NJTFG
+key: messages.special_follow.people.remove_confirmation
+label: 特别关注-全部成员-移除确认
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+surfaceType: dialog
+status: observed_gpt_only_pending_scout
+summary: 确认或取消移除当前特别关注成员。
+states:
+- key: awaiting_confirmation
+  summary: 等待确认
+  frameRefs:
+  - 01KYHBS8B66ZX71HFHB9756G1M
+elementRefs:
+- 01KYKA3ENB32RHWSPCWKB9GE6J
+- 01KYKA3ENBK5H9V0Q0GD6C4N4Q
+inboundTransitionRefs:
+- 01KYKA3ENBQS8R5478TZC0FGDA
+outboundTransitionRefs:
+- 01KYKA3ENBJC1BXEJZGHXC49WB
+- 01KYKA3ENBVNC72NGWT4VYXRJQ
+observations:
+- frameRef: 01KYHBS8B66ZX71HFHB9756G1M
+  observedAt: '2026-07-27T08:41:41.765Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.people.remove_dialog
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:f0a1a31d88fbce8f6ef4a671479c7bb2493f93c1fc04fb05db108a95e455212d
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1/raw-evidence/sessions/01KYHBRRQ0FNFNTS8NJB3DVSTP
+  evidenceStatus: gpt_verified_pending_independent_scout
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

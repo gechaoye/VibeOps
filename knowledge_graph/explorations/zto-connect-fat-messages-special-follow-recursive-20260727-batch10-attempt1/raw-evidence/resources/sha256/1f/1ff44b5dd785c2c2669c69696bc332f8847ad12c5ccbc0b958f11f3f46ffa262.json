@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHB8WNN5KCWAHBER798ZP1F",
+  "sessionRef": "01KYHB4AWXSK89EQW5B6WTF2WZ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHB7M482Y2GX2P9WJENZKMW",
+  "sourceScreenshotRef": "sha256:ac69e567d50b290406284aba622783d38414b262aac44fb6b340d73433499dba",
+  "operation": "aiLocate",
+  "prompt": "定位内容区唯一一行中头像右侧、文字为“练良伟”的成员条目，排除同一行右侧的“移除”按钮",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 278,
+      "y": 351
+    },
+    "rect": {
+      "x": 214,
+      "y": 329,
+      "width": 130,
+      "height": 45
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:32:33.609Z",
+  "endedAt": "2026-07-27T08:32:42.677Z",
+  "durationMs": 9067.772708,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:8fbe4bf5d0c840a64c49a05a406b4dcf5d9fa6bc0e6e459b908cff67e42b6cd7"
+}

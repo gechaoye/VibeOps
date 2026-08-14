@@ -1,0 +1,78 @@
+{
+  "task": {
+    "id": "zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1",
+    "requestedAt": "2026-07-31T06:18:03.519Z",
+    "objective": "按 UIKG 3.0.1 补采特别关注剩余复合设置行、选择选项、提示音选项与试听按钮、成员行与移除按钮的独立实时边界。",
+    "status": "complete",
+    "completedAt": "2026-07-31T07:24:49.769Z",
+    "evidenceSummary": {
+      "frames": 11,
+      "actions": 10,
+      "archivedRetryFrames": 0
+    },
+    "retryHistoryRef": "attempts/retry-history.json"
+  },
+  "application": {
+    "key": "zto.connect",
+    "packageId": "com.zto.connect.fat",
+    "build": {
+      "environment": "fat",
+      "versionCode": "10542"
+    }
+  },
+  "entry": {
+    "description": "消息/特别关注/特别关注提醒",
+    "knownFacts": [
+      "页面只直接引用设置行总容器，不直接引用行内成员。",
+      "主页面选择行的名称区域点击用于验证父行命中区；名称与当前值不是独立动作 Element。",
+      "夜间免打扰名称与说明不可操作，开关是独立设置控件。",
+      "提示音选项的选择行与右侧试听按钮是两个独立交互边界。",
+      "全部成员的移除按钮是成员行总容器的独立子 Trigger。"
+    ]
+  },
+  "scope": {
+    "recursion": "targeted-live-evidence-repair",
+    "include": [
+      "remaining-main-setting-row-models",
+      "three-interval-or-method-selector-option-pages",
+      "sound-selector-options-and-preview-buttons",
+      "all-members-member-row-and-remove-button"
+    ]
+  },
+  "midscene": {
+    "repository": "/Users/mohan/Desktop/ZTO/Projects/midscene",
+    "reloadEnvInFreshProcess": true,
+    "oneAndroidAgent": true,
+    "modelDiagnostics": {
+      "default": {
+        "intent": "default",
+        "slot": "default",
+        "name": "gpt-5.6-sol",
+        "family": "gpt-5"
+      },
+      "scout": {
+        "intent": "scout",
+        "slot": "scout",
+        "name": "qwen3-vl-plus",
+        "family": "qwen3-vl"
+      }
+    }
+  },
+  "device": {
+    "serialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+    "keepAwakeForWholeTask": true
+  },
+  "graph": {
+    "root": "/Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph",
+    "normativeSpec": {
+      "index": "spec/README.md",
+      "version": "UIKG 3.0.1",
+      "schemaVersion": "3.0.0",
+      "contentHash": "sha256:03904e083f55a42e36b035db877d2bf575f6973426a2abde089326b51833969f",
+      "relationshipRules": "spec/relationship-invariants.md",
+      "precedenceAccepted": true
+    },
+    "mergePolicy": "reviewed-migration-plus-additive-upsert",
+    "stageBeforePublish": true
+  }
+}

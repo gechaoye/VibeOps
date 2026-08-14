@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHWQGM8BMG5BBWMBHMP7ZJ3",
+  "sessionRef": "01KYHWN4F3BD1S2X6EB0CDNWXJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHWNF8JKGCZJ4CG1D9RCZ1Y",
+  "sourceScreenshotRef": "sha256:3b624c7ef1eb19ec58409c47b92064238ca881eedf0fab0a72b5adc5e4dc89a8",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面标题为特别关注提醒，单聊消息未读弹窗提醒开关正下方第一个间隔时间显示4小时。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T13:37:43.722Z",
+  "endedAt": "2026-07-27T13:37:47.656Z",
+  "durationMs": 3934.442208,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:26f12d5b21158e98cf2f7ceba04b4f2a3a114ca9cbbea9cd5d5252d80aae2d92"
+}

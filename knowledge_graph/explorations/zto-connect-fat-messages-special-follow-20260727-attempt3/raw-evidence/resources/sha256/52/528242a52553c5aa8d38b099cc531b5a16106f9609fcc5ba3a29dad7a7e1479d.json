@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYGXEPX08GPYWZ93WVS5SNNY",
+  "sessionRef": "01KYGXD0C957YB101AG2F9X7HC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYGXDC4RC5VXPYNKN1CJ1GMD",
+  "sourceScreenshotRef": "sha256:9ecd839e4cd0c2ae7813624f39e58ee8a2b9d19869de1686ca27561d445ce7f5",
+  "operation": "aiLocate",
+  "prompt": "消息页顶部工具栏内靠左一侧的爱心轮廓图标，即用户已确认功能名为“特别关注”的入口；它位于会话列表上方，不是底部导航图标。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 291,
+      "y": 606
+    },
+    "rect": {
+      "x": 264,
+      "y": 582,
+      "width": 55,
+      "height": 49
+    },
+    "dpr": 3.501519756838906
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T04:31:03.169Z",
+  "endedAt": "2026-07-27T04:31:13.312Z",
+  "durationMs": 10143.256084,
+  "cacheable": true,
+  "captureCoupling": "sequential_non_atomic",
+  "contentHash": "sha256:a636448ab36d0b5c25ef227d6a07e1da545cb0b78d5e0c56d15703fa02030cb4"
+}

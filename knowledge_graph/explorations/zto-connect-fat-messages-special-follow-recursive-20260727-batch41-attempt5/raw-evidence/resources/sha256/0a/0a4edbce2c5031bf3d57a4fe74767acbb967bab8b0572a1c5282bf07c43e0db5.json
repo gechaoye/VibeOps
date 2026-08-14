@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ13Z44FJ1T3EJHZQEGSE0A",
+  "sessionRef": "01KYJ0ZBGHS38PARSMY4TVCBRC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ1300BRDETCNZASH2NHWZ0",
+  "sourceScreenshotRef": "sha256:5e1bb52a49ca5c8197683f1df80821986b61a77a239e31af536c7b08f0b28398",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前屏幕已回到标题为“特别关注提醒”的设置页，“我的特别关注”区域显示至少一名成员或成员头像，且“添加”入口仍可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:54:25.926Z",
+  "endedAt": "2026-07-27T14:54:30.020Z",
+  "durationMs": 4093.701041,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:fd664d64d9b3c2472885d43162c189d945757f5f16fd311d89134149ce9386d1"
+}

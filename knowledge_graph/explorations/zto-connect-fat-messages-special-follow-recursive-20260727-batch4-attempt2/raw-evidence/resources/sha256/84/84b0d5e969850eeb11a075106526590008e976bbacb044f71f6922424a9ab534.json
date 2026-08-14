@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH804R2V139EXYHRSJPV24E",
+  "sessionRef": "01KYH7TN05DA36ZRG8XTNGH0T2",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH7Y73T6KA6Y4P61CH3WJKD",
+  "sourceScreenshotRef": "sha256:00d84ae1df523f4b80a7c66730cc92f0cbe8a07f24924a517f913c2a3f4825af",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"我的特别关注右侧进入箭头\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "全部成员",
+    "visibleResultContent": [],
+    "supportedFunctionDescription": "激活“我的特别关注右侧进入箭头”后，界面进入了标题为“全部成员”的空白页面或覆盖层；当前可见结果支持从“特别关注”入口打开该成员视图。顶部另有左右两个图形控件可见，但其具体功能不能仅凭图形外观确定。",
+    "evidenceBasis": [
+      "截图顶部中央可见文字“全部成员”",
+      "标题下方主体区域全为空白，未见任何成员、说明、加载状态或错误信息",
+      "截图顶部左侧与右侧各可见一个图形控件",
+      "“特别关注”是权威非视觉任务上下文中提供的功能名，不是由截图像素推断所得"
+    ],
+    "unresolvedMeaning": "无法从当前静态屏幕判断主体为空是因为没有成员、尚未加载、加载失败还是页面渲染异常；也无法确认“全部成员”与“特别关注”的筛选或范围关系，以及顶部左右图形控件各自的实际动作。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:35:14.308Z",
+  "endedAt": "2026-07-27T07:35:30.306Z",
+  "durationMs": 15997.670458,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:7712b36869214e1f4cbea2c2824adfeaa41bb3608ef213f41d908b0a4dea1596"
+}

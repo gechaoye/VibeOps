@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHZKFZCNECVV0QAZY5159MA",
+  "sessionRef": "01KYHZCNHDWB9DNF17R8JNMBC9",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHZJ7T3FZEJ3ECS46ZBKVWS",
+  "sourceScreenshotRef": "sha256:31666d704bcde0f5d6baa312829477631d8c1f48c0d6a897878873589502fd65",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"特别关注\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.people.close\",\"predicate\":\"target_page\",\"value\":\"右上关闭X关闭全部成员页后返回特别关注功能页。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注",
+    "visibleResultContent": [
+      "空状态插图",
+      "包含特别关注人消息的会话会展示在这里",
+      "设置特别关注 >"
+    ],
+    "supportedFunctionDescription": "激活“特别关注”后进入特别关注功能页。设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表；满足该条件并展示会话时，入口爱心图标变为橙黄色。当前页面为空状态，可通过“设置特别关注 >”进入设置相关流程；在全部成员页点击右上关闭X后会返回特别关注功能页。",
+    "evidenceBasis": [
+      "当前截图顶部居中可见标题“特别关注”。",
+      "当前截图主体可见空状态插图和文字“包含特别关注人消息的会话会展示在这里”。",
+      "当前截图可见蓝色操作入口“设置特别关注 >”。",
+      "用户提供的权威非视觉任务上下文说明：特别关注人员存在未读消息时，其会话显示在特别关注列表。",
+      "用户提供的权威非视觉任务上下文说明：已设置的特别关注人员存在未读消息并在列表展示会话时，入口爱心图标变为橙黄色。",
+      "已验证上下文说明：全部成员页右上关闭X会返回特别关注功能页。"
+    ],
+    "unresolvedMeaning": "仅凭当前画面无法确定左上向下箭头形控件的具体行为，也无法确认点击“设置特别关注 >”后所到页面的完整布局、成员设置方式或其他交互细节；未从图标形状推断额外含义。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:27:50.284Z",
+  "endedAt": "2026-07-27T14:28:01.644Z",
+  "durationMs": 11360.230542,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:617ac8f59fd944d9cc84e3537f3a764dbe393684df11a8110ded6eb70503b9d8"
+}

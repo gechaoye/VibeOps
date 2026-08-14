@@ -1,0 +1,272 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch23-attempt1:plan",
+  "sourceScopeHash": "sha256:809c275f12ea344cfd0369505f11cc165d39303c5e77ac8468080ffeb8b7adda",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "设置特别关注人员后，入口爱心图标显示为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.popup_reminder.on",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "popup-reminder-toggle-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 850.0,
+          "y": 760.0,
+          "width": 302.0,
+          "height": 260.0
+        },
+        "purpose": "单聊未读弹窗提醒开关的实时 Midscene 定位范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.popup_reminder.on": {
+      "key": "messages.special_follow.settings.popup_reminder.on",
+      "label": "单聊未读弹窗提醒开启状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为“特别关注提醒”，“单聊消息未读，弹窗提醒我”开关为蓝色开启状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点设置页全部可见控件和当前设置状态，重点记录单聊未读弹窗提醒为开启，以及间隔时间和短信/电话提醒当前呈现。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "disable_popup_reminder"
+      ],
+      "postcondition": "已记录单聊未读弹窗提醒开启状态。"
+    },
+    "messages.special_follow.settings.popup_reminder.off": {
+      "key": "messages.special_follow.settings.popup_reminder.off",
+      "label": "单聊未读弹窗提醒关闭状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面仍为“特别关注提醒”，“单聊消息未读，弹窗提醒我”开关为灰色关闭状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点关闭单聊未读弹窗提醒后的设置页全部控件；准确记录间隔时间、短信/电话提醒及其他设置是隐藏、禁用还是保持，不根据依赖关系猜测。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "enable_popup_reminder"
+      ],
+      "postcondition": "已记录关闭状态及所有关联设置的真实呈现。"
+    },
+    "messages.special_follow.settings.popup_reminder.on_again": {
+      "key": "messages.special_follow.settings.popup_reminder.on_again",
+      "label": "单聊未读弹窗提醒再次开启状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面仍为“特别关注提醒”，“单聊消息未读，弹窗提醒我”开关恢复为蓝色开启状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点再次开启单聊未读弹窗提醒后的设置页全部控件，记录关联设置是否恢复及其当前值。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证该开关可关闭并再次开启。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-popup-reminder-on",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.popup_reminder.on",
+      "depth": 3
+    },
+    {
+      "id": "disable-popup-reminder",
+      "kind": "tap",
+      "semanticAction": "disable_popup_reminder",
+      "fromState": "messages.special_follow.settings.popup_reminder.on",
+      "toState": "messages.special_follow.settings.popup_reminder.off",
+      "depth": 3,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "single_chat_popup_toggle",
+        "label": "单聊消息未读，弹窗提醒我",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”这一行最右侧的蓝色开启开关；不要定位旁边的圆圈问号图标。",
+        "allowedRegionRef": "popup-reminder-toggle-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "单聊消息未读弹窗提醒开关已变为灰色关闭状态，准确记录关联设置当前呈现。"
+        ]
+      }
+    },
+    {
+      "id": "enable-popup-reminder-again",
+      "kind": "tap",
+      "semanticAction": "enable_popup_reminder",
+      "fromState": "messages.special_follow.settings.popup_reminder.off",
+      "toState": "messages.special_follow.settings.popup_reminder.on_again",
+      "depth": 3,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "single_chat_popup_toggle",
+        "label": "单聊消息未读，弹窗提醒我",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”这一行最右侧的灰色关闭开关；不要定位旁边的圆圈问号图标。",
+        "allowedRegionRef": "popup-reminder-toggle-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "单聊消息未读弹窗提醒开关已恢复为蓝色开启状态，准确记录关联设置当前呈现。"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHFAWH1445KASN3MT11CBX4",
+  "sessionRef": "01KYHF4AGPYZRHN8D90W2V16EY",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHF7D9BV9CQYCF92QH2QBH4",
+  "sourceScreenshotRef": "sha256:378e8ae23c17dba95fa428b62b23e8f22061d9429e95578872ea5291ca82983f",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前屏幕已离开“特别关注提醒”主设置页，显示由“间隔时间”打开的时间选项页面，至少一个数值选项可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:43:34.611Z",
+  "endedAt": "2026-07-27T09:43:42.369Z",
+  "durationMs": 7757.441584,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:593defa8337c5d261d6ebbd58c2e604708ce04eef68bb1b26c0440f249c23029"
+}

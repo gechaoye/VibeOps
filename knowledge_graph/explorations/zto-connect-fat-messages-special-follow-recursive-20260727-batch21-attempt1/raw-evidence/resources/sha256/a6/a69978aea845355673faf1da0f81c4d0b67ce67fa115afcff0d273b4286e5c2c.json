@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHHGRDHFV7S4CY6H7X28E5F",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHHFBA6FRB5MJ42CF887DXR",
+  "sourceScreenshotRef": "sha256:0073f611c0c6ad24c4a7773c493c7a2d435d48cb7b12f3d8c60c019b630b6b1b",
+  "operation": "aiLocate",
+  "prompt": "定位底部白色提示音面板第三行、左侧有蓝色对勾且文本为蓝色“简报”的已选单选项，不要定位右侧试听按钮",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 156,
+      "y": 1931
+    },
+    "rect": {
+      "x": 66,
+      "y": 1907,
+      "width": 181,
+      "height": 49
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:21:47.581Z",
+  "endedAt": "2026-07-27T10:21:51.921Z",
+  "durationMs": 4340.184209,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d0062a5a876a30469c8697c816778f116d0c615b75ee1de37f4f924252a38102"
+}

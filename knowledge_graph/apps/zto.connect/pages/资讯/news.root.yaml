@@ -1,0 +1,40 @@
+schemaVersion: 3.0.0
+entityType: Page
+id: 01KY6Z7BD8NMJRG60C21NC67KP
+key: news.root
+label: 资讯
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 资讯
+surfaceType: page
+status: legacy_evidence_pending_reconciliation
+summary: 浏览企业资讯内容的一级场景。
+states:
+- key: default
+  summary: 默认入口状态
+  frameRefs:
+  - 01KY6YG3FJ95EPAM1A811HVFHK
+elementRefs:
+- 01KY6Z7BD84VK4BNARMMSEET0K
+inboundTransitionRefs: []
+outboundTransitionRefs: []
+observations:
+- frameRef: 01KY6YG3FJ95EPAM1A811HVFHK
+  observedAt: '2026-07-23T07:37:03.218Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:legacy-device-redacted
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    selectedBottomTab: news
+    bottomSheet: closed
+  screenshotRef: sha256:965d88a106bff573b71814c62fa0eaf80b85390eec2cdb48f5c7ce341a5d8ab2
+  evidenceStatus: legacy_visual_observation_requires_dual_model_reconciliation
+provenance:
+  sourceType: legacy_uikg_v2_import
+  sourceEntityId: 01KY6Z7BD8NMJRG60C21NC67KP
+  limitations:
+  - legacy observations include OCR-derived semantics
+  - no current aiScout reconciliation

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHRK6AM6KB0KC3RAC5FWD1G",
+  "sessionRef": "01KYHR8DFGG6PD70AVJAZ2X0PW",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHRFN0MTATNMKWH3M0DFZ6K",
+  "sourceScreenshotRef": "sha256:be86cd804522e53251b0cb6fb62f653101b5086961611584933ee1ced2c43979",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"短信\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.method\",\"predicate\":\"visible_options\",\"value\":\"提醒方式面板包含短信、电话和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "当前仍显示特别关注提醒设置页，没有可见弹窗、底部面板或遮罩",
+      "“弹窗消息未读，短信/电话提醒我”开关已开启",
+      "该提醒的间隔时间显示为30分钟",
+      "“提醒方式”当前显示为“短信”",
+      "“夜间免打扰”开关关闭，并说明开启后22:00至次日06:00不再通过短信或电话通知",
+      "“免打扰群通知”开关关闭",
+      "下方还能看到“个性化提醒”和“特别关注提示音：简报”"
+    ],
+    "supportedFunctionDescription": "结合当前画面与供应的权威上下文，提醒方式面板支持短信、电话和取消；激活“短信”后面板关闭并返回设置页，提醒方式字段更新为“短信”，表示特别关注未读提醒被配置为短信方式。页面还可见相关提醒开关、30分钟间隔设置及夜间免打扰设置。",
+    "evidenceBasis": [
+      "屏幕顶部可见标题“特别关注提醒”",
+      "屏幕中部可见已开启的“弹窗消息未读，短信/电话提醒我”开关",
+      "“提醒方式”一行右侧明确显示“短信”",
+      "当前画面没有可见弹窗、面板或遮罩",
+      "权威非视觉上下文说明提醒方式面板包含短信、电话和取消",
+      "权威非视觉上下文说明工具栏心形功能名为“特别关注”，且允许操作相关开关和设置"
+    ],
+    "unresolvedMeaning": "当前画面仅能确认提醒方式的可见配置结果为“短信”；无法确认是否已实际发送短信、接收手机号、系统或应用权限、运营商资费、触发条件细节，以及该选择是否已同步到其他设备。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:25:07.867Z",
+  "endedAt": "2026-07-27T12:25:31.732Z",
+  "durationMs": 23865.914958,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d397608b032f2a0502d25f3de5c7b8f76d197e1ee842208bacb49a29e2d925b2"
+}

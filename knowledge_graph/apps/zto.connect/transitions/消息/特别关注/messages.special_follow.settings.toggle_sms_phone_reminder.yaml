@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBSTTJAZ89ZZ6QER6H
+key: messages.special_follow.settings.toggle_sms_phone_reminder
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBTAX8RYW8RRD8EHR4
+action: aiTap
+capability: toggle_sms_phone_reminder
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHT9PXKXPTR3471SRJSKVHT
+  beforeFrameRef: 01KYHT6K4J7QCPJTBZTJ4BDT7Q
+  afterFrameRef: 01KYHTA1P4ZPSET9FX9R2PW8QC
+  postcondition: pass
+  semanticAssertions:
+  - sha256:46402d384e7b5dda0e4ef88af28be7d37f5abdc8b17b812247e638d8059042c5
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

@@ -1,0 +1,79 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBJJJZ04M4V0C47KT0
+key: messages.special_follow.settings.sms_phone_row
+label: 特别关注-特别关注提醒-短信或电话提醒设置项
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+parentElementRef: null
+controlType: container
+role: setting_group
+capabilities: []
+summary: 短信或电话提醒的总容器；页面只直接引用该容器，容器持有设置名称、帮助图标、帮助浮层和开关。
+relationshipRefs:
+- owner:01KYKA3ENB5WR50THMQMPJ4FJZ
+- child:01KYKA3ENB5J8TEPZ48HCY1K69
+- child:01KYKA3ENBMYXFAYTP0W6DM5MY
+- child:01KYKA3ENBMGQ14ES0AMQZQ6WH
+- child:01KYKA3ENBTAX8RYW8RRD8EHR4
+observations:
+- frameRef: sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31
+  observedAt: '2026-07-31T04:24:34.130Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: null
+    actionable: false
+    helpPopoverVisible: true
+  screenshotRef: sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 48.0
+      top: 1119.0
+      width: 1033.0
+      height: 153.0
+    center:
+    - 564.0
+    - 1195.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:3b22503b4a4caf90769d0ed517b6f38de8ecaf6a941af21ad55b353daf215083
+  state: visible_with_help_popover
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBJJJZ04M4V0C47KT0-sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31.png
+coverage: observed_not_activated_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: false
+  function: groups_setting_label_help_and_toggle
+childElementRefs:
+- 01KYKA3ENB5J8TEPZ48HCY1K69
+- 01KYKA3ENBMYXFAYTP0W6DM5MY
+- 01KYKA3ENBMGQ14ES0AMQZQ6WH
+- 01KYKA3ENBTAX8RYW8RRD8EHR4
+composition:
+  roles:
+    label: 01KYKA3ENB5J8TEPZ48HCY1K69
+    helpTrigger: 01KYKA3ENBMYXFAYTP0W6DM5MY
+    helpPopover: 01KYKA3ENBMGQ14ES0AMQZQ6WH
+    settingControl: 01KYKA3ENBTAX8RYW8RRD8EHR4
+  profile: help_toggle_row

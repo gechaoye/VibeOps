@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "open-popup-interval-via-label-area-uikg301",
+  "method": "aiTap",
+  "prompt": "只定位第一组弹窗提醒开关下方那一行左侧的“间隔时间”名称文字；不要包含右侧当前值、箭头或整行空白。",
+  "beforeFrameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+  "locator": {
+    "rect": {
+      "left": 49,
+      "top": 1018,
+      "width": 172,
+      "height": 43
+    },
+    "center": [
+      134,
+      1039
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T06:25:02.291Z",
+  "completedAt": "2026-07-31T06:25:16.172Z",
+  "postcondition": "弹窗提醒间隔底部选择面板已打开，可见10分钟、30分钟、1小时、4小时和取消。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图中“间隔时间”底部选择面板已打开，面板清晰显示“10分钟”“30分钟”“1小时”“4小时”和“取消”，其中“1小时”为当前选中项。"
+  },
+  "status": "executed_verified"
+}

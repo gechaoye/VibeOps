@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHK43G9K62NTASGFMG374B8",
+  "sessionRef": "01KYHK1MRD915BBV536E9KP4AF",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHK1YNAHBJ9WEQ4G5G8CNSC",
+  "sourceScreenshotRef": "sha256:9094cf704e7835e24c273037da0b20578d57c12e68a3be2137e9b8ef8185180a",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面标题为“特别关注提醒”，“弹窗消息未读，短信/电话提醒我”开关为灰色关闭状态。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:49:50.631Z",
+  "endedAt": "2026-07-27T10:49:54.441Z",
+  "durationMs": 3809.917458,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:51657dbceaa01f2b4f789a67efe2757fa7107808c9248287f658eba8a7529bc1"
+}

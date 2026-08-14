@@ -1,0 +1,47 @@
+{
+  "recordType": "LiveRepairRetryHistory",
+  "explorationRef": "zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1",
+  "generatedAt": "2026-07-31T04:40:50.000Z",
+  "canonicalCoverageRef": "evidence-index.json",
+  "classification": "Supporting retry evidence excluded from canonical coverage; failed runtime-conflict actions remain preserved.",
+  "archivedFrames": [
+    "attempts/frames/0b77f9d27fe9a7c748edbc9d2c7d26316f01503a72818f15832bd9daaf56e8ac.png",
+    "attempts/frames/4956376be42d95741de17e61a2fdbda78036040746534b65321daada4470f4af.png",
+    "attempts/frames/62f381c46eee4dde1bee787c77f38f62b8bbdc9a4a9e97a4ec34bdc3e54a8427.png",
+    "attempts/frames/838847192ac90b47f321852a23f8c2424a136c133ef42b1bab99950fa62f3839.png",
+    "attempts/frames/b5c8122aae429e973f4dcfa03ba37ae8510059176fe68ab669bb4da52a6daa1a.png",
+    "attempts/frames/c44f9c88e0e7ff7ffd83ef42401abea5b0ecb17d409586696c554c3bf42bf96a.png",
+    "attempts/frames/c67a4584e5575baa5238c7c20241b407f3119184b071d5bb96fb726c58b7e0e9.png",
+    "attempts/frames/d721b71a0fc5c64592cdcc358cd0aaab6060cb7787f143da5e50d1e8ffa2d3ee.png",
+    "attempts/frames/e0e77d75b63bb1144528698e27379d67c600168467d8cbaff945153ded2974ec.png",
+    "attempts/frames/e6bedb425505498901b4d95e13f57f48473137be07fad06b78b7b44eb48b42f9.png",
+    "attempts/frames/eaa8f55ce830ab3d0376509301568a9972d87b191493c8cd44767b3a4f62f53a.png",
+    "attempts/frames/f9b3b36eec149a3fe63e144395ab384e16abfc3d920b23ab351f38a4beca57b3.png"
+  ],
+  "nonCanonicalActions": [
+    {
+      "actionRef": "attempts/actions/reset-settings-before-target-group-live-repair.json",
+      "actionId": "reset-settings-before-target-group-live-repair",
+      "status": "executed_verified",
+      "classification": "supporting_recovery_checkpoint_excluded_from_canonical_coverage_due_to_nonconformant_scout_payload"
+    },
+    {
+      "actionRef": "actions/dismiss-popup-help-via-android-back-live-repair.json",
+      "actionId": "dismiss-popup-help-via-android-back-live-repair",
+      "status": "unresolved",
+      "classification": "noncanonical_retry_or_runtime_conflict_evidence"
+    },
+    {
+      "actionRef": "actions/dismiss-popup-help-via-description-live-repair.json",
+      "actionId": "dismiss-popup-help-via-description-live-repair",
+      "status": "unresolved",
+      "classification": "noncanonical_retry_or_runtime_conflict_evidence"
+    },
+    {
+      "actionRef": "actions/dismiss-popup-reminder-help-live-repair.json",
+      "actionId": "dismiss-popup-reminder-help-live-repair",
+      "status": "unresolved",
+      "classification": "noncanonical_retry_or_runtime_conflict_evidence"
+    }
+  ]
+}

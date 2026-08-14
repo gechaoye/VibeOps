@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHNQ70HG4DKC9KVF5V043JA",
+  "sessionRef": "01KYHNK2NQDTEG375N9GATH53W",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHNN1VQGNYWY4979XWF3TPA",
+  "sourceScreenshotRef": "sha256:1e3b15aa543cf13cc2af166a9b9636e208a5a8071ef00d94197f37b63dd60bdf",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面没有底部面板；短信/电话提醒间隔行下方、夜间免打扰上方的“提醒方式”行右侧显示“电话”。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:35:11.564Z",
+  "endedAt": "2026-07-27T11:35:17.777Z",
+  "durationMs": 6213.514792,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:c1e6b1c527993864e9b21512093a4c93fcf17a66ba21d2afc22f13eb31ec037b"
+}

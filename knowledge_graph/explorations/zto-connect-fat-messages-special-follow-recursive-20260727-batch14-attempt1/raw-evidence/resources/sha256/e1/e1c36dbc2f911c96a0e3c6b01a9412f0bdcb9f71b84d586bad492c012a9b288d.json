@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHDTMXYK9NA0M57WE0K38K2",
+  "sessionRef": "01KYHDMQ8EFWPC0S4DZ8YYJSH7",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHDR4R5V2A92E3MC2CA7T8P",
+  "sourceScreenshotRef": "sha256:ba11d642dc22f1b0b657ae2dc7c34a33aac315e1a3216026b9c312d8dc5280c7",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前画面显示由“单聊消息未读，弹窗提醒我”右侧问号打开的帮助说明层，帮助文字或弹层边界清晰可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:17:15.838Z",
+  "endedAt": "2026-07-27T09:17:21.726Z",
+  "durationMs": 5888.091667,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:229bb3159c554bfadb1ea7d2db97f770646e1e02fccf0372f650ae63820dac38"
+}

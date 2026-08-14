@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH8TJ7E894G9080NVRWFM33",
+  "sessionRef": "01KYH8N35GZVKXGGX75S5PS7K8",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH8RW02Y6BKSQPV20T9XK31",
+  "sourceScreenshotRef": "sha256:b70c0b04c20b1ec20f9efd4a628e99fe37f6095ff57b3b6229523225ce298f97",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"我的特别关注右侧进入箭头\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "全部成员",
+    "visibleResultContent": [],
+    "supportedFunctionDescription": "激活“我的特别关注”右侧进入箭头后，会打开标题为“全部成员”的空白页面或覆盖层；当前可见界面支持通过左上控件返回，并可通过右上控件关闭。相关功能名称依据 supplied context 为“特别关注”。",
+    "evidenceBasis": [
+      "截图顶部中央可见文字“全部成员”",
+      "截图左上可见返回控件，右上可见关闭控件",
+      "标题下方区域为空白，未显示成员、列表项或状态提示",
+      "立即前序操作是激活“我的特别关注右侧进入箭头”",
+      "权威非视觉上下文明确 messages.toolbar.heart 的 function_name 为“特别关注”"
+    ],
+    "unresolvedMeaning": "无法仅凭当前画面判断空白区域表示没有成员、内容尚未加载、加载失败，还是内容被隐藏；也无法确认“全部成员”具体包含哪些成员，以及返回和关闭控件是否会到达不同目标。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:49:40.949Z",
+  "endedAt": "2026-07-27T07:49:56.078Z",
+  "durationMs": 15128.262792,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:5eccef87be66d474e8d039171b0262fa763c5ea44f94d191638ea83595542e49"
+}

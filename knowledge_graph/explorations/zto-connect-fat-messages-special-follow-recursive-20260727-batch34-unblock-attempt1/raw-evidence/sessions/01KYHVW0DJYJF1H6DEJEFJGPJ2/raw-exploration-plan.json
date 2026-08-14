@@ -1,0 +1,202 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch34-unblock-attempt1:plan",
+  "sourceScopeHash": "sha256:c23b39bb40955cf185e1a8c9ca4344106132ab38cba32ea65ac21245b7cbc5b1",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口探索期间的临时遮挡解阻",
+    "userIntent": "关闭与当前探索范围无关的 APP 全局日程提醒弹窗，恢复底层特别关注设置状态；本会话不进入发布图谱。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.transient_schedule_overlay",
+        "predicate": "scope_boundary",
+        "value": "日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。",
+        "source": "task_policy"
+      }
+    ]
+  },
+  "initialState": "common.schedule_reminder.overlay",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.ping.TopFloatActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "schedule-overlay-actions",
+        "space": "current_display_px",
+        "rect": {
+          "x": 20,
+          "y": 550,
+          "width": 1112,
+          "height": 350
+        },
+        "purpose": "全局日程弹窗底部三个动作按钮区域；语义 locator 只允许选择左侧“忽略”。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "common.schedule_reminder.overlay": {
+      "key": "common.schedule_reminder.overlay",
+      "label": "全局日程提醒弹窗",
+      "kind": "dialog",
+      "expectedStablePageKey": "common.schedule_reminder",
+      "requiredSemanticAssertions": [
+        "前景显示标题“日程”和“您有一个新日程”的弹窗，底部按钮依次为忽略、拒绝、接受。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点前景日程提醒弹窗全部可见控件，只把忽略、拒绝、接受识别为可操作按钮；背景特别关注设置页不可操作。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "dismiss_schedule_overlay"
+      ],
+      "postcondition": "已盘点全局遮挡，拒绝和接受仅记录不激活。"
+    },
+    "common.schedule_reminder.dismissed_result": {
+      "key": "common.schedule_reminder.dismissed_result",
+      "label": "日程提醒关闭后的底层状态",
+      "kind": "unresolved",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "日程提醒弹窗已关闭且不再显示，宝盒测试包仍在前台；准确识别底层特别关注设置页或提醒方式面板的实际状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点点击忽略后的底层画面，确认日程弹窗消失，并准确记录特别关注设置页或提醒方式面板的当前状态。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "radio",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已恢复特别关注探索的可见起点。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-schedule-overlay",
+      "kind": "capture",
+      "state": "common.schedule_reminder.overlay",
+      "depth": 0
+    },
+    {
+      "id": "ignore-schedule-reminder",
+      "kind": "tap",
+      "semanticAction": "dismiss_schedule_overlay",
+      "fromState": "common.schedule_reminder.overlay",
+      "toState": "common.schedule_reminder.dismissed_result",
+      "depth": 0,
+      "risk": "medium",
+      "sideEffects": [
+        "notification_dismissal"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "schedule.ignore",
+        "label": "忽略",
+        "scope": "temporary_state_control",
+        "locatorPrompt": "定位日程提醒弹窗底部三个按钮中最左侧、白底灰边的“忽略”按钮；不要定位中间“拒绝”或右侧“接受”。",
+        "allowedRegionRef": "schedule-overlay-actions"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "日程提醒弹窗已关闭且不再显示，准确记录底层特别关注设置页或提醒方式面板状态。"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENB7KBXWPHE5AERG8PB
+key: messages.special_follow.settings.open_reminder_method_selector
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBA5E0GVXQR71XJFP2
+action: aiTap
+capability: open_reminder_method_selector
+targetRef: 01KYKA3ENB80X4G3EYDN53XKYA
+reversible: true
+risk: safe
+verificationStatus: success_dual_model_live
+evidence:
+  actionTraceRef: open-reminder-method-via-label-area-uikg301
+  actionRecordRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-reminder-method-via-label-area-uikg301.json
+  beforeFrameRef: sha256:f8c7551e86e9d51f24912c3f8cf04a28d3cd6135bc5675da9f8c1b4fa48415b3
+  afterFrameRef: sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570
+  postcondition: pass
+  semanticAssertions:
+  - sha256:8843e2c007e9c502fe325bc7e7540e52efbc05d6a626448073e3b968848c0a8c
+provenance:
+  sourceType: midscene_dual_model_live_action_trace
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1

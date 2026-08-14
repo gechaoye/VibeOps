@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYGXHGV12YR521HTH6S746ZB",
+  "sessionRef": "01KYGXD0C957YB101AG2F9X7HC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYGXF4VHSGHXM8H100HJEYXD",
+  "sourceScreenshotRef": "sha256:3765081045c7f0a37b70f3a5fdafdaf87a0ab835ec650f1a34a130fa49028cee",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前屏幕已出现由特别关注入口触发的稳定落地页面、覆盖层或明确状态变化；请确认其具体形态，并描述可见标题、主要内容、空状态或列表状态及可用控件，且目标包仍在前台。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T04:32:36.606Z",
+  "endedAt": "2026-07-27T04:32:45.409Z",
+  "durationMs": 8803.262291,
+  "captureCoupling": "sequential_non_atomic",
+  "contentHash": "sha256:443bb7a8ad8a6af03a2c30f8c976cf9c0055e4fc2446672cd341e90058b895f1"
+}

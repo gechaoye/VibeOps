@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHP9P7ESYB2X4306TT4P4T7",
+  "sessionRef": "01KYHP3PA8A8CKFKA32NHD7Y0K",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHP5X5XRFXPW7QVKJYENQZM",
+  "sourceScreenshotRef": "sha256:939398558ed8beb033de023f46c77e8dc6022c170536b5601ec568de02a623b8",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"忽略\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.transient_schedule_overlay\",\"predicate\":\"scope_boundary\",\"value\":\"日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。\",\"source\":\"task_policy\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "日程",
+    "visibleResultContent": [
+      "您有一个新日程",
+      "日程UI自动化",
+      "07月27日 20:00 - 21:00",
+      "忽略",
+      "拒绝",
+      "接受",
+      "背景页面标题为“特别关注提醒”，当前被灰色遮罩覆盖"
+    ],
+    "supportedFunctionDescription": "当前可见界面支持对全局临时日程提醒执行“忽略”“拒绝”或“接受”操作；任务上下文指定“特别关注”为相关功能名称，但该日程提醒不属于特别关注功能图谱。",
+    "evidenceBasis": [
+      "画面中央可见标题为“日程”的白色模态弹窗。",
+      "弹窗明确显示“您有一个新日程”、日程名称“日程UI自动化”和时间“07月27日 20:00 - 21:00”。",
+      "弹窗底部可见“忽略”“拒绝”“接受”三个文字按钮。",
+      "背景可见“特别关注提醒”页面且整体变暗，表明当前由模态遮罩阻断。",
+      "任务提供的权威上下文说明“特别关注”为功能名称，并规定日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。"
+    ],
+    "unresolvedMeaning": "紧接“忽略”被激活后，当前截图中日程弹窗仍然可见，且没有成功、失败、处理中或页面跳转等反馈；因此无法仅凭该画面确定“忽略”是否已生效、是否存在延迟，或其最终业务结果。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:45:08.614Z",
+  "endedAt": "2026-07-27T11:45:23.182Z",
+  "durationMs": 14567.713333,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:2caf18a8c43b9cd0ff8802b89127a9d197cb8d0258bc70b14ad34a70605c7a5b"
+}

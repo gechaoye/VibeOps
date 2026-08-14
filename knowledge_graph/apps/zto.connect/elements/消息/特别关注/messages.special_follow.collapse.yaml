@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENB83A8FJ2AKNQ7SA64
+key: messages.special_follow.collapse
+label: 特别关注-返回消息页
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB431TAGYEEA0BJYYZ
+parentElementRef: null
+controlType: icon_button
+role: navigation
+capabilities:
+- close_special_follow
+summary: 收起特别关注页面并返回消息页。
+relationshipRefs:
+- owner:01KYKA3ENB431TAGYEEA0BJYYZ
+- transition:01KYKA3ENB44BC4FWEPKEEY7BK
+observations:
+- frameRef: 01KYK5821NYFQGTZ65KN3EMYFT
+  observedAt: '2026-07-28T01:25:55.588Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:5d49c8062e4c0829cdc77e39f5c46f6f2b968c7114ceccb27f46d0a55637b06d
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch47-attempt1/raw-evidence/sessions/01KYK56EAS2G50YYZCS42HQWRP
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 44.0
+      top: 173.0
+      width: 45.0
+      height: 26.0
+    center:
+    - 66.5
+    - 186.0
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:0037bcf03764eb3cdb5e13ee851729c21eb55854774c90bb5fa0907114f55c63
+  state: visible_and_actionable
+  dynamicValue: null
+  actionTraceRef: 01KYK59J1GS7ZSWQ79R7SM0F5Q
+  redboxRef: assets/element-redboxes/01KYKA3ENB83A8FJ2AKNQ7SA64-01KYK5821NYFQGTZ65KN3EMYFT.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: safe
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: close_special_follow

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYKDT80FZ25XF033MDSA16PR",
+  "sessionRef": "01KYKDKVV8W2XD0Q80SSMFJZBQ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYKDR9ZJ2RX5BJ72KANT9GY6",
+  "sourceScreenshotRef": "sha256:7d68985924b17166e618df5a0885b9cb487c9a4e128994aaf8a5d232f225de57",
+  "operation": "aiLocate",
+  "prompt": "定位当前帮助气泡尖角所指向的第一枚灰色圆圈问号本身；再次点击该问号以关闭气泡，不点击气泡正文或其他问号。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 608,
+      "y": 890
+    },
+    "rect": {
+      "x": 582,
+      "y": 864,
+      "width": 54,
+      "height": 53
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T03:55:34.142Z",
+  "endedAt": "2026-07-28T03:55:37.359Z",
+  "durationMs": 3217.24625,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d748ca52684e8e6fb2f00e631f035a50a41e2f718acce9ca5cf2ae20db08cdc0"
+}

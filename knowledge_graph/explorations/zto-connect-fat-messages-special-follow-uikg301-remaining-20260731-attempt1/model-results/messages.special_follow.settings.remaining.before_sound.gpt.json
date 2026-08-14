@@ -1,0 +1,177 @@
+{
+  "pageIdentity": "特别关注提醒设置页；当前无可见覆盖层或帮助气泡。",
+  "stateSummary": "特别关注1人（练良伟）。单聊消息未读弹窗提醒已开启，间隔时间为1小时；弹窗消息未读短信/电话提醒已开启，间隔时间为30分钟，提醒方式为电话；夜间免打扰已关闭；免打扰群通知已关闭；特别关注提示音为门铃。所有可见问号帮助图标均未展开帮助气泡，当前未见打开的选择器。",
+  "rowCompositions": [
+    {
+      "rowName": "单聊消息未读提醒",
+      "labelText": "单聊消息未读，弹窗提醒我",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标和右侧开关分别可操作；标签文字及整行容器不作为独立操作目标。"
+    },
+    {
+      "rowName": "单聊提醒间隔时间",
+      "labelText": "间隔时间：1小时",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧“1小时”及箭头构成间隔时间选择入口；行标题本身不是帮助按钮。"
+    },
+    {
+      "rowName": "短信/电话提醒",
+      "labelText": "弹窗消息未读，短信/电话提醒我",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标和右侧开关分别可操作；标签文字及整行容器不作为独立操作目标。"
+    },
+    {
+      "rowName": "短信/电话提醒间隔时间",
+      "labelText": "间隔时间：30分钟",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧“30分钟”及箭头构成间隔时间选择入口。"
+    },
+    {
+      "rowName": "提醒方式",
+      "labelText": "提醒方式：电话",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧“电话”及箭头构成提醒方式选择入口。"
+    },
+    {
+      "rowName": "夜间免打扰",
+      "labelText": "夜间免打扰",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "右侧开关可操作；说明文字仅用于解释22:00至次日06:00的行为。"
+    },
+    {
+      "rowName": "免打扰群通知",
+      "labelText": "免打扰群通知",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标和右侧开关分别可操作；标签文字及行容器不等同于帮助图标。"
+    },
+    {
+      "rowName": "特别关注提示音",
+      "labelText": "特别关注提示音：门铃",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": false,
+      "actionableSubElement": "右侧“门铃”及箭头构成提示音选择入口。"
+    }
+  ],
+  "candidateReconciliation": [
+    {
+      "candidate": "页面标题“特别关注提醒”",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "属于页面顶部导航栏，标识当前业务页面。"
+    },
+    {
+      "candidate": "单聊消息未读，弹窗提醒我",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "属于未读消息提醒设置区域，是设置标签，不是帮助弹层或新页面。"
+    },
+    {
+      "candidate": "单聊提醒问号图标",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属单聊消息未读提醒行，是该标签的独立帮助入口。"
+    },
+    {
+      "candidate": "单聊提醒帮助气泡",
+      "classification": "dynamic data",
+      "ownerOrContainerReasoning": "当前未显示；仅在点击对应问号后可能动态出现，不应识别为当前页面或常驻元素。"
+    },
+    {
+      "candidate": "单聊提醒开关",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属单聊消息未读提醒行，当前为开启状态。"
+    },
+    {
+      "candidate": "1小时间隔选择器",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属单聊提醒的间隔时间行；当前仅显示选中值，未展开选择面板。"
+    },
+    {
+      "candidate": "弹窗消息未读，短信/电话提醒我",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "属于未读消息提醒设置区域，是设置标签。"
+    },
+    {
+      "candidate": "短信/电话提醒问号图标",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属短信/电话提醒行，是独立帮助入口。"
+    },
+    {
+      "candidate": "短信/电话提醒帮助气泡",
+      "classification": "dynamic data",
+      "ownerOrContainerReasoning": "当前未显示；可能由对应问号触发，不构成独立页面。"
+    },
+    {
+      "candidate": "短信/电话提醒开关",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属短信/电话提醒行，当前为开启状态。"
+    },
+    {
+      "candidate": "30分钟间隔选择器",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属短信/电话提醒的间隔时间行；当前未展开。"
+    },
+    {
+      "candidate": "电话提醒方式选择器",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属提醒方式行，当前值为电话；选择面板未展开。"
+    },
+    {
+      "candidate": "夜间免打扰开关",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属夜间免打扰行，当前为关闭状态。"
+    },
+    {
+      "candidate": "免打扰群通知问号图标",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属免打扰群通知行，是独立帮助入口。"
+    },
+    {
+      "candidate": "免打扰群通知帮助气泡",
+      "classification": "dynamic data",
+      "ownerOrContainerReasoning": "当前未显示；可能由问号动态触发，不应作为当前覆盖层。"
+    },
+    {
+      "candidate": "免打扰群通知开关",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属免打扰群通知行，当前为关闭状态。"
+    },
+    {
+      "candidate": "门铃提示音选择器",
+      "classification": "existing element",
+      "ownerOrContainerReasoning": "归属特别关注提示音行，当前值为门铃；选择面板未展开。"
+    },
+    {
+      "candidate": "整行点击区域等同于帮助按钮",
+      "classification": "duplicate",
+      "ownerOrContainerReasoning": "帮助操作已由行内问号图标承载，不应再把标签或整个容器重复建模为帮助入口。"
+    },
+    {
+      "candidate": "帮助气泡独立业务页面",
+      "classification": "out-of-scope",
+      "ownerOrContainerReasoning": "帮助气泡若出现也只是当前设置页上的临时覆盖层，不是新业务页面。"
+    }
+  ],
+  "interactionBoundaryAssertions": [
+    "“单聊消息未读，弹窗提醒我”是非操作性设置名称；其后的问号图标是帮助入口，右侧开关是状态操作入口。",
+    "“弹窗消息未读，短信/电话提醒我”是非操作性设置名称；问号图标与右侧开关是两个相互独立的操作目标。",
+    "“免打扰群通知”文字和所在行容器不应被识别为帮助按钮；问号图标负责帮助，右侧开关负责启停。",
+    "“夜间免打扰”及其说明文字不应替代右侧开关的操作语义；开关是明确的启停目标。",
+    "间隔时间、提醒方式和提示音行的右侧值与箭头是选择入口；当前没有任何选择器面板展开。",
+    "设置分组容器、分隔线、说明文字及灰色背景均不可操作。",
+    "当前没有可交互的帮助弹层；不可为未显示的气泡建立可见操作边界。",
+    "帮助气泡即使被触发，也应归属于对应问号及当前设置页，不能被识别为新的页面。"
+  ]
+}

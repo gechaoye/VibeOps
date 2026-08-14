@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "cancel-sms-interval-uikg301",
+  "method": "aiTap",
+  "prompt": "只定位当前底部选择面板最下方居中的“取消”按钮。",
+  "beforeFrameRef": "sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e",
+  "locator": {
+    "rect": {
+      "left": 520,
+      "top": 2268,
+      "width": 114,
+      "height": 56
+    },
+    "center": [
+      576,
+      2295
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T06:42:19.794Z",
+  "completedAt": "2026-07-31T06:42:32.851Z",
+  "postcondition": "底部选择面板已关闭，仍停留在特别关注提醒设置页。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图中未显示底部选择面板；页面标题为“特别关注提醒”，并显示特别关注人员及提醒方式等设置项，说明仍停留在特别关注提醒设置页。"
+  },
+  "status": "executed_verified"
+}

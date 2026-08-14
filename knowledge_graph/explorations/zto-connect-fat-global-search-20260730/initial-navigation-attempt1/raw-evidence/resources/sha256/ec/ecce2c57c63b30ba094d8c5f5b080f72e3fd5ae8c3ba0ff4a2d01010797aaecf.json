@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYS33CAVXSRNYCKXCFYQM97S",
+  "sessionRef": "01KYS2MZ2HQBPK0G7RGMQVE3ZN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYS2NTV30MFQB2TXR6MXS607",
+  "sourceScreenshotRef": "sha256:c157e07ccf15083ea85b5c2c3b40ded7b86a3e4e755d9d27e12b33f4e22456ef",
+  "operation": "aiLocate",
+  "prompt": "定位屏幕底部导航栏最左侧、蓝色高亮且文字为“工作台”、带红色25角标的标签。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 141,
+      "y": 2262
+    },
+    "rect": {
+      "x": 85,
+      "y": 2193,
+      "width": 113,
+      "height": 140
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "scout": {
+      "name": "qwen3-vl-plus",
+      "family": "qwen3-vl",
+      "slot": "scout"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-30T08:43:43.715Z",
+  "endedAt": "2026-07-30T08:43:48.955Z",
+  "durationMs": 5239.457292,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:9d107fd92e2276b0238114efec47a60035d2a71766aaf103cb7fcdce09815221"
+}

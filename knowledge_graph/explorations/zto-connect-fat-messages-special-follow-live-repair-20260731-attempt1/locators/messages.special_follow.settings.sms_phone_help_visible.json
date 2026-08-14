@@ -1,0 +1,102 @@
+{
+  "recordType": "FrozenUiFrameEvidence",
+  "stateKey": "messages.special_follow.settings.sms_phone_help_visible",
+  "frameId": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+  "observedAt": "2026-07-31T04:24:34.130Z",
+  "buildRef": "android-package:com.zto.connect.fat@10542",
+  "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "viewport": {
+    "width": 1152,
+    "height": 2376,
+    "orientation": "portrait"
+  },
+  "screenshotRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+  "screenshotPath": "frames/74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31.png",
+  "dpr": 3.501519756838906,
+  "scoutRef": "model-results/messages.special_follow.settings.sms_phone_help_visible.scout.json",
+  "reconciliationRef": "model-results/messages.special_follow.settings.sms_phone_help_visible.gpt.json",
+  "locatorRef": "locators/messages.special_follow.settings.sms_phone_help_visible.json",
+  "evidenceStatus": "dual_model_verified_live_frame",
+  "locators": {
+    "sms_phone_row": {
+      "rect": {
+        "left": 48,
+        "top": 1119,
+        "width": 1033,
+        "height": 153
+      },
+      "center": [
+        564,
+        1195
+      ],
+      "dpr": 3.501519756838906,
+      "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+      "prompt": "定位包含“弹窗消息未读，短信/电话提醒我”名称文案、其右侧灰色圆圈问号和最右侧开关的完整横向设置项总容器；框住该设置项整行，不包括下方间隔时间、提醒方式或任何弹出帮助气泡。",
+      "status": "pass"
+    },
+    "sms_phone_label": {
+      "rect": {
+        "left": 49,
+        "top": 1167,
+        "width": 622,
+        "height": 45
+      },
+      "center": [
+        359,
+        1189
+      ],
+      "dpr": 3.501519756838906,
+      "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+      "prompt": "只定位设置名称文案“弹窗消息未读，短信/电话提醒我”的完整文字区域；不要包含右侧问号、开关或整行空白。",
+      "status": "pass"
+    },
+    "sms_phone_help": {
+      "rect": {
+        "left": 682,
+        "top": 1163,
+        "width": 58,
+        "height": 56
+      },
+      "center": [
+        710,
+        1190
+      ],
+      "dpr": 3.501519756838906,
+      "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+      "prompt": "只定位“弹窗消息未读，短信/电话提醒我”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或其他问号。",
+      "status": "pass"
+    },
+    "sms_phone_toggle": {
+      "rect": {
+        "left": 933,
+        "top": 1153,
+        "width": 148,
+        "height": 76
+      },
+      "center": [
+        1006,
+        1190
+      ],
+      "dpr": 3.501519756838906,
+      "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+      "prompt": "只定位“弹窗消息未读，短信/电话提醒我”设置项最右侧的开关；不要定位问号、文字或其他开关。",
+      "status": "pass"
+    },
+    "sms_phone_help_popover": {
+      "rect": {
+        "left": 59,
+        "top": 916,
+        "width": 1082,
+        "height": 233
+      },
+      "center": [
+        599,
+        1032
+      ],
+      "dpr": 3.501519756838906,
+      "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+      "prompt": "只定位“弹窗消息未读，短信/电话提醒我”问号上方当前展开的深色帮助说明气泡完整边界，包含气泡正文和尖角；不要定位问号图标或设置项整行。",
+      "status": "pass"
+    }
+  }
+}

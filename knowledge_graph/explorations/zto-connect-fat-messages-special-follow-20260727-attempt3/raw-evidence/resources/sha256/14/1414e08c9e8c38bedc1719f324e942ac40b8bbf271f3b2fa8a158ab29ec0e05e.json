@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYGXGJT36F35TXPHDDXHSM58",
+  "sessionRef": "01KYGXD0C957YB101AG2F9X7HC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYGXF4VHSGHXM8H100HJEYXD",
+  "sourceScreenshotRef": "sha256:3765081045c7f0a37b70f3a5fdafdaf87a0ab835ec650f1a34a130fa49028cee",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleToolbarControls: string[], visibleNavigationState: string, unresolvedVisualMeanings: string[]}, describe only visible facts on the current screen. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "空状态插图",
+      "包含特别关注人消息的会话会展示在这里",
+      "设置特别关注 >"
+    ],
+    "visibleToolbarControls": [
+      "左上角向下符号控件"
+    ],
+    "visibleNavigationState": "当前位于“特别关注”页面，内容为空，显示“设置特别关注”入口",
+    "unresolvedVisualMeanings": [
+      "左上角向下符号控件的具体功能无法仅根据画面确定"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T04:31:30.333Z",
+  "endedAt": "2026-07-27T04:32:14.659Z",
+  "durationMs": 44327.5735,
+  "captureCoupling": "sequential_non_atomic",
+  "contentHash": "sha256:83f55a090428ee511cbad5b43f3abc8dffc6a1daf37ea2c97c094301d2c0a0fc"
+}

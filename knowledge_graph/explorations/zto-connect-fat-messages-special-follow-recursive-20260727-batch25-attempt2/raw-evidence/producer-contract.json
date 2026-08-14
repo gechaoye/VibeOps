@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2.0.0",
+  "artifactType": "RawExplorationEvidenceProducerContract",
+  "producer": {
+    "id": "midscene-android-uikg-evidence-producer"
+  },
+  "outputKind": "raw_exploration_evidence",
+  "recordNamespace": "uikg.raw-evidence",
+  "graphMaterialization": "none",
+  "producesGraphEntities": false,
+  "semanticAndActionFramework": "midscene.AndroidAgent",
+  "adbPolicy": "read_only_runtime_context_plus_reversible_stay_awake",
+  "requiredDownstreamProcessing": [
+    "evidence_fusion",
+    "semantic_identity_resolution",
+    "page_and_state_resolution",
+    "graph_materialization"
+  ],
+  "contentHash": "sha256:369a3f088bdb3027bd49d61b5bb49141a838df26ed61ea8c049be0dd895a36ee"
+}

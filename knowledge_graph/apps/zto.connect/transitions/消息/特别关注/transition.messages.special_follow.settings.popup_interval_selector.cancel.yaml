@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBZGR91Q1NEYA0YV2D
+key: transition.messages.special_follow.settings.popup_interval_selector.cancel
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB2N6Q6010ZD4NT6P4
+triggerElementRef: 01KYKA3ENBW3P1PVFNGS6QKEW3
+action: aiTap
+capability: cancel_popup_interval_selector
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: safe
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHJENP2TBP71Z5H6H2Y8QWW
+  beforeFrameRef: 01KYHJCC0XQD36T2VA7RSF2RQ5
+  afterFrameRef: 01KYHJF5XJFRTW4FT73HHFS5EZ
+  postcondition: pass
+  semanticAssertions:
+  - sha256:542df9ad83e9ade2a0bc5deec4edb97f1c22e3349c6397059fbfd8d58ec6e547
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

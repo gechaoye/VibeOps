@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSVTGKWTVCZDQBMD0743WW",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSS9G8BZJRVG6B9KMH3891",
+  "sourceScreenshotRef": "sha256:01b70f6b7a4bfa2d5dea6fd4452518f34be95ddfd625e60c466e6f9834026824",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"免打扰群通知\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.night_dnd\",\"predicate\":\"visible_description\",\"value\":\"开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "特别关注提醒",
+    "visibleResultContent": [
+      "未出现新页面、弹窗或遮罩",
+      "“免打扰群通知”开关当前为蓝色开启状态",
+      "“单聊消息未读，弹窗提醒我”已开启",
+      "单聊消息提醒间隔时间为30分钟",
+      "“弹窗消息未读，短信/电话提醒我”已开启",
+      "短信/电话提醒间隔时间为30分钟",
+      "提醒方式为电话",
+      "夜间免打扰当前关闭",
+      "特别关注提示音为简报"
+    ],
+    "supportedFunctionDescription": "根据当前可见结果，激活“免打扰群通知”会在本设置页切换该选项的开关状态；当前已开启，未触发页面跳转或附加界面。权威上下文另行说明：夜间免打扰开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知。",
+    "evidenceBasis": [
+      "页面顶部可见标题“特别关注提醒”",
+      "“免打扰群通知”右侧开关轨道为蓝色且滑块位于右侧",
+      "当前截图中未见弹窗、对话框、抽屉、提示条或遮罩层",
+      "夜间免打扰下方可见说明文字“开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知”",
+      "功能名“特别关注”、操作授权及夜间免打扰说明来自用户提供的权威非视觉上下文"
+    ],
+    "unresolvedMeaning": "当前画面未提供“免打扰群通知”的解释文字，因此无法仅凭可见内容确定它具体屏蔽哪些群通知、作用范围、免打扰时段，以及是否影响应用内、短信或电话提醒。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:47:28.355Z",
+  "endedAt": "2026-07-27T12:47:43.123Z",
+  "durationMs": 14767.695,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:8a37408ef66e6aad9a2b90638f97b7ef4bba2e43ccf353f5700fc666668acdcc"
+}

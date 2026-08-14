@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHA040D378TWGPWSHSX6J4F",
+  "sessionRef": "01KYH9T8PKX1QA0E8CPC4Q0K45",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH9XMFQW1WGZSJXSDAR3T37",
+  "sourceScreenshotRef": "sha256:6c04e14576161a8f8dba789f60149a1a8162e95b61db0cc5ab85549cb2a52401",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"练良伟\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.add\",\"predicate\":\"opens_common_component\",\"value\":\"通用选人组件\",\"source\":\"user\"},{\"subjectKey\":\"common.person_picker\",\"predicate\":\"scope_role\",\"value\":\"通用组件边界_不递归探索\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "选择人员",
+    "visibleResultContent": [
+      "中通集团",
+      "组织架构",
+      "质量管理部",
+      "条线",
+      "个人标签",
+      "我的群组",
+      "最近联系人",
+      "练良伟（已勾选）",
+      "葛超烨",
+      "贾宗婷",
+      "郭虹利",
+      "已选择：1人",
+      "确定(1/10)"
+    ],
+    "supportedFunctionDescription": "在“特别关注”设置中添加人员会打开通用选人组件；当前“练良伟”已被选中，页面支持通过可见分类或搜索选择人员，并可点击“确定(1/10)”提交当前1名已选人员。该通用选人组件按给定上下文属于边界组件，不继续递归探索。",
+    "evidenceBasis": [
+      "屏幕顶部可见标题“选择人员”，左侧有关闭控件，右侧有搜索控件。",
+      "“最近联系人”列表中“练良伟”左侧显示蓝色勾选圆标，其他可见联系人左侧为未选状态。",
+      "底栏可见“已选择：1人”和“确定(1/10)”，直接支持当前选择数量、选择上限及确认行为。",
+      "“特别关注”、允许添加特别关注、添加时打开通用选人组件及组件边界均来自用户提供的权威非视觉上下文，不是像素证据。"
+    ],
+    "unresolvedMeaning": "当前画面未显示确认后的结果，因此无法仅据此确定“练良伟”是否已经成功加入特别关注；只能确定其在选人组件中处于已选、尚可确认提交的状态。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:09:59.237Z",
+  "endedAt": "2026-07-27T08:10:26.701Z",
+  "durationMs": 27462.822917,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:c690cca4be2556c95ed63a205c6bbb4bc7f6aee2d9fe6dc0989732c9cffe08c3"
+}

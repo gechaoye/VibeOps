@@ -1,0 +1,28 @@
+{
+  "recordType": "MidsceneActionTrace",
+  "id": "return-from-all-members-uikg301",
+  "method": "aiTap",
+  "prompt": "只定位“全部成员”页面顶栏最左侧的黑色向左返回箭头；不要定位右侧关闭X。",
+  "beforeFrameRef": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+  "locator": {
+    "rect": {
+      "left": 51,
+      "top": 163,
+      "width": 30,
+      "height": 46
+    },
+    "center": [
+      65,
+      185
+    ],
+    "dpr": 3.501519756838906
+  },
+  "startedAt": "2026-07-31T07:20:41.862Z",
+  "completedAt": "2026-07-31T07:20:59.910Z",
+  "postcondition": "当前已返回标题为特别关注提醒的设置页面。",
+  "assertion": {
+    "pass": true,
+    "thought": "截图顶部标题清晰显示“特别关注提醒”，当前页面包含特别关注用户及提醒方式等相关设置项，因此已返回该设置页面。"
+  },
+  "status": "executed_verified"
+}

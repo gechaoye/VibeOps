@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBRQAZYP9XVZT5VEQZ
+key: messages.special_follow.settings.reminder_method_selector.select_sms
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB80X4G3EYDN53XKYA
+triggerElementRef: 01KYKA3ENB0VNZWQ6HTPQ6XX4T
+action: aiTap
+capability: select_reminder_method_sms
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHREXGE8Y717GDKSSEZ2CHB
+  beforeFrameRef: 01KYHRCSJ3HACWART4W8YZXG41
+  afterFrameRef: 01KYHRFN0MTATNMKWH3M0DFZ6K
+  postcondition: pass
+  semanticAssertions:
+  - sha256:908723a043bad9125d9e9eab8da923b21ec4c5dd15386e8205cb5bdb4bfc3ea6
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

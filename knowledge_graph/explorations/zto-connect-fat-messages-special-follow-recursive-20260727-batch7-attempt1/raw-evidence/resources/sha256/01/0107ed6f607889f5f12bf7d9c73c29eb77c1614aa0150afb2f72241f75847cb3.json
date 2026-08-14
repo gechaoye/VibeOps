@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHA0FWP8T4DYWYTN050CD5P",
+  "sessionRef": "01KYH9T8PKX1QA0E8CPC4Q0K45",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH9XMFQW1WGZSJXSDAR3T37",
+  "sourceScreenshotRef": "sha256:6c04e14576161a8f8dba789f60149a1a8162e95b61db0cc5ab85549cb2a52401",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前屏幕仍为“选择人员”，“练良伟”已选中，底部确定按钮的选择计数为1且可用。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:10:26.702Z",
+  "endedAt": "2026-07-27T08:10:38.870Z",
+  "durationMs": 12167.193333,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:386bcae5125e40ccf417fa44a41c095a57a2a6f44ea63da3e55b1cfc50b6b227"
+}

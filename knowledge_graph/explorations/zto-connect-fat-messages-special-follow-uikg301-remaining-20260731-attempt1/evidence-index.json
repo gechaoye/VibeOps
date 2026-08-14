@@ -1,0 +1,1260 @@
+{
+  "recordType": "LiveRepairEvidenceIndex",
+  "explorationRef": "zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1",
+  "generatedAt": "2026-07-31T07:24:49.761Z",
+  "modelDiagnostics": {
+    "default": {
+      "intent": "default",
+      "slot": "default",
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "scout": {
+      "intent": "scout",
+      "slot": "scout",
+      "name": "qwen3-vl-plus",
+      "family": "qwen3-vl"
+    }
+  },
+  "frames": [
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.main_model",
+      "frameId": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+      "observedAt": "2026-07-31T06:19:26.974Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+      "screenshotPath": "frames/d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.main_model.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.main_model.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.main_model.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "members_container": {
+          "rect": {
+            "left": 48,
+            "top": 278,
+            "width": 1028,
+            "height": 99
+          },
+          "center": [
+            561,
+            327
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "定位“我的特别关注”标题文案、右侧动态人数和最右箭头所在的完整横向入口总容器；只框这一标题入口行，不包含下方成员头像、添加或移除按钮。",
+          "status": "pass"
+        },
+        "members_label": {
+          "rect": {
+            "left": 49,
+            "top": 307,
+            "width": 298,
+            "height": 50
+          },
+          "center": [
+            197,
+            331
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“我的特别关注”五个字的说明文案区域；不要包含右侧人数、箭头或下方成员。",
+          "status": "pass"
+        },
+        "members_chevron": {
+          "rect": {
+            "left": 1036,
+            "top": 310,
+            "width": 28,
+            "height": 45
+          },
+          "center": [
+            1049,
+            332
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“我的特别关注”标题行最右侧、动态人数右边的黑色向右箭头图标；不要包含人数或标题文字。",
+          "status": "pass"
+        },
+        "popup_interval_row": {
+          "rect": {
+            "left": 48,
+            "top": 970,
+            "width": 1032,
+            "height": 141
+          },
+          "center": [
+            563,
+            1040
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "定位第一组弹窗提醒开关下方，左侧名称为“间隔时间”、右侧显示当前间隔值和向右箭头的完整横向设置行；不包含上下相邻行。",
+          "status": "pass"
+        },
+        "popup_interval_label": {
+          "rect": {
+            "left": 49,
+            "top": 1016,
+            "width": 173,
+            "height": 47
+          },
+          "center": [
+            135,
+            1039
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位第一组弹窗提醒开关下方那一行左侧的“间隔时间”名称文字；不要包含右侧当前值、箭头或整行空白。",
+          "status": "pass"
+        },
+        "popup_interval_value": {
+          "rect": {
+            "left": 920,
+            "top": 1018,
+            "width": 110,
+            "height": 41
+          },
+          "center": [
+            974,
+            1038
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位第一组“间隔时间”设置行右侧、向右箭头左边显示的当前时间值文字；不要包含箭头或左侧名称。",
+          "status": "pass"
+        },
+        "popup_interval_chevron": {
+          "rect": {
+            "left": 1042,
+            "top": 1019,
+            "width": 26,
+            "height": 41
+          },
+          "center": [
+            1054,
+            1039
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位第一组“间隔时间”设置行最右侧的浅灰色向右箭头图标；不要包含当前值或左侧名称。",
+          "status": "pass"
+        },
+        "sms_interval_row": {
+          "rect": {
+            "left": 48,
+            "top": 1271,
+            "width": 1032,
+            "height": 141
+          },
+          "center": [
+            563,
+            1341
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "定位短信/电话提醒开关下方，左侧名称为“间隔时间”、右侧显示当前间隔值和向右箭头的完整横向设置行；不包含上下相邻行。",
+          "status": "pass"
+        },
+        "sms_interval_label": {
+          "rect": {
+            "left": 48,
+            "top": 1317,
+            "width": 173,
+            "height": 45
+          },
+          "center": [
+            134,
+            1339
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位短信/电话提醒开关下方那一行左侧的“间隔时间”名称文字；不要定位上方同名行，也不要包含右侧值或箭头。",
+          "status": "pass"
+        },
+        "sms_interval_value": {
+          "rect": {
+            "left": 895,
+            "top": 1318,
+            "width": 144,
+            "height": 39
+          },
+          "center": [
+            966,
+            1337
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位短信/电话提醒开关下方“间隔时间”行右侧、向右箭头左边的当前时间值文字；不要包含箭头或左侧名称。",
+          "status": "pass"
+        },
+        "sms_interval_chevron": {
+          "rect": {
+            "left": 1043,
+            "top": 1324,
+            "width": 25,
+            "height": 34
+          },
+          "center": [
+            1055,
+            1340
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位短信/电话提醒开关下方“间隔时间”行最右侧的浅灰色向右箭头图标；不要定位上方同名行的箭头。",
+          "status": "pass"
+        },
+        "reminder_method_row": {
+          "rect": {
+            "left": 49,
+            "top": 1411,
+            "width": 1031,
+            "height": 139
+          },
+          "center": [
+            564,
+            1480
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "定位左侧为“提醒方式”、右侧显示当前方式文字和向右箭头的完整横向设置行；不包含上方间隔时间或下方夜间免打扰。",
+          "status": "pass"
+        },
+        "reminder_method_label": {
+          "rect": {
+            "left": 50,
+            "top": 1454,
+            "width": 171,
+            "height": 51
+          },
+          "center": [
+            135,
+            1479
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位设置行左侧“提醒方式”四个字的名称文字；不要包含右侧当前方式、箭头或整行空白。",
+          "status": "pass"
+        },
+        "reminder_method_value": {
+          "rect": {
+            "left": 946,
+            "top": 1458,
+            "width": 83,
+            "height": 41
+          },
+          "center": [
+            987,
+            1478
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“提醒方式”行右侧、向右箭头左边显示的当前方式文字；不要包含箭头或左侧名称。",
+          "status": "pass"
+        },
+        "reminder_method_chevron": {
+          "rect": {
+            "left": 1042,
+            "top": 1459,
+            "width": 27,
+            "height": 43
+          },
+          "center": [
+            1055,
+            1480
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“提醒方式”设置行最右侧的浅灰色向右箭头图标；不要包含当前方式文字。",
+          "status": "pass"
+        },
+        "night_dnd_row": {
+          "rect": {
+            "left": 48,
+            "top": 1548,
+            "width": 1032,
+            "height": 347
+          },
+          "center": [
+            563,
+            1721
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "定位包含“夜间免打扰”名称、最右侧开关和其下方灰色时间段说明文案的完整设置项总容器；不包含上方提醒方式或下方免打扰群通知。",
+          "status": "pass"
+        },
+        "night_dnd_label": {
+          "rect": {
+            "left": 49,
+            "top": 1607,
+            "width": 240,
+            "height": 46
+          },
+          "center": [
+            168,
+            1629
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“夜间免打扰”五个字的设置名称文字；不要包含开关或下方灰色说明。",
+          "status": "pass"
+        },
+        "night_dnd_secondary_text": {
+          "rect": {
+            "left": 49,
+            "top": 1742,
+            "width": 1016,
+            "height": 114
+          },
+          "center": [
+            556,
+            1798
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“夜间免打扰”开关下方，以“开启后，在22:00至次日06:00期间”开头的完整灰色说明文案区域；不要包含标题或开关。",
+          "status": "pass"
+        },
+        "night_dnd_toggle": {
+          "rect": {
+            "left": 934,
+            "top": 1593,
+            "width": 148,
+            "height": 74
+          },
+          "center": [
+            1007,
+            1629
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“夜间免打扰”设置项最右侧的开关；不要包含名称、说明文案或上方开关。",
+          "status": "pass"
+        },
+        "sound_row": {
+          "rect": {
+            "left": 0,
+            "top": 2250,
+            "width": 1128,
+            "height": 126
+          },
+          "center": [
+            563,
+            2312
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "定位“个性化提醒”分区下，左侧为“特别关注提示音”、右侧显示当前提示音名称和向右箭头的完整横向设置行；不包含分区标题。",
+          "status": "pass"
+        },
+        "sound_label": {
+          "rect": {
+            "left": 49,
+            "top": 2293,
+            "width": 299,
+            "height": 51
+          },
+          "center": [
+            198,
+            2318
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位提示音设置行左侧“特别关注提示音”文字；不要包含右侧当前值、箭头或分区标题。",
+          "status": "pass"
+        },
+        "sound_value": {
+          "rect": {
+            "left": 945,
+            "top": 2297,
+            "width": 86,
+            "height": 41
+          },
+          "center": [
+            987,
+            2317
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“特别关注提示音”设置行右侧、向右箭头左边显示的当前提示音名称文字；不要包含箭头。",
+          "status": "pass"
+        },
+        "sound_chevron": {
+          "rect": {
+            "left": 1043,
+            "top": 2294,
+            "width": 25,
+            "height": 44
+          },
+          "center": [
+            1055,
+            2315
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+          "prompt": "只定位“特别关注提示音”设置行最右侧的浅灰色向右箭头图标；不要包含当前提示音名称。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.popup_interval_selector",
+      "frameId": "sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17",
+      "observedAt": "2026-07-31T06:25:16.671Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17",
+      "screenshotPath": "frames/9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.popup_interval_selector.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.popup_interval_selector.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.popup_interval_selector.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "popup_option_10_minutes": {
+          "rect": {
+            "left": 0,
+            "top": 1549,
+            "width": 1152,
+            "height": 156
+          },
+          "center": [
+            575,
+            1626
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17",
+          "prompt": "定位弹窗提醒间隔底部选择面板中“10分钟”对应的完整横向选项命中行，从面板左边缘到右边缘并包含可能的左侧勾选标记和选项文字；不要包含相邻选项或取消按钮。",
+          "status": "pass"
+        },
+        "popup_option_30_minutes": {
+          "rect": {
+            "left": 0,
+            "top": 1704,
+            "width": 1152,
+            "height": 159
+          },
+          "center": [
+            575,
+            1783
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17",
+          "prompt": "定位弹窗提醒间隔底部选择面板中“30分钟”对应的完整横向选项命中行，从面板左边缘到右边缘并包含可能的左侧勾选标记和选项文字；不要包含相邻选项或取消按钮。",
+          "status": "pass"
+        },
+        "popup_option_1_hour": {
+          "rect": {
+            "left": 0,
+            "top": 1862,
+            "width": 1152,
+            "height": 174
+          },
+          "center": [
+            575,
+            1948
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17",
+          "prompt": "定位弹窗提醒间隔底部选择面板中“1小时”对应的完整横向选项命中行，从面板左边缘到右边缘并包含可能的左侧勾选标记和选项文字；不要包含相邻选项或取消按钮。",
+          "status": "pass"
+        },
+        "popup_option_4_hours": {
+          "rect": {
+            "left": 0,
+            "top": 2035,
+            "width": 1152,
+            "height": 158
+          },
+          "center": [
+            575,
+            2113
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17",
+          "prompt": "定位弹窗提醒间隔底部选择面板中“4小时”对应的完整横向选项命中行，从面板左边缘到右边缘并包含可能的左侧勾选标记和选项文字；不要包含相邻选项或取消按钮。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.before_sms_interval",
+      "frameId": "sha256:18bbb3416ddb45a933c62bb6702729e01f496d3899d4436851698d6800d9bc7d",
+      "observedAt": "2026-07-31T06:27:39.447Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:18bbb3416ddb45a933c62bb6702729e01f496d3899d4436851698d6800d9bc7d",
+      "screenshotPath": "frames/18bbb3416ddb45a933c62bb6702729e01f496d3899d4436851698d6800d9bc7d.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.before_sms_interval.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.before_sms_interval.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.before_sms_interval.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.sms_interval_selector",
+      "frameId": "sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e",
+      "observedAt": "2026-07-31T06:37:35.993Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e",
+      "screenshotPath": "frames/0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.sms_interval_selector.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.sms_interval_selector.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.sms_interval_selector.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "sms_option_10_minutes": {
+          "rect": {
+            "left": 0,
+            "top": 1864,
+            "width": 1152,
+            "height": 155
+          },
+          "center": [
+            575,
+            1941
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e",
+          "prompt": "定位短信/电话提醒间隔底部选择面板中“10分钟”对应的完整横向选项命中行，从面板左边缘到右边缘并包含可能的左侧勾选标记和选项文字；不要包含相邻选项或取消按钮。",
+          "status": "pass"
+        },
+        "sms_option_30_minutes": {
+          "rect": {
+            "left": 0,
+            "top": 2018,
+            "width": 1152,
+            "height": 175
+          },
+          "center": [
+            575,
+            2105
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e",
+          "prompt": "定位短信/电话提醒间隔底部选择面板中“30分钟”对应的完整横向选项命中行，从面板左边缘到右边缘并包含可能的左侧勾选标记和选项文字；不要包含相邻选项或取消按钮。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.before_reminder_method",
+      "frameId": "sha256:f8c7551e86e9d51f24912c3f8cf04a28d3cd6135bc5675da9f8c1b4fa48415b3",
+      "observedAt": "2026-07-31T06:42:33.376Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:f8c7551e86e9d51f24912c3f8cf04a28d3cd6135bc5675da9f8c1b4fa48415b3",
+      "screenshotPath": "frames/f8c7551e86e9d51f24912c3f8cf04a28d3cd6135bc5675da9f8c1b4fa48415b3.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.before_reminder_method.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.before_reminder_method.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.before_reminder_method.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.reminder_method_selector",
+      "frameId": "sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570",
+      "observedAt": "2026-07-31T06:49:37.230Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570",
+      "screenshotPath": "frames/015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.reminder_method_selector.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.reminder_method_selector.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.reminder_method_selector.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "reminder_method_sms_row": {
+          "rect": {
+            "left": 0,
+            "top": 1863,
+            "width": 1152,
+            "height": 156
+          },
+          "center": [
+            575,
+            1940
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570",
+          "prompt": "定位提醒方式底部选择面板中“短信”对应的完整横向选项命中行，从面板左边缘到右边缘并包含可能的左侧勾选标记和选项文字；不要包含另一个选项或取消按钮。",
+          "status": "pass"
+        },
+        "reminder_method_phone_row": {
+          "rect": {
+            "left": 0,
+            "top": 2019,
+            "width": 1152,
+            "height": 175
+          },
+          "center": [
+            575,
+            2106
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570",
+          "prompt": "定位提醒方式底部选择面板中“电话”对应的完整横向选项命中行，从面板左边缘到右边缘并包含可能的左侧勾选标记和选项文字；不要包含另一个选项或取消按钮。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.before_sound",
+      "frameId": "sha256:38318987a38ef73111214c5721629e45d397e1789679b273f7cb94d1f07ef65a",
+      "observedAt": "2026-07-31T06:51:24.689Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:38318987a38ef73111214c5721629e45d397e1789679b273f7cb94d1f07ef65a",
+      "screenshotPath": "frames/38318987a38ef73111214c5721629e45d397e1789679b273f7cb94d1f07ef65a.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.before_sound.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.before_sound.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.before_sound.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.sound_selector",
+      "frameId": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+      "observedAt": "2026-07-31T06:55:23.472Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+      "screenshotPath": "frames/0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.sound_selector.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.sound_selector.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.sound_selector.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "sound_default_row": {
+          "rect": {
+            "left": 0,
+            "top": 1502,
+            "width": 1152,
+            "height": 172
+          },
+          "center": [
+            575,
+            1587
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "定位提示音底部选择面板中“默认”对应的完整横向选择行，从面板左边缘到右边缘，包含可能的左侧勾选、名称文字和右侧试听按钮；不要包含相邻行或取消按钮。",
+          "status": "pass"
+        },
+        "sound_default_label": {
+          "rect": {
+            "left": 145,
+            "top": 1561,
+            "width": 101,
+            "height": 50
+          },
+          "center": [
+            195,
+            1585
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "只定位提示音面板“默认”选项的名称文字区域；不要包含左侧勾选、右侧试听按钮或整行空白。",
+          "status": "pass"
+        },
+        "sound_default_preview": {
+          "rect": {
+            "left": 1023,
+            "top": 1556,
+            "width": 66,
+            "height": 66
+          },
+          "center": [
+            1055,
+            1588
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "只定位提示音面板“默认”选项最右侧的圆形播放试听按钮；不要包含名称文字或其他行的播放按钮。",
+          "status": "pass"
+        },
+        "sound_wave_row": {
+          "rect": {
+            "left": 0,
+            "top": 1674,
+            "width": 1152,
+            "height": 174
+          },
+          "center": [
+            575,
+            1760
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "定位提示音底部选择面板中“波浪”对应的完整横向选择行，从面板左边缘到右边缘，包含可能的左侧勾选、名称文字和右侧试听按钮；不要包含相邻行或取消按钮。",
+          "status": "pass"
+        },
+        "sound_wave_label": {
+          "rect": {
+            "left": 146,
+            "top": 1733,
+            "width": 100,
+            "height": 54
+          },
+          "center": [
+            195,
+            1759
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "只定位提示音面板“波浪”选项的名称文字区域；不要包含左侧勾选、右侧试听按钮或整行空白。",
+          "status": "pass"
+        },
+        "sound_wave_preview": {
+          "rect": {
+            "left": 1024,
+            "top": 1729,
+            "width": 64,
+            "height": 63
+          },
+          "center": [
+            1055,
+            1760
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "只定位提示音面板“波浪”选项最右侧的圆形播放试听按钮；不要包含名称文字或其他行的播放按钮。",
+          "status": "pass"
+        },
+        "sound_briefing_row": {
+          "rect": {
+            "left": 0,
+            "top": 1847,
+            "width": 1152,
+            "height": 172
+          },
+          "center": [
+            575,
+            1932
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "定位提示音底部选择面板中“简报”对应的完整横向选择行，从面板左边缘到右边缘，包含可能的左侧勾选、名称文字和右侧试听按钮；不要包含相邻行或取消按钮。",
+          "status": "pass"
+        },
+        "sound_briefing_label": {
+          "rect": {
+            "left": 146,
+            "top": 1906,
+            "width": 100,
+            "height": 52
+          },
+          "center": [
+            195,
+            1931
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "只定位提示音面板“简报”选项的名称文字区域；不要包含左侧勾选、右侧试听按钮或整行空白。",
+          "status": "pass"
+        },
+        "sound_briefing_preview": {
+          "rect": {
+            "left": 1024,
+            "top": 1901,
+            "width": 64,
+            "height": 65
+          },
+          "center": [
+            1055,
+            1933
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "只定位提示音面板“简报”选项最右侧的圆形播放试听按钮；不要包含名称文字或其他行的播放按钮。",
+          "status": "pass"
+        },
+        "sound_bell_row": {
+          "rect": {
+            "left": 0,
+            "top": 2019,
+            "width": 1152,
+            "height": 176
+          },
+          "center": [
+            575,
+            2106
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "定位提示音底部选择面板中“门铃”对应的完整横向选择行，从面板左边缘到右边缘，包含可能的左侧勾选、名称文字和右侧试听按钮；不要包含相邻行或取消按钮。",
+          "status": "pass"
+        },
+        "sound_bell_label": {
+          "rect": {
+            "left": 145,
+            "top": 2079,
+            "width": 104,
+            "height": 56
+          },
+          "center": [
+            196,
+            2106
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "只定位提示音面板“门铃”选项的名称文字区域；不要包含左侧勾选、右侧试听按钮或整行空白。",
+          "status": "pass"
+        },
+        "sound_bell_preview": {
+          "rect": {
+            "left": 1024,
+            "top": 2074,
+            "width": 65,
+            "height": 65
+          },
+          "center": [
+            1056,
+            2106
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+          "prompt": "只定位提示音面板“门铃”选项最右侧的圆形播放试听按钮；不要包含名称文字或其他行的播放按钮。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.before_people",
+      "frameId": "sha256:4a85ed0c814b88e8ba6f414a1d0d721a7f2350916f273912e4209aa2fbc996d3",
+      "observedAt": "2026-07-31T07:00:13.498Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:4a85ed0c814b88e8ba6f414a1d0d721a7f2350916f273912e4209aa2fbc996d3",
+      "screenshotPath": "frames/4a85ed0c814b88e8ba6f414a1d0d721a7f2350916f273912e4209aa2fbc996d3.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.before_people.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.before_people.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.before_people.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.people",
+      "frameId": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+      "observedAt": "2026-07-31T07:19:45.942Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+      "screenshotPath": "frames/075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.people.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.people.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.people.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "member_row": {
+          "rect": {
+            "left": 48,
+            "top": 289,
+            "width": 1057,
+            "height": 131
+          },
+          "center": [
+            576,
+            354
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+          "prompt": "定位“全部成员”页面中包含成员头像、成员姓名以及最右侧“移除”按钮的完整横向成员行总容器；框住整行但不包含页面标题栏。",
+          "status": "pass"
+        },
+        "member_remove": {
+          "rect": {
+            "left": 968,
+            "top": 310,
+            "width": 137,
+            "height": 87
+          },
+          "center": [
+            1036,
+            353
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+          "prompt": "只定位“全部成员”页面成员行最右侧的“移除”按钮边界；不要包含成员头像、姓名或整行空白。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.remaining.after_people_return",
+      "frameId": "sha256:098f1a5818df49b1b03fb87207db421289668e7e6fc4163efec51633a4eb5e73",
+      "observedAt": "2026-07-31T07:21:00.426Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:098f1a5818df49b1b03fb87207db421289668e7e6fc4163efec51633a4eb5e73",
+      "screenshotPath": "frames/098f1a5818df49b1b03fb87207db421289668e7e6fc4163efec51633a4eb5e73.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.remaining.after_people_return.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.remaining.after_people_return.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.remaining.after_people_return.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    }
+  ],
+  "actions": [
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-popup-interval-via-label-area-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位第一组弹窗提醒开关下方那一行左侧的“间隔时间”名称文字；不要包含右侧当前值、箭头或整行空白。",
+      "beforeFrameRef": "sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329",
+      "locator": {
+        "rect": {
+          "left": 49,
+          "top": 1018,
+          "width": 172,
+          "height": 43
+        },
+        "center": [
+          134,
+          1039
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T06:25:02.291Z",
+      "completedAt": "2026-07-31T06:25:16.172Z",
+      "postcondition": "弹窗提醒间隔底部选择面板已打开，可见10分钟、30分钟、1小时、4小时和取消。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中“间隔时间”底部选择面板已打开，面板清晰显示“10分钟”“30分钟”“1小时”“4小时”和“取消”，其中“1小时”为当前选中项。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "cancel-popup-interval-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位当前底部选择面板最下方居中的“取消”按钮。",
+      "beforeFrameRef": "sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17",
+      "locator": {
+        "rect": {
+          "left": 522,
+          "top": 2268,
+          "width": 109,
+          "height": 59
+        },
+        "center": [
+          576,
+          2297
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T06:27:26.073Z",
+      "completedAt": "2026-07-31T06:27:38.908Z",
+      "postcondition": "底部选择面板已关闭，仍停留在特别关注提醒设置页。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中未显示底部选择面板，页面标题仍为“特别关注提醒”，且可见特别关注、提醒方式、夜间免打扰等设置项，因此该陈述为真。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-sms-interval-via-label-area-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位短信/电话提醒开关下方那一行左侧的“间隔时间”名称文字；不要定位上方同名行，也不要包含右侧值或箭头。",
+      "beforeFrameRef": "sha256:18bbb3416ddb45a933c62bb6702729e01f496d3899d4436851698d6800d9bc7d",
+      "locator": {
+        "rect": {
+          "left": 49,
+          "top": 1319,
+          "width": 172,
+          "height": 43
+        },
+        "center": [
+          134,
+          1340
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T06:37:21.601Z",
+      "completedAt": "2026-07-31T06:37:35.459Z",
+      "postcondition": "短信或电话提醒间隔底部选择面板已打开，可见10分钟、30分钟和取消。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图底部已打开短信或电话提醒的间隔时间选择面板，可见“10分钟”“30分钟”和“取消”，其中“30分钟”处于选中状态。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "cancel-sms-interval-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位当前底部选择面板最下方居中的“取消”按钮。",
+      "beforeFrameRef": "sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e",
+      "locator": {
+        "rect": {
+          "left": 520,
+          "top": 2268,
+          "width": 114,
+          "height": 56
+        },
+        "center": [
+          576,
+          2295
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T06:42:19.794Z",
+      "completedAt": "2026-07-31T06:42:32.851Z",
+      "postcondition": "底部选择面板已关闭，仍停留在特别关注提醒设置页。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中未显示底部选择面板；页面标题为“特别关注提醒”，并显示特别关注人员及提醒方式等设置项，说明仍停留在特别关注提醒设置页。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-reminder-method-via-label-area-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位设置行左侧“提醒方式”四个字的名称文字；不要包含右侧当前方式、箭头或整行空白。",
+      "beforeFrameRef": "sha256:f8c7551e86e9d51f24912c3f8cf04a28d3cd6135bc5675da9f8c1b4fa48415b3",
+      "locator": {
+        "rect": {
+          "left": 49,
+          "top": 1456,
+          "width": 172,
+          "height": 44
+        },
+        "center": [
+          134,
+          1477
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T06:49:23.628Z",
+      "completedAt": "2026-07-31T06:49:36.687Z",
+      "postcondition": "提醒方式底部选择面板已打开，可见短信、电话和取消。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图底部已打开“提醒方式”选择面板，其中清晰可见“短信”“电话”和“取消”三个选项；“电话”当前带有勾选标记。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "cancel-reminder-method-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位当前底部选择面板最下方居中的“取消”按钮。",
+      "beforeFrameRef": "sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570",
+      "locator": {
+        "rect": {
+          "left": 522,
+          "top": 2268,
+          "width": 109,
+          "height": 57
+        },
+        "center": [
+          576,
+          2296
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T06:51:08.766Z",
+      "completedAt": "2026-07-31T06:51:24.162Z",
+      "postcondition": "底部选择面板已关闭，仍停留在特别关注提醒设置页。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中未显示任何底部选择面板；页面标题仍为“特别关注提醒”，并展示特别关注用户及提醒方式等设置项，因此该陈述为真。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-sound-via-label-area-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位提示音设置行左侧“特别关注提示音”文字；不要包含右侧当前值、箭头或分区标题。",
+      "beforeFrameRef": "sha256:38318987a38ef73111214c5721629e45d397e1789679b273f7cb94d1f07ef65a",
+      "locator": {
+        "rect": {
+          "left": 49,
+          "top": 2274,
+          "width": 300,
+          "height": 49
+        },
+        "center": [
+          198,
+          2298
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T06:55:08.616Z",
+      "completedAt": "2026-07-31T06:55:23.088Z",
+      "postcondition": "提示音底部选择面板已打开，可见默认、波浪、简报、门铃、每行右侧试听按钮和取消。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中提示音底部选择面板已打开，面板列出“默认”“波浪”“简报”“门铃”，每行右侧均有试听按钮；底部可见“取消”。其中“门铃”当前已勾选。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "cancel-sound-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位当前提示音底部选择面板最下方居中的“取消”按钮。",
+      "beforeFrameRef": "sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0",
+      "locator": {
+        "rect": {
+          "left": 521,
+          "top": 2248,
+          "width": 110,
+          "height": 69
+        },
+        "center": [
+          575,
+          2282
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T06:59:43.591Z",
+      "completedAt": "2026-07-31T07:00:12.964Z",
+      "postcondition": "提示音选择面板已关闭，仍停留在特别关注提醒设置页。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中页面标题为“特别关注提醒”，可见特别关注用户、提醒开关、间隔时间、提醒方式及“特别关注提示音”等设置项；未显示任何提示音选择面板或弹窗，因此提示音选择面板已关闭，当前仍停留在特别关注提醒设置页。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-all-members-via-chevron-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位“我的特别关注”标题行最右侧、动态人数右边的黑色向右箭头图标；不要包含人数或标题文字。",
+      "beforeFrameRef": "sha256:4a85ed0c814b88e8ba6f414a1d0d721a7f2350916f273912e4209aa2fbc996d3",
+      "locator": {
+        "rect": {
+          "left": 1035,
+          "top": 309,
+          "width": 29,
+          "height": 47
+        },
+        "center": [
+          1049,
+          332
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T07:19:22.412Z",
+      "completedAt": "2026-07-31T07:19:45.433Z",
+      "postcondition": "当前页面标题为全部成员，页面中可见成员行及其独立移除按钮。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图顶部标题为“全部成员”。页面中可见一条成员记录，成员名为“练良伟”，其右侧有独立的“移除”按钮。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "return-from-all-members-uikg301",
+      "method": "aiTap",
+      "prompt": "只定位“全部成员”页面顶栏最左侧的黑色向左返回箭头；不要定位右侧关闭X。",
+      "beforeFrameRef": "sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a",
+      "locator": {
+        "rect": {
+          "left": 51,
+          "top": 163,
+          "width": 30,
+          "height": 46
+        },
+        "center": [
+          65,
+          185
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T07:20:41.862Z",
+      "completedAt": "2026-07-31T07:20:59.910Z",
+      "postcondition": "当前已返回标题为特别关注提醒的设置页面。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图顶部标题清晰显示“特别关注提醒”，当前页面包含特别关注用户及提醒方式等相关设置项，因此已返回该设置页面。"
+      },
+      "status": "executed_verified"
+    }
+  ]
+}

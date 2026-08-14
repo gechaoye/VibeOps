@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch14-attempt1:plan",
+  "sourceScopeHash": "sha256:8db0887767f178bf77b9f21038e22e619134b7aba751beed0c0c44ee733cbfb6",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "设置特别关注人员后，入口爱心图标显示为橙黄色。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "popup-reminder-help-icon",
+        "space": "current_display_px",
+        "rect": {
+          "x": 500,
+          "y": 780,
+          "width": 220,
+          "height": 190
+        },
+        "purpose": "第一项提醒设置右侧灰色圆圈问号的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经风险策略允许的应用内导航和临时状态控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings": {
+      "key": "messages.special_follow.settings",
+      "label": "特别关注提醒设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面顶部标题文字为“特别关注提醒”，第一项“单聊消息未读，弹窗提醒我”右侧灰色圆圈问号可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点“特别关注提醒”当前视口全部交互控件与状态，重点区分三个帮助问号，不激活其他控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_popup_reminder_help"
+      ],
+      "postcondition": "设置页完成盘点。"
+    },
+    "messages.special_follow.settings.popup_reminder_help": {
+      "key": "messages.special_follow.settings.popup_reminder_help",
+      "label": "单聊弹窗提醒帮助呈现",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.popup_reminder_help",
+      "requiredSemanticAssertions": [
+        "当前画面显示由“单聊消息未读，弹窗提醒我”右侧问号打开的帮助说明层，帮助文字或弹层边界清晰可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点第一项提醒帮助说明层的标题、正文、全部按钮、关闭方式和背景遮罩；仅记录当前可见事实，不推断未显示内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已记录第一项帮助说明层的全部可见内容与控件。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-settings-before-popup-reminder-help",
+      "kind": "capture",
+      "state": "messages.special_follow.settings",
+      "depth": 2
+    },
+    {
+      "id": "open-popup-reminder-help",
+      "kind": "tap",
+      "semanticAction": "open_popup_reminder_help",
+      "fromState": "messages.special_follow.settings",
+      "toState": "messages.special_follow.settings.popup_reminder_help",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "popup_reminder_help",
+        "label": "单聊消息未读弹窗提醒帮助问号",
+        "scope": "temporary_state_control",
+        "locatorPrompt": "定位“特别关注提醒”页“单聊消息未读，弹窗提醒我”文字紧右侧的第一个灰色圆圈问号；不要定位下方两枚问号。",
+        "allowedRegionRef": "popup-reminder-help-icon"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前画面出现由第一项灰色问号打开的帮助说明文字或说明层。"
+        ]
+      }
+    }
+  ]
+}

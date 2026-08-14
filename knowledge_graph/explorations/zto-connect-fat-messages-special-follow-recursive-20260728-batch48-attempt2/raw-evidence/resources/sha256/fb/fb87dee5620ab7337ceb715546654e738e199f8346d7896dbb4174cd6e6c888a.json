@@ -1,0 +1,55 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK6D0QRYJ0599H4A4VC7VYT",
+  "sessionRef": "01KYK660P4DEBSA3NGF1SET476",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK6C3HD58740YXQZP0AMQE4",
+  "sourceScreenshotRef": "sha256:b79e550c3ec893d1453ba43b1592cae9ab1edf1d8def0e7eadfe65e746692fe2",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"1人右侧进入箭头\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "全部成员",
+    "visibleResultContent": [
+      "成员：练良伟",
+      "成员头像",
+      "右侧“移除”按钮",
+      "顶部返回控件",
+      "顶部关闭控件"
+    ],
+    "supportedFunctionDescription": "激活“1人右侧进入箭头”后进入“全部成员”页面；当前页面支持查看成员列表，并为可见成员提供“移除”操作入口，同时支持返回或关闭当前页面。",
+    "evidenceBasis": [
+      "像素可见：页面顶部中央文字为“全部成员”。",
+      "像素可见：列表中显示成员名称“练良伟”及其头像。",
+      "像素可见：该成员右侧显示文字按钮“移除”。",
+      "像素可见：顶部左侧有返回控件，右侧有关闭控件。",
+      "任务给定的立即前序操作是激活“1人右侧进入箭头”，因此当前画面是该操作产生的结果页。",
+      "授权上下文由用户提供：允许操作设置和成员；此项不是从画面像素推断。"
+    ],
+    "unresolvedMeaning": "当前画面未说明“移除”会将成员从哪个具体对象或范围中移除，也未展示点击后的确认流程、权限限制或最终结果；“全部成员”与特别关注功能之间的具体业务关系在当前可见内容中没有明确文字说明。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:45:51.396Z",
+  "endedAt": "2026-07-28T01:46:03.896Z",
+  "durationMs": 12500.07375,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f0f548621225bd59842dbabf47a52edfb265358e614eff84bc13bd1fcd482e23"
+}

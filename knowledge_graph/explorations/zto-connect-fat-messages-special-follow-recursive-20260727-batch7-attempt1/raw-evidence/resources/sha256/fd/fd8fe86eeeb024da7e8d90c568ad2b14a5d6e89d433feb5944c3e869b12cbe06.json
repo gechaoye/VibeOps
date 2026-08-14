@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH9YER6Q4GF1E4H7ANAX9ZW",
+  "sessionRef": "01KYH9T8PKX1QA0E8CPC4Q0K45",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH9XMFQW1WGZSJXSDAR3T37",
+  "sourceScreenshotRef": "sha256:6c04e14576161a8f8dba789f60149a1a8162e95b61db0cc5ab85549cb2a52401",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"list_entry\",\"checkbox\",\"close\"]. 只复核“练良伟”的已选状态和底部可用确定按钮，不探索通用选人组件的其他入口。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.add\",\"predicate\":\"opens_common_component\",\"value\":\"通用选人组件\",\"source\":\"user\"},{\"subjectKey\":\"common.person_picker\",\"predicate\":\"scope_role\",\"value\":\"通用组件边界_不递归探索\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_add_special_follow\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "选择人员",
+    "visiblePrimaryContent": [
+      "最近联系人",
+      "练良伟",
+      "已选择：1人",
+      "确定(1/10)"
+    ],
+    "visibleNavigationState": "位于选择人员页面；练良伟已选中，共已选择1人，底部确定按钮可用",
+    "visibleControls": [
+      {
+        "candidateKey": "recent_contact_lian_liangwei",
+        "label": "练良伟",
+        "controlType": "list_entry",
+        "visibleState": "已选中，左侧为蓝色圆形勾选标记",
+        "semanticRole": "人员选择项",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "再次点击可能取消练良伟的已选状态",
+        "functionDescription": "显示并切换联系人练良伟的选择状态",
+        "locatorPrompt": "定位‘最近联系人’区域内文字为‘练良伟’、左侧带蓝色勾选圆标的联系人行"
+      },
+      {
+        "candidateKey": "confirm_selection",
+        "label": "确定(1/10)",
+        "controlType": "button",
+        "visibleState": "蓝色高亮，可用；显示当前已选1人、上限10人",
+        "semanticRole": "确认人员选择",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "点击将提交当前人员选择并离开当前选择步骤",
+        "functionDescription": "确认当前包含练良伟在内的1名已选人员",
+        "locatorPrompt": "定位视口底部右侧蓝色按钮，按钮文字为‘确定(1/10)’"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "person_picker_content",
+        "label": "选择人员内容区",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位顶部标题栏下方、底部固定操作栏上方，包含‘最近联系人’和‘练良伟’的主内容区域"
+      }
+    ],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:09:08.100Z",
+  "endedAt": "2026-07-27T08:09:32.166Z",
+  "durationMs": 24066.03375,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:246947ae71bd7b6d80630b35a8137d10a34dc515a659ef6d6d159f2d31919eb5"
+}

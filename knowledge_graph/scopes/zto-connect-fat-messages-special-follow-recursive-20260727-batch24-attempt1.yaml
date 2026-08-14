@@ -1,0 +1,159 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch24-attempt1
+title: 短信电话提醒开关第二十四批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.member_with_unread, predicate: conversation_visibility, value: 设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: configured_visual_state, value: 设置特别关注人员后，入口爱心图标显示为橙黄色。, source: user}
+    - {subjectKey: messages.special_follow.settings, predicate: exploration_authorization, value: 用户明确允许操作开关和设置，探索阶段无需恢复业务状态。, source: user}
+    - {subjectKey: messages.special_follow.settings.popup_reminder, predicate: dependency_effect, value: 关闭单聊未读弹窗提醒时，间隔时间与短信/电话提醒行从页面隐藏；重新开启后恢复。, source: verified_evidence}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings.sms_phone_reminder.off
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 设备位于“特别关注提醒”设置页，单聊未读弹窗提醒开启，短信/电话提醒关闭；本批激活短信/电话提醒并记录真实结果。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 10
+  include: [messages.special_follow.settings, messages.special_follow.settings.sms_phone_reminder]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [persistent_setting_change, temporary_display_state]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2200
+  allowedTargetScopes: [persistent_setting_control, temporary_state_control]
+  allowedTapRegions:
+    - key: sms-phone-reminder-toggle-region
+      space: current_display_px
+      rect: {x: 850, y: 1050, width: 302, height: 300}
+      purpose: 短信/电话提醒开关的实时 Midscene 定位范围。
+
+expectedStates:
+  - key: messages.special_follow.settings.sms_phone_reminder.off
+    label: 短信电话提醒关闭状态
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 页面标题为“特别关注提醒”，“弹窗消息未读，短信/电话提醒我”开关为灰色关闭状态。
+    inspection:
+      queryPrompt: 完整盘点设置页全部可见控件和设置状态，确认单聊未读弹窗提醒开启、短信/电话提醒关闭。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [enable_sms_phone_reminder]
+    postcondition: 已记录短信电话提醒关闭状态。
+  - key: messages.special_follow.settings.sms_phone_reminder.activation_result
+    label: 激活短信电话提醒后的实际状态
+    kind: unresolved
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 宝盒测试包仍在前台；准确记录“弹窗消息未读，短信/电话提醒我”开关是否开启，或是否出现新的 APP 内提示、弹层或页面，不预设结果。
+    inspection:
+      queryPrompt: 完整盘点点击短信/电话提醒开关后的整个画面，准确识别开关状态及任何新弹层、提示、按钮和说明；不要根据预期猜测开启是否成功。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, dialog]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已记录短信电话提醒激活操作的真实结果和全部新增控件。
+
+actions:
+  - id: capture-sms-phone-reminder-off
+    kind: capture
+    state: messages.special_follow.settings.sms_phone_reminder.off
+    depth: 3
+  - id: enable-sms-phone-reminder
+    kind: tap
+    semanticAction: enable_sms_phone_reminder
+    fromState: messages.special_follow.settings.sms_phone_reminder.off
+    toState: messages.special_follow.settings.sms_phone_reminder.activation_result
+    depth: 3
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 2200
+    target:
+      key: sms_phone_toggle
+      label: 弹窗消息未读，短信/电话提醒我
+      scope: persistent_setting_control
+      locatorPrompt: 定位“弹窗消息未读，短信/电话提醒我”这一行最右侧的灰色关闭开关；不要定位文字右侧的圆圈问号图标。
+      allowedRegionRef: sms-phone-reminder-toggle-region
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 准确判断短信/电话提醒开关是否开启，或是否出现新的 APP 内提示、弹层或页面，并记录全部新增控件。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch24-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

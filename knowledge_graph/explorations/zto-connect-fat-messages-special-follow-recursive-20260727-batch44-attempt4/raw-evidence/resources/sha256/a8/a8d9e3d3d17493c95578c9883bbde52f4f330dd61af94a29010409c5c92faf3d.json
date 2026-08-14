@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ2YBNZY0NZ9HRQMGK8PHBG",
+  "sessionRef": "01KYJ2T4PCJW41VRZ1GB5ZYW0A",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ2VEMV4714XXTPNP86TB7P",
+  "sourceScreenshotRef": "sha256:af2cc1d24661325c8e6e34c320a8ffd5670eac455604bb884cd6eaec856fae90",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"未读徽标58所在的练良伟相关会话\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.conversation.lian_liangwei\",\"predicate\":\"unread_badge\",\"value\":\"58\",\"source\":\"verified_evidence\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_open_special_follow_conversation\",\"value\":\"true\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"current_value\",\"value\":\"门铃\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "这是练工练工练工练工…",
+    "visibleResultContent": [
+      "顶部显示：上次已读消息：7月23日｜软件工程师",
+      "页面浮层提示：58条新消息",
+      "09:00处显示个人待办任务“循环待办自定义创建时间每周”，进度0/2完成，包含我，08月03日17:28截止，可查看详情",
+      "10:28处显示个人待办任务“循环待办每天”，进度0/2完成，包含我，明天10:28截止，可查看详情",
+      "底部显示“测试共享应用”“测试共享应用2”“更多”等快捷入口及消息输入控件"
+    ],
+    "supportedFunctionDescription": "立即 preceding activation 后打开了练良伟相关会话，而非独立设置页；可见结果支持查看该会话中的58条新消息、浏览个人待办任务卡片、进入任务详情，并通过底部输入区继续会话。依据 supplied context，“特别关注”会在已设置人员存在未读消息时展示其会话，并使入口爱心图标变为橙黄色；练良伟会话未读徽标为58，特别关注提示音当前为“门铃”。",
+    "evidenceBasis": [
+      "屏幕顶部可见会话标题“这是练工练工练工练工…”及会话资料副标题",
+      "屏幕右上区域可见“58条新消息”提示浮层",
+      "聊天区域可见练良伟头像及多条“个人待办任务”消息卡片",
+      "任务卡片可见“0/2完成”“包含我”、截止时间和“查看详情”",
+      "底部可见快捷应用入口、语音、输入、表情和添加控件",
+      "权威任务上下文明确：该入口功能名为“特别关注”",
+      "权威任务上下文明确：练良伟会话未读徽标为58，且允许打开该特别关注会话",
+      "权威任务上下文明确：存在未读消息并展示特别关注会话时，入口爱心图标变为橙黄色",
+      "权威任务上下文明确：特别关注提示音当前值为“门铃”"
+    ],
+    "unresolvedMeaning": "当前截图未显示特别关注列表或设置页本身，因此无法仅从当前可见页面确定返回后列表布局、设置入口位置、提示音“门铃”的操作方式，或58条新消息提示控件的进一步交互结果。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:26:05.433Z",
+  "endedAt": "2026-07-27T15:26:23.423Z",
+  "durationMs": 17990.0505,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:370750f7cd2e31f8e7dd8fccf67c4adb679b85c621dda5846183a136adbb94ae"
+}

@@ -1,0 +1,225 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-heart-20260724:plan",
+  "sourceScopeHash": "sha256:8bbaf952ea390264b297b3414a5f96a2f5cf590c94e2fbd74768afe005dc0e1e",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）",
+    "userIntent": "确认并记录已知“特别关注”入口点击后的实际页面、覆盖层或状态形态、可见内容及返回方式。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "workbench.root",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": true,
+    "requireUserPreparedState": false
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "bottom-navigation-messages-tab",
+        "space": "current_display_px",
+        "rect": {
+          "x": 230.0,
+          "y": 2140.0,
+          "width": 220.0,
+          "height": 236.0
+        },
+        "purpose": "只允许从冷启动后的一级页切换到消息页。"
+      },
+      {
+        "key": "messages-toolbar-heart",
+        "space": "current_display_px",
+        "rect": {
+          "x": 225.0,
+          "y": 545.0,
+          "width": 150.0,
+          "height": 145.0
+        },
+        "purpose": "只允许点击消息页顶部工具栏内经 Midscene 实时定位的特别关注入口（爱心图标）。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "workbench.root": {
+      "key": "workbench.root",
+      "label": "工作台",
+      "kind": "page",
+      "expectedStablePageKey": "workbench.root",
+      "requiredSemanticAssertions": [
+        "当前屏幕是宝盒一级页面，底部工作台 Tab 显示为选中状态，并且工作台主内容区域可见。"
+      ],
+      "allowedActions": [
+        "activate"
+      ],
+      "postcondition": "冷启动后目标包前台保持在宝盒主 Activity，且工作台首屏语义断言通过。"
+    },
+    "messages.root": {
+      "key": "messages.root",
+      "label": "消息",
+      "kind": "page",
+      "expectedStablePageKey": "messages.root",
+      "requiredSemanticAssertions": [
+        "当前屏幕底部消息 Tab 显示为选中状态，消息会话列表区域可见，页面顶部工具栏靠左一侧可见爱心轮廓图标。"
+      ],
+      "allowedActions": [
+        "activate"
+      ],
+      "postcondition": "点击底部消息导航后，消息页语义断言通过且目标包仍在前台。"
+    },
+    "messages.toolbar.heart.destination.unresolved": {
+      "key": "messages.toolbar.heart.destination.unresolved",
+      "label": "特别关注入口落地状态（形态待解析）",
+      "kind": "unresolved",
+      "expectedStablePageKey": "messages.toolbar.heart.destination.unresolved",
+      "requiredSemanticAssertions": [
+        "当前屏幕已显示由前一步工具栏入口触发的稳定落地页面、覆盖层或明确状态变化，其可见标题和主要内容能够被描述。"
+      ],
+      "allowedActions": [
+        "navigate_back"
+      ],
+      "postcondition": "记录落地状态的具体形态、可见标题、主要内容和可返回性证据；到达该边界后停止下钻，无法解析落地形态或内容时保持 unresolved。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-launched-workbench",
+      "kind": "capture",
+      "state": "workbench.root",
+      "depth": 0
+    },
+    {
+      "id": "open-messages-root",
+      "kind": "tap",
+      "semanticAction": "activate",
+      "fromState": "workbench.root",
+      "toState": "messages.root",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "shared.bottom-tab.messages",
+        "label": "消息",
+        "scope": "shared_navigation",
+        "locatorPrompt": "屏幕底部导航栏中带有“消息”文字的 Tab；它位于五个底部导航项中的第二个，不是页面正文中的消息卡片。",
+        "allowedRegionRef": "bottom-navigation-messages-tab"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "底部消息 Tab 已显示为选中状态，消息会话列表区域可见，并且顶部工具栏靠左一侧的爱心轮廓图标可见。"
+        ]
+      }
+    },
+    {
+      "id": "open-heart-destination",
+      "kind": "tap",
+      "semanticAction": "activate",
+      "fromState": "messages.root",
+      "toState": "messages.toolbar.heart.destination.unresolved",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "messages.toolbar.heart",
+        "label": "特别关注入口",
+        "scope": "messages_toolbar_read_only_entry",
+        "locatorPrompt": "消息页顶部工具栏内靠左一侧的爱心轮廓图标，即用户已确认功能名为“特别关注”的入口；它位于会话列表上方，不是底部导航图标。",
+        "allowedRegionRef": "messages-toolbar-heart"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕已出现由前一步工具栏入口触发的稳定落地页面、覆盖层或明确状态变化，其具体形态、可见标题和主要内容能够被描述，且目标包仍在前台。"
+        ]
+      }
+    }
+  ]
+}

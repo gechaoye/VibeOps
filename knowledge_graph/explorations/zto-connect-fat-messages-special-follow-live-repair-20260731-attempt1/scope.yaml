@@ -1,0 +1,76 @@
+{
+  "task": {
+    "id": "zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1",
+    "requestedAt": "2026-07-31T04:21:11.412Z",
+    "objective": "补采特别关注提醒设置项容器、名称、帮助图标、帮助浮层、开关及提醒方式电话选项实时帧，修正图谱模型和红框。",
+    "status": "complete",
+    "completedAt": "2026-07-31T04:40:50.000Z",
+    "evidenceSummary": {
+      "frames": 9,
+      "actions": 8,
+      "archivedRetryFrames": 12
+    },
+    "retryHistoryRef": "attempts/retry-history.json"
+  },
+  "application": {
+    "key": "zto.connect",
+    "packageId": "com.zto.connect.fat",
+    "build": {
+      "environment": "fat",
+      "versionCode": "10542"
+    }
+  },
+  "entry": {
+    "description": "消息/特别关注/特别关注提醒",
+    "knownFacts": [
+      "三个设置项均为页面直接持有的总容器。",
+      "每个总容器包含名称文案、帮助图标、帮助浮层和开关四个子元素。",
+      "名称文案和总容器不可点击；帮助图标和开关是独立可操作控件。",
+      "旧 settings.help.* 实体是帮助图标的重复框选，应迁移到唯一帮助图标。"
+    ]
+  },
+  "scope": {
+    "recursion": "targeted-live-evidence-repair",
+    "include": [
+      "settings-collapsed-state",
+      "three-help-popover-states",
+      "reminder-method-selector-phone-option"
+    ]
+  },
+  "midscene": {
+    "repository": "/Users/mohan/Desktop/ZTO/Projects/midscene",
+    "reloadEnvInFreshProcess": true,
+    "oneAndroidAgent": true,
+    "modelDiagnostics": {
+      "default": {
+        "intent": "default",
+        "slot": "default",
+        "name": "gpt-5.6-sol",
+        "family": "gpt-5"
+      },
+      "scout": {
+        "intent": "scout",
+        "slot": "scout",
+        "name": "qwen3-vl-plus",
+        "family": "qwen3-vl"
+      }
+    }
+  },
+  "device": {
+    "serialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+    "keepAwakeForWholeTask": true
+  },
+  "graph": {
+    "root": "/Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph",
+    "normativeSpec": {
+      "index": "spec/README.md",
+      "version": "UIKG 3.0.0",
+      "schemaVersion": "3.0.0",
+      "contentHash": "sha256:cd3cfce81d92e1fb0b75f9f3adc364f023b476638cd957c156b675eb0b3a7403",
+      "relationshipRules": "spec/relationship-invariants.md",
+      "precedenceAccepted": true
+    },
+    "mergePolicy": "reviewed-migration-plus-additive-upsert",
+    "stageBeforePublish": true
+  }
+}

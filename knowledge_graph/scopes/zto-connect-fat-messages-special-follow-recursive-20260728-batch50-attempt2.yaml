@@ -1,0 +1,121 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260728-batch50-attempt2
+title: 特别关注实时未读角标定位第五十批第二次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 在当前特别关注页补采实时未读数量角标的独立 Midscene 几何证据；本批是无动作补充观测，不重复盘点已由其他成功批次覆盖的页面控件。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.unread_badge, predicate: value_semantics, value: 红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现，不能进入稳定元素命名、状态键或规则条件。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: unread_highlight_condition, value: 特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。, source: user}
+
+entry:
+  knownStartPageKey: messages.special_follow.with_dynamic_unread_badge_located
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 当前已位于带动态未读会话的特别关注页；只补采红色实时未读数量角标。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 1
+  include: [messages.special_follow]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low]
+  allowedSideEffects: [navigation_history]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [status_indicator]
+  allowedTapRegions:
+    - key: unused-page-navigation-region
+      space: current_display_px
+      rect: {x: 0, y: 120, width: 160, height: 180}
+      purpose: 本批不执行物理动作；保留非空安全区域以满足 producer 策略契约，不用于实际点击。
+
+expectedStates:
+  - key: messages.special_follow.with_dynamic_unread_badge_located
+    label: 已独立定位实时未读角标的特别关注页
+    kind: page
+    expectedStablePageKey: messages.special_follow
+    requiredSemanticAssertions: [当前页面标题为特别关注，红色实时未读数量角标可见。]
+    inspection:
+      queryPrompt: >-
+        本批是针对已完整盘点页面的补充几何观测，visibleControls 只返回会话右侧红色未读数量角标，其他页面控件必须省略。角标必须作为唯一的单独 visibleControls 项返回：candidateKey 固定为 special_follow_unread_badge，label 固定为“实时未读消息数量角标”，controlType 为 status_badge，semanticRole 为 realtime_unread_count_indicator，enabled 为 false，reversible 为 false，riskHint 为 safe，functionDescription 说明它展示当前实时未读消息数量，locatorPrompt 只定位红色角标本身。visibleState 可以记录本帧观察到的数字，但 candidateKey、label 和 functionDescription 禁止包含具体数字。不要把角标数字解释为固定值。
+      locateAllInteractiveControls: true
+      includeControlTypes: [status_badge]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已取得实时未读数量角标的独立 bbox，具体数值只作为本帧 Runtime 呈现。
+
+actions:
+  - {id: capture-special-follow-unread-badge-evidence, kind: capture, state: messages.special_follow.with_dynamic_unread_badge_located, depth: 2}
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch50-attempt2
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260728
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-28-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

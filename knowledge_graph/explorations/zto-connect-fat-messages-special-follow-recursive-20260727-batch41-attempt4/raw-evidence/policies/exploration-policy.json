@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt4:policy",
+  "sourceScopeHash": "sha256:8d3c2f16c2ba5f3df880846190dde3c38b6728bf5e65a6702b0bfddfaf5be363",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 4,
+  "allowedRiskLevels": [
+    "low",
+    "medium",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "page_content",
+    "settings_navigation"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "add-special-follow-button",
+      "space": "current_display_px",
+      "rect": {
+        "x": 20,
+        "y": 340,
+        "width": 210,
+        "height": 285
+      },
+      "purpose": "特别关注提醒页虚线加号和添加按钮。"
+    },
+    {
+      "key": "first-recent-contact-row",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0,
+        "y": 1420,
+        "width": 1152,
+        "height": 230
+      },
+      "purpose": "通用选人组件最近联系人首项练良伟。"
+    },
+    {
+      "key": "person-picker-confirm",
+      "space": "current_display_px",
+      "rect": {
+        "x": 820,
+        "y": 2150,
+        "width": 332,
+        "height": 226
+      },
+      "purpose": "通用选人组件底部右侧确定按钮。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "persistent_setting_change",
+    "temporary_display_state"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 4,
+    "include": [
+      "messages.special_follow.settings",
+      "boundary.common.person_picker"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [
+      "boundary.common.person_picker.internal_navigation"
+    ],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

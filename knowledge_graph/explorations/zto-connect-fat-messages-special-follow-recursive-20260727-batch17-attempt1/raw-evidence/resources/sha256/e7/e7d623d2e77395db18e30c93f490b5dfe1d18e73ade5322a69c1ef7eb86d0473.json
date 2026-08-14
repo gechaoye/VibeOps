@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHF6345MNWFW1HQP0ZQDQ52",
+  "sessionRef": "01KYHF4AGPYZRHN8D90W2V16EY",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHF4MQ7JSD7P4R5X7QW8QFW",
+  "sourceScreenshotRef": "sha256:02d3f5636528380624ba64740b5215f6f108b66a4f1163f501356fcaa0f95976",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"button\",\"icon_button\",\"link\",\"menu\",\"list_entry\",\"toggle\",\"checkbox\",\"radio\",\"segmented_control\",\"tab\",\"slider\",\"stepper\",\"input\",\"back\",\"close\",\"scroll_region\"]. 完整盘点“特别关注提醒”当前视口全部交互控件与状态；帮助气泡如仍显示则如实记录，准确定位“间隔时间”整行入口。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我",
+      "间隔时间：10",
+      "开启后，设置消息免打扰的群，特别关注人新消息保持正常通知。",
+      "免打扰群通知",
+      "个性化提醒",
+      "特别关注提示音：波浪"
+    ],
+    "visibleNavigationState": "位于“特别关注提醒”设置页；顶部有返回入口；“我的特别关注”可进入列表；帮助气泡当前展开并覆盖部分中间设置项。",
+    "visibleControls": [
+      {
+        "candidateKey": "back",
+        "label": "返回",
+        "controlType": "back",
+        "visibleState": "可见，左上角左箭头",
+        "semanticRole": "返回上一页",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "返回上一页面。",
+        "locatorPrompt": "定位页面左上方、标题“特别关注提醒”左侧的黑色左箭头返回控件"
+      },
+      {
+        "candidateKey": "special_follow_list",
+        "label": "我的特别关注",
+        "controlType": "list_entry",
+        "visibleState": "可见，整行右侧有向右箭头",
+        "semanticRole": "进入特别关注人员列表",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "进入“我的特别关注”列表；根据已提供上下文，设置为特别关注的人员存在未读消息时，其相关会话显示在特别关注列表。",
+        "locatorPrompt": "定位标题下方第一行“我的特别关注”，其最右侧有黑色向右箭头的整行入口"
+      },
+      {
+        "candidateKey": "add_special_follow",
+        "label": "添加",
+        "controlType": "button",
+        "visibleState": "可见，虚线方框内有加号，下方文字为“添加”",
+        "semanticRole": "添加特别关注人员",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "medium",
+        "functionDescription": "打开添加特别关注人员的流程；根据已提供上下文，配置人员后消息工具栏的特别关注入口爱心图标显示为橙黄色。",
+        "locatorPrompt": "定位“我的特别关注”下方左侧、虚线方框加号及其下方“添加”文字组成的添加控件"
+      },
+      {
+        "candidateKey": "single_chat_popup_toggle",
+        "label": "单聊消息未读，弹窗提醒我",
+        "controlType": "toggle",
+        "visibleState": "开启，开关为蓝色且圆形滑块位于右侧",
+        "semanticRole": "控制单聊未读消息弹窗提醒",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "开启或关闭特别关注单聊消息未读时的弹窗提醒。",
+        "locatorPrompt": "定位说明条“来自「特别关注」的未读消息，自定义提醒方式”下方第一行“单聊消息未读，弹窗提醒我”最右侧的蓝色开关"
+      },
+      {
+        "candidateKey": "single_chat_popup_help",
+        "label": "单聊消息未读，弹窗提醒我帮助",
+        "controlType": "icon_button",
+        "visibleState": "可见，文字右侧灰色圆圈问号；当前没有气泡指向该按钮",
+        "semanticRole": "显示该设置的帮助说明",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "查看“单聊消息未读，弹窗提醒我”的帮助信息。",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”文字紧右侧、蓝色开关左侧的灰色圆圈问号按钮"
+      },
+      {
+        "candidateKey": "reminder_interval",
+        "label": "间隔时间",
+        "controlType": "list_entry",
+        "visibleState": "可见，当前值为10，最右侧有灰色向右箭头",
+        "semanticRole": "进入提醒间隔时间设置",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "medium",
+        "functionDescription": "打开间隔时间设置，当前显示值为10。",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”下方由上、下分隔线包围的“间隔时间”整行入口；左侧为“间隔时间”，右侧依次为数值“10”和灰色向右箭头"
+      },
+      {
+        "candidateKey": "obscured_notification_toggle",
+        "label": "被帮助气泡遮挡的提醒设置",
+        "controlType": "toggle",
+        "visibleState": "部分可见；右侧开关呈灰色，圆形滑块位置被气泡遮挡，无法可靠判断开关状态",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "unknown",
+        "functionDescription": "该行标签和具体功能被帮助气泡遮挡，当前视口无法确认。",
+        "locatorPrompt": "定位“间隔时间”行正下方、帮助气泡背后右侧仍部分露出的灰色开关"
+      },
+      {
+        "candidateKey": "dnd_group_notification_help",
+        "label": "免打扰群通知帮助",
+        "controlType": "icon_button",
+        "visibleState": "可见，灰色圆圈问号；帮助气泡当前已展开并以尖角指向该按钮",
+        "semanticRole": "显示免打扰群通知的帮助说明",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "显示或收起帮助说明：“开启后，设置消息免打扰的群，特别关注人新消息保持正常通知。”",
+        "locatorPrompt": "定位“免打扰群通知”文字紧右侧的灰色圆圈问号按钮；当前深灰帮助气泡底部尖角指向它"
+      },
+      {
+        "candidateKey": "dnd_group_notification_toggle",
+        "label": "免打扰群通知",
+        "controlType": "toggle",
+        "visibleState": "关闭，开关轨道为浅灰色且圆形滑块位于左侧",
+        "semanticRole": "控制免打扰群内特别关注人员新消息是否保持正常通知",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "开启后，已设置消息免打扰的群中，特别关注人员的新消息仍保持正常通知。",
+        "locatorPrompt": "定位帮助气泡下方“免打扰群通知”行最右侧的浅灰色关闭开关"
+      },
+      {
+        "candidateKey": "special_follow_sound",
+        "label": "特别关注提示音",
+        "controlType": "list_entry",
+        "visibleState": "可见，当前值为“波浪”，最右侧有灰色向右箭头",
+        "semanticRole": "进入特别关注提示音选择",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "打开特别关注提示音选择，当前提示音为“波浪”。",
+        "locatorPrompt": "定位“个性化提醒”分区下方的“特别关注提示音”整行入口；右侧显示“波浪”和灰色向右箭头"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "page_scroll",
+        "label": "特别关注提醒页面内容",
+        "directions": [
+          "up",
+          "down"
+        ],
+        "locatorPrompt": "定位标题栏下方承载“我的特别关注”、提醒开关和“个性化提醒”的整页主内容区域"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "“间隔时间”下方、帮助气泡后方还有一项设置，但其标签、帮助图标及开关滑块位置被气泡遮挡，无法确定功能与开关状态。",
+      "截图未显示帮助气泡独立的关闭按钮；无法仅凭画面确认点击气泡外部或再次点击问号是否会关闭气泡。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:40:20.582Z",
+  "endedAt": "2026-07-27T09:41:05.285Z",
+  "durationMs": 44702.898541,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:6d69fc934f51abc27b2f6821f9bdb2fa5378f67b8d17ad85d07f676dcc24ca34"
+}

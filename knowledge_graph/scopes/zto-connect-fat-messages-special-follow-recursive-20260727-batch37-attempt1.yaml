@@ -1,0 +1,162 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch37-attempt1
+title: 单聊弹窗提醒一小时间隔第三十七批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 从已确认的10分钟间隔状态打开单聊弹窗提醒间隔面板，并实际选择1小时。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.member_with_unread, predicate: conversation_visibility, value: 设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。, source: user}
+    - {subjectKey: messages.toolbar.heart, predicate: unread_highlight_condition, value: 已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。, source: user}
+    - {subjectKey: messages.special_follow.settings, predicate: exploration_authorization, value: 用户明确允许操作开关和设置，探索阶段无需恢复业务状态。, source: user}
+    - {subjectKey: messages.special_follow.settings.popup_interval, predicate: visible_options, value: 单聊弹窗提醒间隔面板包含10分钟、30分钟、1小时、4小时和取消。, source: verified_evidence}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings.popup_interval_10
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 新预检已确认设备位于特别关注提醒设置页，上方第一个间隔时间为10分钟。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 3
+  include: [messages.special_follow.settings, messages.special_follow.settings.popup_interval]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [temporary_display_state, persistent_setting_change]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 1800
+  allowedTargetScopes: [settings_navigation, persistent_setting_control]
+  allowedTapRegions:
+    - {key: popup-interval-row, space: current_display_px, rect: {x: 0, y: 900, width: 1152, height: 300}, purpose: 单聊弹窗提醒开关正下方第一个间隔时间整行。}
+    - {key: popup-interval-panel, space: current_display_px, rect: {x: 0, y: 1280, width: 1152, height: 1096}, purpose: 间隔时间底部面板四个选项和取消。}
+
+expectedStates:
+  - key: messages.special_follow.settings.popup_interval_10
+    label: 单聊弹窗间隔十分钟
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [页面标题为特别关注提醒，单聊消息未读弹窗提醒开关正下方第一个间隔时间显示10分钟。]
+    inspection: &settingsInspection
+      queryPrompt: 完整盘点当前视口中拥有完整点击区域的交互控件。屏幕最底部特别关注提示音行被下边界裁切，只记录为内容，禁止放入 visibleControls；准确定位单聊弹窗提醒正下方第一个间隔时间。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [open_popup_interval_selector]
+    postcondition: 已记录10分钟间隔状态。
+  - key: messages.special_follow.settings.popup_interval.selector_10
+    label: 单聊弹窗间隔面板十分钟状态
+    kind: dialog
+    expectedStablePageKey: messages.special_follow.settings.popup_interval
+    requiredSemanticAssertions: [底部面板显示10分钟、30分钟、1小时、4小时和取消，当前值对应10分钟。]
+    inspection:
+      queryPrompt: 完整盘点底部间隔面板的10分钟、30分钟、1小时、4小时和取消；背景页控件不作为当前可操作控件。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, list_entry, radio, close]
+      requireScrollCoverage: false
+    allowedActions: [select_popup_interval_1_hour]
+    postcondition: 已记录间隔面板及当前10分钟状态。
+  - key: messages.special_follow.settings.popup_interval_1_hour
+    label: 单聊弹窗间隔一小时
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [底部面板已关闭，单聊消息未读弹窗提醒开关正下方第一个间隔时间显示1小时。]
+    inspection: *settingsInspection
+    allowedActions: []
+    postcondition: 已验证选择1小时。
+
+actions:
+  - {id: capture-popup-interval-10, kind: capture, state: messages.special_follow.settings.popup_interval_10, depth: 4}
+  - id: open-popup-interval-selector
+    kind: tap
+    semanticAction: open_popup_interval_selector
+    fromState: messages.special_follow.settings.popup_interval_10
+    toState: messages.special_follow.settings.popup_interval.selector_10
+    depth: 4
+    risk: low
+    sideEffects: [temporary_display_state]
+    waitMs: 1800
+    target: {key: popup_interval, label: 单聊弹窗提醒下方间隔时间10分钟, scope: settings_navigation, locatorPrompt: 定位蓝色单聊弹窗提醒开关正下方、右侧显示10分钟的第一个间隔时间整行；不要定位下方第二个间隔时间。, allowedRegionRef: popup-interval-row}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [底部间隔面板已打开，10分钟、30分钟、1小时、4小时和取消均可见。]}
+  - id: select-popup-interval-1-hour
+    kind: tap
+    semanticAction: select_popup_interval_1_hour
+    fromState: messages.special_follow.settings.popup_interval.selector_10
+    toState: messages.special_follow.settings.popup_interval_1_hour
+    depth: 4
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 1800
+    target: {key: popup_interval_1_hour, label: 1小时, scope: persistent_setting_control, locatorPrompt: 定位底部间隔面板第三行“1小时”选项。, allowedRegionRef: popup-interval-panel}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [底部面板已关闭，单聊弹窗提醒正下方第一个间隔时间显示1小时。]}
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch37-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

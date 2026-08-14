@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHBD4SW1Q4NPN8AA10JPGE2",
+  "sessionRef": "01KYHB4AWXSK89EQW5B6WTF2WZ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHBB5C44NE1ZC4ZRH5SDC93",
+  "sourceScreenshotRef": "sha256:30a581ccb1eae33fb2610a961f0cf496830494cdabbfa60b29515b4e735239d0",
+  "operation": "aiLocate",
+  "prompt": "定位屏幕中央确认弹窗底部左半区域、文字为“取消”的按钮",
+  "status": "unknown",
+  "result": null,
+  "failure": {
+    "code": "MIDSCENE_LOCATE_UNRESOLVED",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:34:50.020Z",
+  "endedAt": "2026-07-27T08:35:02.076Z",
+  "durationMs": 12056.063625,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:877a9ef7bafe8817695698b5846fe4d92726de2c068689b3f876395a93de7ce1"
+}

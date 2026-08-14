@@ -1,0 +1,866 @@
+{
+  "frameId": "sha256:9c4f23d649b88d1d7bb068e3f62f22223e87ea9f823c9270698daba92ec97392",
+  "page": {
+    "name": "特别关注提醒",
+    "surfaceType": "page",
+    "stateSummary": "设置特别关注联系人的未读消息提醒方式，包括弹窗、短信/电话提醒、夜间免打扰等选项",
+    "scrollableRegions": [
+      "main-content"
+    ]
+  },
+  "elements": [
+    {
+      "candidateKey": "popup-reminder-row-container",
+      "label": null,
+      "visualDescription": "包含‘单聊消息未读，弹窗提醒我’文本、问号帮助图标和右侧蓝色开关的整行容器",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.34,
+        "width": 0.92,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "单聊未读消息弹窗提醒设置行",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "popup-reminder-name-label",
+      "label": "单聊消息未读，弹窗提醒我",
+      "visualDescription": "黑色常规字体文本标签",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.36,
+        "width": 0.48,
+        "height": 0.04
+      },
+      "meaning": {
+        "status": "known",
+        "description": "该设置项名称",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "popup-reminder-help-icon",
+      "label": null,
+      "visualDescription": "灰色圆形内含问号图标，位于名称右侧",
+      "controlType": "icon-button",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.5,
+        "y": 0.365,
+        "width": 0.05,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "帮助信息触发器",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "popup-reminder-toggle",
+      "label": null,
+      "visualDescription": "蓝色开启状态的滑动开关，位于行最右侧",
+      "controlType": "switch",
+      "interactive": true,
+      "enabled": true,
+      "state": "on",
+      "approximateRegion": {
+        "x": 0.8,
+        "y": 0.355,
+        "width": 0.16,
+        "height": 0.05
+      },
+      "meaning": {
+        "status": "known",
+        "description": "启用单聊未读弹窗提醒",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "sms-phone-row-container",
+      "label": null,
+      "visualDescription": "包含‘弹窗消息未读，短信/电话提醒我’文本、问号帮助图标和右侧蓝色开关的整行容器",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.48,
+        "width": 0.92,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "弹窗未读消息短信/电话提醒设置行",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "sms-phone-name-label",
+      "label": "弹窗消息未读，短信/电话提醒我",
+      "visualDescription": "黑色常规字体文本标签",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.5,
+        "width": 0.58,
+        "height": 0.04
+      },
+      "meaning": {
+        "status": "known",
+        "description": "该设置项名称",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "sms-phone-help-icon",
+      "label": null,
+      "visualDescription": "灰色圆形内含问号图标，位于名称右侧",
+      "controlType": "icon-button",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.6,
+        "y": 0.505,
+        "width": 0.05,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "帮助信息触发器",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "sms-phone-toggle",
+      "label": null,
+      "visualDescription": "蓝色开启状态的滑动开关，位于行最右侧",
+      "controlType": "switch",
+      "interactive": true,
+      "enabled": true,
+      "state": "on",
+      "approximateRegion": {
+        "x": 0.8,
+        "y": 0.495,
+        "width": 0.16,
+        "height": 0.05
+      },
+      "meaning": {
+        "status": "known",
+        "description": "启用弹窗未读消息短信/电话提醒",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "group-dnd-row-container",
+      "label": null,
+      "visualDescription": "包含‘免打扰群通知’文本、问号帮助图标和右侧灰色关闭开关的整行容器",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.82,
+        "width": 0.92,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "免打扰群通知设置行",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "group-dnd-name-label",
+      "label": "免打扰群通知",
+      "visualDescription": "黑色常规字体文本标签",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.84,
+        "width": 0.28,
+        "height": 0.04
+      },
+      "meaning": {
+        "status": "known",
+        "description": "该设置项名称",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "group-dnd-help-icon",
+      "label": null,
+      "visualDescription": "灰色圆形内含问号图标，位于名称右侧",
+      "controlType": "icon-button",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.3,
+        "y": 0.845,
+        "width": 0.05,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "帮助信息触发器",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "group-dnd-toggle",
+      "label": null,
+      "visualDescription": "灰色关闭状态的滑动开关，位于行最右侧",
+      "controlType": "switch",
+      "interactive": true,
+      "enabled": true,
+      "state": "off",
+      "approximateRegion": {
+        "x": 0.8,
+        "y": 0.835,
+        "width": 0.16,
+        "height": 0.05
+      },
+      "meaning": {
+        "status": "known",
+        "description": "禁用群通知免打扰",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "night-dnd-row-container",
+      "label": null,
+      "visualDescription": "包含‘夜间免打扰’文本和右侧灰色关闭开关的整行容器，下方有说明文字",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.66,
+        "width": 0.92,
+        "height": 0.1
+      },
+      "meaning": {
+        "status": "known",
+        "description": "夜间免打扰设置行",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "night-dnd-name-label",
+      "label": "夜间免打扰",
+      "visualDescription": "黑色常规字体文本标签",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.68,
+        "width": 0.24,
+        "height": 0.04
+      },
+      "meaning": {
+        "status": "known",
+        "description": "该设置项名称",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "night-dnd-toggle",
+      "label": null,
+      "visualDescription": "灰色关闭状态的滑动开关，位于行最右侧",
+      "controlType": "switch",
+      "interactive": true,
+      "enabled": true,
+      "state": "off",
+      "approximateRegion": {
+        "x": 0.8,
+        "y": 0.675,
+        "width": 0.16,
+        "height": 0.05
+      },
+      "meaning": {
+        "status": "known",
+        "description": "禁用夜间免打扰",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "reminder-method-row-container",
+      "label": null,
+      "visualDescription": "包含‘提醒方式’标签和右侧‘电话 >’文本的整行容器",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.58,
+        "width": 0.92,
+        "height": 0.07
+      },
+      "meaning": {
+        "status": "known",
+        "description": "提醒方式选择行",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "reminder-method-name-label",
+      "label": "提醒方式",
+      "visualDescription": "黑色常规字体文本标签",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.6,
+        "width": 0.2,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "该设置项名称",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "reminder-method-value",
+      "label": "电话",
+      "visualDescription": "灰色文本‘电话’后跟右箭头，表示可点击进入详情",
+      "controlType": "label",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.82,
+        "y": 0.6,
+        "width": 0.14,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "当前选定的提醒方式",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "interval-popup-row-container",
+      "label": null,
+      "visualDescription": "‘间隔时间’标签 + ‘1小时 >’文本的行容器",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.42,
+        "width": 0.92,
+        "height": 0.07
+      },
+      "meaning": {
+        "status": "known",
+        "description": "单聊弹窗提醒间隔设置行",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "interval-popup-name-label",
+      "label": "间隔时间",
+      "visualDescription": "灰色小字标签",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.44,
+        "width": 0.2,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "间隔时间标签",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "interval-popup-value",
+      "label": "1小时",
+      "visualDescription": "灰色文本‘1小时’后跟右箭头",
+      "controlType": "label",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.8,
+        "y": 0.44,
+        "width": 0.16,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "当前间隔时长",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "interval-sms-row-container",
+      "label": null,
+      "visualDescription": "‘间隔时间’标签 + ‘30分钟 >’文本的行容器",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.56,
+        "width": 0.92,
+        "height": 0.07
+      },
+      "meaning": {
+        "status": "known",
+        "description": "短信/电话提醒间隔设置行",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "interval-sms-name-label",
+      "label": "间隔时间",
+      "visualDescription": "灰色小字标签",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.58,
+        "width": 0.2,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "间隔时间标签",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "interval-sms-value",
+      "label": "30分钟",
+      "visualDescription": "灰色文本‘30分钟’后跟右箭头",
+      "controlType": "label",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.78,
+        "y": 0.58,
+        "width": 0.18,
+        "height": 0.03
+      },
+      "meaning": {
+        "status": "known",
+        "description": "当前间隔时长",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "special-focus-header",
+      "label": "我的特别关注",
+      "visualDescription": "加粗标题文本，右侧显示‘1人 >’",
+      "controlType": "label",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.12,
+        "width": 0.92,
+        "height": 0.06
+      },
+      "meaning": {
+        "status": "known",
+        "description": "特别关注列表标题及入口",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "contact-item",
+      "label": "练良伟",
+      "visualDescription": "头像+姓名+‘添加’‘移除’虚线按钮的卡片",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.17,
+        "width": 0.4,
+        "height": 0.1
+      },
+      "meaning": {
+        "status": "known",
+        "description": "已关注联系人条目",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "add-button",
+      "label": "添加",
+      "visualDescription": "带加号图标的虚线方框按钮",
+      "controlType": "button",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.18,
+        "y": 0.175,
+        "width": 0.12,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "添加新特别关注联系人",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "remove-button",
+      "label": "移除",
+      "visualDescription": "带减号图标的虚线方框按钮",
+      "controlType": "button",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.3,
+        "y": 0.175,
+        "width": 0.12,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "移除当前特别关注联系人",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "personalized-reminder-section",
+      "label": "个性化提醒",
+      "visualDescription": "浅灰背景分隔标题",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.9,
+        "width": 0.92,
+        "height": 0.05
+      },
+      "meaning": {
+        "status": "known",
+        "description": "个性化提醒区域标题",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "tone-setting-row",
+      "label": "特别关注提示音",
+      "visualDescription": "文本标签 + 右侧‘门铃 >’选项",
+      "controlType": "container",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.95,
+        "width": 0.92,
+        "height": 0.06
+      },
+      "meaning": {
+        "status": "known",
+        "description": "提示音设置行",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "tone-name-label",
+      "label": "特别关注提示音",
+      "visualDescription": "黑色常规字体文本",
+      "controlType": "label",
+      "interactive": false,
+      "enabled": null,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.04,
+        "y": 0.96,
+        "width": 0.3,
+        "height": 0.04
+      },
+      "meaning": {
+        "status": "known",
+        "description": "提示音设置项名称",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    },
+    {
+      "candidateKey": "tone-value",
+      "label": "门铃",
+      "visualDescription": "灰色文本‘门铃’后跟右箭头",
+      "controlType": "label",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0.82,
+        "y": 0.96,
+        "width": 0.14,
+        "height": 0.04
+      },
+      "meaning": {
+        "status": "known",
+        "description": "当前提示音类型",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 1
+    }
+  ],
+  "relationships": [
+    {
+      "fromCandidateKey": "popup-reminder-row-container",
+      "type": "contains",
+      "toCandidateKey": "popup-reminder-name-label"
+    },
+    {
+      "fromCandidateKey": "popup-reminder-row-container",
+      "type": "contains",
+      "toCandidateKey": "popup-reminder-help-icon"
+    },
+    {
+      "fromCandidateKey": "popup-reminder-row-container",
+      "type": "contains",
+      "toCandidateKey": "popup-reminder-toggle"
+    },
+    {
+      "fromCandidateKey": "sms-phone-row-container",
+      "type": "contains",
+      "toCandidateKey": "sms-phone-name-label"
+    },
+    {
+      "fromCandidateKey": "sms-phone-row-container",
+      "type": "contains",
+      "toCandidateKey": "sms-phone-help-icon"
+    },
+    {
+      "fromCandidateKey": "sms-phone-row-container",
+      "type": "contains",
+      "toCandidateKey": "sms-phone-toggle"
+    },
+    {
+      "fromCandidateKey": "group-dnd-row-container",
+      "type": "contains",
+      "toCandidateKey": "group-dnd-name-label"
+    },
+    {
+      "fromCandidateKey": "group-dnd-row-container",
+      "type": "contains",
+      "toCandidateKey": "group-dnd-help-icon"
+    },
+    {
+      "fromCandidateKey": "group-dnd-row-container",
+      "type": "contains",
+      "toCandidateKey": "group-dnd-toggle"
+    },
+    {
+      "fromCandidateKey": "night-dnd-row-container",
+      "type": "contains",
+      "toCandidateKey": "night-dnd-name-label"
+    },
+    {
+      "fromCandidateKey": "night-dnd-row-container",
+      "type": "contains",
+      "toCandidateKey": "night-dnd-toggle"
+    },
+    {
+      "fromCandidateKey": "reminder-method-row-container",
+      "type": "contains",
+      "toCandidateKey": "reminder-method-name-label"
+    },
+    {
+      "fromCandidateKey": "reminder-method-row-container",
+      "type": "contains",
+      "toCandidateKey": "reminder-method-value"
+    },
+    {
+      "fromCandidateKey": "interval-popup-row-container",
+      "type": "contains",
+      "toCandidateKey": "interval-popup-name-label"
+    },
+    {
+      "fromCandidateKey": "interval-popup-row-container",
+      "type": "contains",
+      "toCandidateKey": "interval-popup-value"
+    },
+    {
+      "fromCandidateKey": "interval-sms-row-container",
+      "type": "contains",
+      "toCandidateKey": "interval-sms-name-label"
+    },
+    {
+      "fromCandidateKey": "interval-sms-row-container",
+      "type": "contains",
+      "toCandidateKey": "interval-sms-value"
+    },
+    {
+      "fromCandidateKey": "special-focus-header",
+      "type": "labels",
+      "toCandidateKey": "contact-item"
+    },
+    {
+      "fromCandidateKey": "contact-item",
+      "type": "contains",
+      "toCandidateKey": "add-button"
+    },
+    {
+      "fromCandidateKey": "contact-item",
+      "type": "contains",
+      "toCandidateKey": "remove-button"
+    },
+    {
+      "fromCandidateKey": "tone-setting-row",
+      "type": "contains",
+      "toCandidateKey": "tone-name-label"
+    },
+    {
+      "fromCandidateKey": "tone-setting-row",
+      "type": "contains",
+      "toCandidateKey": "tone-value"
+    }
+  ],
+  "uncertainties": [
+    "‘提醒方式’中‘电话’是否为 radio 选项之一（当前未展开选择器，无法确认是否存在其他选项如‘短信’）",
+    "夜间免打扰说明文字（22:00至次日06:00）是否属于 night-dnd-row-container 的一部分或独立文本块，边界略模糊",
+    "‘门铃 >’是否为可点击进入音效库的完整交互项，还是仅文本指示"
+  ]
+}

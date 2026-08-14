@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHC6HF8PSX1421NPVYKS2DX",
+  "sessionRef": "01KYHBRRQ0FNFNTS8NJB3DVSTP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHC45X0H8XBW5XWF3EWVGWH",
+  "sourceScreenshotRef": "sha256:65bdb85fb68f020c80394d198d08df9626b17b359574e626135dc3003db9cbc4",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前屏幕已关闭确认弹窗，标题仍为“全部成员”，成员“练良伟”和“移除”按钮均不再显示。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:48:46.420Z",
+  "endedAt": "2026-07-27T08:48:54.248Z",
+  "durationMs": 7827.362,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d06c21fe76c2623ecb2d1941c9b2247b8ed605e1c8c231f0d0a167dce0321129"
+}

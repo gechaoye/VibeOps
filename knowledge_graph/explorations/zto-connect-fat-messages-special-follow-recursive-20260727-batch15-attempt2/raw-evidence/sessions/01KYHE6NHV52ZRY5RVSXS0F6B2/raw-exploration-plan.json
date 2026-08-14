@@ -1,0 +1,241 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch15-attempt2:plan",
+  "sourceScopeHash": "sha256:6d54ccfe0a57169fbcca6f486bb115a25cefedcaa1eda5606f2849868ef5338f",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "configured_visual_state",
+        "value": "设置特别关注人员后，入口爱心图标显示为橙黄色。",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "sms-phone-reminder-help-icon",
+        "space": "current_display_px",
+        "rect": {
+          "x": 610,
+          "y": 1080,
+          "width": 230,
+          "height": 200
+        },
+        "purpose": "短信/电话提醒右侧灰色圆圈问号的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经风险策略允许的应用内导航和临时状态控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings": {
+      "key": "messages.special_follow.settings",
+      "label": "特别关注提醒设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面顶部标题文字为“特别关注提醒”，三个帮助问号均可见且当前没有深色帮助气泡。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点无帮助气泡时的“特别关注提醒”当前视口全部交互控件和状态，重点定位短信/电话提醒右侧问号。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_sms_phone_reminder_help"
+      ],
+      "postcondition": "设置页完成盘点。"
+    },
+    "messages.special_follow.settings.sms_phone_reminder_help": {
+      "key": "messages.special_follow.settings.sms_phone_reminder_help",
+      "label": "短信电话提醒帮助气泡",
+      "kind": "dialog",
+      "expectedStablePageKey": "messages.special_follow.settings.sms_phone_reminder_help",
+      "requiredSemanticAssertions": [
+        "“弹窗消息未读，短信/电话提醒我”右侧问号附近显示深色帮助说明气泡。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点短信/电话提醒帮助气泡的正文、边界、全部按钮或关闭方式，并复核背景页可见控件；不推断未显示内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已记录第二项帮助气泡的完整可见内容与控件。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-settings-before-sms-phone-help",
+      "kind": "capture",
+      "state": "messages.special_follow.settings",
+      "depth": 2
+    },
+    {
+      "id": "open-sms-phone-reminder-help",
+      "kind": "tap",
+      "semanticAction": "open_sms_phone_reminder_help",
+      "fromState": "messages.special_follow.settings",
+      "toState": "messages.special_follow.settings.sms_phone_reminder_help",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "sms_phone_reminder_help",
+        "label": "弹窗消息未读短信电话提醒帮助问号",
+        "scope": "temporary_state_control",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”文字紧右侧的灰色圆圈问号；不要定位上方或下方问号。",
+        "allowedRegionRef": "sms-phone-reminder-help-icon"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "第二项“弹窗消息未读，短信/电话提醒我”问号附近显示深色帮助说明气泡。"
+        ]
+      }
+    }
+  ]
+}

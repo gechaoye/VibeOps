@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH6EN6G6GJWAXBRZPMFDACV",
+  "sessionRef": "01KYH63WB9HEC5SS6RJPRAPGPK",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH6C7EGESBX665Z604YPKAX",
+  "sourceScreenshotRef": "sha256:7857beb27bd58cac5edaf4cf96c2cec7467671878f34c10d4a6435dca6b6a526",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前屏幕已进入标题或主要语义为“特别关注”的稳定页面，且宝盒测试包仍在前台。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:08:19.934Z",
+  "endedAt": "2026-07-27T07:08:28.752Z",
+  "durationMs": 8817.793708,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:9b4546640254c1ecb65af87cfe9a7520b533d60e7ff4c4f6bd9f0bacfe9aaab0"
+}

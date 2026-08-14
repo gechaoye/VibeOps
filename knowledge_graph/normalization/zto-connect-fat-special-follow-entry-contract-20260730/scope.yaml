@@ -1,0 +1,47 @@
+task:
+  id: zto-connect-fat-special-follow-entry-contract-20260730
+  requestedAt: '2026-07-30T16:36:12+08:00'
+  objective: 需要对此情况在图谱中做出明确的定义
+application:
+  key: zto.connect
+  packageId: com.zto.connect.fat
+  build:
+    environment: test
+    versionCode: '10542'
+entry:
+  description: 特别关注提醒页面“我的特别关注”文字右侧的向右箭头
+  knownFacts:
+  - “我的特别关注”是说明文字。
+  - 实际导航入口是文字右侧的向右箭头，文字本身不是触发入口。
+  - 其他行区域是否可触发未由用户确认，保持 unspecified。
+  authorityContracts:
+  - id: 01KYKA3ENBFD65M644D2KD5QF3
+    sourceType: user_context
+    authorityStatus: authority_certified
+    planningEligible: true
+    sourceSelector:
+      kind: exact_page
+      ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+    triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+    expectedTarget:
+      kind: page
+      ref: 01KYKA3ENBX0Y8425JT9CK70DK
+      stateKey: null
+    runtimeEvidenceStatus: verified
+scope:
+  mode: authority_contract_and_model_correction
+  deviceActions: none
+  reason: 用户已认证交互事实，且现有 Midscene 动作轨迹已经验证右侧箭头到目标页面的原子导航。
+graph:
+  root: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph
+  mergePolicy: reviewed-migration-plus-additive-upsert
+  preserveHistoricalEntities: true
+  stageBeforePublish: true
+  baseline:
+    fileCount: 426
+    contentHash: sha256:2470f85e2ca11d0ebff77f9f4b97cb0138aeb73fb9c8b086b3c596cd6f5e772d
+    entityIdsHash: sha256:72dd76c8cc6701f814f9b211e86d0b2662fab7484ec68c4593c7fe69a032274c
+completion:
+  correctionStatus: complete
+  resultingGraphStatus: incomplete
+  remainingLimitation: 历史特别关注证据仍缺独立 aiScout；本次不伪造新的双模型探索证据。

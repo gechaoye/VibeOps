@@ -1,0 +1,194 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1
+title: 夜间与群免打扰开关第三十二批第一次采集
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容
+  userIntent: 验证特别关注提醒页夜间免打扰与免打扰群通知开关的开启和关闭状态。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: messages.special_follow.settings, predicate: exploration_authorization, value: 用户明确允许操作开关和设置，探索阶段无需恢复业务状态。, source: user}
+    - {subjectKey: messages.special_follow.settings.night_dnd, predicate: visible_description, value: 开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知。, source: verified_evidence}
+
+entry:
+  knownStartPageKey: messages.special_follow.settings.dnd.both_off
+  launchComponent: com.zto.connect.fat/com.zto.h5cache.BHWebActivity
+  navigationHint: 当前短信/电话提醒开启、提醒方式为电话，夜间免打扰与免打扰群通知均关闭；本批分别验证两个开关的双向状态。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 12
+  maxActions: 8
+  include: [messages.special_follow.settings, messages.special_follow.settings.night_dnd, messages.special_follow.settings.group_dnd]
+  exclude: [external_application, system_credentials]
+  entryOnly: []
+  stopAt: []
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low, medium]
+  allowedSideEffects: [persistent_setting_change]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, account_change, logout]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 1800
+  allowedTargetScopes: [persistent_setting_control]
+  allowedTapRegions:
+    - {key: night-dnd-toggle-region, space: current_display_px, rect: {x: 840, y: 1450, width: 300, height: 350}, purpose: 夜间免打扰行右侧开关区域。}
+    - {key: group-dnd-toggle-region, space: current_display_px, rect: {x: 840, y: 1850, width: 300, height: 350}, purpose: 免打扰群通知行右侧开关区域。}
+
+expectedStates:
+  - key: messages.special_follow.settings.dnd.both_off
+    label: 两个免打扰开关均关闭
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [页面标题为“特别关注提醒”；夜间免打扰与免打扰群通知开关均为灰色关闭状态。]
+    inspection: &settingsInspection
+      queryPrompt: 完整盘点当前视口中拥有完整点击区域的交互控件，准确记录两个免打扰开关状态；底边裁切行只记录为内容。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: [enable_night_dnd]
+    postcondition: 已记录两个开关均关闭。
+  - key: messages.special_follow.settings.dnd.night_on
+    label: 夜间免打扰开启
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [夜间免打扰开关为蓝色开启状态；免打扰群通知仍为灰色关闭状态；22:00至次日06:00说明仍可见。]
+    inspection: *settingsInspection
+    allowedActions: [disable_night_dnd]
+    postcondition: 已验证夜间免打扰开启。
+  - key: messages.special_follow.settings.dnd.night_off_again
+    label: 夜间免打扰重新关闭
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [夜间免打扰开关恢复灰色关闭状态；免打扰群通知仍为灰色关闭状态。]
+    inspection: *settingsInspection
+    allowedActions: [enable_group_dnd]
+    postcondition: 已验证夜间免打扰关闭。
+  - key: messages.special_follow.settings.dnd.group_on
+    label: 免打扰群通知开启
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [免打扰群通知开关为蓝色开启状态；夜间免打扰为灰色关闭状态。]
+    inspection: *settingsInspection
+    allowedActions: [disable_group_dnd]
+    postcondition: 已验证免打扰群通知开启。
+  - key: messages.special_follow.settings.dnd.both_off_final
+    label: 两个免打扰开关最终关闭
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions: [夜间免打扰与免打扰群通知开关均为灰色关闭状态。]
+    inspection: *settingsInspection
+    allowedActions: []
+    postcondition: 已验证免打扰群通知关闭。
+
+actions:
+  - {id: capture-dnd-both-off, kind: capture, state: messages.special_follow.settings.dnd.both_off, depth: 4}
+  - id: enable-night-dnd
+    kind: tap
+    semanticAction: enable_night_dnd
+    fromState: messages.special_follow.settings.dnd.both_off
+    toState: messages.special_follow.settings.dnd.night_on
+    depth: 4
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 1800
+    target: {key: night_dnd_toggle, label: 夜间免打扰, scope: persistent_setting_control, locatorPrompt: 定位“夜间免打扰”行最右侧当前为灰色关闭状态的开关。, allowedRegionRef: night-dnd-toggle-region}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [夜间免打扰开关已变为蓝色开启状态，免打扰群通知仍关闭。]}
+  - id: disable-night-dnd
+    kind: tap
+    semanticAction: disable_night_dnd
+    fromState: messages.special_follow.settings.dnd.night_on
+    toState: messages.special_follow.settings.dnd.night_off_again
+    depth: 4
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 1800
+    target: {key: night_dnd_toggle, label: 夜间免打扰, scope: persistent_setting_control, locatorPrompt: 定位“夜间免打扰”行最右侧当前为蓝色开启状态的开关。, allowedRegionRef: night-dnd-toggle-region}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [夜间免打扰开关已恢复灰色关闭状态，免打扰群通知仍关闭。]}
+  - id: enable-group-dnd
+    kind: tap
+    semanticAction: enable_group_dnd
+    fromState: messages.special_follow.settings.dnd.night_off_again
+    toState: messages.special_follow.settings.dnd.group_on
+    depth: 4
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 1800
+    target: {key: group_dnd_toggle, label: 免打扰群通知, scope: persistent_setting_control, locatorPrompt: 定位“免打扰群通知”行最右侧当前为灰色关闭状态的开关；不要定位左侧问号图标。, allowedRegionRef: group-dnd-toggle-region}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [免打扰群通知开关已变为蓝色开启状态，夜间免打扰仍关闭。]}
+  - id: disable-group-dnd
+    kind: tap
+    semanticAction: disable_group_dnd
+    fromState: messages.special_follow.settings.dnd.group_on
+    toState: messages.special_follow.settings.dnd.both_off_final
+    depth: 4
+    risk: medium
+    sideEffects: [persistent_setting_change]
+    waitMs: 1800
+    target: {key: group_dnd_toggle, label: 免打扰群通知, scope: persistent_setting_control, locatorPrompt: 定位“免打扰群通知”行最右侧当前为蓝色开启状态的开关；不要定位左侧问号图标。, allowedRegionRef: group-dnd-toggle-region}
+    postcondition: {expectedForegroundPackage: com.zto.connect.fat, requiredScreenshotChange: true, semanticAssertions: [免打扰群通知开关已恢复灰色关闭状态，夜间免打扰仍关闭。]}
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-消息页特别关注功能递归探索报告
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: true
+  requireOnDemandPathQueries: true
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: true
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

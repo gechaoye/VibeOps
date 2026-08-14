@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHZRB8PDH2ZDXPVH7KAWCM1",
+  "sessionRef": "01KYHZCNHDWB9DNF17R8JNMBC9",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHZQ94K6FTV0CNAP4SZ4C1N",
+  "sourceScreenshotRef": "sha256:ad985ba2899a9363e3e50048e2bfeecde520921f401c8f18ec74cbe8ac1c92d0",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"我的特别关注右侧进入箭头\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.people.close\",\"predicate\":\"target_page\",\"value\":\"右上关闭X关闭全部成员页后返回特别关注功能页。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "全部成员",
+    "visibleResultContent": [],
+    "supportedFunctionDescription": "激活“我的特别关注右侧进入箭头”后进入“全部成员”页；当前可见左上返回箭头和右上关闭X。根据提供的权威上下文，特别关注人员存在未读消息时，其会话显示在特别关注列表，且入口爱心图标变为橙黄色；关闭全部成员页后返回特别关注功能页。",
+    "evidenceBasis": [
+      "当前截图顶部居中可见标题“全部成员”。",
+      "当前截图左上可见返回箭头，右上可见关闭X。",
+      "当前截图页面主体为空白，未见成员列表、会话或提示文案。",
+      "题目明确说明当前画面紧接在激活“我的特别关注右侧进入箭头”之后。",
+      "权威上下文明确给出功能名称、未读会话展示条件、入口高亮条件以及关闭X的目标页面。"
+    ],
+    "unresolvedMeaning": "当前画面未显示成员数据或状态提示，因此无法仅凭可见内容判断是成员列表为空、数据仍在加载，还是内容加载异常；也无法确认左上返回箭头的具体返回目标。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:30:29.019Z",
+  "endedAt": "2026-07-27T14:30:40.662Z",
+  "durationMs": 11642.871458,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e208e39d10128175f88caea2768af5f75c8997d40a287cb0d9efb68b95e5e88d"
+}

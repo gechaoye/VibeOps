@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHK7G4VR6MB8KKYAD2VKCV1",
+  "sessionRef": "01KYHK1MRD915BBV536E9KP4AF",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHK4T4YV0F5RRVYRV38SSBD",
+  "sourceScreenshotRef": "sha256:7ceae8350b35a72a8eeb203b702ab5056fb207dbd0368b7a5212efd9c21f659e",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "宝盒测试包仍在前台；准确记录“弹窗消息未读，短信/电话提醒我”开关是否开启，或是否出现新的 APP 内提示、弹层或页面，不预设结果。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:51:37.078Z",
+  "endedAt": "2026-07-27T10:51:45.691Z",
+  "durationMs": 8612.175417,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:aace07aa7631996bc7b7d437fe217d2d3729fd072cc4e8fd1dc347895c6c78d2"
+}

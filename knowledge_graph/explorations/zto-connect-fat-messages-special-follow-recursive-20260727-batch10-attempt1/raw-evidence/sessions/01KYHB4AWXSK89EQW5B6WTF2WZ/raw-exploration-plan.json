@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch10-attempt1:plan",
+  "sourceScopeHash": "sha256:77206e67f82e9781559dc6be18c67444d03af77f71810ec9085e7efe9c052f2c",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "记录成员展示条目无导航行为，并继续探索移除特别关注成员流程。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.authorization",
+        "predicate": "may_operate_settings_and_members",
+        "value": "true",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.people.nonempty",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0,
+      "y": 0,
+      "width": 1344,
+      "height": 2772
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-member-row",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 250,
+          "width": 930,
+          "height": 230
+        },
+        "purpose": "成员“练良伟”展示条目的实时 Midscene 定位范围，不含移除按钮。"
+      },
+      {
+        "key": "remove-special-follow-member",
+        "space": "current_display_px",
+        "rect": {
+          "x": 930,
+          "y": 250,
+          "width": 222,
+          "height": 230
+        },
+        "purpose": "成员“练良伟”行右侧“移除”按钮的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0,
+          "y": 96,
+          "width": 1152,
+          "height": 2184
+        },
+        "purpose": "经用户授权和风险策略允许的特别关注功能内控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1.1666666666666667,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          0.8571428571428571,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.people.nonempty": {
+      "key": "messages.special_follow.people.nonempty",
+      "label": "全部成员非空状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“全部成员”，成员“练良伟”和“移除”按钮可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点返回、关闭、成员“练良伟”和移除按钮。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "verify_member_display_no_navigation"
+      ],
+      "postcondition": "非空成员列表完成盘点。"
+    },
+    "messages.special_follow.people.after_member_tap": {
+      "key": "messages.special_follow.people.after_member_tap",
+      "label": "点击成员展示条目后仍停留列表",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people",
+      "requiredSemanticAssertions": [
+        "当前屏幕仍为标题“全部成员”的同一页面，成员“练良伟”和“移除”按钮仍可见，没有打开个人资料或其他页面。"
+      ],
+      "inspection": {
+        "queryPrompt": "复核成员展示条目点击后的同页状态，定位返回、关闭、成员和移除按钮。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "list_entry",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "remove_special_follow_member"
+      ],
+      "postcondition": "已验证成员条目点击无导航。"
+    },
+    "messages.special_follow.people.after_remove_trigger": {
+      "key": "messages.special_follow.people.after_remove_trigger",
+      "label": "点击移除后的结果状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.people",
+      "requiredSemanticAssertions": [
+        "点击“移除”后，当前屏幕出现与移除成员“练良伟”有关的确认状态，或者“全部成员”列表中已不再显示该成员。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点点击移除后的可见状态；如有确认弹窗，定位标题、说明、取消、确认和关闭控件；如已立即移除，记录空白列表及返回/关闭控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "back",
+          "close"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "confirm_remove",
+        "cancel_remove",
+        "navigate_back",
+        "close"
+      ],
+      "postcondition": "已识别移除流程下一步或立即移除结果。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-members-before-noop-and-remove",
+      "kind": "capture",
+      "state": "messages.special_follow.people.nonempty",
+      "depth": 3
+    },
+    {
+      "id": "verify-member-row-no-navigation",
+      "kind": "tap",
+      "semanticAction": "verify_member_display_no_navigation",
+      "fromState": "messages.special_follow.people.nonempty",
+      "toState": "messages.special_follow.people.after_member_tap",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "temporary_display_state"
+      ],
+      "waitMs": 1500,
+      "target": {
+        "key": "member_lian_liangwei",
+        "label": "练良伟",
+        "scope": "page_content",
+        "locatorPrompt": "定位“全部成员”页面唯一成员条目左侧头像和姓名“练良伟”所在区域；不要定位右侧移除按钮。",
+        "allowedRegionRef": "special-follow-member-row"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": false,
+        "semanticAssertions": [
+          "当前屏幕仍为标题“全部成员”的同一页面，成员“练良伟”和“移除”按钮仍可见，没有打开其他页面。"
+        ]
+      }
+    },
+    {
+      "id": "trigger-remove-special-follow-member",
+      "kind": "tap",
+      "semanticAction": "remove_special_follow_member",
+      "fromState": "messages.special_follow.people.after_member_tap",
+      "toState": "messages.special_follow.people.after_remove_trigger",
+      "depth": 3,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "remove_member_lian_liangwei",
+        "label": "移除",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位“全部成员”页面成员“练良伟”所在行最右侧、浅灰描边且文字为“移除”的按钮。",
+        "allowedRegionRef": "remove-special-follow-member"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "点击“移除”后，当前屏幕出现与移除成员“练良伟”有关的确认状态，或者列表中已不再显示该成员。"
+        ]
+      }
+    }
+  ]
+}

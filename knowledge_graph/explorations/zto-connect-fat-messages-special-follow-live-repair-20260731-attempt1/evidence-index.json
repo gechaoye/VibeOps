@@ -1,0 +1,961 @@
+{
+  "recordType": "LiveRepairEvidenceIndex",
+  "explorationRef": "zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1",
+  "generatedAt": "2026-07-31T04:40:50.000Z",
+  "modelDiagnostics": {
+    "default": {
+      "intent": "default",
+      "slot": "default",
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "scout": {
+      "intent": "scout",
+      "slot": "scout",
+      "name": "qwen3-vl-plus",
+      "family": "qwen3-vl"
+    }
+  },
+  "frames": [
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.collapsed",
+      "frameId": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+      "observedAt": "2026-07-31T03:39:30.140Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+      "screenshotPath": "frames/c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.collapsed.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.collapsed.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.collapsed.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "popup_reminder_row": {
+          "rect": {
+            "left": 0,
+            "top": 777,
+            "width": 1128,
+            "height": 160
+          },
+          "center": [
+            563,
+            856
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "定位包含“单聊消息未读，弹窗提醒我”名称文案、其右侧灰色圆圈问号和最右侧开关的完整横向设置项总容器；框住该设置项整行，不包括下方间隔时间或任何弹出帮助气泡。",
+          "status": "pass"
+        },
+        "popup_reminder_label": {
+          "rect": {
+            "left": 50,
+            "top": 828,
+            "width": 517,
+            "height": 50
+          },
+          "center": [
+            308,
+            852
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位设置名称文案“单聊消息未读，弹窗提醒我”的完整文字区域；不要包含右侧问号、开关或整行空白。",
+          "status": "pass"
+        },
+        "popup_reminder_help": {
+          "rect": {
+            "left": 583,
+            "top": 831,
+            "width": 53,
+            "height": 53
+          },
+          "center": [
+            609,
+            857
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位“单聊消息未读，弹窗提醒我”文字紧右侧的第一枚灰色圆圈问号帮助图标；不要定位文字、开关或下方问号。",
+          "status": "pass"
+        },
+        "popup_reminder_toggle": {
+          "rect": {
+            "left": 934,
+            "top": 820,
+            "width": 147,
+            "height": 74
+          },
+          "center": [
+            1007,
+            856
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位“单聊消息未读，弹窗提醒我”设置项最右侧的开关；不要定位问号、文字或下方开关。",
+          "status": "pass"
+        },
+        "sms_phone_row": {
+          "rect": {
+            "left": 48,
+            "top": 1077,
+            "width": 1032,
+            "height": 162
+          },
+          "center": [
+            563,
+            1157
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "定位包含“弹窗消息未读，短信/电话提醒我”名称文案、其右侧灰色圆圈问号和最右侧开关的完整横向设置项总容器；框住该设置项整行，不包括下方间隔时间、提醒方式或任何弹出帮助气泡。",
+          "status": "pass"
+        },
+        "sms_phone_label": {
+          "rect": {
+            "left": 50,
+            "top": 1132,
+            "width": 621,
+            "height": 46
+          },
+          "center": [
+            360,
+            1154
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位设置名称文案“弹窗消息未读，短信/电话提醒我”的完整文字区域；不要包含右侧问号、开关或整行空白。",
+          "status": "pass"
+        },
+        "sms_phone_help": {
+          "rect": {
+            "left": 684,
+            "top": 1129,
+            "width": 56,
+            "height": 55
+          },
+          "center": [
+            711,
+            1156
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位“弹窗消息未读，短信/电话提醒我”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或其他问号。",
+          "status": "pass"
+        },
+        "sms_phone_toggle": {
+          "rect": {
+            "left": 934,
+            "top": 1120,
+            "width": 147,
+            "height": 74
+          },
+          "center": [
+            1007,
+            1156
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位“弹窗消息未读，短信/电话提醒我”设置项最右侧的开关；不要定位问号、文字或其他开关。",
+          "status": "pass"
+        },
+        "group_dnd_row": {
+          "rect": {
+            "left": 0,
+            "top": 1887,
+            "width": 1128,
+            "height": 158
+          },
+          "center": [
+            563,
+            1965
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "定位包含“免打扰群通知”名称文案、其右侧灰色圆圈问号和最右侧开关的完整横向设置项总容器；框住该设置项整行，不包括上下相邻设置项或任何弹出帮助气泡。",
+          "status": "pass"
+        },
+        "group_dnd_label": {
+          "rect": {
+            "left": 50,
+            "top": 1940,
+            "width": 270,
+            "height": 52
+          },
+          "center": [
+            184,
+            1965
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位设置名称文案“免打扰群通知”的完整文字区域；不要包含右侧问号、开关或整行空白。",
+          "status": "pass"
+        },
+        "group_dnd_help": {
+          "rect": {
+            "left": 323,
+            "top": 1938,
+            "width": 57,
+            "height": 55
+          },
+          "center": [
+            351,
+            1965
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位“免打扰群通知”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或上方问号。",
+          "status": "pass"
+        },
+        "group_dnd_toggle": {
+          "rect": {
+            "left": 934,
+            "top": 1930,
+            "width": 147,
+            "height": 73
+          },
+          "center": [
+            1007,
+            1966
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+          "prompt": "只定位“免打扰群通知”设置项最右侧的开关；不要定位问号、文字或上方开关。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.popup_help_visible",
+      "frameId": "sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582",
+      "observedAt": "2026-07-31T03:44:51.462Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582",
+      "screenshotPath": "frames/7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.popup_help_visible.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.popup_help_visible.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.popup_help_visible.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "popup_reminder_row": {
+          "rect": {
+            "left": 0,
+            "top": 777,
+            "width": 1127,
+            "height": 160
+          },
+          "center": [
+            563,
+            856
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582",
+          "prompt": "定位包含“单聊消息未读，弹窗提醒我”名称文案、其右侧灰色圆圈问号和最右侧开关的完整横向设置项总容器；框住该设置项整行，不包括下方间隔时间或任何弹出帮助气泡。",
+          "status": "pass"
+        },
+        "popup_reminder_label": {
+          "rect": {
+            "left": 50,
+            "top": 831,
+            "width": 519,
+            "height": 47
+          },
+          "center": [
+            309,
+            854
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582",
+          "prompt": "只定位设置名称文案“单聊消息未读，弹窗提醒我”的完整文字区域；不要包含右侧问号、开关或整行空白。",
+          "status": "pass"
+        },
+        "popup_reminder_help": {
+          "rect": {
+            "left": 583,
+            "top": 830,
+            "width": 53,
+            "height": 54
+          },
+          "center": [
+            609,
+            856
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582",
+          "prompt": "只定位“单聊消息未读，弹窗提醒我”文字紧右侧的第一枚灰色圆圈问号帮助图标；不要定位文字、开关或下方问号。",
+          "status": "pass"
+        },
+        "popup_reminder_toggle": {
+          "rect": {
+            "left": 934,
+            "top": 820,
+            "width": 148,
+            "height": 74
+          },
+          "center": [
+            1007,
+            856
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582",
+          "prompt": "只定位“单聊消息未读，弹窗提醒我”设置项最右侧的开关；不要定位问号、文字或下方开关。",
+          "status": "pass"
+        },
+        "popup_reminder_help_popover": {
+          "rect": {
+            "left": 60,
+            "top": 635,
+            "width": 1081,
+            "height": 179
+          },
+          "center": [
+            600,
+            724
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582",
+          "prompt": "只定位第一项“单聊消息未读，弹窗提醒我”问号上方当前展开的深色帮助说明气泡完整边界，包含气泡正文和尖角；不要定位问号图标或设置项整行。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.after_popup_help",
+      "frameId": "sha256:d7db4a9c64be4a504be09f85b4f3b4e4c7ed17a0f8140f17b49c49ff55e3334f",
+      "observedAt": "2026-07-31T03:51:50.936Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:d7db4a9c64be4a504be09f85b4f3b4e4c7ed17a0f8140f17b49c49ff55e3334f",
+      "screenshotPath": "frames/d7db4a9c64be4a504be09f85b4f3b4e4c7ed17a0f8140f17b49c49ff55e3334f.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.after_popup_help.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.after_popup_help.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.after_popup_help.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.sms_phone_help_visible",
+      "frameId": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+      "observedAt": "2026-07-31T04:24:34.130Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+      "screenshotPath": "frames/74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.sms_phone_help_visible.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.sms_phone_help_visible.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.sms_phone_help_visible.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "sms_phone_row": {
+          "rect": {
+            "left": 48,
+            "top": 1119,
+            "width": 1033,
+            "height": 153
+          },
+          "center": [
+            564,
+            1195
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+          "prompt": "定位包含“弹窗消息未读，短信/电话提醒我”名称文案、其右侧灰色圆圈问号和最右侧开关的完整横向设置项总容器；框住该设置项整行，不包括下方间隔时间、提醒方式或任何弹出帮助气泡。",
+          "status": "pass"
+        },
+        "sms_phone_label": {
+          "rect": {
+            "left": 49,
+            "top": 1167,
+            "width": 622,
+            "height": 45
+          },
+          "center": [
+            359,
+            1189
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+          "prompt": "只定位设置名称文案“弹窗消息未读，短信/电话提醒我”的完整文字区域；不要包含右侧问号、开关或整行空白。",
+          "status": "pass"
+        },
+        "sms_phone_help": {
+          "rect": {
+            "left": 682,
+            "top": 1163,
+            "width": 58,
+            "height": 56
+          },
+          "center": [
+            710,
+            1190
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+          "prompt": "只定位“弹窗消息未读，短信/电话提醒我”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或其他问号。",
+          "status": "pass"
+        },
+        "sms_phone_toggle": {
+          "rect": {
+            "left": 933,
+            "top": 1153,
+            "width": 148,
+            "height": 76
+          },
+          "center": [
+            1006,
+            1190
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+          "prompt": "只定位“弹窗消息未读，短信/电话提醒我”设置项最右侧的开关；不要定位问号、文字或其他开关。",
+          "status": "pass"
+        },
+        "sms_phone_help_popover": {
+          "rect": {
+            "left": 59,
+            "top": 916,
+            "width": 1082,
+            "height": 233
+          },
+          "center": [
+            599,
+            1032
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+          "prompt": "只定位“弹窗消息未读，短信/电话提醒我”问号上方当前展开的深色帮助说明气泡完整边界，包含气泡正文和尖角；不要定位问号图标或设置项整行。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.after_sms_phone_help",
+      "frameId": "sha256:9c4f23d649b88d1d7bb068e3f62f22223e87ea9f823c9270698daba92ec97392",
+      "observedAt": "2026-07-31T02:44:37.618Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:9c4f23d649b88d1d7bb068e3f62f22223e87ea9f823c9270698daba92ec97392",
+      "screenshotPath": "frames/9c4f23d649b88d1d7bb068e3f62f22223e87ea9f823c9270698daba92ec97392.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.after_sms_phone_help.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.after_sms_phone_help.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.after_sms_phone_help.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.group_dnd_help_visible",
+      "frameId": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+      "observedAt": "2026-07-31T04:13:23.676Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+      "screenshotPath": "frames/62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.group_dnd_help_visible.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.group_dnd_help_visible.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.group_dnd_help_visible.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "group_dnd_row": {
+          "rect": {
+            "left": 0,
+            "top": 1934,
+            "width": 1128,
+            "height": 146
+          },
+          "center": [
+            563,
+            2006
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+          "prompt": "定位包含“免打扰群通知”名称文案、其右侧灰色圆圈问号和最右侧开关的完整横向设置项总容器；框住该设置项整行，不包括上下相邻设置项或任何弹出帮助气泡。",
+          "status": "pass"
+        },
+        "group_dnd_label": {
+          "rect": {
+            "left": 50,
+            "top": 1976,
+            "width": 269,
+            "height": 51
+          },
+          "center": [
+            184,
+            2001
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+          "prompt": "只定位设置名称文案“免打扰群通知”的完整文字区域；不要包含右侧问号、开关或整行空白。",
+          "status": "pass"
+        },
+        "group_dnd_help": {
+          "rect": {
+            "left": 326,
+            "top": 1976,
+            "width": 53,
+            "height": 51
+          },
+          "center": [
+            352,
+            2001
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+          "prompt": "只定位“免打扰群通知”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或上方问号。",
+          "status": "pass"
+        },
+        "group_dnd_toggle": {
+          "rect": {
+            "left": 934,
+            "top": 1964,
+            "width": 147,
+            "height": 74
+          },
+          "center": [
+            1007,
+            2000
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+          "prompt": "只定位“免打扰群通知”设置项最右侧的开关；不要定位问号、文字或上方开关。",
+          "status": "pass"
+        },
+        "group_dnd_help_popover": {
+          "rect": {
+            "left": 12,
+            "top": 1777,
+            "width": 1082,
+            "height": 181
+          },
+          "center": [
+            552,
+            1867
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+          "prompt": "只定位“免打扰群通知”问号上方当前展开的深色帮助说明气泡完整边界，包含气泡正文和尖角；不要定位问号图标或设置项整行。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.reminder_method_selector",
+      "frameId": "sha256:2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c",
+      "observedAt": "2026-07-31T03:02:45.587Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c",
+      "screenshotPath": "frames/2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.reminder_method_selector.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.reminder_method_selector.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.reminder_method_selector.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {
+        "reminder_method_phone": {
+          "rect": {
+            "left": 64,
+            "top": 2054,
+            "width": 183,
+            "height": 82
+          },
+          "center": [
+            155,
+            2094
+          ],
+          "dpr": 3.501519756838906,
+          "frameRef": "sha256:2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c",
+          "prompt": "只定位提醒方式底部选择面板第二行的“电话”文字和单选项可见内容边界；红框必须完整覆盖“电话”两个字及其同一选项的单选标识，不要偏到第一行“短信”、分隔线或最下方“取消”。",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.target_sms_before",
+      "frameId": "sha256:aba1aa2201d65f29780bcd9a71afbcd629aa7e000f57b657bf191858766e7836",
+      "observedAt": "2026-07-31T04:21:32.308Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:aba1aa2201d65f29780bcd9a71afbcd629aa7e000f57b657bf191858766e7836",
+      "screenshotPath": "frames/aba1aa2201d65f29780bcd9a71afbcd629aa7e000f57b657bf191858766e7836.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.target_sms_before.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.target_sms_before.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.target_sms_before.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    },
+    {
+      "recordType": "FrozenUiFrameEvidence",
+      "stateKey": "messages.special_follow.settings.target_group_before",
+      "frameId": "sha256:c9c9f9dba0f0cae5fa42609dbe995ea8cb22f8b95ac9f9ae9ff3598f41011d50",
+      "observedAt": "2026-07-31T04:10:44.017Z",
+      "buildRef": "android-package:com.zto.connect.fat@10542",
+      "deviceRef": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+      "viewport": {
+        "width": 1152,
+        "height": 2376,
+        "orientation": "portrait"
+      },
+      "screenshotRef": "sha256:c9c9f9dba0f0cae5fa42609dbe995ea8cb22f8b95ac9f9ae9ff3598f41011d50",
+      "screenshotPath": "frames/c9c9f9dba0f0cae5fa42609dbe995ea8cb22f8b95ac9f9ae9ff3598f41011d50.png",
+      "dpr": 3.501519756838906,
+      "scoutRef": "model-results/messages.special_follow.settings.target_group_before.scout.json",
+      "reconciliationRef": "model-results/messages.special_follow.settings.target_group_before.gpt.json",
+      "locatorRef": "locators/messages.special_follow.settings.target_group_before.json",
+      "evidenceStatus": "dual_model_verified_live_frame",
+      "locators": {}
+    }
+  ],
+  "actions": [
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-popup-reminder-help-live-repair",
+      "method": "aiTap",
+      "prompt": "只定位“单聊消息未读，弹窗提醒我”文字紧右侧的第一枚灰色圆圈问号帮助图标；不要定位文字、开关或下方问号。",
+      "beforeFrameRef": "sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d",
+      "locator": {
+        "rect": {
+          "left": 582,
+          "top": 831,
+          "width": 53,
+          "height": 52
+        },
+        "center": [
+          608,
+          856
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T03:44:38.586Z",
+      "completedAt": "2026-07-31T03:44:51.045Z",
+      "postcondition": "第一项“单聊消息未读，弹窗提醒我”问号附近已显示深色帮助说明气泡，且仍停留在特别关注提醒页面。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图顶部标题为“特别关注提醒”，表明当前仍停留在该页面。第一项“单聊消息未读，弹窗提醒我”的问号附近显示了深色帮助说明气泡，气泡内容说明特别关注人的单聊消息未读时会通过全局弹窗提醒。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneRecoveryTrace",
+      "id": "reset-settings-after-popup-help-live-repair",
+      "beforeFrameRef": "sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582",
+      "startedAt": "2026-07-31T03:50:12.641Z",
+      "completedAt": "2026-07-31T03:51:50.520Z",
+      "steps": [
+        {
+          "method": "aiTap",
+          "prompt": "定位标题为“特别关注提醒”的页面顶栏最左侧黑色向左箭头返回按钮。",
+          "locator": {
+            "rect": {
+              "left": 50,
+              "top": 163,
+              "width": 31,
+              "height": 46
+            },
+            "center": [
+              65,
+              185
+            ],
+            "dpr": 3.501519756838906
+          },
+          "assertion": {
+            "pass": true,
+            "thought": "当前截图顶部标题清晰显示“特别关注”，页面右上方可见蓝色“设置”按钮，因此该陈述为真。"
+          }
+        },
+        {
+          "method": "aiTap",
+          "prompt": "定位标题为“特别关注”的页面中，“我的特别关注”同一行最右侧的蓝色文字按钮“设置”；不要定位成员、添加按钮或右箭头。",
+          "locator": {
+            "rect": {
+              "left": 1016,
+              "top": 303,
+              "width": 96,
+              "height": 51
+            },
+            "center": [
+              1063,
+              328
+            ],
+            "dpr": 3.501519756838906
+          },
+          "assertion": {
+            "pass": true,
+            "thought": "截图顶部标题为“特别关注提醒”。页面中虽有多个问号帮助图标，但未显示任何深色帮助说明气泡。"
+          }
+        }
+      ],
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-sms-phone-help-live-repair",
+      "method": "aiTap",
+      "prompt": "只定位“弹窗消息未读，短信/电话提醒我”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或其他问号。",
+      "beforeFrameRef": "sha256:aba1aa2201d65f29780bcd9a71afbcd629aa7e000f57b657bf191858766e7836",
+      "locator": {
+        "rect": {
+          "left": 685,
+          "top": 1163,
+          "width": 54,
+          "height": 54
+        },
+        "center": [
+          711,
+          1189
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T04:24:17.770Z",
+      "completedAt": "2026-07-31T04:24:33.730Z",
+      "postcondition": "第二项“弹窗消息未读，短信/电话提醒我”问号附近已显示深色帮助说明气泡，且仍停留在特别关注提醒页面。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图顶部标题为“特别关注提醒”，说明仍停留在该页面。第二项“弹窗消息未读，短信/电话提醒我”的问号附近可见深色帮助说明气泡，气泡内容说明弹窗消息未处理时会转为电话或短信通知。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneRecoveryTrace",
+      "id": "reset-settings-after-sms-phone-help-live-repair",
+      "beforeFrameRef": "sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31",
+      "startedAt": "2026-07-31T04:27:02.826Z",
+      "completedAt": "2026-07-31T04:27:31.977Z",
+      "steps": [
+        {
+          "method": "aiTap",
+          "prompt": "定位标题为“特别关注提醒”的页面顶栏最左侧黑色向左箭头返回按钮。",
+          "locator": {
+            "rect": {
+              "left": 51,
+              "top": 163,
+              "width": 30,
+              "height": 46
+            },
+            "center": [
+              65,
+              185
+            ],
+            "dpr": 3.501519756838906
+          },
+          "assertion": {
+            "pass": true,
+            "thought": "截图顶部标题显示“特别关注”，页面右上方可见蓝色“设置”按钮，因此陈述为真。"
+          }
+        },
+        {
+          "method": "aiTap",
+          "prompt": "定位标题为“特别关注”的页面中，“我的特别关注”同一行最右侧的蓝色文字按钮“设置”；不要定位成员、添加按钮或右箭头。",
+          "locator": {
+            "rect": {
+              "left": 1017,
+              "top": 303,
+              "width": 93,
+              "height": 50
+            },
+            "center": [
+              1063,
+              327
+            ],
+            "dpr": 3.501519756838906
+          },
+          "assertion": {
+            "pass": true,
+            "thought": "截图顶部标题为“特别关注提醒”，页面中可见多个问号帮助图标，但没有显示任何深色帮助说明气泡。"
+          }
+        }
+      ],
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-group-dnd-help-live-repair",
+      "method": "aiTap",
+      "prompt": "只定位“免打扰群通知”文字紧右侧的灰色圆圈问号帮助图标；不要定位文字、开关或上方问号。",
+      "beforeFrameRef": "sha256:c9c9f9dba0f0cae5fa42609dbe995ea8cb22f8b95ac9f9ae9ff3598f41011d50",
+      "locator": {
+        "rect": {
+          "left": 324,
+          "top": 1972,
+          "width": 55,
+          "height": 55
+        },
+        "center": [
+          351,
+          1999
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T04:13:00.447Z",
+      "completedAt": "2026-07-31T04:13:23.262Z",
+      "postcondition": "“免打扰群通知”问号附近已显示深色帮助说明气泡，且仍停留在特别关注提醒页面。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图顶部标题为“特别关注提醒”，表明当前仍停留在特别关注提醒页面；“免打扰群通知”旁的问号上方已显示深色帮助说明气泡，内容为开启消息免打扰的群仍可正常通知特别关注人的新消息。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneRecoveryTrace",
+      "id": "reset-settings-after-group-dnd-help-live-repair",
+      "beforeFrameRef": "sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727",
+      "startedAt": "2026-07-31T04:18:12.307Z",
+      "completedAt": "2026-07-31T04:18:47.495Z",
+      "steps": [
+        {
+          "method": "aiTap",
+          "prompt": "定位标题为“特别关注提醒”的页面顶栏最左侧黑色向左箭头返回按钮。",
+          "locator": {
+            "rect": {
+              "left": 50,
+              "top": 162,
+              "width": 31,
+              "height": 49
+            },
+            "center": [
+              65,
+              186
+            ],
+            "dpr": 3.501519756838906
+          },
+          "assertion": {
+            "pass": true,
+            "thought": "截图顶部标题为“特别关注”，页面右上方可见蓝色“设置”按钮，因此陈述为真。"
+          }
+        },
+        {
+          "method": "aiTap",
+          "prompt": "定位标题为“特别关注”的页面中，“我的特别关注”同一行最右侧的蓝色文字按钮“设置”；不要定位成员、添加按钮或右箭头。",
+          "locator": {
+            "rect": {
+              "left": 1015,
+              "top": 303,
+              "width": 96,
+              "height": 48
+            },
+            "center": [
+              1062,
+              326
+            ],
+            "dpr": 3.501519756838906
+          },
+          "assertion": {
+            "pass": true,
+            "thought": "截图顶部标题为“特别关注提醒”。页面中虽有多个问号帮助图标，但未显示任何深色帮助说明气泡。"
+          }
+        }
+      ],
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "open-reminder-method-selector-live-repair",
+      "method": "aiTap",
+      "prompt": "定位短信/电话提醒开关下方、间隔时间行之后、夜间免打扰之前，左侧为“提醒方式”、右侧显示当前方式和右箭头的完整横向设置行。",
+      "beforeFrameRef": "sha256:9c4f23d649b88d1d7bb068e3f62f22223e87ea9f823c9270698daba92ec97392",
+      "locator": {
+        "rect": {
+          "left": 49,
+          "top": 1410,
+          "width": 1031,
+          "height": 140
+        },
+        "center": [
+          564,
+          1479
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T03:02:18.205Z",
+      "completedAt": "2026-07-31T03:02:45.156Z",
+      "postcondition": "提醒方式底部选择面板已打开，面板中可见“短信”“电话”和“取消”。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图底部已打开提醒方式选择面板，其中清晰可见“短信”“电话”和“取消”三个选项，且“电话”当前被勾选。"
+      },
+      "status": "executed_verified"
+    },
+    {
+      "recordType": "MidsceneActionTrace",
+      "id": "cancel-reminder-method-selector-live-repair",
+      "method": "aiTap",
+      "prompt": "只定位提醒方式底部选择面板最下方中央的“取消”按钮。",
+      "beforeFrameRef": "sha256:2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c",
+      "locator": {
+        "rect": {
+          "left": 522,
+          "top": 2247,
+          "width": 108,
+          "height": 58
+        },
+        "center": [
+          575,
+          2275
+        ],
+        "dpr": 3.501519756838906
+      },
+      "startedAt": "2026-07-31T03:06:21.592Z",
+      "completedAt": "2026-07-31T03:06:35.725Z",
+      "postcondition": "提醒方式底部选择面板已关闭，仍停留在特别关注提醒页面，提醒方式值未因取消而改变。",
+      "assertion": {
+        "pass": true,
+        "thought": "截图中未显示“提醒方式”的底部选择面板，页面标题仍为“特别关注提醒”，且“提醒方式”当前显示为“电话”。因此可判断面板已关闭，取消操作未改变提醒方式值。"
+      },
+      "status": "executed_verified"
+    }
+  ]
+}

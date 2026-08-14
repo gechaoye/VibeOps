@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch2-attempt1:plan",
+  "sourceScopeHash": "sha256:7c8283680f2286cb48c9113c12c00924bcb02f044afd8c893750890e2bc07300",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从特别关注入口开始，递归探索全部安全可达子页面、状态、滚动内容和交互控件。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.initial",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-setup-link",
+        "space": "current_display_px",
+        "rect": {
+          "x": 330.0,
+          "y": 1390.0,
+          "width": 480.0,
+          "height": 210.0
+        },
+        "purpose": "特别关注空状态页“设置特别关注 >”入口的实时 Midscene 定位范围。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 96.0,
+          "width": 1152.0,
+          "height": 2184.0
+        },
+        "purpose": "后续批次中经风险策略允许的应用内导航、临时状态和滚动控件范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.initial": {
+      "key": "messages.special_follow.initial",
+      "label": "特别关注空状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前屏幕标题为“特别关注”，空状态说明与蓝色“设置特别关注 >”入口均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点特别关注空状态页当前视口的全部开关、设置、图标、按键、列表入口、返回控件和可滚动区域，不从图标形状猜测未知含义。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [
+        "open_special_follow_settings"
+      ],
+      "postcondition": "特别关注空状态完成全控件盘点。"
+    },
+    "messages.special_follow.settings.initial": {
+      "key": "messages.special_follow.settings.initial",
+      "label": "特别关注设置初始状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前屏幕是由“设置特别关注 >”入口打开的稳定页面，标题栏、返回控件和主要设置内容均可见并可描述。"
+      ],
+      "inspection": {
+        "queryPrompt": "盘点当前设置页面视口内全部开关、设置项、图标、按键、列表入口、返回控件和可滚动区域；区分打开页面与实际修改持久设置。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "menu",
+          "list_entry",
+          "toggle",
+          "checkbox",
+          "radio",
+          "segmented_control",
+          "tab",
+          "slider",
+          "stepper",
+          "input",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": true
+      },
+      "allowedActions": [
+        "navigate_back",
+        "activate",
+        "open_settings",
+        "scroll_down",
+        "scroll_up",
+        "show_temporary_state"
+      ],
+      "postcondition": "特别关注设置初始状态完成全控件盘点，安全目标进入下一批队列。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-empty-state",
+      "kind": "capture",
+      "state": "messages.special_follow.initial",
+      "depth": 1
+    },
+    {
+      "id": "open-special-follow-settings",
+      "kind": "tap",
+      "semanticAction": "open_special_follow_settings",
+      "fromState": "messages.special_follow.initial",
+      "toState": "messages.special_follow.settings.initial",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "special_attention_setup",
+        "label": "设置特别关注",
+        "scope": "settings_navigation",
+        "locatorPrompt": "特别关注空状态页中央偏下、灰色说明文字下方的蓝色文字链接“设置特别关注 >”。",
+        "allowedRegionRef": "special-follow-setup-link"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前屏幕已离开特别关注空状态并进入由“设置特别关注 >”打开的设置页面，标题栏、返回控件和主要设置内容可见。"
+        ]
+      }
+    }
+  ]
+}

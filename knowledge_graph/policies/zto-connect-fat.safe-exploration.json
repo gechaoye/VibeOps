@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0.0",
+  "policyId": "zto-connect-fat-safe-exploration-v1",
+  "packageId": "com.zto.connect.fat",
+  "description": "Safe, read-only-biased discovery policy for the FAT Android application.",
+  "scopeMode": "first_level_only",
+  "maxExplorationDepth": 1,
+  "allowedRiskLevels": ["safe", "low"],
+  "allowedTargetScopes": ["shared_navigation"],
+  "entryOnlyScopes": ["shared_app_entry"],
+  "maxActions": 5,
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.015
+  },
+  "excludedBoundaries": [
+    {
+      "stateKey": "workbench.root",
+      "ruleId": "POL-EXCLUDE-WORKBENCH-001",
+      "reason": "user_policy",
+      "allowedActions": ["shared_navigation_exit"],
+      "actionsAttemptedInside": 0
+    },
+    {
+      "stateKey": "news.root",
+      "ruleId": "POL-EXCLUDE-NEWS-DETAIL-001",
+      "reason": "user_policy_entry_only",
+      "allowedActions": ["shared_navigation_exit"],
+      "actionsAttemptedInside": 0
+    }
+  ],
+  "forbiddenTargetPatterns": [
+    "(^|\\.)edit($|\\.)",
+    "编辑",
+    "签到",
+    "抽奖",
+    "删除",
+    "发送",
+    "提交",
+    "确认支付",
+    "退出登录",
+    "权限",
+    "设置"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "one_time_education_dismissal"
+  ],
+  "prohibitedSideEffects": [
+    "message_send",
+    "form_submit",
+    "data_delete",
+    "permission_change",
+    "account_change",
+    "payment",
+    "external_share",
+    "attendance_check_in",
+    "lottery_participation"
+  ]
+}

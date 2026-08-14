@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHAXZZ6QM3375BSCMFB9W7E",
+  "sessionRef": "01KYHAS6QKV456319Q1A60H23D",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHAVX3X6GZVW6KKCGFWMBMZ",
+  "sourceScreenshotRef": "sha256:86185b939117b7a039507cc792da764048babd4686a325fa60812e3e6f97f9cc",
+  "operation": "aiAssert",
+  "purpose": "required_postcondition",
+  "prompt": "当前屏幕已离开“全部成员”列表，并显示与“练良伟”相关的个人信息、资料、名片或详情内容。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:26:40.378Z",
+  "endedAt": "2026-07-27T08:26:45.606Z",
+  "durationMs": 5228.431458,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:29f07ce4f369cfadb7c401f9d4ab8046fe7e96766bffb230cfcc7773b95c0dff"
+}

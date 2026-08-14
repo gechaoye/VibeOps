@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHC69TK76SDXZQQ1N4ZHNHV",
+  "sessionRef": "01KYHBRRQ0FNFNTS8NJB3DVSTP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHC45X0H8XBW5XWF3EWVGWH",
+  "sourceScreenshotRef": "sha256:65bdb85fb68f020c80394d198d08df9626b17b359574e626135dc3003db9cbc4",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"确定\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "全部成员",
+    "visibleResultContent": [],
+    "supportedFunctionDescription": "在紧接着操作“确定”后，界面进入或显示“全部成员”页面；当前仅可见返回和关闭该页面的控件，成员内容区域为空。根据权威非视觉上下文，相关工具栏功能名为“特别关注”，且允许操作设置和成员，但当前画面未直接展示这些功能的具体执行结果。",
+    "evidenceBasis": [
+      "屏幕顶部中央可见标题“全部成员”",
+      "屏幕左上可见返回控件，右上可见关闭控件",
+      "标题下方大面积区域为空白，未见成员列表、弹窗、遮罩、提示文字或加载标识",
+      "“特别关注”及操作设置和成员的权限来自题目提供的权威非视觉上下文，而非截图像素"
+    ],
+    "unresolvedMeaning": "仅凭当前静态画面无法确定空白内容区表示成员列表为空、数据仍在加载、加载失败，还是内容尚未渲染；也无法确认“确定”此前确认了哪项设置，或其与“特别关注”的具体状态变化。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:48:31.090Z",
+  "endedAt": "2026-07-27T08:48:46.419Z",
+  "durationMs": 15327.926,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:1b026d9125c67adc5d2a6434a09ea9a3e1c8f74f0534aea4aa4608837b590ea9"
+}

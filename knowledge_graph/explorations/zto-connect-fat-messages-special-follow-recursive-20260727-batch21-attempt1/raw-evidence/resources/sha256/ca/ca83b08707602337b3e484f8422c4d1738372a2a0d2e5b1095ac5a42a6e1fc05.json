@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHHENVYCMVVZFFMMNAN8YWR",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHHCNBTFGKMP9S032K099B3",
+  "sourceScreenshotRef": "sha256:e6d7092291efd2365a30c486118510807635658a253cf50663e3d630ca32940c",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面标题为“特别关注提醒”，“特别关注提示音”行右侧显示“简报”，当前没有底部提示音面板。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:20:38.752Z",
+  "endedAt": "2026-07-27T10:20:43.774Z",
+  "durationMs": 5021.297417,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:34b5427a544a1fc74861c38e1c59748d068b5e47310949974a21449f4d3427fc"
+}

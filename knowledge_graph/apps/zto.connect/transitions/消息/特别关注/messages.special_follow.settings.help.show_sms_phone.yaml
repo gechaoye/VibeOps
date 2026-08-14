@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENB6C8GCHWWEJBG531S
+key: messages.special_follow.settings.help.show_sms_phone
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENBMYXFAYTP0W6DM5MY
+action: aiTap
+capability: open_sms_phone_help
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: safe
+verificationStatus: success_dual_model_live
+evidence:
+  actionTraceRef: open-sms-phone-help-live-repair
+  actionRecordRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/open-sms-phone-help-live-repair.json
+  beforeFrameRef: sha256:aba1aa2201d65f29780bcd9a71afbcd629aa7e000f57b657bf191858766e7836
+  afterFrameRef: sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31
+  postcondition: pass
+  semanticAssertions:
+  - sha256:4ce517de1f793e482755865fbd3b9a27418bf0f9162f170450b36485df4a4544
+provenance:
+  sourceType: midscene_dual_model_live_action_trace
+  liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQ3VBPE1N3GNERBDQXF52Y",
+  "sessionRef": "01KYHQ21JG97TA7ZN1AR477GQE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQ2DYFNWK74P4Q460A9DV5",
+  "sourceScreenshotRef": "sha256:584eb24f4172838f2f99d3ba80137c527152783e2b6482be72ab26c4541db1f2",
+  "operation": "aiLocate",
+  "prompt": "定位主体列表第四项、文字为“人员信息已绑定”且右侧有绿色对勾的白色列表项",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 568,
+      "y": 1899
+    },
+    "rect": {
+      "x": 37,
+      "y": 1767,
+      "width": 1064,
+      "height": 265
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:59:33.245Z",
+  "endedAt": "2026-07-27T11:59:40.406Z",
+  "durationMs": 7161.007208,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:7d2d35c1ab65ff0b5c135a9c71d29d10e73d74ea3f54667bdaccca6e12b2be58"
+}

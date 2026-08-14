@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHNTSH8A790QBK7TN9ZPKP7",
+  "sessionRef": "01KYHNK2NQDTEG375N9GATH53W",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHNRVSTYEQS58VJXTAHH7EX",
+  "sourceScreenshotRef": "sha256:39fd42ad87ae9ad63c35eb808f25772e9e1a674f44b0b4cf6037a0a9093d97af",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"提醒方式 电话\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.method\",\"predicate\":\"visible_options\",\"value\":\"提醒方式面板包含短信、电话和取消，当前短信选中。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "日程",
+    "visibleResultContent": [
+      "您有一个新日程",
+      "日程UI自动化",
+      "07月27日 20:00 - 21:00",
+      "忽略",
+      "拒绝",
+      "接受"
+    ],
+    "supportedFunctionDescription": "当前可见结果是一个模态日程提醒：用户可对新日程执行忽略、拒绝或接受操作，背景的“特别关注提醒”设置页被遮罩且暂不可直接操作。根据供应的已验证上下文，“提醒方式”面板支持短信、电话和取消，且短信当前选中。",
+    "evidenceBasis": [
+      "画面中央白色弹窗标题为“日程”，背景整体变暗。",
+      "弹窗正文可见“您有一个新日程”、日程名称“日程UI自动化”和时间“07月27日 20:00 - 21:00”。",
+      "弹窗底部明确显示“忽略”“拒绝”“接受”三个按钮。",
+      "遮罩后的背景页面标题为“特别关注提醒”，其中“提醒方式”一行右侧可见“电话”。",
+      "供应的权威非视觉上下文说明：该设置属于“特别关注”，未读特别关注人员的相关会话会出现在特别关注列表，设置人员后入口爱心图标显示为橙黄色，并允许探索相关开关和设置。",
+      "供应的已验证证据说明：提醒方式面板包含短信、电话和取消，当前短信选中。"
+    ],
+    "unresolvedMeaning": "无法从当前静态画面确定日程弹窗是否由点击“提醒方式 电话”直接触发、是否属于异步到达的独立提醒，或提醒方式选择面板是否仍位于该弹窗下方；也无法确认点击忽略、拒绝或接受后的具体后续状态。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:36:57.688Z",
+  "endedAt": "2026-07-27T11:37:15.048Z",
+  "durationMs": 17359.471584,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f94dfb8d914fb32cd9093e6593d7a3857f4aadaf0798766b20a0a5acbe7f3dfa"
+}

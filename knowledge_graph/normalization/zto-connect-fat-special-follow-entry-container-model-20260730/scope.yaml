@@ -1,0 +1,48 @@
+task:
+  id: zto-connect-fat-special-follow-entry-container-model-20260730
+  requestedAt: '2026-07-30T17:39:32+08:00'
+  objective: 将我的特别关注建模为页面持有的总容器，容器持有不可点击说明文案和可点击右侧箭头两个子元素。
+application:
+  key: zto.connect
+  packageId: com.zto.connect.fat
+  build:
+    environment: test
+    versionCode: '10542'
+entry:
+  description: 特别关注提醒页面“我的特别关注”复合入口容器
+  knownFacts:
+  - 页面只直接引用“我的特别关注”总容器元素。
+  - 总容器持有说明文案和右侧箭头两个子元素。
+  - “我的特别关注”文案用于说明入口，不可点击。
+  - 右侧箭头是打开全部特别关注成员列表的独立可点击入口。
+  authorityContracts:
+  - id: 01KYKA3ENBFD65M644D2KD5QF3
+    sourceType: user_context
+    authorityStatus: authority_certified
+    planningEligible: true
+    sourceSelector:
+      kind: exact_page
+      ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+    triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+    expectedTarget:
+      kind: page
+      ref: 01KYKA3ENBX0Y8425JT9CK70DK
+      stateKey: null
+    runtimeEvidenceStatus: verified
+scope:
+  mode: authority_contract_and_model_correction
+  deviceActions: none
+  reason: 用户已认证交互事实，且现有 Midscene 动作轨迹已经验证右侧箭头到目标页面的原子导航。
+graph:
+  root: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph
+  mergePolicy: reviewed-migration-plus-additive-upsert
+  preserveHistoricalEntities: true
+  stageBeforePublish: true
+  baseline:
+    fileCount: 428
+    contentHash: sha256:10aa68a61018a62bbe17213d3e7f9a92a038bfb208887e3a65f7012c361da681
+    entityIdsHash: sha256:970a8e12130ffa90bbc25efd0d0d5a65cd32f2fb99d0de15f509786304f6b1a1
+completion:
+  correctionStatus: complete
+  resultingGraphStatus: incomplete
+  remainingLimitation: 历史特别关注证据仍缺独立 aiScout；本次不伪造新的双模型探索证据。

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQ9JSS0P5XQQBS92922VXW",
+  "sessionRef": "01KYHQ21JG97TA7ZN1AR477GQE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQ4SPZ1NC5JX38XZA11XZP",
+  "sourceScreenshotRef": "sha256:978d66126b621d2e08225a889f09b5e533d9f9187824efc6abea352757b3f4fe",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"关闭\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.account_security_check\",\"predicate\":\"scope_boundary\",\"value\":\"账号安全检查是 APP 通用页面，不属于特别关注功能图谱。\",\"source\":\"task_policy\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "工作台",
+    "visibleResultContent": [
+      "用户“葛超烨”，地点“上海”",
+      "动态验证码 468078",
+      "顶部入口：动态验证码、扫一扫、审批、日程",
+      "我的收藏：添加收藏",
+      "最近使用：中通邮局、任务中心、新考勤打卡、全部应用",
+      "消息：会议通知·宝盒，数量 41",
+      "审批中心：待审批流程 25，今日日程/会议 0",
+      "资讯区域：必读资讯、全部资讯、视频·发现",
+      "提示气泡：您有1条重要消息未读",
+      "底部导航：工作台、消息、通讯录、资讯、更多"
+    ],
+    "supportedFunctionDescription": "当前画面可见工作台上的应用入口、审批与日程摘要、资讯浏览区域及底部导航；“您有1条重要消息未读”提示旁可见“×”关闭控件。依据 supplied context，消息工具栏 heart 对应的功能名称为“特别关注”；账号安全检查属于 APP 通用页面，不属于特别关注功能图谱。当前截图未显示特别关注页面或账号安全检查页面。",
+    "evidenceBasis": [
+      "底部导航“工作台”为蓝色选中状态。",
+      "页面顶部可见用户“葛超烨”和地点“上海”。",
+      "顶部可见“动态验证码、扫一扫、审批、日程”等文字标签。",
+      "中部可见“审批中心”，并显示待审批流程 25、今日日程/会议 0。",
+      "下方可见资讯标签和三张视频缩略图。",
+      "底部上方可见“您有1条重要消息未读”提示气泡及“×”控件。",
+      "页面中未见独立模态弹窗、全屏遮罩或“特别关注”文字。",
+      "关于“特别关注”名称及账号安全检查的范围边界来自权威非视觉任务上下文，不是从截图像素推断。"
+    ],
+    "unresolvedMeaning": "无法从当前静态画面确定此前“关闭”控件所针对的具体对象、关闭动作是否生效，或该动作与“特别关注”之间是否存在关系；画面中提示气泡仍然可见。除 supplied context 明确给出的功能名称外，不依据任何图标形状推断额外功能含义。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:02:31.096Z",
+  "endedAt": "2026-07-27T12:02:48.249Z",
+  "durationMs": 17152.673166,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:32b2a918089944a666261c5b59141932650166f3ea41834888bbbdb75ef8a0ce"
+}

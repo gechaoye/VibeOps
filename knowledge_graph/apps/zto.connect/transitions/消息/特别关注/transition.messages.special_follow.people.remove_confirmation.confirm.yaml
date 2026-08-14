@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBVNC72NGWT4VYXRJQ
+key: transition.messages.special_follow.people.remove_confirmation.confirm
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENBTQHXG4XJ1F3NJTFG
+triggerElementRef: 01KYKA3ENB32RHWSPCWKB9GE6J
+action: aiTap
+capability: confirm_remove_member
+targetRef: 01KYKA3ENBX0Y8425JT9CK70DK
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHC3DGBEHT2TXFCMDRWE3KQ
+  beforeFrameRef: 01KYHC08GF9NJXY200M49HEXPT
+  afterFrameRef: 01KYHC45X0H8XBW5XWF3EWVGWH
+  postcondition: pass
+  semanticAssertions:
+  - sha256:336ba8526f6ab8223fc50d9ea33c070dba4c07a71d6853d998d9dc023ac0955c
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

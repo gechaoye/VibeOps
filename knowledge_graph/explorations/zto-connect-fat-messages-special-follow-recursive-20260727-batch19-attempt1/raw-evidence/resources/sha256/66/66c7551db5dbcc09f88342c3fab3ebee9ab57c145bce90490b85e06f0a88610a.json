@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHG5S701TRXT7JBA2W1DEJE",
+  "sessionRef": "01KYHG33TR66C5GH4VQK4PWFMC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHG3F3H61V5WQ22Q3TXXS4F",
+  "sourceScreenshotRef": "sha256:e093090ce089f0c64927338754a61b92569a11de56326725669f56858c0de141",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面顶部标题文字为“特别关注提醒”，“间隔时间”值为“30分钟”，“特别关注提示音”值为“波浪”。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:58:15.736Z",
+  "endedAt": "2026-07-27T09:58:23.712Z",
+  "durationMs": 7976.442208,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:56d955f1ad672587da1f198bfb0c3cb2fd7192290e2178ac2a2973f3fe2dbddf"
+}

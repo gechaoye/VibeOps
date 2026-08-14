@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHX42DVEG0BTQPMZ18T50A9",
+  "sessionRef": "01KYHX0BBMR4H0D2NXQNY9ZD52",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHX34DR0973818HGF572TYF",
+  "sourceScreenshotRef": "sha256:67a8c2fb3d7a697d3c551732844291966c2cccfc960006e07077dce4b9652461",
+  "operation": "aiLocate",
+  "prompt": "定位屏幕底部白色面板最下方、与上方选项区域之间有浅灰分隔带且文字为“取消”的关闭控件",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 576,
+      "y": 2280
+    },
+    "rect": {
+      "x": 522,
+      "y": 2244,
+      "width": 109,
+      "height": 74
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T13:44:36.053Z",
+  "endedAt": "2026-07-27T13:44:39.099Z",
+  "durationMs": 3045.451958,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:93720aa5e63c7dca8e4543055084f8095354031f29217a3ef1c5e7153db1de31"
+}

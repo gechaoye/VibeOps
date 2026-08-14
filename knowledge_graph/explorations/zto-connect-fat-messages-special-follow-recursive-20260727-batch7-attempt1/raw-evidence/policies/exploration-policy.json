@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPolicy",
+  "policyId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch7-attempt1:policy",
+  "sourceScopeHash": "sha256:600146f5b1b6c5e61a4aff5f2a8dfa2f10efa6ad5d1132fbf451d5e5a7e73012",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "executionFramework": "midscene",
+  "maxDepth": 12,
+  "maxActions": 40,
+  "allowedRiskLevels": [
+    "low",
+    "medium",
+    "safe"
+  ],
+  "allowedTargetScopes": [
+    "feature_entry",
+    "page_content",
+    "page_navigation",
+    "scroll_region",
+    "settings_navigation",
+    "temporary_state_control"
+  ],
+  "allowedTapRegions": [
+    {
+      "key": "first-recent-contact-row",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0,
+        "y": 1420,
+        "width": 1152,
+        "height": 230
+      },
+      "purpose": "通用选人组件“最近联系人”首项“练良伟”的实时 Midscene 定位范围。"
+    },
+    {
+      "key": "person-picker-confirm",
+      "space": "current_display_px",
+      "rect": {
+        "x": 820,
+        "y": 2150,
+        "width": 332,
+        "height": 226
+      },
+      "purpose": "通用选人组件底部右侧确定按钮的实时 Midscene 定位范围。"
+    },
+    {
+      "key": "app-visible-content",
+      "space": "current_display_px",
+      "rect": {
+        "x": 0,
+        "y": 96,
+        "width": 1152,
+        "height": 2184
+      },
+      "purpose": "经用户授权和风险策略允许的特别关注功能内控件范围。"
+    }
+  ],
+  "entryOnly": [],
+  "forbiddenTargetPatterns": [
+    "编辑",
+    "删除",
+    "发送",
+    "提交",
+    "支付",
+    "签到",
+    "抽奖",
+    "分享",
+    "权限",
+    "退出登录"
+  ],
+  "allowedSideEffects": [
+    "navigation_history",
+    "persistent_setting_change",
+    "temporary_display_state",
+    "viewport_scroll"
+  ],
+  "prohibitedSideEffects": [
+    "account_change",
+    "attendance_check_in",
+    "data_delete",
+    "external_share",
+    "form_submit",
+    "logout",
+    "lottery_participation",
+    "message_send",
+    "payment",
+    "permission_change"
+  ],
+  "credentialsPolicy": "require_user_intervention",
+  "deviceGates": {
+    "requireUnlocked": true,
+    "requireNoExternalOverlay": true,
+    "requireFreshVisualInspection": true
+  },
+  "defaultWaitMs": 2500,
+  "capture": {
+    "stabilitySampleCount": 3,
+    "stabilityIntervalMs": 500,
+    "visualDistanceThreshold": 0.02,
+    "requireForegroundVerification": true,
+    "semanticRecognition": {
+      "provider": "midscene",
+      "required": true,
+      "persistDecisionEvidence": true,
+      "failurePolicy": "abort"
+    }
+  },
+  "scope": {
+    "mode": "recursive_feature",
+    "maxDepth": 12,
+    "maxActions": 40,
+    "include": [
+      "common.person_picker",
+      "messages.special_follow.settings"
+    ],
+    "exclude": [
+      "external_application",
+      "system_credentials"
+    ],
+    "entryOnly": [],
+    "stopAt": [],
+    "unknownControlPolicy": "inspect_all_activate_safe",
+    "traversal": "breadth_first",
+    "deduplicateBy": "semantic_presentation_signature",
+    "requireQueueExhaustion": true,
+    "viewportOnly": false
+  }
+}

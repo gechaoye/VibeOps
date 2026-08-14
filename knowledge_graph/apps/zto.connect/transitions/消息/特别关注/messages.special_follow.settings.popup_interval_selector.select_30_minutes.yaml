@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBAEQBGWMMW8XC18G7
+key: messages.special_follow.settings.popup_interval_selector.select_30_minutes
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB2N6Q6010ZD4NT6P4
+triggerElementRef: 01KYKA3ENB582HKNQ5457NHAR5
+action: aiTap
+capability: select_popup_interval_30_minutes
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: low
+verificationStatus: success_gpt_only_pending_scout
+evidence:
+  actionTraceRef: 01KYHFVHQNHTJWG13D6H2GEEBK
+  beforeFrameRef: 01KYHFRBM50J9B3F0GEPPPZZTQ
+  afterFrameRef: 01KYHFW0H1PNDWA7RAHYWSPMJQ
+  postcondition: pass
+  semanticAssertions:
+  - sha256:9115e50e9d4e1d90d9f9aad1914682982f73cbea752a4ad4dd1e3a26621d5e25
+provenance:
+  sourceType: verified_legacy_midscene_action_trace
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

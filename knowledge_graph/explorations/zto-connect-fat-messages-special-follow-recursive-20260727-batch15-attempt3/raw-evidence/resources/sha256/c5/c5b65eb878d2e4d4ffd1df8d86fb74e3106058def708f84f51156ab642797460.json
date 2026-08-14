@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHEGP9YFVHECG2Q5A6WWEDE",
+  "sessionRef": "01KYHEEFB49Q61Y0ZTS2SYH5YP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHEEWQ4KNCH4AFEA26F53WN",
+  "sourceScreenshotRef": "sha256:a8a6badfbcfd02154ac742f1931c783b837cf2a10a79070a5414fa0a80495452",
+  "operation": "aiLocate",
+  "prompt": "定位“单聊消息未读，弹窗提醒我”文字右侧的圆圈问号；其上方当前有深灰色说明气泡，尖角指向该问号。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 608,
+      "y": 890
+    },
+    "rect": {
+      "x": 582,
+      "y": 864,
+      "width": 54,
+      "height": 54
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:29:16.916Z",
+  "endedAt": "2026-07-27T09:29:24.030Z",
+  "durationMs": 7113.403042,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:5d08d72c95163cb495c78c9a3b8a061b005aeb9da3c93f0addcfe5e319d88097"
+}

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ38K932HBBYMT4ZYKPEK3D",
+  "sessionRef": "01KYJ35DNE8CXJRFYN2KJQEZPA",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ36HQP0HA783S1YS3AE42N",
+  "sourceScreenshotRef": "sha256:ffa63e34c31ca51f9a220914367e2919664561a1c22baf2cb9a4ab81660f2557",
+  "operation": "aiLocate",
+  "prompt": "定位屏幕底部、长条输入框右侧与加号控件左侧的圆形笑脸轮廓图标。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 954,
+      "y": 2283
+    },
+    "rect": {
+      "x": 912,
+      "y": 2242,
+      "width": 86,
+      "height": 83
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:31:55.344Z",
+  "endedAt": "2026-07-27T15:31:58.883Z",
+  "durationMs": 3538.491833,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:d1211f67da2d654be863d7e3b4436e6e4747bc834ffd2f89009fb593065cb239"
+}

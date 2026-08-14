@@ -1,0 +1,64 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBFEMQ17HJ3CM4ZDZS
+key: boundary.common.person_picker.confirm
+label: 通用组件-选人-确定选择
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 通用组件
+- 选人
+owner:
+  kind: page
+  ref: 01KYKA3ENBCMSXNBZDYXZ7PJSM
+parentElementRef: null
+controlType: button
+role: action
+capabilities:
+- confirm_person_selection
+summary: 确认已选择人员并返回特别关注提醒设置页。
+relationshipRefs:
+- owner:01KYKA3ENBCMSXNBZDYXZ7PJSM
+- transition:01KYKA3ENBS86J8YD2ZHKER8BH
+observations:
+- frameRef: 01KYJ113NK6S3GQY2NZ128FPRQ
+  observedAt: '2026-07-27T14:52:59.229Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    enabled: true
+    selected: null
+    checked: null
+  screenshotRef: sha256:c1a2abd820aa8be093cf320f31308521847815dd8e103ac74dafddc157f8aa40
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
+  evidenceStatus: gpt_verified_pending_independent_scout
+  locator:
+    rect:
+      left: 862.0
+      top: 2198.0
+      width: 262.0
+      height: 111.0
+    center:
+    - 993.0
+    - 2253.5
+    dpr: 1
+    status: pass
+    evidenceRef: sha256:66ce6ca4a2154417ca355ca50890a0ba177a9af5101502b69adc2f9946ec8643
+  state: 蓝色高亮，可用；显示当前已选1人、上限10人
+  dynamicValue: 蓝色高亮，可用；显示当前已选1人、上限10人
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBFEMQ17HJ3CM4ZDZS-01KYJ113NK6S3GQY2NZ128FPRQ.png
+coverage: executed_verified_gpt_only_pending_scout
+status: gpt_verified_pending_independent_scout
+risk: low
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture
+interactionBoundary:
+  actionable: true
+  function: confirm_person_selection

@@ -1,0 +1,55 @@
+task:
+  id: zto-connect-fat-special-follow-setting-components-20260731
+  requestedAt: '2026-07-31T09:57:32+08:00'
+  objective: 使用实时双模型证据修正特别关注提醒三组设置项的容器结构、重复帮助元素及提醒方式“电话”定位。
+application:
+  key: zto.connect
+  packageId: com.zto.connect.fat
+  build:
+    environment: test
+    versionCode: '10542'
+entry:
+  description: 特别关注提醒页面“我的特别关注”复合入口容器
+  knownFacts:
+  - 页面只直接引用“我的特别关注”总容器元素。
+  - 总容器持有说明文案和右侧箭头两个子元素。
+  - “我的特别关注”文案用于说明入口，不可点击。
+  - 右侧箭头是打开全部特别关注成员列表的独立可点击入口。
+  authorityContracts:
+  - id: 01KYKA3ENBFD65M644D2KD5QF3
+    sourceType: user_context
+    authorityStatus: authority_certified
+    planningEligible: true
+    sourceSelector:
+      kind: exact_page
+      ref: 01KYKA3ENB5WR50THMQMPJ4FJZ
+    triggerElementRef: 01KYKA3ENBCNJZQ09AHT9YZFF7
+    expectedTarget:
+      kind: page
+      ref: 01KYKA3ENBX0Y8425JT9CK70DK
+      stateKey: null
+    runtimeEvidenceStatus: verified
+scope:
+  mode: targeted_live_evidence_repair_and_model_correction
+  deviceActions: 8 verified Midscene actions; no ADB UI actions
+  reason: 设备已连接，实时帧、独立 Scout、GPT 对账、locator 和安全帮助/选择器动作均已补采。
+graph:
+  root: /Users/mohan/Desktop/ZTO/Projects/VibeOps/knowledge_graph
+  normativeSpec:
+    index: spec/README.md
+    version: UIKG 3.0.0
+    schemaVersion: 3.0.0
+    contentHash: sha256:cd3cfce81d92e1fb0b75f9f3adc364f023b476638cd957c156b675eb0b3a7403
+    relationshipRules: spec/relationship-invariants.md
+    precedenceAccepted: true
+  mergePolicy: reviewed-migration-plus-additive-upsert
+  preserveHistoricalEntities: true
+  stageBeforePublish: true
+  baseline:
+    fileCount: 469
+    contentHash: sha256:618501ce1a43358bb75f69b488e8509ab59129ee77963d4d65e97675bbfd245a
+    entityIdsHash: sha256:b41fd685a33d45e0dfc9d47473b1c6a9cf762d852e654fac28a048f2345d86aa
+completion:
+  correctionStatus: complete
+  resultingGraphStatus: incomplete
+  remainingLimitation: 本次目标元素已具备独立 Scout；范围外历史特别关注证据仍有 GPT-only 状态。

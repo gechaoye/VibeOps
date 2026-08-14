@@ -1,0 +1,385 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1:plan",
+  "sourceScopeHash": "sha256:9d50935d46e5f175b1dda4278c0c8cf39e9f460e01447169c6239fadcdb8e551",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "验证特别关注提醒页夜间免打扰与免打扰群通知开关的开启和关闭状态。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings",
+        "predicate": "exploration_authorization",
+        "value": "用户明确允许操作开关和设置，探索阶段无需恢复业务状态。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.night_dnd",
+        "predicate": "visible_description",
+        "value": "开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知。",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.dnd.both_off",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "night-dnd-toggle-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 840.0,
+          "y": 1450.0,
+          "width": 300.0,
+          "height": 350.0
+        },
+        "purpose": "夜间免打扰行右侧开关区域。"
+      },
+      {
+        "key": "group-dnd-toggle-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 840.0,
+          "y": 1850.0,
+          "width": 300.0,
+          "height": 350.0
+        },
+        "purpose": "免打扰群通知行右侧开关区域。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.dnd.both_off": {
+      "key": "messages.special_follow.settings.dnd.both_off",
+      "label": "两个免打扰开关均关闭",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "页面标题为“特别关注提醒”；夜间免打扰与免打扰群通知开关均为灰色关闭状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确记录两个免打扰开关状态；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "enable_night_dnd"
+      ],
+      "postcondition": "已记录两个开关均关闭。"
+    },
+    "messages.special_follow.settings.dnd.night_on": {
+      "key": "messages.special_follow.settings.dnd.night_on",
+      "label": "夜间免打扰开启",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "夜间免打扰开关为蓝色开启状态；免打扰群通知仍为灰色关闭状态；22:00至次日06:00说明仍可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确记录两个免打扰开关状态；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "disable_night_dnd"
+      ],
+      "postcondition": "已验证夜间免打扰开启。"
+    },
+    "messages.special_follow.settings.dnd.night_off_again": {
+      "key": "messages.special_follow.settings.dnd.night_off_again",
+      "label": "夜间免打扰重新关闭",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "夜间免打扰开关恢复灰色关闭状态；免打扰群通知仍为灰色关闭状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确记录两个免打扰开关状态；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "enable_group_dnd"
+      ],
+      "postcondition": "已验证夜间免打扰关闭。"
+    },
+    "messages.special_follow.settings.dnd.group_on": {
+      "key": "messages.special_follow.settings.dnd.group_on",
+      "label": "免打扰群通知开启",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "免打扰群通知开关为蓝色开启状态；夜间免打扰为灰色关闭状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确记录两个免打扰开关状态；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "disable_group_dnd"
+      ],
+      "postcondition": "已验证免打扰群通知开启。"
+    },
+    "messages.special_follow.settings.dnd.both_off_final": {
+      "key": "messages.special_follow.settings.dnd.both_off_final",
+      "label": "两个免打扰开关最终关闭",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "夜间免打扰与免打扰群通知开关均为灰色关闭状态。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确记录两个免打扰开关状态；底边裁切行只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证免打扰群通知关闭。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-dnd-both-off",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.dnd.both_off",
+      "depth": 4
+    },
+    {
+      "id": "enable-night-dnd",
+      "kind": "tap",
+      "semanticAction": "enable_night_dnd",
+      "fromState": "messages.special_follow.settings.dnd.both_off",
+      "toState": "messages.special_follow.settings.dnd.night_on",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "night_dnd_toggle",
+        "label": "夜间免打扰",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位“夜间免打扰”行最右侧当前为灰色关闭状态的开关。",
+        "allowedRegionRef": "night-dnd-toggle-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "夜间免打扰开关已变为蓝色开启状态，免打扰群通知仍关闭。"
+        ]
+      }
+    },
+    {
+      "id": "disable-night-dnd",
+      "kind": "tap",
+      "semanticAction": "disable_night_dnd",
+      "fromState": "messages.special_follow.settings.dnd.night_on",
+      "toState": "messages.special_follow.settings.dnd.night_off_again",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "night_dnd_toggle",
+        "label": "夜间免打扰",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位“夜间免打扰”行最右侧当前为蓝色开启状态的开关。",
+        "allowedRegionRef": "night-dnd-toggle-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "夜间免打扰开关已恢复灰色关闭状态，免打扰群通知仍关闭。"
+        ]
+      }
+    },
+    {
+      "id": "enable-group-dnd",
+      "kind": "tap",
+      "semanticAction": "enable_group_dnd",
+      "fromState": "messages.special_follow.settings.dnd.night_off_again",
+      "toState": "messages.special_follow.settings.dnd.group_on",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "group_dnd_toggle",
+        "label": "免打扰群通知",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位“免打扰群通知”行最右侧当前为灰色关闭状态的开关；不要定位左侧问号图标。",
+        "allowedRegionRef": "group-dnd-toggle-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "免打扰群通知开关已变为蓝色开启状态，夜间免打扰仍关闭。"
+        ]
+      }
+    },
+    {
+      "id": "disable-group-dnd",
+      "kind": "tap",
+      "semanticAction": "disable_group_dnd",
+      "fromState": "messages.special_follow.settings.dnd.group_on",
+      "toState": "messages.special_follow.settings.dnd.both_off_final",
+      "depth": 4,
+      "risk": "medium",
+      "sideEffects": [
+        "persistent_setting_change"
+      ],
+      "waitMs": 1800,
+      "target": {
+        "key": "group_dnd_toggle",
+        "label": "免打扰群通知",
+        "scope": "persistent_setting_control",
+        "locatorPrompt": "定位“免打扰群通知”行最右侧当前为蓝色开启状态的开关；不要定位左侧问号图标。",
+        "allowedRegionRef": "group-dnd-toggle-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "免打扰群通知开关已恢复灰色关闭状态，夜间免打扰仍关闭。"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+schemaVersion: 2.0.0
+entityType: CaptureSession
+id: 01KY6YECXXQRGNZC5S1MWPRYCX
+revision: 2
+status: completed
+recordedAt: '2026-07-23T07:49:45Z'
+recordedBy: service:uikg-first-level-projector
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+appBuild:
+  platform: android
+  packageId: com.zto.connect.fat
+  versionName: 8.58.0.10542
+  versionCode: "10542"
+  buildId: 'android-package:com.zto.connect.fat@10542'
+  channel: test
+startedAt: '2026-07-23T07:36:07.357Z'
+endedAt: '2026-07-23T07:37:27.260Z'
+mode: explore
+actor:
+  kind: agent
+  id: midscene-android-uikg-explorer
+  version: 1.1.0
+deviceSnapshotRefs:
+  - 01KY6Z7BD8N3EJCKYGH73N877P
+policyRef: zto-connect-fat-safe-exploration-v1
+seedState:
+  launch: cold
+  initialNavigationState: workbench.root
+graphBaseRevision: bootstrap:no-published-revision
+provenance:
+  - sourceType: runtime
+    sourceId: 01KY6YECXXQRGNZC5S1MWPRYCX
+    sourceVersion: midscene-android-uikg-explorer@1.1.0
+    confidence: 1.0
+extensions:
+  com.zto.uikg.captureSummary:
+    frameCount: 6
+    actionCount: 5
+    foregroundVerified: true
+    component: com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity

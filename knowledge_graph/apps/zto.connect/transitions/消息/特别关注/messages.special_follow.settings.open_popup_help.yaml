@@ -1,0 +1,27 @@
+schemaVersion: 3.0.0
+entityType: Transition
+id: 01KYKA3ENBDGS1AJN4X67RFC7M
+key: messages.special_follow.settings.open_popup_help
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+sourceRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+triggerElementRef: 01KYKA3ENB6FXFS0TKJT80YAY5
+action: aiTap
+capability: open_popup_reminder_help
+targetRef: 01KYKA3ENB5WR50THMQMPJ4FJZ
+reversible: true
+risk: safe
+verificationStatus: success_dual_model_live
+evidence:
+  actionTraceRef: open-popup-reminder-help-live-repair
+  actionRecordRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1/actions/open-popup-reminder-help-live-repair.json
+  beforeFrameRef: sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d
+  afterFrameRef: sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582
+  postcondition: pass
+  semanticAssertions:
+  - sha256:c140b61a737aaee705bd92d636647ff4d1a2bb53fb607c65fa17f56d19eb8244
+provenance:
+  sourceType: midscene_dual_model_live_action_trace
+  liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1

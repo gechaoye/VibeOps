@@ -1,0 +1,61 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBQZBDNV3W843QY097
+key: messages.special_follow.settings.sound_selector.wave_label
+label: 特别关注-特别关注提醒-提示音选择-波浪提示音-名称文案
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENBX3F837PHS7BBT0EA
+parentElementRef: 01KYKA3ENBX3F837PHS7BBT0EA
+controlType: text_label
+role: description
+capabilities: []
+summary: 显示“波浪”提示音选项名称，不承担独立动作。
+relationshipRefs:
+- owner:01KYKA3ENBX3F837PHS7BBT0EA
+- parent:01KYKA3ENBX3F837PHS7BBT0EA
+observations:
+- frameRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  observedAt: '2026-07-31T06:55:23.472Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 146.0
+      top: 1733.0
+      width: 100.0
+      height: 54.0
+    center:
+    - 195.0
+    - 1759.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:4dd54cd9532dcbe6666b628cd954706946d16a8d9fb08af7c4c76bda584f326f
+  state: visible_non_actionable_label
+  dynamicValue: 波浪
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBQZBDNV3W843QY097-sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0.png
+coverage: observed_not_activated_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: false
+  function: labels_parent_sound_option

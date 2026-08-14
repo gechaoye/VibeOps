@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHA0S27PKTQXRCMKW6E5ZZK",
+  "sessionRef": "01KYH9T8PKX1QA0E8CPC4Q0K45",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH9XMFQW1WGZSJXSDAR3T37",
+  "sourceScreenshotRef": "sha256:6c04e14576161a8f8dba789f60149a1a8162e95b61db0cc5ab85549cb2a52401",
+  "operation": "aiLocate",
+  "prompt": "定位“选择人员”页底部右侧、选择一人后显示计数1且处于蓝色可用状态的“确定”按钮。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 992,
+      "y": 2256
+    },
+    "rect": {
+      "x": 862,
+      "y": 2198,
+      "width": 262,
+      "height": 118
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:10:38.871Z",
+  "endedAt": "2026-07-27T08:10:48.263Z",
+  "durationMs": 9391.41975,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3b54a93338ba11194fca24bff8f4341d69f63ab763c315b130760ef0c7d0d196"
+}

@@ -1,0 +1,62 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBTXHS5MSK2ZV0T48X
+key: messages.special_follow.settings.popup_interval_selector.option_10_minutes
+label: 特别关注-特别关注提醒-弹窗提醒间隔选择-10分钟
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: page
+  ref: 01KYKA3ENB2N6Q6010ZD4NT6P4
+parentElementRef: null
+controlType: radio
+role: setting
+capabilities:
+- select_popup_interval_10_minutes
+summary: 将单聊弹窗提醒间隔设为10分钟。
+relationshipRefs:
+- owner:01KYKA3ENB2N6Q6010ZD4NT6P4
+- transition:01KYKA3ENBSA4Q8JDZK0NRT1DW
+observations:
+- frameRef: sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17
+  observedAt: '2026-07-31T06:25:16.671Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 0.0
+      top: 1549.0
+      width: 1152.0
+      height: 156.0
+    center:
+    - 575.0
+    - 1626.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:a14015c459b2129f66824f6ff97aa300129bcbd22f821e5def7547961ed7effd
+  state: visible
+  dynamicValue: null
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBTXHS5MSK2ZV0T48X-sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17.png
+coverage: executed_verified_dual_model_live
+status: dual_model_verified_live
+risk: low
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: true
+  function: selects_popup_interval_10_minutes_from_full_option_row

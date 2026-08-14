@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYKDS117NJVN733QGDFDZNBA",
+  "sessionRef": "01KYKDKVV8W2XD0Q80SSMFJZBQ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYKDR9ZJ2RX5BJ72KANT9GY6",
+  "sourceScreenshotRef": "sha256:7d68985924b17166e618df5a0885b9cb487c9a4e128994aaf8a5d232f225de57",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested control types: [\"icon_button\"]. 本批为补充关闭证据，visibleControls 只返回帮助气泡所指向的第一枚灰色问号，candidateKey 固定为 popup_reminder_help_toggle_close；locatorPrompt 必须定位问号本身而不是气泡正文，其他控件省略。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示当前实时未读消息数量；具体数字只属于 Runtime 呈现。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "我的特别关注（1人）：练良伟",
+      "当特别关注人的单聊消息在一段时间内未被阅读时，系统将再次通过全局弹窗的形式进行提醒。",
+      "单聊消息未读，弹窗提醒我：已开启",
+      "间隔时间：1小时",
+      "弹窗消息未读，短信/电话提醒我：已开启",
+      "间隔时间：30分钟",
+      "提醒方式：电话",
+      "夜间免打扰：已关闭",
+      "免打扰群通知：已关闭",
+      "个性化提醒",
+      "特别关注提示音：门铃"
+    ],
+    "visibleNavigationState": "当前位于“特别关注提醒”设置页，帮助气泡已展开，页面处于可纵向滚动的中间位置。",
+    "visibleControls": [
+      {
+        "candidateKey": "popup_reminder_help_toggle_close",
+        "label": "灰色问号",
+        "controlType": "icon_button",
+        "visibleState": "帮助气泡已展开，问号位于气泡尖角正下方",
+        "semanticRole": "关闭当前帮助气泡的帮助切换控件",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "低风险；仅影响帮助说明气泡的显示状态",
+        "functionDescription": "点击该问号可关闭当前展开的单聊未读弹窗提醒帮助气泡。",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”这一行文字右侧、蓝色开关左侧，被上方深灰色帮助气泡尖角直接指向的第一枚灰色圆圈问号图标本身；不要定位气泡正文，也不要定位下方短信/电话提醒行的问号。"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "special_follow_reminder_page_scroll",
+        "label": "特别关注提醒设置主页面",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位整张“特别关注提醒”设置页面的主内容滚动区域；其最右侧可见竖向滚动条。"
+      }
+    ],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T03:54:36.593Z",
+  "endedAt": "2026-07-28T03:54:57.447Z",
+  "durationMs": 20854.42575,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3125e418780a239b5d3526a2555f9ee3d436479361bf672ff0bdc8547be7cf72"
+}

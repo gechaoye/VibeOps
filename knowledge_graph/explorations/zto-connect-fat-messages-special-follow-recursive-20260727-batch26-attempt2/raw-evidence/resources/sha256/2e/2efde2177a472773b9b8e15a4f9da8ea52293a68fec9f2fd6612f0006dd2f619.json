@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHN065NZ8T1SRZHKYQ0PSYM",
+  "sessionRef": "01KYHMMSAR8NZXY6JC450Q617D",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHMYDB078H10HV5JV315AWS",
+  "sourceScreenshotRef": "sha256:9464b12360d102375ef695d79c2b02240bc4086a43b651e10b7706fc8779bf53",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"短信电话提醒下的间隔时间 30分钟\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.interval\",\"predicate\":\"visible_options\",\"value\":\"短信/电话提醒间隔面板包含10分钟、30分钟和取消；设备当前已更新为10分钟。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "短信/电话提醒的间隔时间选择面板",
+    "visibleResultContent": [
+      "10分钟",
+      "30分钟（当前画面以蓝色对勾标记）",
+      "取消"
+    ],
+    "supportedFunctionDescription": "立即激活“短信电话提醒下的间隔时间 30分钟”后，当前页面上方内容被半透明遮罩覆盖，并从底部显示间隔时间选择面板。用户可在10分钟与30分钟之间选择短信/电话提醒间隔，也可点击取消关闭面板；权威任务上下文另行确认设备当前已更新为10分钟。",
+    "evidenceBasis": [
+      "截图顶部标题为“特别关注提醒”。",
+      "截图背景处“弹窗消息未读，短信/电话提醒我”开关呈开启状态。",
+      "截图背景对应“间隔时间”行可见值为“30分钟”。",
+      "底部白色面板明确列出“10分钟”“30分钟”“取消”。",
+      "“30分钟”左侧显示蓝色对勾，文字也为蓝色。",
+      "页面主体变暗，表明当前选择面板以模态覆盖层形式展示。",
+      "供应的权威任务上下文明确说明：间隔面板包含10分钟、30分钟和取消，且设备当前已更新为10分钟。"
+    ],
+    "unresolvedMeaning": "当前截图仍将30分钟显示为可见选中项，而供应的已验证上下文说明设备当前已更新为10分钟；两者可能反映截图时点、界面刷新或持久化状态不同。仅凭当前画面无法确定面板是否会在选择后立即关闭、何时保存，也无法确认当前持久化值为何未同步显示。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:22:24.028Z",
+  "endedAt": "2026-07-27T11:22:43.253Z",
+  "durationMs": 19225.069417,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:4ef182062c33650bd4634720276663a61044dda651dfe5c4a81dc9867ec51d82"
+}

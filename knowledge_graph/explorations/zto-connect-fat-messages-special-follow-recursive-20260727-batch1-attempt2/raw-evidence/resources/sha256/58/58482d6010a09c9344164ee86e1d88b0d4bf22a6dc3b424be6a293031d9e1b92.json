@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH5Q6KTHSYGXJQGR3RXX0GD",
+  "sessionRef": "01KYH5FQTWEDTG4S0WAHG6C5DW",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH5G33S5DPDT9RW3XRMFMHH",
+  "sourceScreenshotRef": "sha256:ebe3d5faf8f95221821793474bf32c5a0aa6ed485c2ba4357e116503e980ffdc",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前屏幕是宝盒测试包消息页，底部“消息”Tab 已选中，会话列表可见，顶部工具栏可见用户确认名为“特别关注”的爱心形状入口。",
+  "status": "fail",
+  "result": {
+    "pass": false
+  },
+  "failure": {
+    "code": "SEMANTIC_ASSERTION_FALSE",
+    "category": "Error"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T06:54:55.381Z",
+  "endedAt": "2026-07-27T06:55:40.154Z",
+  "durationMs": 44772.0945,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:21649c948f74035466358e43ca5d15916531c7d971fd533e5831452c69a158af"
+}

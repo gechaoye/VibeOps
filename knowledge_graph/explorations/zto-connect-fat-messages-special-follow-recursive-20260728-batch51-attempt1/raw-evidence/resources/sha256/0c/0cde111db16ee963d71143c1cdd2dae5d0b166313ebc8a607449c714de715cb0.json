@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYKDS588P0P49ZRCDF7WHR17",
+  "sessionRef": "01KYKDKVV8W2XD0Q80SSMFJZBQ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYKDR9ZJ2RX5BJ72KANT9GY6",
+  "sourceScreenshotRef": "sha256:7d68985924b17166e618df5a0885b9cb487c9a4e128994aaf8a5d232f225de57",
+  "operation": "aiLocate",
+  "prompt": "定位“单聊消息未读，弹窗提醒我”这一行文字右侧、蓝色开关左侧，被上方深灰色帮助气泡尖角直接指向的第一枚灰色圆圈问号图标本身；不要定位气泡正文，也不要定位下方短信/电话提醒行的问号。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 608,
+      "y": 890
+    },
+    "rect": {
+      "x": 582,
+      "y": 864,
+      "width": 54,
+      "height": 54
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T03:54:57.649Z",
+  "endedAt": "2026-07-28T03:55:01.768Z",
+  "durationMs": 4119.544208,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:51e729540b5cbf18ff9688b0706c98f527d75f7d6d445b9ad0427e0e2e1fbcea"
+}

@@ -1,0 +1,193 @@
+{
+  "schemaVersion": "1.0.0",
+  "planId": "zto-connect-fat-first-level-20260723",
+  "planVersion": "1.3.0",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerial": "7TD5T21304003972",
+  "initialState": "workbench.root",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": true,
+    "waitAfterLaunchMs": 5000,
+    "unlockTimeoutMs": 10000,
+    "foregroundTimeoutMs": 15000
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "width": 1152,
+    "height": 2376,
+    "orientation": "portrait",
+    "bottomNavigationBand": {
+      "top": 2150,
+      "bottom": 2376
+    }
+  },
+  "scope": {
+    "maxDepth": 1,
+    "description": "Capture first-level application navigation only.",
+    "excludedPageInteriors": [
+      "workbench.root",
+      "news.root"
+    ],
+    "visibleEntriesOnly": [
+      "shared.app_drawer.documents"
+    ]
+  },
+  "states": {
+    "workbench.root": {
+      "label": "工作台",
+      "kind": "page",
+      "disposition": "excluded_by_user_policy",
+      "classificationConfidence": 0.98,
+      "recognitionProfile": {
+        "expectedSelectedTabIndex": 0,
+        "requiredTexts": ["动态验证码", "审批中心"]
+      },
+      "recognitionSignals": [
+        "底部工作台 Tab 为选中态",
+        "审批中心或我的收藏等工作台专属锚点可见"
+      ]
+    },
+    "messages.root": {
+      "label": "消息",
+      "kind": "page",
+      "disposition": "root_captured_no_internal_actions",
+      "classificationConfidence": 0.98,
+      "recognitionProfile": {
+        "expectedSelectedTabIndex": 1,
+        "requiredTexts": ["全部", "消息免打扰"]
+      },
+      "recognitionSignals": [
+        "底部消息 Tab 为选中态",
+        "搜索和新增入口可见",
+        "会话分类与会话列表区域可见"
+      ]
+    },
+    "contacts.root": {
+      "label": "通讯录",
+      "kind": "page",
+      "disposition": "root_captured_no_internal_actions",
+      "classificationConfidence": 0.98,
+      "recognitionProfile": {
+        "expectedSelectedTabIndex": 2,
+        "requiredTexts": ["通讯录", "组织架构"]
+      },
+      "recognitionSignals": [
+        "底部通讯录 Tab 为选中态",
+        "通讯录标题和搜索框可见",
+        "组织架构、群组、标签入口可见"
+      ]
+    },
+    "news.root": {
+      "label": "资讯",
+      "kind": "page",
+      "disposition": "entry_only_excluded_by_user_policy",
+      "classificationConfidence": 0.98,
+      "recognitionProfile": {
+        "expectedSelectedTabIndex": 3,
+        "requiredTexts": ["资讯", "我的必读", "订阅号"]
+      },
+      "recognitionSignals": [
+        "底部资讯 Tab 为选中态",
+        "资讯标题以及全部、我的必读、订阅号入口可见"
+      ]
+    },
+    "shared.app_drawer": {
+      "label": "更多应用抽屉",
+      "kind": "surface",
+      "disposition": "root_captured_entries_only",
+      "classificationConfidence": 0.98,
+      "recognitionProfile": {
+        "expectedSelectedTabIndex": 4,
+        "requiredTexts": ["更多", "文档", "收藏", "待办"]
+      },
+      "recognitionSignals": [
+        "底部更多入口为选中态",
+        "标题为更多的应用抽屉可见",
+        "文档、收藏、待办等一级功能入口可见"
+      ]
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-workbench-boundary",
+      "kind": "capture",
+      "state": "workbench.root"
+    },
+    {
+      "id": "open-messages-root",
+      "kind": "tap",
+      "fromState": "workbench.root",
+      "toState": "messages.root",
+      "semanticAction": "activate",
+      "risk": "safe",
+      "waitMs": 2500,
+      "target": {
+        "key": "shared.bottom_tab.messages",
+        "label": "消息",
+        "scope": "shared_navigation",
+        "point": [340, 2280]
+      }
+    },
+    {
+      "id": "open-contacts-root",
+      "kind": "tap",
+      "fromState": "messages.root",
+      "toState": "contacts.root",
+      "semanticAction": "activate",
+      "risk": "safe",
+      "waitMs": 2500,
+      "target": {
+        "key": "shared.bottom_tab.contacts",
+        "label": "通讯录",
+        "scope": "shared_navigation",
+        "point": [575, 2280]
+      }
+    },
+    {
+      "id": "open-news-entry",
+      "kind": "tap",
+      "fromState": "contacts.root",
+      "toState": "news.root",
+      "semanticAction": "activate",
+      "risk": "safe",
+      "waitMs": 2500,
+      "target": {
+        "key": "shared.bottom_tab.news",
+        "label": "资讯",
+        "scope": "shared_navigation",
+        "point": [800, 2280]
+      }
+    },
+    {
+      "id": "open-more-drawer",
+      "kind": "tap",
+      "fromState": "news.root",
+      "toState": "shared.app_drawer",
+      "semanticAction": "activate",
+      "risk": "safe",
+      "waitMs": 2500,
+      "target": {
+        "key": "shared.bottom_tab.more",
+        "label": "更多",
+        "scope": "shared_navigation",
+        "point": [1025, 2280]
+      }
+    },
+    {
+      "id": "finish-on-messages-root",
+      "kind": "tap",
+      "fromState": "shared.app_drawer",
+      "toState": "messages.root",
+      "semanticAction": "activate",
+      "risk": "safe",
+      "waitMs": 2500,
+      "target": {
+        "key": "shared.bottom_tab.messages",
+        "label": "消息",
+        "scope": "shared_navigation",
+        "point": [340, 2280]
+      }
+    }
+  ]
+}

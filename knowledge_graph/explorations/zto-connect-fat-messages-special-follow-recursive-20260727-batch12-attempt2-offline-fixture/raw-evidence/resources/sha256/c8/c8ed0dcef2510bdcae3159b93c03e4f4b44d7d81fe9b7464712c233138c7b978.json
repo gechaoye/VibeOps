@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHD0HX1XXN66XEFW5NSHKEX",
+  "sessionRef": "01KYHD0DE3DQSAK3QCJ4NFD863",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHD0GWX4WMR1CCZNF12421T",
+  "sourceScreenshotRef": "sha256:21ee0973da163540213e6766bee96c59e316f795eda269a74c1d7bca842054bd",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"右上关闭 X\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "关闭全部成员后的实际返回页",
+    "visiblePrimaryContent": [
+      "offline fixture state messages.special_follow.people.close_result"
+    ],
+    "visibleControls": [],
+    "scrollableRegions": [],
+    "visibleNavigationState": "messages.special_follow.people.close_result",
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "offline-fixture-model",
+      "family": "fixture"
+    },
+    "planning": {
+      "name": "offline-fixture-model",
+      "family": "fixture"
+    },
+    "insight": {
+      "name": "offline-fixture-model",
+      "family": "fixture"
+    },
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:03:06.657Z",
+  "endedAt": "2026-07-27T09:03:06.657Z",
+  "durationMs": 0.006167,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3f168dc4b6507863e04b1ab11443ac444e1092909f86d7fe48ed40b8ead8f192"
+}

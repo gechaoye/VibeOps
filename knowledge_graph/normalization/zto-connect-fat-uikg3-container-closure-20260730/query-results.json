@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "3.0.0",
+  "entityType": "NavigationPathQueryResult",
+  "routeMaterialization": "on_demand",
+  "query": {
+    "from": {
+      "input": "messages.special_follow.settings",
+      "pageRef": "01KYKA3ENB5WR50THMQMPJ4FJZ",
+      "pageKey": "messages.special_follow.settings"
+    },
+    "to": {
+      "input": "messages.special_follow.people",
+      "pageRef": "01KYKA3ENBX0Y8425JT9CK70DK",
+      "pageKey": "messages.special_follow.people"
+    },
+    "profile": "shortest"
+  },
+  "graph": {
+    "graphRevision": "zto-connect-uikg3-20260730.1",
+    "rootHash": "sha256:bc28aee1ad0a737f35c9aa3e0fd95033fe8b60d2bba46214588d6f2817d98f9b",
+    "pageCount": 15,
+    "canonicalTransitionCount": 48,
+    "routableTransitionCount": 48,
+    "excludedTransitionCount": 0,
+    "authorityContractCount": 1,
+    "routableAuthorityContractCount": 1,
+    "excludedAuthorityContractCount": 0
+  },
+  "path": {
+    "actionCount": 1,
+    "totalActionCost": 1,
+    "totalRoutingCost": 1,
+    "steps": [
+      {
+        "index": 1,
+        "edgeKind": "verified_transition",
+        "edgeRef": "01KYKA3ENB8T48CZ7P9W57GGE3",
+        "edgeKey": "messages.special_follow.settings.open_people",
+        "source": {
+          "pageRef": "01KYKA3ENB5WR50THMQMPJ4FJZ",
+          "pageKey": "messages.special_follow.settings",
+          "label": "特别关注-特别关注提醒"
+        },
+        "trigger": {
+          "elementRef": "01KYKA3ENBCNJZQ09AHT9YZFF7",
+          "elementKey": "messages.special_follow.settings.members_chevron",
+          "label": "特别关注-特别关注提醒-我的特别关注-右侧箭头",
+          "action": "aiTap",
+          "capability": "open_special_follow_people"
+        },
+        "target": {
+          "pageRef": "01KYKA3ENBX0Y8425JT9CK70DK",
+          "pageKey": "messages.special_follow.people",
+          "label": "特别关注-全部成员"
+        },
+        "risk": "safe",
+        "authorityStatus": "not_applicable",
+        "runtimeEvidenceStatus": "verified",
+        "verificationStatus": "success_gpt_only_pending_scout",
+        "cost": {
+          "actionCost": 1,
+          "riskPenalty": 0,
+          "routingCost": 1
+        },
+        "evidence": {
+          "actionTraceRef": "01KYK6BJ5H2S9S0PV85V59Y9SQ",
+          "beforeFrameRef": "01KYK6A6NM4AS43HDCRWKBH8RP",
+          "afterFrameRef": "01KYK6C3HD58740YXQZP0AMQE4",
+          "postcondition": "pass",
+          "semanticAssertions": [
+            "sha256:71fd0cea577344ca9bbc9dc40c67711d8ced607e6a85f983555d1dbe4bca2966"
+          ]
+        }
+      }
+    ]
+  }
+}

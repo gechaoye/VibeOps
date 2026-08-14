@@ -1,0 +1,111 @@
+{
+  "frameId": "sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570",
+  "page": {
+    "name": "特别关注提醒",
+    "surfaceType": "dialog",
+    "stateSummary": "弹出‘短信’提醒方式选择对话框，‘电话’选项被选中",
+    "scrollableRegions": []
+  },
+  "elements": [
+    {
+      "candidateKey": "reminder-method-sms-row",
+      "label": "短信",
+      "visualDescription": "文本标签，位于弹窗列表第一项，无选中标记",
+      "controlType": "menu-item",
+      "interactive": true,
+      "enabled": true,
+      "state": "unselected",
+      "approximateRegion": {
+        "x": 0.125,
+        "y": 0.79,
+        "width": 0.75,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "选择短信作为提醒方式",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.98
+    },
+    {
+      "candidateKey": "reminder-method-phone-row",
+      "label": "电话",
+      "visualDescription": "文本标签，位于弹窗列表第二项，左侧有蓝色对勾图标",
+      "controlType": "menu-item",
+      "interactive": true,
+      "enabled": true,
+      "state": "selected",
+      "approximateRegion": {
+        "x": 0.125,
+        "y": 0.87,
+        "width": 0.75,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "选择电话作为提醒方式（当前选中）",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    },
+    {
+      "candidateKey": "reminder-method-phone-option",
+      "label": null,
+      "visualDescription": "蓝色对勾图标，位于‘电话’文本左侧",
+      "controlType": "checkbox",
+      "interactive": false,
+      "enabled": null,
+      "state": "checked",
+      "approximateRegion": {
+        "x": 0.0625,
+        "y": 0.885,
+        "width": 0.0625,
+        "height": 0.05
+      },
+      "meaning": {
+        "status": "known",
+        "description": "表示‘电话’选项当前被选中",
+        "basis": "visible-state"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    },
+    {
+      "candidateKey": "cancel-button",
+      "label": "取消",
+      "visualDescription": "底部居中文字按钮",
+      "controlType": "button",
+      "interactive": true,
+      "enabled": true,
+      "state": null,
+      "approximateRegion": {
+        "x": 0,
+        "y": 0.95,
+        "width": 1,
+        "height": 0.08
+      },
+      "meaning": {
+        "status": "known",
+        "description": "关闭弹窗并放弃选择",
+        "basis": "visible-text"
+      },
+      "dynamicContent": false,
+      "riskSignals": [],
+      "confidence": 0.99
+    }
+  ],
+  "relationships": [
+    {
+      "fromCandidateKey": "reminder-method-phone-row",
+      "type": "contains",
+      "toCandidateKey": "reminder-method-phone-option"
+    }
+  ],
+  "uncertainties": []
+}

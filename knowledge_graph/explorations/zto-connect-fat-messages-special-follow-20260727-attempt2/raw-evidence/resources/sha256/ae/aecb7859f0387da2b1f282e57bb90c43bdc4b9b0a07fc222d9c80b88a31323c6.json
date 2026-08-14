@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYGX0Q94BWKXNWGCN3130NKM",
+  "sessionRef": "01KYGWZK0AV80D96T3W8F15HYD",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYGX01DJ46J25T2MRYWSQY24",
+  "sourceScreenshotRef": "sha256:12af240d02eb74791435ceb2b399d24a90d4304e6885c024ecd96a84871ccdac",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleToolbarControls: string[], visibleNavigationState: string, unresolvedVisualMeanings: string[]}, describe only visible facts on the current screen. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "消息",
+    "visiblePrimaryContent": [
+      "葛超烨",
+      "中通快递",
+      "宝盒民意调查",
+      "点击表扬宝盒",
+      "您有1条重要消息未读，点击查看",
+      "上海总部IT部网点老板...",
+      "直播会议预警",
+      "四个必看群",
+      "张提撤回了一条消息",
+      "一个必看群",
+      "[@所有人]王宝顺: https://mini-box.test...",
+      "三个必看群22233",
+      "宝盒小秘书: 测试消息 @董益超 @张提",
+      "龚帆",
+      "1232313",
+      "超级表单",
+      "我（葛超烨）",
+      "努力工作中",
+      "葛超烨 创建了待办 测试"
+    ],
+    "visibleToolbarControls": [
+      "机器人图标控件（无可见文字标签）",
+      "搜索图标控件（无可见文字标签）",
+      "加号图标控件（无可见文字标签）",
+      "@图标控件（无可见文字标签）",
+      "时钟图标控件（无可见文字标签）",
+      "特别关注",
+      "橙色方框图标控件（无可见文字标签）",
+      "闪电图标控件（无可见文字标签）",
+      "信封图标控件（无可见文字标签）",
+      "铃铛图标控件（未读55）",
+      "更多图标控件（无可见文字标签）",
+      "关闭重要消息提醒控件"
+    ],
+    "visibleNavigationState": "消息为底部当前选中项；消息分类中的全部为当前选中项。其他可见分类为未读、必看、置顶、单聊、群聊、服务；底部其他导航项为工作台、通讯录、资讯、更多。",
+    "unresolvedVisualMeanings": [
+      "机器人图标控件的具体功能未显示",
+      "@图标控件的具体功能未显示",
+      "时钟图标控件的具体功能未显示",
+      "橙色方框图标控件的具体功能未显示",
+      "闪电图标控件的具体功能未显示",
+      "信封图标控件的具体功能未显示",
+      "消息条目右侧蓝色折角标记的含义未显示"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T04:23:15.599Z",
+  "endedAt": "2026-07-27T04:23:34.948Z",
+  "durationMs": 19348.717084,
+  "captureCoupling": "sequential_non_atomic",
+  "contentHash": "sha256:21539d4f67f2f13236aaef0ee1fff53d1ae5efce3af259f0eab694b7882a6dc7"
+}

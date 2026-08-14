@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHS7HZZRXGSFX9KTR8HSPXT",
+  "sessionRef": "01KYHS077KZ57TNBA030189KQS",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHS58X0BTXZV0AR8PYQP26A",
+  "sourceScreenshotRef": "sha256:14e55c8912ec7856e749c9ab74f6c5b4860547d90ba0989824bf22253570a027",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"提醒方式 短信\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.method\",\"predicate\":\"visible_options\",\"value\":\"提醒方式面板包含短信、电话和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "提醒方式选择面板",
+    "visibleResultContent": [
+      "短信（当前选中）",
+      "电话",
+      "取消"
+    ],
+    "supportedFunctionDescription": "激活“提醒方式 短信”后，页面保留在“特别关注提醒”设置页并显示灰色遮罩，同时从底部弹出选择面板；用户可在“短信”和“电话”之间选择提醒方式，或点击“取消”关闭面板。当前可见状态为“短信”已选中。",
+    "evidenceBasis": [
+      "供应上下文说明该功能名称为“特别关注”。",
+      "供应上下文说明提醒方式面板包含短信、电话和取消。",
+      "页面顶部可见标题“特别关注提醒”。",
+      "底部白色面板可见“短信”“电话”“取消”三项。",
+      "“短信”文字及其左侧勾选标记为蓝色，表明其当前选中。",
+      "背景设置页被灰色遮罩覆盖，表明选择面板处于前景打开状态。",
+      "背景中的“提醒方式”设置值可见为“短信”。"
+    ],
+    "unresolvedMeaning": "当前截图未显示点击“电话”后是否立即切换并关闭面板，也未显示“取消”是否仅关闭面板且保持原值；这些后续交互结果无法仅凭当前可见画面确认。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:36:18.631Z",
+  "endedAt": "2026-07-27T12:36:39.039Z",
+  "durationMs": 20409.045959,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:841cabd6acd3ea4e86330a409ac97c57cb8a3542a69373c5dd0677725e01628a"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHMQW7PQ9F3JJZH1ZHB5MP9",
+  "sessionRef": "01KYHMMSAR8NZXY6JC450Q617D",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHMN6CVXK36TZZ2MV3GEQQV",
+  "sourceScreenshotRef": "sha256:7d109eb9dc7864925198ab445302d770af5ed16817a31b023726646f085e2482",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "页面没有底部面板；蓝色开启的短信/电话提醒开关正下方、提醒方式“短信”正上方的“间隔时间”行右侧显示10分钟。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:18:02.051Z",
+  "endedAt": "2026-07-27T11:18:10.934Z",
+  "durationMs": 8883.310166,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:fa9a532c4c334a8ff0e259648357537287431775cb04a1c4c333bec35550b448"
+}

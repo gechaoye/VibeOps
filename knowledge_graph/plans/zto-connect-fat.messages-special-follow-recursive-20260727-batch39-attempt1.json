@@ -1,0 +1,283 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260727-batch39-attempt1:plan",
+  "sourceScopeHash": "sha256:d42de219fc96dd002ca7ee70c9487e75c86a6a466c22cb99ac565581b29fe0db",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "实际点击设置页和特别关注页左上返回按钮，验证返回特别关注页与消息页的导航闭环。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.settings.sound",
+        "predicate": "current_value",
+        "value": "门铃",
+        "source": "verified_evidence"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.settings.sound.bell",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.h5cache.BHWebActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "settings-back-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 100.0,
+          "width": 170.0,
+          "height": 180.0
+        },
+        "purpose": "特别关注提醒设置页左上返回按钮。"
+      },
+      {
+        "key": "special-follow-back-region",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 100.0,
+          "width": 170.0,
+          "height": 180.0
+        },
+        "purpose": "特别关注页左上返回按钮。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.settings.sound.bell": {
+      "key": "messages.special_follow.settings.sound.bell",
+      "label": "特别关注提醒设置页门铃状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注提醒，左上返回按钮可见，特别关注提示音当前为门铃。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点当前视口中拥有完整点击区域的交互控件，准确定位顶栏左上返回按钮；被边界裁切的内容只记录为内容。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "toggle",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "back_to_special_follow"
+      ],
+      "postcondition": "已记录设置页返回前状态。"
+    },
+    "messages.special_follow.empty_returned": {
+      "key": "messages.special_follow.empty_returned",
+      "label": "返回特别关注空状态页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注，空状态说明和设置特别关注入口可见，左上返回按钮可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点返回后的特别关注页面，包括标题、空状态、设置特别关注入口、顶栏左上返回按钮和其他全部可见交互控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "link",
+          "list_entry",
+          "back",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "back_to_messages"
+      ],
+      "postcondition": "已验证设置页返回特别关注页。"
+    },
+    "messages.root.returned_from_special_follow": {
+      "key": "messages.root.returned_from_special_follow",
+      "label": "返回消息页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.root",
+      "requiredSemanticAssertions": [
+        "当前底部消息Tab已选中，会话列表和顶部快捷工具栏可见，特别关注爱心入口可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "完整盘点返回后的消息页全部可见交互控件，用户确认顶部快捷工具栏爱心图标为特别关注入口；如实记录其当前颜色和未读呈现，不根据已添加成员推断变色。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button",
+          "icon_button",
+          "list_entry",
+          "tab",
+          "menu",
+          "close",
+          "scroll_region"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证特别关注页返回消息页。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-settings-before-back",
+      "kind": "capture",
+      "state": "messages.special_follow.settings.sound.bell",
+      "depth": 3
+    },
+    {
+      "id": "tap-settings-back",
+      "kind": "tap",
+      "semanticAction": "back_to_special_follow",
+      "fromState": "messages.special_follow.settings.sound.bell",
+      "toState": "messages.special_follow.empty_returned",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "settings_back",
+        "label": "返回",
+        "scope": "page_navigation",
+        "locatorPrompt": "定位标题为“特别关注提醒”的页面顶栏最左侧黑色向左箭头返回按钮。",
+        "allowedRegionRef": "settings-back-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面已返回标题为特别关注的空状态页，设置特别关注入口可见。"
+        ]
+      }
+    },
+    {
+      "id": "tap-special-follow-back",
+      "kind": "tap",
+      "semanticAction": "back_to_messages",
+      "fromState": "messages.special_follow.empty_returned",
+      "toState": "messages.root.returned_from_special_follow",
+      "depth": 1,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 2500,
+      "target": {
+        "key": "special_follow_back",
+        "label": "返回",
+        "scope": "page_navigation",
+        "locatorPrompt": "定位标题为“特别关注”的页面顶栏最左侧黑色向左箭头返回按钮。",
+        "allowedRegionRef": "special-follow-back-region"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前已返回消息页，底部消息Tab已选中，会话列表和顶部快捷工具栏可见。"
+        ]
+      }
+    }
+  ]
+}

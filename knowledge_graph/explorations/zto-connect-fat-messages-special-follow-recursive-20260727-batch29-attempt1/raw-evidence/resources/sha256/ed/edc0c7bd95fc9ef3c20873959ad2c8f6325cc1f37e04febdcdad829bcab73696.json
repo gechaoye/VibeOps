@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQSTPX3V81HPRXT469ZFX1",
+  "sessionRef": "01KYHQEMAS8P6HW0Z1AYX5AKRE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQMMRN5KK1Z4S1ZGSV27JY",
+  "sourceScreenshotRef": "sha256:7e0a5a4f18d5b37fc3c3fdb0a980f8630aec8a695508cdfe4c0ab3044ff3c44b",
+  "operation": "aiQuery",
+  "prompt": "{visibleResultTitle: string, visibleResultContent: string[], supportedFunctionDescription: string, evidenceBasis: string[], unresolvedMeaning: string}, based on the current visible screen and the immediately preceding activation of the control labelled \"消息\", describe the resulting page, overlay, state, and visibly supported behavior. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_list\",\"predicate\":\"behavior\",\"value\":\"设置特别关注人员后，该人员存在未读消息时，其会话显示在特别关注列表中。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_visual_state\",\"value\":\"特别关注人员存在未读消息时，入口爱心图标变为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional meaning from icon shape alone.",
+  "status": "pass",
+  "result": {
+    "visibleResultTitle": "消息",
+    "visibleResultContent": [
+      "重要消息提示：您有1条重要消息未读，点击查看",
+      "筛选项：全部、未读、必看、置顶、单聊、群聊、服务",
+      "会话：四个必看群，摘要“王健功: 665255555666666”，时间20:07，未读29",
+      "会话：一个必看群，摘要“[@所有人]王宝顺: [图片]”，时间16:45，未读40",
+      "会话：上海总部IT部网点老板助…，摘要“直播会议预警”，时间15:39，未读2",
+      "会话：三个必看群22233，摘要“宝盒小秘书: 测试消息 @葛益超 @张提”，日期07-01",
+      "会话：Online Form，摘要“贾宗婷: [日程]”，时间19:44，未读1",
+      "会话：超级表单，摘要“超级表单”，时间18:01，未读76",
+      "会话：我（葛超烨），状态“努力工作中”，摘要“葛超烨 创建了待办 测试”，时间17:20"
+    ],
+    "supportedFunctionDescription": "当前结果是消息页而非独立弹窗；页面支持查看会话列表、未读数量与消息摘要，并通过可见分类项筛选消息。根据 supplied context，工具栏心形入口的功能名称为“特别关注”：设置特别关注人员后，当该人员存在未读消息时，其会话显示在特别关注列表中；特别关注人员存在未读消息时，入口爱心图标变为橙黄色。",
+    "evidenceBasis": [
+      "屏幕像素：底部“消息”导航项蓝色高亮，且带有“99+”角标",
+      "屏幕像素：页面显示重要消息提示条、消息分类栏和会话列表",
+      "屏幕像素：多个会话右侧显示红色未读数量角标",
+      "用户提供的权威上下文：messages.toolbar.heart 的功能名称为“特别关注”",
+      "用户提供的权威上下文：特别关注人员有未读消息时，其会话进入特别关注列表",
+      "用户提供的权威上下文：特别关注人员有未读消息时，入口爱心图标变为橙黄色"
+    ],
+    "unresolvedMeaning": "仅从当前静态画面无法确认此前点击“消息”是否触发了额外动画或瞬时状态，也无法确认当前心形入口是否处于橙黄色未读状态；除 supplied context 明确说明的心形入口外，不从其他图标形状推断其具体功能。"
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:11:19.441Z",
+  "endedAt": "2026-07-27T12:11:40.637Z",
+  "durationMs": 21196.446,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3e767877259bbace1f0d97af7cc9ed26b5cb3d0d619c9c93c28266f7042a8648"
+}

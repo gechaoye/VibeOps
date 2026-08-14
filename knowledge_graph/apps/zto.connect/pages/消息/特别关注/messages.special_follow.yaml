@@ -1,0 +1,90 @@
+schemaVersion: 3.0.0
+entityType: Page
+id: 01KYKA3ENB431TAGYEEA0BJYYZ
+key: messages.special_follow
+label: 特别关注
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+surfaceType: page
+status: observed_gpt_only_pending_scout
+summary: 展示特别关注成员与其会话；特别关注人员存在未读消息时展示对应会话和实时未读数量角标。
+states:
+- key: empty
+  summary: 暂无特别关注成员或会话
+  frameRefs:
+  - 01KYH6NXG2X1B0T3PK5WAH1WHQ
+- key: read_conversation
+  summary: 已关注成员及已读会话
+  frameRefs:
+  - 01KYJ4QSVND1N3RN1BZQDJJHVJ
+- key: unread_conversation
+  summary: 已关注成员及含实时未读数量的会话
+  frameRefs:
+  - 01KYK4NAGXAAV2ZW3CKHC0QW5H
+elementRefs:
+- 01KYKA3ENB2VG2WSYHD5MYXA0V
+- 01KYKA3ENB72QQADA453C40VHY
+- 01KYKA3ENB83A8FJ2AKNQ7SA64
+- 01KYKA3ENBHBMCRQT56973VBET
+inboundTransitionRefs:
+- 01KYKA3ENB056FQR1JXRV47WZ5
+- 01KYKA3ENB36EBNY57Z9J3RV8M
+- 01KYKA3ENBF11VG79QCYEHTWFS
+outboundTransitionRefs:
+- 01KYKA3ENB44BC4FWEPKEEY7BK
+- 01KYKA3ENBA895SD8800FGHC5D
+- 01KYKA3ENBP1EJZNJBC0VT6KV3
+- 01KYKA3ENBYTSP4PV02ECTRZ09
+observations:
+- frameRef: 01KYH6NXG2X1B0T3PK5WAH1WHQ
+  observedAt: '2026-07-27T07:12:29.316Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.initial
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:704115d3518683fb7638e881b82c8b8f4b22326761a3ce58f64897137b30413b
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch2-attempt1/raw-evidence/sessions/01KYH6NHN6076HNCGH2DPQ39KC
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYJ4QSVND1N3RN1BZQDJJHVJ
+  observedAt: '2026-07-27T15:57:48.385Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.with_read_lian_liangwei
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:8cdae4359c0ac661f07691fadd5a5b513934479445b1150dc7743be33cfa0449
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5/raw-evidence/sessions/01KYJ4QEBBQZP44ANFGP77NE7J
+  evidenceStatus: gpt_verified_pending_independent_scout
+- frameRef: 01KYK4NAGXAAV2ZW3CKHC0QW5H
+  observedAt: '2026-07-28T01:15:41.628Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties:
+    planStateKeyHint: messages.special_follow.with_unread_member
+    independentScout: missing_from_legacy_capture
+    gptRecognition: complete
+  screenshotRef: sha256:2d24e0d54e7a9e36a3b520ff52be5f0eb8d50490adb76a06ad2ad9973c6aee1c
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch46-attempt1/raw-evidence/sessions/01KYK4MYZH0C3R62M164MET7HS
+  evidenceStatus: gpt_verified_pending_independent_scout
+provenance:
+  sourceType: verified_legacy_midscene_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  limitations:
+  - independent aiScout evidence is absent from the historical capture

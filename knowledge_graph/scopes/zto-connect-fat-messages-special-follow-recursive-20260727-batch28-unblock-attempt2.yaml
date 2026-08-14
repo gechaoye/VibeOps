@@ -1,0 +1,150 @@
+schemaVersion: 1.0.0
+recordType: AppUiExplorationScope
+id: zto-connect-fat-messages-special-follow-recursive-20260727-batch28-unblock-attempt2
+title: 全局日程提醒遮挡返回解阻会话
+
+target:
+  platform: android
+  applicationKey: zto.connect
+  packageId: com.zto.connect.fat
+  featureOrPage: 消息页顶部工具栏“特别关注”入口探索期间的临时遮挡解阻
+  userIntent: 使用 AndroidAgent 返回动作关闭与当前探索范围无关的 APP 全局日程提醒弹窗；本会话不进入发布图谱。
+  environment: fat
+  knownFacts:
+    - {subjectKey: messages.toolbar.heart, predicate: function_name, value: 特别关注, source: user}
+    - {subjectKey: exploration.transient_schedule_overlay, predicate: scope_boundary, value: 日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。, source: task_policy}
+
+entry:
+  knownStartPageKey: common.schedule_reminder.overlay
+  launchComponent: com.zto.connect.fat/com.zto.zbox.module.ping.TopFloatActivity
+  navigationHint: 前景为日程提醒弹窗；不点击拒绝或接受，使用 AndroidAgent 返回动作关闭覆盖层。
+  requireColdStart: false
+  requireUserPreparedState: true
+
+device:
+  serialHash: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  expectedOrientation: portrait
+  expectedRotationDegrees: 0
+  expectedPhysicalSizePx: {width: 1344, height: 2772}
+  expectedEffectiveSizePx: {width: 1152, height: 2376}
+  expectedCurrentDisplaySizePx: {width: 1152, height: 2376}
+  requireUnlocked: true
+  requireNoExternalOverlay: true
+
+scope:
+  mode: recursive_feature
+  maxDepth: 1
+  maxActions: 3
+  include: [common.schedule_reminder.overlay]
+  exclude: [common.schedule_reminder.details, external_application, system_credentials]
+  entryOnly: [schedule.ignore, schedule.reject, schedule.accept]
+  stopAt: [messages.special_follow.settings]
+  unknownControlPolicy: inspect_all_activate_safe
+  traversal: breadth_first
+  deduplicateBy: semantic_presentation_signature
+  requireQueueExhaustion: true
+  viewportOnly: false
+
+safety:
+  allowedRiskLevels: [safe, low]
+  allowedSideEffects: [temporary_display_state, navigation_history]
+  prohibitedSideEffects: [message_send, form_submit, data_delete, payment, external_share, attendance_check_in, lottery_participation, permission_change, persistent_setting_change, account_change, logout, schedule_accept, schedule_reject]
+  forbiddenLabelsOrKeys: [编辑, 删除, 发送, 提交, 支付, 签到, 抽奖, 分享, 权限, 退出登录]
+  credentialsPolicy: require_user_intervention
+
+capture:
+  coordinateSpace: current_display_px
+  expectedScreenshotSizePx: {width: 1152, height: 2376}
+  captureRectScreenPx: {x: 0, y: 0, width: 1344, height: 2772}
+  stableFrameSampleCount: 3
+  stableFrameIntervalMs: 500
+  visualDistanceThreshold: 0.02
+  captureBeforeAndAfterEveryAction: true
+  requireForegroundVerification: true
+  requireFullPagePng: true
+  recordPhysicalGesture: true
+  recordPostcondition: true
+  persistUiTree: false
+  persistPocoTree: false
+  semanticRecognition: {provider: midscene, required: true, persistDecisionEvidence: true, failurePolicy: abort}
+
+execution:
+  framework: midscene
+  requireSemanticLocator: true
+  requireSemanticPostconditions: true
+  defaultWaitMs: 2500
+  allowedTargetScopes: [temporary_state_control]
+  allowedTapRegions:
+    - key: schedule-overlay-actions
+      space: current_display_px
+      rect: {x: 20, y: 550, width: 1112, height: 350}
+      purpose: 仅用于盘点弹窗动作；本会话不点击其中任何按钮。
+
+expectedStates:
+  - key: common.schedule_reminder.overlay
+    label: 全局日程提醒弹窗
+    kind: dialog
+    expectedStablePageKey: common.schedule_reminder
+    requiredSemanticAssertions:
+      - 前景显示标题“日程”和“您有一个新日程”的弹窗，底部按钮依次为忽略、拒绝、接受。
+    inspection:
+      queryPrompt: 完整盘点前景日程提醒弹窗全部可见控件，只把忽略、拒绝、接受识别为按钮；背景特别关注设置页不可操作。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, close]
+      requireScrollCoverage: false
+    allowedActions: [navigate_back]
+    postcondition: 已盘点全局遮挡且三个业务动作均未激活。
+  - key: messages.special_follow.settings.after_schedule_overlay
+    label: 日程提醒关闭后的特别关注设置页
+    kind: page
+    expectedStablePageKey: messages.special_follow.settings
+    requiredSemanticAssertions:
+      - 日程提醒弹窗已关闭且不再显示，当前屏幕标题为“特别关注提醒”，主要提醒设置可见。
+    inspection:
+      queryPrompt: 完整盘点关闭日程覆盖层后的“特别关注提醒”设置页当前全屏可见控件与状态；不激活任何控件。
+      locateAllInteractiveControls: true
+      includeControlTypes: [button, icon_button, list_entry, toggle, radio, back, close, scroll_region]
+      requireScrollCoverage: false
+    allowedActions: []
+    postcondition: 已恢复特别关注探索的可见起点。
+
+actions:
+  - id: capture-schedule-overlay-before-back
+    kind: capture
+    state: common.schedule_reminder.overlay
+    depth: 0
+  - id: back-from-schedule-overlay
+    kind: back
+    semanticAction: navigate_back
+    fromState: common.schedule_reminder.overlay
+    toState: messages.special_follow.settings.after_schedule_overlay
+    depth: 0
+    risk: safe
+    sideEffects: [temporary_display_state, navigation_history]
+    waitMs: 2500
+    postcondition:
+      expectedForegroundPackage: com.zto.connect.fat
+      requiredScreenshotChange: true
+      semanticAssertions:
+        - 日程提醒弹窗已关闭且不再显示，当前屏幕标题为“特别关注提醒”，主要提醒设置可见。
+
+outputs:
+  rawEvidenceRoot: knowledge_graph/explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch28-unblock-attempt2
+  canonicalGraphRoot: knowledge_graph/apps/zto.connect
+  runtimeRoot: knowledge_graph/runtime/zto.connect/zto-connect-fat-messages-special-follow-recursive-20260727
+  obsidianRoot: knowledge_graph/obsidian/zto.connect
+  explorationReportTitle: 2026-07-27-临时遮挡解阻记录
+
+acceptance:
+  requireImmutableEvidenceManifest: true
+  requireClosedCrossLayerReferences: true
+  requirePageObservationScreenshots: true
+  requireFullPageElementAnnotations: true
+  requireNavigationTopology: false
+  requireOnDemandPathQueries: false
+  requireDeterministicManifestCheck: true
+  requireObsidianWikilinkCheck: false
+  requireRecursiveQueueExhaustion: true
+  requireAllInteractiveControlsLocated: true
+  requireRiskSkippedControlsReported: true
+  unresolvedItemsMustBeReported: true

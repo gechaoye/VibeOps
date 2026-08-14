@@ -1,0 +1,129 @@
+{
+  "pageIdentity": "特别关注提醒设置页；当前没有可见覆盖层，亦没有打开瞬时帮助气泡。",
+  "stateSummary": "我的特别关注为1人（练良伟）。单聊消息未读弹窗提醒已开启，间隔时间为1小时；弹窗消息未读短信/电话提醒已开启，间隔时间为30分钟，提醒方式为电话；夜间免打扰已关闭；免打扰群通知已关闭；特别关注提示音为门铃。所有可见帮助气泡均未打开，当前没有打开的选项选择器。",
+  "rowCompositions": [
+    {
+      "rowName": "单聊消息未读，弹窗提醒我",
+      "labelText": "单聊消息未读，弹窗提醒我",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标与右侧开关分别可操作；设置名称文本及整行容器不作为独立操作目标。"
+    },
+    {
+      "rowName": "弹窗消息未读，短信/电话提醒我",
+      "labelText": "弹窗消息未读，短信/电话提醒我",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标与右侧开关分别可操作；设置名称文本及整行容器不作为独立操作目标。"
+    },
+    {
+      "rowName": "夜间免打扰",
+      "labelText": "夜间免打扰",
+      "helpIconPresent": false,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "仅右侧开关是明确可操作子元素；设置名称及行容器不应代替开关。"
+    },
+    {
+      "rowName": "免打扰群通知",
+      "labelText": "免打扰群通知",
+      "helpIconPresent": true,
+      "helpPopoverPresent": false,
+      "togglePresent": true,
+      "actionableSubElement": "问号帮助图标与右侧开关分别可操作；设置名称文本及整行容器不作为独立操作目标。"
+    }
+  ],
+  "candidateReconciliation": [
+    {
+      "candidate": "单聊消息未读，弹窗提醒我设置名称",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于第一条提醒设置行的静态标签，由该行容器承载；不是帮助图标或开关。"
+    },
+    {
+      "candidate": "单聊消息未读帮助问号",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于第一条提醒设置行，是标签旁的独立帮助入口。"
+    },
+    {
+      "candidate": "单聊消息未读弹窗提醒开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于第一条提醒设置行右侧的独立开关，当前开启。"
+    },
+    {
+      "candidate": "单聊消息未读帮助气泡",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "应由第一条提醒设置行的问号触发并瞬时显示；截图中当前不可见，不能认定为新页面。"
+    },
+    {
+      "candidate": "弹窗消息未读，短信/电话提醒我设置名称",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于第二条提醒设置行的静态标签，由该行容器承载；不是帮助图标或开关。"
+    },
+    {
+      "candidate": "短信/电话提醒帮助问号",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于第二条提醒设置行，是标签旁的独立帮助入口。"
+    },
+    {
+      "candidate": "短信/电话提醒开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于第二条提醒设置行右侧的独立开关，当前开启。"
+    },
+    {
+      "candidate": "短信/电话提醒帮助气泡",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "应由第二条提醒设置行的问号触发并瞬时显示；截图中当前不可见。"
+    },
+    {
+      "candidate": "夜间免打扰设置名称",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于夜间免打扰设置行的静态标签，不是开关本身。"
+    },
+    {
+      "candidate": "夜间免打扰开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于夜间免打扰设置行右侧的独立开关，当前关闭。"
+    },
+    {
+      "candidate": "免打扰群通知设置名称",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于免打扰群通知设置行的静态标签，由该行容器承载。"
+    },
+    {
+      "candidate": "免打扰群通知帮助问号",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于免打扰群通知设置行，是标签旁的独立帮助入口。"
+    },
+    {
+      "candidate": "免打扰群通知开关",
+      "classification": "existing element",
+      "ownerContainerReasoning": "属于免打扰群通知设置行右侧的独立开关，当前关闭。"
+    },
+    {
+      "candidate": "免打扰群通知帮助气泡",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "应由免打扰群通知行的问号触发；截图中当前不可见。"
+    },
+    {
+      "candidate": "设置行外层容器",
+      "classification": "duplicate",
+      "ownerContainerReasoning": "容器仅组织标签、帮助图标和开关，不应重复注册为与内部控件等价的操作元素。"
+    },
+    {
+      "candidate": "间隔时间与提醒方式选择器浮层",
+      "classification": "dynamic data",
+      "ownerContainerReasoning": "相关行显示当前值与箭头，但截图中没有已展开的选择器；浮层应归属触发它的具体设置行。"
+    }
+  ],
+  "interactionBoundaryAssertions": [
+    "“单聊消息未读，弹窗提醒我”名称文本是非操作性标签；问号帮助图标和右侧开关是两个边界独立的操作目标。",
+    "“弹窗消息未读，短信/电话提醒我”名称文本及其外层行容器不应吸收问号或开关的点击语义。",
+    "“夜间免打扰”名称及容器不等同于开关；明确的状态操作目标是右侧开关。",
+    "“免打扰群通知”名称文本是非操作性标签；问号仅负责帮助内容，开关仅负责启停状态。",
+    "任何瞬时帮助气泡都属于对应问号的动态覆盖内容，不构成新的业务页面。",
+    "当前没有帮助气泡或选择器打开，因此不可把页面空白区域、说明文字或设置分组容器识别为浮层。",
+    "带当前值和右箭头的“间隔时间”“提醒方式”“特别关注提示音”行可进入选择流程，但其当前值文本不是开关或帮助入口。"
+  ]
+}

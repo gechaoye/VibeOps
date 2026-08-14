@@ -1,0 +1,323 @@
+{
+  "schemaVersion": "1.0.0",
+  "recordType": "AppUiExplorationPlan",
+  "planId": "zto-connect-fat-messages-special-follow-recursive-20260728-batch46-attempt1:plan",
+  "sourceScopeHash": "sha256:3c7c3a914aa0386e3740dbce52673bdbd20d36beed23152843d4c61790ce5b7f",
+  "applicationKey": "zto.connect",
+  "packageId": "com.zto.connect.fat",
+  "deviceSerialHash": "sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36",
+  "executionFramework": "midscene",
+  "semanticRecognition": {
+    "provider": "midscene",
+    "required": true,
+    "persistDecisionEvidence": true,
+    "failurePolicy": "abort"
+  },
+  "semanticContext": {
+    "featureOrPage": "消息页顶部工具栏“特别关注”入口（爱心图标）及入口下全部内容",
+    "userIntent": "从存在未读会话的特别关注页进入设置，验证非空成员状态下的添加入口会打开 APP 级通用选择人员组件，并验证返回设置页。",
+    "environment": "fat",
+    "knownFacts": [
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "function_name",
+        "value": "特别关注",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.member_with_unread",
+        "predicate": "conversation_visibility",
+        "value": "设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.toolbar.heart",
+        "predicate": "unread_highlight_condition",
+        "value": "已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，消息页入口爱心图标变为橙黄色。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "messages.special_follow.add",
+        "predicate": "target_component",
+        "value": "点击添加后进入 APP 级通用选择人员组件；只记录入口和往返关系，不递归探索组件内部。",
+        "source": "user"
+      },
+      {
+        "subjectKey": "exploration.authorization",
+        "predicate": "may_operate_settings_and_members",
+        "value": "true",
+        "source": "user"
+      }
+    ]
+  },
+  "initialState": "messages.special_follow.with_unread_member",
+  "bootstrap": {
+    "component": "com.zto.connect.fat/com.zto.zbox.module.main.ZBoxMainActivity",
+    "coldStart": false,
+    "requireUserPreparedState": true
+  },
+  "coordinateReference": {
+    "space": "current_display_px",
+    "physicalSizeNaturalPx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "effectiveSizeNaturalPx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "currentDisplaySizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "orientedScreenSizePx": {
+      "width": 1344,
+      "height": 2772
+    },
+    "screenshotSizePx": {
+      "width": 1152,
+      "height": 2376
+    },
+    "captureRectScreenPx": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1344.0,
+      "height": 2772.0
+    },
+    "rotationDegrees": 0,
+    "orientation": "portrait",
+    "allowedTapRegions": [
+      {
+        "key": "special-follow-settings",
+        "space": "current_display_px",
+        "rect": {
+          "x": 940.0,
+          "y": 235.0,
+          "width": 212.0,
+          "height": 190.0
+        },
+        "purpose": "特别关注页“设置”文字按钮。"
+      },
+      {
+        "key": "add-special-follow-button",
+        "space": "current_display_px",
+        "rect": {
+          "x": 145.0,
+          "y": 315.0,
+          "width": 180.0,
+          "height": 260.0
+        },
+        "purpose": "特别关注提醒页虚线方框加号和“添加”按钮。"
+      },
+      {
+        "key": "app-visible-content",
+        "space": "current_display_px",
+        "rect": {
+          "x": 0.0,
+          "y": 96.0,
+          "width": 1152.0,
+          "height": 2184.0
+        },
+        "purpose": "经风险策略允许的应用内导航范围。"
+      }
+    ],
+    "transforms": [
+      {
+        "from": "current_display_px",
+        "to": "screen_px",
+        "matrix3x3": [
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.1666666666666667,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "from": "screen_px",
+        "to": "screenshot_px",
+        "matrix3x3": [
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          0.8571428571428571,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    ]
+  },
+  "states": {
+    "messages.special_follow.with_unread_member": {
+      "key": "messages.special_follow.with_unread_member",
+      "label": "特别关注成员未读会话状态",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注，成员头像条目和一条会话可见，会话摘要带橙色‘[特别关注]’前缀，右侧显示红色未读徽标3。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只输出标题、成员条目、会话摘要中的橙色特别关注前缀、时间和红色未读徽标3的可见事实，visibleControls 必须返回空数组；设置按钮由动作步骤单独实时 aiLocate。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_special_follow_settings"
+      ],
+      "postcondition": "已记录当前未读会话状态。"
+    },
+    "messages.special_follow.settings.with_member_for_add": {
+      "key": "messages.special_follow.settings.with_member_for_add",
+      "label": "非空特别关注提醒设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前页面标题为特别关注提醒，“我的特别关注”显示1人，练良伟头像、添加和移除均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只输出标题、1人、练良伟头像、添加和移除可见的事实，visibleControls 必须返回空数组；添加按钮由动作步骤单独实时 aiLocate。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "open_add_special_follow"
+      ],
+      "postcondition": "已验证非空成员状态仍提供添加入口。"
+    },
+    "boundary.common.person_selector.from_special_follow_add": {
+      "key": "boundary.common.person_selector.from_special_follow_add",
+      "label": "通用选择人员组件边界",
+      "kind": "page",
+      "expectedStablePageKey": "boundary.common.person_selector",
+      "requiredSemanticAssertions": [
+        "当前页面标题为选择人员，左上关闭X、右上搜索、组织架构等通用选人内容和底部确定按钮可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只记录标题“选择人员”、左上关闭X、右上搜索、通用人员来源列表及底部确定按钮存在的事实，visibleControls 必须返回空数组；这是 APP 级通用组件边界，不递归盘点内部候选和控件。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [
+        "navigate_back"
+      ],
+      "postcondition": "已记录添加入口到通用选择人员组件边界。"
+    },
+    "messages.special_follow.settings.with_member_after_selector_return": {
+      "key": "messages.special_follow.settings.with_member_after_selector_return",
+      "label": "从通用选择人员组件返回设置页",
+      "kind": "page",
+      "expectedStablePageKey": "messages.special_follow.settings",
+      "requiredSemanticAssertions": [
+        "当前已返回标题为特别关注提醒的页面，“我的特别关注”仍显示1人，练良伟头像、添加和移除均可见。"
+      ],
+      "inspection": {
+        "queryPrompt": "本状态帧只输出返回后标题、1人、练良伟头像、添加和移除仍可见的事实，visibleControls 必须返回空数组。",
+        "locateAllInteractiveControls": true,
+        "includeControlTypes": [
+          "button"
+        ],
+        "requireScrollCoverage": false
+      },
+      "allowedActions": [],
+      "postcondition": "已验证通用选择人员组件的返回闭环。"
+    }
+  },
+  "steps": [
+    {
+      "id": "capture-special-follow-unread-three",
+      "kind": "capture",
+      "state": "messages.special_follow.with_unread_member",
+      "depth": 1
+    },
+    {
+      "id": "open-settings-from-special-follow-unread",
+      "kind": "tap",
+      "semanticAction": "open_special_follow_settings",
+      "fromState": "messages.special_follow.with_unread_member",
+      "toState": "messages.special_follow.settings.with_member_for_add",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 3500,
+      "target": {
+        "key": "special_follow_settings_from_unread",
+        "label": "设置",
+        "scope": "page_content",
+        "locatorPrompt": "定位特别关注页面“我的特别关注”标题同一行最右侧的蓝色文字按钮“设置”。",
+        "allowedRegionRef": "special-follow-settings"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面标题为特别关注提醒，“我的特别关注”显示1人，添加和移除可见。"
+        ]
+      }
+    },
+    {
+      "id": "open-common-person-selector-from-add",
+      "kind": "tap",
+      "semanticAction": "open_add_special_follow",
+      "fromState": "messages.special_follow.settings.with_member_for_add",
+      "toState": "boundary.common.person_selector.from_special_follow_add",
+      "depth": 3,
+      "risk": "low",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 4500,
+      "target": {
+        "key": "add_special_follow_from_nonempty_settings",
+        "label": "添加",
+        "scope": "settings_navigation",
+        "locatorPrompt": "定位“我的特别关注”区域中练良伟头像右侧、虚线方框内有灰色加号且下方写有“添加”的完整按钮；不要定位移除按钮。",
+        "allowedRegionRef": "add-special-follow-button"
+      },
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前页面标题为选择人员，左上关闭X、右上搜索和底部确定按钮可见。"
+        ]
+      }
+    },
+    {
+      "id": "back-from-common-person-selector",
+      "kind": "back",
+      "semanticAction": "navigate_back",
+      "fromState": "boundary.common.person_selector.from_special_follow_add",
+      "toState": "messages.special_follow.settings.with_member_after_selector_return",
+      "depth": 2,
+      "risk": "safe",
+      "sideEffects": [
+        "navigation_history"
+      ],
+      "waitMs": 3000,
+      "postcondition": {
+        "expectedForegroundPackage": "com.zto.connect.fat",
+        "requiredScreenshotChange": true,
+        "semanticAssertions": [
+          "当前已返回标题为特别关注提醒的页面，“我的特别关注”仍显示1人，添加和移除可见。"
+        ]
+      }
+    }
+  ]
+}

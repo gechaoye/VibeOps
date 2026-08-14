@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYS2T3QSY8MC3F0GPAGJSM1V",
+  "sessionRef": "01KYS2MZ2HQBPK0G7RGMQVE3ZN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYS2NTV30MFQB2TXR6MXS607",
+  "sourceScreenshotRef": "sha256:c157e07ccf15083ea85b5c2c3b40ded7b86a3e4e755d9d27e12b33f4e22456ef",
+  "operation": "aiScout",
+  "prompt": "{frameId: string, page: {name: string | null, surfaceType: \"page\" | \"dialog\" | \"drawer\" | \"bottom-sheet\" | \"menu\" | \"shared-component\" | \"unknown\", stateSummary: string, scrollableRegions: string[]}, elements: {candidateKey: string, label: string | null, visualDescription: string, controlType: \"button\" | \"icon-button\" | \"switch\" | \"checkbox\" | \"radio\" | \"tab\" | \"menu-item\" | \"list-item\" | \"input\" | \"slider\" | \"status\" | \"badge\" | \"label\" | \"image\" | \"container\" | \"other\", interactive: boolean, enabled: boolean | null, state: string | null, approximateRegion: {x: number, y: number, width: number, height: number}, meaning: {status: \"known\" | \"candidate\" | \"unknown\", description: string | null, basis: \"visible-text\" | \"visible-state\" | \"user-context\" | \"visual-only\" | \"none\"}, dynamicContent: boolean, riskSignals: string[], confidence: number}[], relationships: {fromCandidateKey: string, type: \"contains\" | \"labels\" | \"controls\" | \"belongs-to\" | \"adjacent-to\" | \"opens\" | \"selects\", toCandidateKey: string}[], uncertainties: string[]}. Inspect the entire frozen full-page frame, not only a likely target. Set frameId exactly to \"01KYS2NTV30MFQB2TXR6MXS607\". Inventory every visible control, label, icon, status indicator, structural container, stable content anchor, and visible relationship. Preserve unsupported meanings as unknown. Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.global_search\",\"predicate\":\"function_name\",\"value\":\"全局搜索\",\"source\":\"user_context\",\"sourceRef\":\"scope.yaml#entry\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not plan actions or infer an icon function from its shape alone.",
+  "status": "unknown",
+  "result": null,
+  "failure": {
+    "code": "SCOUT_REGION_INVALID",
+    "category": "SemanticResolutionError"
+  },
+  "model": {
+    "name": "qwen3-vl-plus",
+    "family": "qwen3-vl",
+    "slot": "scout"
+  },
+  "startedAt": "2026-07-30T08:36:28.618Z",
+  "endedAt": "2026-07-30T08:38:45.241Z",
+  "durationMs": 136622.729084,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:bb5bc72346eb7e2b43505afee4b44ab4077183edbefbf1ce6a75ebd591e8e7c3"
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ2V1D7GDTPGYS3MCQY1NME",
+  "sessionRef": "01KYJ2T4PCJW41VRZ1GB5ZYW0A",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ2TJXHNFNJ0CP5TKD0XD91",
+  "sourceScreenshotRef": "sha256:195f55e95a7f3152d8834b1de3b7b97c4d0a2150143c125572fd3b3d70813d08",
+  "operation": "aiAssert",
+  "purpose": "required_state_assertion",
+  "prompt": "当前页面标题为特别关注，练良伟相关会话可见，红色未读徽标显示58，左上收起按钮可见。",
+  "status": "pass",
+  "result": {
+    "pass": true
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:24:30.792Z",
+  "endedAt": "2026-07-27T15:24:34.599Z",
+  "durationMs": 3806.596875,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:901552402d1e9aae702bb55578b0593c815ea42cf9dc23eb879884bfd3f681bf"
+}

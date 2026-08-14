@@ -1,0 +1,61 @@
+schemaVersion: 3.0.0
+entityType: Element
+id: 01KYKA3ENBPR5DYP8RHTS7GNX4
+key: messages.special_follow.settings.sound_value
+label: 特别关注-特别关注提醒-特别关注提示音-当前值
+applicationRef: 01KY6Z7BD8J607T07GS5NCN9RN
+featurePath:
+- 消息
+- 特别关注
+owner:
+  kind: component
+  ref: 01KYKA3ENBQ16E65EW76H2368D
+parentElementRef: 01KYKA3ENBQ16E65EW76H2368D
+controlType: text_label
+role: current_value
+capabilities: []
+summary: 显示当前特别关注提示音；具体值仅进入观测，不承担独立动作。
+relationshipRefs:
+- owner:01KYKA3ENBQ16E65EW76H2368D
+- parent:01KYKA3ENBQ16E65EW76H2368D
+observations:
+- frameRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  observedAt: '2026-07-31T06:19:26.974Z'
+  buildRef: android-package:com.zto.connect.fat@10542
+  deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+  viewport:
+    width: 1152
+    height: 2376
+    orientation: portrait
+  stateProperties: {}
+  screenshotRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  evidenceStatus: dual_model_verified_live_frame
+  locator:
+    rect:
+      left: 945.0
+      top: 2297.0
+      width: 86.0
+      height: 41.0
+    center:
+    - 987.0
+    - 2317.0
+    dpr: 3.501519756838906
+    status: pass
+    evidenceRef: sha256:9c9051ad3a4f693ba114f2829cc93b72c6fe366a3b2ec53352a3c5e5fae6e519
+  state: visible_non_actionable_current_value
+  dynamicValue: 门铃
+  actionTraceRef: null
+  redboxRef: assets/element-redboxes/01KYKA3ENBPR5DYP8RHTS7GNX4-sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329.png
+coverage: observed_not_activated_dual_model_live
+status: dual_model_verified_live
+risk: safe
+provenance:
+  sourceType: midscene_dual_model_live_evidence
+  materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
+  liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
+  scoutModel: qwen3-vl-plus
+  operatorModel: gpt-5.6-sol
+interactionBoundary:
+  actionable: false
+  function: presents_current_selector_value
