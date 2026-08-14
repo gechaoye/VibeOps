@@ -19,6 +19,7 @@ import { buildAIReviewDemand, reviewCandidates } from './ai-review.mjs';
 import { loadReviewerModelSettings, loadScoutModelSettings, saveReviewerModelSettings, saveScoutModelSettings } from './model-settings.mjs';
 import { recoverScoutCheckpointFromStream, runResumableScout, SCOUT_ERROR_RETRY_LIMIT } from './resumable-scout.mjs';
 import { runScoutModel } from './scout-client.mjs';
+import { runReviewerModel } from './reviewer-client.mjs';
 
 function imagePayload(base64) {
   const match = String(base64).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/s);
@@ -172,20 +173,21 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       if (frozenAgent !== server.agent || frozenFrameId !== frameId) {
         throw workbenchError(409, '当前进程没有该 frameId 的冻结上下文，请重新冻结画面后再识别');
       }
+      const frozenFrame = await store.loadFrame(frameId);
       const currentDraft = await store.loadDraft();
       if (currentDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
       const candidates = reviewCandidates(currentDraft);
       if (candidates.length === 0) throw workbenchError(422, '当前页面没有可供对照的 Scout 候选');
       signal?.throwIfAborted();
-      const rawResult = await server.agent.aiQuery(buildAIReviewDemand(currentDraft, candidates), {
-        domIncluded: false,
-        screenshotIncluded: true,
-        stream: true,
-        abortSignal: signal,
+      const rawResult = await runReviewerModel({
+        prompt: buildAIReviewDemand(currentDraft, candidates),
+        imagePath: frozenFrame.imagePath,
+        mimeType: frozenFrame.mimeType,
+        signal,
         onChunk: (chunk) => emitProgress({
           type: 'chunk',
           content: chunk.content || '',
-          reasoningContent: process.env.MIDSCENE_MODEL_REASONING_ENABLED === 'true' ? chunk.reasoning_content || '' : '',
+          reasoningContent: chunk.reasoning_content || '',
         }),
       });
       signal?.throwIfAborted();

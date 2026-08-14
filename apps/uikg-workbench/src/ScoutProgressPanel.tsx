@@ -1,5 +1,7 @@
 import { ArrowDown, Bot, ChevronDown, ChevronRight, CircleAlert, CircleCheck, History, LoaderCircle, RefreshCw, ScanSearch, Square, UserCheck, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ReviewComparisonPanel } from './ReviewComparisonPanel';
 import type { AnalysisSession, DraftElement, ReviewerResult } from './types';
 
@@ -43,7 +45,7 @@ const statusLabels = {
 } as const;
 
 function useStreamFollow(content: string) {
-  const elementRef = useRef<HTMLPreElement>(null);
+  const elementRef = useRef<HTMLDivElement>(null);
   const followingRef = useRef(true);
   const [atBottom, setAtBottom] = useState(true);
 
@@ -72,6 +74,27 @@ function useStreamFollow(content: string) {
   };
 
   return { elementRef, trackScroll, scrollToBottom, atBottom };
+}
+
+function markdownSource(content: string) {
+  const value = content || '';
+  const trimmed = value.trimStart();
+  if ((trimmed.startsWith('{') || trimmed.startsWith('[')) && !value.includes('```')) {
+    return `\`\`\`json\n${value}\n\`\`\``;
+  }
+  return value;
+}
+
+function MarkdownStream({ content, label }: { content: string; label: string }) {
+  return <div className="model-markdown" aria-label={label}><ReactMarkdown remarkPlugins={[remarkGfm]}>{markdownSource(content)}</ReactMarkdown></div>;
+}
+
+function displayModelError(message?: string) {
+  if (!message) return '';
+  if (message.includes('524 status code') || message.includes('Error 524')) {
+    return 'Reviewer 模型响应超时（524）：上游服务在代理时限内没有开始返回内容，请重新识别';
+  }
+  return message;
 }
 
 export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMode, onCancel, onRetry, onClose, sessions, comparison, applyingComparison = false, onApplyComparison }: ScoutProgressPanelProps) {
@@ -122,15 +145,15 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
               <i className={session.status} />
               <span><strong>{session.kind === 'scout' ? 'Scout 识别' : 'Reviewer 重识别'}</strong><small>{new Date(session.startedAt).toLocaleString('zh-CN')} · {session.model || '未配置模型'}</small></span>
               <em>{session.status === 'completed' ? '成功' : session.status === 'failed' ? '失败' : session.status === 'cancelled' ? '已中断' : '运行中'}</em>
-              {session.errorMessage && <p>{session.errorMessage}</p>}
+              {session.errorMessage && <p>{displayModelError(session.errorMessage)}</p>}
             </article>
           ))}
         </section>}
 
         {reviewing && (activity.scoutReasoningContent || activity.scoutOutputContent) && <details className="prior-scout-stream">
           <summary>Scout 识别过程 <span>点击展开</span></summary>
-          {activity.scoutReasoningContent && <pre>{activity.scoutReasoningContent}</pre>}
-          {activity.scoutOutputContent && <pre>{activity.scoutOutputContent}</pre>}
+          {activity.scoutReasoningContent && <MarkdownStream content={activity.scoutReasoningContent} label="Scout 思考内容" />}
+          {activity.scoutOutputContent && <MarkdownStream content={activity.scoutOutputContent} label="Scout 输出内容" />}
         </details>}
 
         {!showHistory && <div className={`scout-progress-streams ${hasReasoning ? 'has-reasoning' : 'output-only'} `}>
@@ -141,14 +164,14 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
               <span>{active ? '实时' : '已完成'}</span>
             </button>
             {reasoningExpanded && <div className="scout-stream-scroll">
-              <pre ref={reasoningStream.elementRef} aria-label="模型思考流" onScroll={reasoningStream.trackScroll}>{activity.reasoningContent}</pre>
+              <div ref={reasoningStream.elementRef} className="model-markdown-scroll" onScroll={reasoningStream.trackScroll}><MarkdownStream content={activity.reasoningContent} label="模型思考流" /></div>
               {!reasoningStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={reasoningStream.scrollToBottom}><ArrowDown size={14} /></button>}
             </div>}
           </article>}
           <article>
             <div className="scout-stream-title"><strong>模型输出</strong><span>{activity.outputContent ? '实时' : '等待'}</span></div>
             <div className="scout-stream-scroll">
-              <pre ref={outputStream.elementRef} aria-label="模型输出流" onScroll={outputStream.trackScroll}>{activity.outputContent || (active ? '等待模型输出…' : '没有可展示的模型输出')}</pre>
+              <div ref={outputStream.elementRef} className="model-markdown-scroll" onScroll={outputStream.trackScroll}><MarkdownStream content={activity.outputContent || (active ? '等待模型输出…' : '没有可展示的模型输出')} label="模型输出流" /></div>
               {!outputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={outputStream.scrollToBottom}><ArrowDown size={14} /></button>}
             </div>
           </article>
@@ -156,11 +179,11 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
 
         {comparison && onApplyComparison && <ReviewComparisonPanel scoutElements={comparison.scoutElements} reviewerResult={comparison.reviewerResult} applying={applyingComparison} onApply={onApplyComparison} />}
 
-        {activity.errorMessage && <div className="scout-progress-error"><CircleAlert size={15} /><span>{activity.errorMessage}</span></div>}
+        {activity.errorMessage && <div className="scout-progress-error"><CircleAlert size={15} /><span>{displayModelError(activity.errorMessage)}</span></div>}
         <footer className="scout-progress-footer">
           <span>{activity.status === 'completed' ? comparison ? '请选择两份结果中需要保留的元素' : autoMode ? '合并结果仍需人工确认' : '结构化结果已写入草稿' : activity.status === 'cancelled' ? '半截结果未写入草稿' : activity.status === 'paused' ? `已保留 ${activity.completedCandidates || 0} 个候选的断点` : reviewing ? 'Scout 结果已保留' : ''}</span>
           <div className="scout-progress-actions">
-            {active ? reviewing ? <button type="button" className="button" disabled><LoaderCircle className="spin" size={14} />Reviewer 识别中</button> : <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} />中断 Scout</button> : <>
+            {active ? reviewing ? <button type="button" className="button" disabled><LoaderCircle className="spin" size={14} />Reviewer 识别中</button> : <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} fill="currentColor" />中断 Scout</button> : <>
               {activity.status === 'paused' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />从断点重试</button>}
               {activity.phase === 'review-error' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
               <button type="button" className="button" onClick={onClose}>关闭</button>
