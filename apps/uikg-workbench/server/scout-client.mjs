@@ -42,12 +42,9 @@ export async function runScoutModel({
   if (!model) throw new Error('未配置 MIDSCENE_SCOUT_MODEL_NAME');
   if (!apiKey) throw new Error('未配置 MIDSCENE_SCOUT_MODEL_API_KEY');
 
-  const timeout = Number(process.env.MIDSCENE_SCOUT_MODEL_TIMEOUT || 180000);
-  const timeoutSignal = AbortSignal.timeout(Number.isFinite(timeout) ? timeout : 180000);
-  const requestSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
   const response = await fetch(endpointFor(process.env.MIDSCENE_SCOUT_MODEL_BASE_URL), {
     method: 'POST',
-    signal: requestSignal,
+    signal,
     headers: {
       authorization: `Bearer ${apiKey}`,
       'content-type': 'application/json',
@@ -55,6 +52,7 @@ export async function runScoutModel({
     body: JSON.stringify({
       model,
       temperature: Number(process.env.MIDSCENE_SCOUT_MODEL_TEMPERATURE || 0),
+      enable_thinking: process.env.MIDSCENE_SCOUT_MODEL_REASONING_ENABLED === 'true',
       stream: true,
       messages: [{
         role: 'user',

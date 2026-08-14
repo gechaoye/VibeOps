@@ -1,7 +1,6 @@
 import { jsonrepair } from 'jsonrepair';
 
-export const SCOUT_CONTINUATION_RETRY_LIMIT = 5;
-export const SCOUT_CONTINUATION_TIMEOUT_MS = 30_000;
+export const SCOUT_ERROR_RETRY_LIMIT = 5;
 
 function candidateKeyOf(element) {
   const value = element?.candidateKey ?? element?.candidate_key;
@@ -116,61 +115,82 @@ export async function runResumableScout({
   callScout,
   buildContinuationPrompt,
   isComplete,
-  shouldContinue,
   signal,
   onRetry = () => {},
-  retryLimit = SCOUT_CONTINUATION_RETRY_LIMIT,
-  retryTimeoutMs = SCOUT_CONTINUATION_TIMEOUT_MS,
+  retryLimit = SCOUT_ERROR_RETRY_LIMIT,
 }) {
-  let rawResult;
+  let rawResult = initialResult === undefined ? undefined : structuredClone(initialResult);
   let initialError = null;
-  if (initialResult !== undefined) {
-    rawResult = structuredClone(initialResult);
-  } else {
-    try {
-      rawResult = await callScout(initialPrompt, { signal, attempt: 0, continuation: false });
-    } catch (error) {
-      if (signal?.aborted) signal.throwIfAborted();
-      if (initialFallback === undefined) throw error;
-      rawResult = structuredClone(initialFallback);
-      initialError = error instanceof Error ? error.message : String(error);
-    }
-  }
-  if (isComplete(rawResult)) return { rawResult, completed: true, retryAttempts: [], initialError };
-  if (!shouldContinue(rawResult)) return { rawResult, completed: false, retryAttempts: [], initialError };
-
+  let lastError = null;
+  let consecutiveFailures = 0;
+  let continuation = initialResult !== undefined;
   const retryAttempts = [];
-  for (let attempt = 1; attempt <= retryLimit; attempt += 1) {
+
+  while (true) {
     signal?.throwIfAborted();
-    const checkpoint = summarizeScoutCheckpoint(rawResult);
-    onRetry({ attempt, retryLimit, retryTimeoutMs, checkpoint });
-    const timeoutSignal = AbortSignal.timeout(retryTimeoutMs);
-    const attemptSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+    const checkpoint = summarizeScoutCheckpoint(rawResult || initialFallback || {});
+    const prompt = continuation
+      ? buildContinuationPrompt(checkpoint, consecutiveFailures)
+      : initialPrompt;
     try {
-      const continuation = await callScout(buildContinuationPrompt(checkpoint, attempt), {
-        signal: attemptSignal,
-        attempt,
-        continuation: true,
+      const result = await callScout(prompt, {
+        signal,
+        attempt: consecutiveFailures,
+        continuation,
       });
-      rawResult = mergeScoutContinuation(rawResult, continuation);
-      const complete = continuation?.done === true && isComplete(rawResult);
-      retryAttempts.push({
-        attempt,
-        completed: complete,
-        modelReportedDone: continuation?.done === true,
-        receivedElements: Array.isArray(continuation?.elements) ? continuation.elements.length : 0,
-      });
-      if (complete) return { rawResult, completed: true, retryAttempts, initialError };
-      if (!shouldContinue(rawResult) && !isComplete(rawResult)) break;
+      rawResult = continuation
+        ? mergeScoutContinuation(rawResult || initialFallback, result)
+        : result;
+      const completed = isComplete(rawResult) && (!continuation || result?.done === true);
+      return {
+        rawResult,
+        completed,
+        retryAttempts,
+        initialError,
+        lastError: null,
+      };
     } catch (error) {
       if (signal?.aborted) signal.throwIfAborted();
+      const message = error instanceof Error ? error.message : String(error);
+      const recovered = error && typeof error === 'object' ? error.scoutCheckpoint : null;
+      const receivedContent = Boolean(error && typeof error === 'object' && error.receivedContent);
+      if (recovered) {
+        rawResult = rawResult
+          ? mergeScoutContinuation(rawResult, recovered)
+          : structuredClone(recovered);
+      } else if (rawResult === undefined && initialFallback !== undefined) {
+        rawResult = structuredClone(initialFallback);
+      }
+      if (initialError === null) initialError = message;
+      lastError = message;
+
+      if (receivedContent) consecutiveFailures = 0;
       retryAttempts.push({
-        attempt,
+        attempt: consecutiveFailures + 1,
         completed: false,
-        timedOut: timeoutSignal.aborted,
-        error: error instanceof Error ? error.message : String(error),
+        receivedContent,
+        recoveredElements: Array.isArray(recovered?.elements) ? recovered.elements.length : 0,
+        error: message,
+      });
+
+      if (consecutiveFailures >= retryLimit) {
+        return {
+          rawResult,
+          completed: false,
+          retryAttempts,
+          initialError,
+          lastError,
+        };
+      }
+
+      consecutiveFailures += 1;
+      continuation = summarizeScoutCheckpoint(rawResult).completedCandidates.length > 0;
+      onRetry({
+        attempt: consecutiveFailures,
+        retryLimit,
+        checkpoint: summarizeScoutCheckpoint(rawResult),
+        error: message,
       });
     }
   }
-  return { rawResult, completed: false, retryAttempts, initialError };
 }

@@ -1,5 +1,5 @@
-import { Bot, CircleAlert, CircleCheck, LoaderCircle, RefreshCw, ScanSearch, Square, UserCheck, X } from 'lucide-react';
-import { useLayoutEffect, useRef } from 'react';
+import { ArrowDown, Bot, ChevronDown, ChevronRight, CircleAlert, CircleCheck, LoaderCircle, RefreshCw, ScanSearch, Square, UserCheck, X } from 'lucide-react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export interface ScoutActivity {
   status: 'running' | 'cancelling' | 'completed' | 'cancelled' | 'paused' | 'error';
@@ -34,19 +34,33 @@ const statusLabels = {
 function useStreamFollow(content: string) {
   const elementRef = useRef<HTMLPreElement>(null);
   const followingRef = useRef(true);
+  const [atBottom, setAtBottom] = useState(true);
 
   useLayoutEffect(() => {
     const element = elementRef.current;
-    if (element && followingRef.current) element.scrollTop = element.scrollHeight;
+    if (element && followingRef.current) {
+      element.scrollTop = element.scrollHeight;
+      setAtBottom(true);
+    }
   }, [content]);
 
   const trackScroll = () => {
     const element = elementRef.current;
     if (!element) return;
-    followingRef.current = element.scrollHeight - element.scrollTop - element.clientHeight <= 20;
+    const nextAtBottom = element.scrollHeight - element.scrollTop - element.clientHeight <= 20;
+    followingRef.current = nextAtBottom;
+    setAtBottom(nextAtBottom);
   };
 
-  return { elementRef, trackScroll };
+  const scrollToBottom = () => {
+    const element = elementRef.current;
+    if (!element) return;
+    element.scrollTop = element.scrollHeight;
+    followingRef.current = true;
+    setAtBottom(true);
+  };
+
+  return { elementRef, trackScroll, scrollToBottom, atBottom };
 }
 
 export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMode, onCancel, onRetry, onClose }: ScoutProgressPanelProps) {
@@ -54,6 +68,15 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
   const reviewing = activity.phase === 'review' || activity.phase === 'review-error';
   const reasoningStream = useStreamFollow(activity.reasoningContent);
   const outputStream = useStreamFollow(activity.outputContent);
+  const hasReasoning = Boolean(activity.reasoningContent.trim());
+  const hasOutput = Boolean(activity.outputContent.trim());
+  const [reasoningExpanded, setReasoningExpanded] = useState(false);
+
+  useEffect(() => {
+    if (hasReasoning && !hasOutput) setReasoningExpanded(true);
+    if (hasOutput) setReasoningExpanded(false);
+  }, [hasReasoning, hasOutput]);
+
   return (
     <div className="scout-progress-backdrop" role="presentation">
       <section className="scout-progress-panel" role="dialog" aria-modal="true" aria-label={autoMode ? 'Auto 双模型分析' : 'Scout 实时分析'}>
@@ -78,14 +101,24 @@ export function ScoutProgressPanel({ activity, modelName, reviewerModel, autoMod
           <span>{activity.phaseMessage || '等待模型返回'}</span>
         </div>
 
-        <div className="scout-progress-streams">
-          <article>
-            <div className="scout-stream-title"><strong>模型思考</strong><span>{activity.reasoningContent ? '实时' : '未返回'}</span></div>
-            <pre ref={reasoningStream.elementRef} aria-label="模型思考流" onScroll={reasoningStream.trackScroll}>{activity.reasoningContent || (active ? '等待模型返回思考内容…' : '模型未返回独立思考内容')}</pre>
-          </article>
+        <div className={`scout-progress-streams ${hasReasoning ? 'has-reasoning' : 'output-only'} `}>
+          {hasReasoning && <article className={`scout-reasoning-stream ${reasoningExpanded ? 'expanded' : 'collapsed'}`}>
+            <button type="button" className="scout-reasoning-toggle" aria-expanded={reasoningExpanded} onClick={() => setReasoningExpanded((expanded) => !expanded)}>
+              {reasoningExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              <strong>模型思考</strong>
+              <span>{active ? '实时' : '已完成'}</span>
+            </button>
+            {reasoningExpanded && <div className="scout-stream-scroll">
+              <pre ref={reasoningStream.elementRef} aria-label="模型思考流" onScroll={reasoningStream.trackScroll}>{activity.reasoningContent}</pre>
+              {!reasoningStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={reasoningStream.scrollToBottom}><ArrowDown size={14} /></button>}
+            </div>}
+          </article>}
           <article>
             <div className="scout-stream-title"><strong>模型输出</strong><span>{activity.outputContent ? '实时' : '等待'}</span></div>
-            <pre ref={outputStream.elementRef} aria-label="模型输出流" onScroll={outputStream.trackScroll}>{activity.outputContent || (active ? '等待模型输出…' : '没有可展示的模型输出')}</pre>
+            <div className="scout-stream-scroll">
+              <pre ref={outputStream.elementRef} aria-label="模型输出流" onScroll={outputStream.trackScroll}>{activity.outputContent || (active ? '等待模型输出…' : '没有可展示的模型输出')}</pre>
+              {!outputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={outputStream.scrollToBottom}><ArrowDown size={14} /></button>}
+            </div>
           </article>
         </div>
 

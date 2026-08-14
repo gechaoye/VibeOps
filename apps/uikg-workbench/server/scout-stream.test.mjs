@@ -10,7 +10,9 @@ const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8
 
 test('Scout 流输出可见且中断会传递到模型请求，不合并半截草稿', async () => {
   const previousScoutModel = process.env.MIDSCENE_SCOUT_MODEL_NAME;
+  const previousScoutReasoning = process.env.MIDSCENE_SCOUT_MODEL_REASONING_ENABLED;
   process.env.MIDSCENE_SCOUT_MODEL_NAME = 'test-scout-model';
+  process.env.MIDSCENE_SCOUT_MODEL_REASONING_ENABLED = 'true';
   const app = express();
   let draft = createEmptyDraft();
   let modelAborted = false;
@@ -90,5 +92,7 @@ test('Scout 流输出可见且中断会传递到模型请求，不合并半截�
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     if (previousScoutModel === undefined) delete process.env.MIDSCENE_SCOUT_MODEL_NAME;
     else process.env.MIDSCENE_SCOUT_MODEL_NAME = previousScoutModel;
+    if (previousScoutReasoning === undefined) delete process.env.MIDSCENE_SCOUT_MODEL_REASONING_ENABLED;
+    else process.env.MIDSCENE_SCOUT_MODEL_REASONING_ENABLED = previousScoutReasoning;
   }
 });

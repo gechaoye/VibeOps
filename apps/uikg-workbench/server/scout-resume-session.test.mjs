@@ -8,9 +8,9 @@ import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
 
-function scoutElement() {
+function scoutElement(candidateKey = 'header.title') {
   return {
-    candidateKey: 'header.title',
+    candidateKey,
     label: '消息',
     visualDescription: '顶部标题',
     controlType: 'label',
@@ -23,14 +23,7 @@ function scoutElement() {
     meaning: {
       status: 'known',
       description: '页面标题',
-      evidence: {
-        visibleTexts: ['消息'],
-        visibleIcons: [],
-        visibleStates: [],
-        visualCues: [],
-        userContext: null,
-        unclassified: [],
-      },
+      evidence: { visibleTexts: ['消息'], visibleIcons: [], visibleStates: [], visualCues: [], userContext: null, unclassified: [] },
     },
     dynamicContent: false,
     riskSignals: [],
@@ -45,14 +38,14 @@ function eventPayload(streamText, eventName) {
   return JSON.parse(data.slice(6));
 }
 
-test('Scout 自动续写失败后保留会话，并可通过断点接口继续', async () => {
+test('模型错误重试从已收到的断点继续并最终合并草稿', async () => {
   const previousScoutModel = process.env.MIDSCENE_SCOUT_MODEL_NAME;
   process.env.MIDSCENE_SCOUT_MODEL_NAME = 'test-scout-model';
   const app = express();
   let draft = createEmptyDraft();
   let frozenFrameId = null;
-  let mode = 'pause';
   let modelCalls = 0;
+  const prompts = [];
   const agent = {
     interface: {},
     async unfreezePageContext() {},
@@ -60,31 +53,28 @@ test('Scout 自动续写失败后保留会话，并可通过断点接口继续',
     async _snapshotContext() {
       return { screenshot: { base64: `data:image/png;base64,${PNG_1X1}`, capturedAt: Date.now() } };
     },
-    async aiScout(_prompt, options) {
+    async aiScout(prompt, options) {
       modelCalls += 1;
-      options.onChunk({ content: '{}', reasoning_content: '', accumulated: '<data-json>{}</data-json>', isComplete: false });
-      if (mode === 'pause') {
-        if (modelCalls === 1) {
-          return {
-            frameId: frozenFrameId,
-            page: { name: '消息', surfaceType: 'page', stateSummary: '消息页', scrollableRegions: [] },
-            elements: [scoutElement()],
-          };
-        }
-        return { elements: [], done: false };
+      prompts.push(prompt);
+      if (modelCalls === 1) {
+        const checkpoint = { frameId: frozenFrameId, page: { name: '消息', surfaceType: 'page', stateSummary: '消息页', scrollableRegions: [] }, elements: [scoutElement()] };
+        const content = `<data-json>${JSON.stringify(checkpoint)}`;
+        options.onChunk({ content, reasoning_content: '', accumulated: content, isComplete: false });
+        throw new Error('上游连接断开');
       }
-      return {
-        elements: [],
+      const result = {
+        elements: [scoutElement('footer')],
         relationships: [],
         actionCandidates: [],
         comparison: { basisFrameId: null, status: 'not-requested', changes: [] },
         uncertainties: [],
         done: true,
       };
+      options.onChunk({ content: JSON.stringify(result), reasoning_content: '', accumulated: JSON.stringify(result), isComplete: true });
+      return result;
     },
   };
   const store = {
-    async initialize() {},
     async saveFrame(frame) {
       return { frameId: frame.frameId, mimeType: frame.mimeType, extension: frame.extension, width: frame.width, height: frame.height, bytes: frame.buffer.length, capturedAt: frame.capturedAt };
     },
@@ -93,9 +83,8 @@ test('Scout 自动续写失败后保留会话，并可通过断点接口继续',
     async saveDraft(value) { draft = structuredClone(value); },
     async saveModelResult(id) { return path.join(process.cwd(), '.data', 'evidence', 'model-results', `${id}.json`); },
   };
-  const server = { app, agent, getSessionState: () => null };
   await registerWorkbenchRoutes({
-    server,
+    server: { app, agent, getSessionState: () => null },
     store,
     graphWorkflow: {},
     workbenchRoot: process.cwd(),
@@ -104,34 +93,21 @@ test('Scout 自动续写失败后保留会话，并可通过断点接口继续',
 
   const httpServer = createServer(app);
   await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
-  const address = httpServer.address();
-  const baseUrl = `http://127.0.0.1:${address.port}`;
+  const baseUrl = `http://127.0.0.1:${httpServer.address().port}`;
   try {
     const frameResponse = await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' });
     frozenFrameId = (await frameResponse.json()).frame.frameId;
-
-    const firstResponse = await fetch(`${baseUrl}/workbench/api/scout/stream`, {
+    const streamResponse = await fetch(`${baseUrl}/workbench/api/scout/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ frameId: frozenFrameId, pageContext: '消息页' }),
     });
-    const errorEvent = eventPayload(await firstResponse.text(), 'error');
-    assert.equal(modelCalls, 6, '首次调用后应自动续写 5 次');
-    assert.equal(errorEvent.resumableSession.completedCandidates, 1);
-
-    const savedSession = await fetch(`${baseUrl}/workbench/api/scout/session`).then((response) => response.json());
-    assert.equal(savedSession.session.id, errorEvent.resumableSession.id);
-
-    mode = 'complete';
-    const resumeResponse = await fetch(`${baseUrl}/workbench/api/scout/resume/stream`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: savedSession.session.id }),
-    });
-    const resultEvent = eventPayload(await resumeResponse.text(), 'result');
-    assert.equal(resultEvent.draft.elements.length, 1);
-    const clearedSession = await fetch(`${baseUrl}/workbench/api/scout/session`).then((response) => response.json());
-    assert.equal(clearedSession.session, null);
+    const streamText = await streamResponse.text();
+    assert.equal(modelCalls, 2);
+    assert.match(streamText, /正在重试：1\/5/);
+    const resultEvent = eventPayload(streamText, 'result');
+    assert.equal(resultEvent.draft.elements.length, 2);
+    assert.match(prompts[1], /header\.title/);
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     if (previousScoutModel === undefined) delete process.env.MIDSCENE_SCOUT_MODEL_NAME;

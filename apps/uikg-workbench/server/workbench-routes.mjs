@@ -17,7 +17,7 @@ import {
 } from './draft-model.mjs';
 import { applyAIReviews, buildAIReviewDemand, normalizeAIReviewOutput, reviewCandidates } from './ai-review.mjs';
 import { loadReviewerModelSettings, loadScoutModelSettings, saveReviewerModelSettings, saveScoutModelSettings } from './model-settings.mjs';
-import { recoverScoutCheckpointFromStream, runResumableScout, SCOUT_CONTINUATION_RETRY_LIMIT } from './resumable-scout.mjs';
+import { recoverScoutCheckpointFromStream, runResumableScout, SCOUT_ERROR_RETRY_LIMIT } from './resumable-scout.mjs';
 import { runScoutModel } from './scout-client.mjs';
 
 function imagePayload(base64) {
@@ -63,11 +63,11 @@ Inspect the entire stable Android screenshot. Inventory every visible control, l
 }
 
 function buildScoutContinuationPrompt(frameId, pageContext, checkpoint, attempt) {
-  return `Continue the same frozen-frame Scout inventory from checkpoint ${attempt}. Do not restart or repeat completed candidates.
+  return `Continue the same frozen-frame Scout inventory from checkpoint after request error ${attempt}. This is a delta request, not a new inventory. Do not restart from the top of the screenshot and do not repeat completed candidates.
 Already completed candidates and coverage:
 ${JSON.stringify(checkpoint)}
 
-Inspect the same screenshot and return one compact JSON object with only the remaining work:
+Begin after normalized vertical position ${checkpoint.coveredBottom || 0}. If the visible elements are already covered, return elements:[] and only complete the missing top-level sections. Never return any candidateKey listed in completedCandidates. Inspect the same screenshot and return one compact JSON object with only the remaining work:
 {
   frameId: string,
   page: {name: string|null, surfaceType: "page"|"dialog"|"drawer"|"bottom-sheet"|"menu"|"shared-component"|"unknown", stateSummary: string, scrollableRegions: string[]},
@@ -78,7 +78,7 @@ Inspect the same screenshot and return one compact JSON object with only the rem
   uncertainties: string[],
   done: boolean
 }.
-Return only elements not listed in the checkpoint, using new stable ASCII candidateKey values. Include relationships and actions involving both existing and new candidate keys when needed. Distinguish scroll-vertical, swipe-horizontal, long-press, and drag; do not return the legacy action scroll. Set done=true only after every visible region through the bottom of the frame and every required top-level section is complete. Keep evidence concise. FrameId remains ${JSON.stringify(frameId)}. User page context: ${pageContext || 'none supplied'}.`;
+Return only elements not listed in the checkpoint, using new stable ASCII candidateKey values. Include relationships and actions involving both existing and new candidate keys when needed. Distinguish scroll-vertical, swipe-horizontal, long-press, and drag; do not return the legacy action scroll. Set done=true only after every visible region after the checkpoint and every missing top-level section is complete. Keep evidence concise. FrameId remains ${JSON.stringify(frameId)}. User page context: ${pageContext || 'none supplied'}.`;
 }
 
 async function freezeAndCapture(agent) {
@@ -136,10 +136,6 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     const schemaErrors = structuredClone(validateScoutSchema.errors || []);
     return { normalizedResult, normalizationIssues, schemaValid, schemaErrors };
   };
-
-  const shouldContinueScout = (candidate) => inspectScoutResult(candidate).schemaErrors.some((error) => (
-    error.instancePath === '' && error.keyword === 'required'
-  ));
 
   const publicScoutSession = (session, includeStreams = false) => session ? {
     id: session.id,
@@ -207,7 +203,9 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
               emitProgress({
                 type: 'chunk',
                 content: chunk.content || '',
-                reasoningContent: chunk.reasoning_content || '',
+                reasoningContent: process.env.MIDSCENE_SCOUT_MODEL_REASONING_ENABLED === 'true'
+                  ? chunk.reasoning_content || ''
+                  : '',
               });
             };
             if (typeof server.agent.aiScout === 'function') {
@@ -229,18 +227,20 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
           } catch (error) {
             if (signal?.aborted) signal.throwIfAborted();
             const recovered = recoverScoutCheckpointFromStream(accumulated);
-            if (recovered) return recovered;
+            if (error && typeof error === 'object') {
+              error.scoutCheckpoint = recovered;
+              error.receivedContent = Boolean(accumulated.trim());
+            }
             throw error;
           }
         },
         buildContinuationPrompt: (checkpoint, attempt) => buildScoutContinuationPrompt(frameId, pageContext, checkpoint, attempt),
         isComplete: (candidate) => inspectScoutResult(candidate).schemaValid,
-        shouldContinue: shouldContinueScout,
         signal,
-        onRetry: ({ attempt, retryLimit, retryTimeoutMs, checkpoint }) => emitProgress({
+        onRetry: ({ attempt, retryLimit, checkpoint }) => emitProgress({
           type: 'stage',
-          phase: 'resume',
-          message: `Scout 续写 ${attempt}/${retryLimit} · ${retryTimeoutMs / 1000} 秒`,
+          phase: 'retry',
+          message: `正在重试：${attempt}/${retryLimit}`,
           attempt,
           retryLimit,
           completedCandidates: checkpoint.completedCandidates.length,
@@ -276,29 +276,12 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       resultSaved = true;
       const modelResultRef = path.relative(workbenchRoot, resultPath).split(path.sep).join('/');
 
-      const retryExhausted = !run.completed && retryAttempts.length === SCOUT_CONTINUATION_RETRY_LIMIT;
-      if (retryExhausted) {
-        const now = new Date().toISOString();
-        resumableScout = {
-          id: resumeSession?.id || randomUUID(),
-          frameId,
-          pageContext,
-          model: process.env.MIDSCENE_SCOUT_MODEL_NAME,
-          rawResult,
-          completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
+      if (run.lastError) {
+        throw workbenchError(502, run.lastError, {
+          modelResultRef,
+          retryLimit: SCOUT_ERROR_RETRY_LIMIT,
           retryAttempts,
-          reasoningContent,
-          outputContent,
-          createdAt: resumeSession?.createdAt || startedAt,
-          updatedAt: now,
-          errorMessage: '自动续写 5 次仍未完成',
-          modelResultRef,
-        };
-        throw workbenchError(422, 'Scout 自动续写 5 次仍未完成，可从断点继续', {
-          modelResultRef,
-          schemaErrors,
-          consistencyIssues,
-          resumableSession: publicScoutSession(resumableScout),
+          completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
         });
       }
       if (!schemaValid || !run.completed || blockingConsistencyIssues.length > 0) {

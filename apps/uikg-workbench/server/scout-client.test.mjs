@@ -20,6 +20,7 @@ test('Scout client sends a frozen image and repairs streamed JSON', async () => 
     request.on('end', () => {
       const payload = JSON.parse(body);
       assert.equal(payload.model, 'test-scout');
+      assert.equal(payload.enable_thinking, false);
       assert.match(payload.messages[0].content[1].image_url.url, /^data:image\/png;base64,/);
       response.writeHead(200, { 'content-type': 'text/event-stream' });
       response.write('data: {"choices":[{"delta":{"content":"{\\"frameId\\":\\"f\\","}}]}\n\n');

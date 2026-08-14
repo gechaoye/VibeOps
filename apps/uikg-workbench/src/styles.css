@@ -317,8 +317,24 @@ button { color: inherit; }
 .auto-review-pipeline { display: grid; grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr); align-items: center; gap: 6px; padding: 11px 15px; border-bottom: 1px solid #354a40; background: #122019; }
 .auto-review-pipeline > span { display: grid; grid-template-columns: 18px minmax(0, 1fr); align-items: center; min-width: 0; column-gap: 6px; color: #75877e; }.auto-review-pipeline > span svg { grid-row: 1 / 3; }.auto-review-pipeline small { font-size: 9px; }.auto-review-pipeline strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }.auto-review-pipeline > i { height: 1px; background: #496056; }
 .auto-review-pipeline > span.active { color: #8ee0b4; }.auto-review-pipeline > span.done { color: #b9cac1; }.auto-review-pipeline > span.done svg { color: #4bc68a; }
-.scout-progress-streams { display: grid; flex: 1 1 auto; grid-template-columns: 1fr 1fr; min-height: 0; gap: 1px; background: #354a40; }
+.scout-progress-streams { display: grid; flex: 1 1 auto; grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 1px; background: #354a40; }
+.scout-progress-streams.has-reasoning { grid-template-rows: auto minmax(0, 1fr); }
+.scout-progress-streams.output-only { grid-template-rows: minmax(0, 1fr); }
 .scout-progress-streams article { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 230px; background: #101a15; }
+.scout-progress-streams.output-only article { min-height: 320px; }
+.scout-reasoning-stream { min-height: 0 !important; }
+.scout-reasoning-toggle { display: flex; align-items: center; gap: 5px; min-height: 34px; padding: 9px 11px; border: 0; border-bottom: 1px solid #263a30; color: #cbd9d2; background: transparent; text-align: left; cursor: pointer; }
+.scout-reasoning-toggle:hover { background: #172b21; }
+.scout-reasoning-toggle span { margin-left: auto; color: #82998d; font-size: 9px; }
+.scout-reasoning-stream.collapsed { grid-template-rows: auto; }
+.scout-stream-scroll { position: relative; min-height: 0; overflow: hidden; }
+.scout-stream-scroll pre { height: 100%; }
+.scout-stream-scroll pre { scrollbar-width: thin; scrollbar-color: #50685b transparent; }
+.scout-stream-scroll pre::-webkit-scrollbar { width: 6px; height: 6px; }
+.scout-stream-scroll pre::-webkit-scrollbar-track { background: transparent; }
+.scout-stream-scroll pre::-webkit-scrollbar-thumb { border-radius: 6px; background: #50685b; }
+.stream-bottom-button { position: absolute; right: 10px; bottom: 10px; display: grid; width: 26px; height: 26px; place-items: center; padding: 0; border: 1px solid #668477; border-radius: 50%; color: #d8e9e0; background: #20372c; box-shadow: 0 3px 10px rgb(0 0 0 / 22%); cursor: pointer; }
+.stream-bottom-button:hover { color: #fff; background: #2c5140; }
 .scout-stream-title { display: flex; align-items: center; justify-content: space-between; padding: 9px 11px; border-bottom: 1px solid #263a30; }.scout-stream-title strong { font-size: 11px; }.scout-stream-title span { color: #82998d; font-size: 9px; }
 .scout-progress-streams pre { min-height: 0; margin: 0; padding: 11px; overflow: auto; color: #cbd9d2; font: 10px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
 .scout-progress-error { display: flex; align-items: flex-start; gap: 7px; padding: 9px 15px; border-top: 1px solid #63464a; color: #ffb5ba; background: #321e23; font-size: 10px; line-height: 1.45; }
@@ -461,5 +477,5 @@ button { color: inherit; }
   .model-preset { grid-template-columns: 18px minmax(0, 1fr); }.preset-price { grid-column: 2; align-items: flex-start; flex-direction: row; }
   .settings-actions { flex-wrap: wrap; }.settings-actions > span { flex-basis: 100%; }
   .device-panel { min-height: 620px; }.tree-panel, .detail-panel { min-height: 420px; }
-  .scout-progress-backdrop { inset: 0; padding: 8px; }.scout-progress-panel { max-height: calc(100% - 16px); }.scout-progress-streams { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }.scout-progress-streams article { min-height: 150px; }
+  .scout-progress-backdrop { inset: 0; padding: 8px; }.scout-progress-panel { max-height: calc(100% - 16px); }.scout-progress-streams.has-reasoning { grid-template-rows: auto minmax(0, 1fr); }.scout-progress-streams.output-only { grid-template-rows: minmax(0, 1fr); }.scout-progress-streams article { min-height: 150px; }
 }

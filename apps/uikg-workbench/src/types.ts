@@ -194,9 +194,9 @@ export interface ScoutResumeSession {
   retryAttempts: Array<{
     attempt: number;
     completed: boolean;
-    timedOut?: boolean;
+    receivedContent?: boolean;
+    recoveredElements?: number;
     error?: string;
-    receivedElements?: number;
   }>;
   createdAt: string;
   updatedAt: string;
