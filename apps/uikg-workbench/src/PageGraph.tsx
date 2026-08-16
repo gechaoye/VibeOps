@@ -100,7 +100,7 @@ function PageEditor({ page, status, onUpdate, onDelete, onChangeEnd }: { page: D
 
 export function PageGraph({ draft, draftDirty, onOpenPage, onUploadDraftChange, onUpdatePage, onDeletePage, onChangeEnd }: PageGraphProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [selectedPageId, setSelectedPageId] = useState(draft.currentPageId);
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(draft.currentPageId || null);
   const [showElementBboxes, setShowElementBboxes] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(showPageBboxesStorageKey) === 'true';
@@ -109,17 +109,18 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onUploadDraftChange, 
   const rows = Math.max(1, Math.ceil(draft.pages.length / columns));
   const width = columns * nodeWidth + (columns - 1) * columnGap + 48;
   const height = rows * nodeHeight + (rows - 1) * rowGap + 48;
-  const currentPage = draft.pages.find((page) => page.id === selectedPageId) || draft.pages[0];
-  const currentFrameId = currentPage?.frameIds.at(-1);
-  const currentPageElements = currentPage ? draft.elements.filter((element) => elementAvailableOnPage(element, currentPage.id, draft.elements)) : [];
+  const selectedPage = selectedPageId ? draft.pages.find((page) => page.id === selectedPageId) : undefined;
+  const selectedFrameId = selectedPage?.frameIds.at(-1);
+  const selectedPageElements = selectedPage ? draft.elements.filter((element) => elementAvailableOnPage(element, selectedPage.id, draft.elements)) : [];
 
   useEffect(() => {
     window.localStorage.setItem(showPageBboxesStorageKey, String(showElementBboxes));
   }, [showElementBboxes]);
 
   useEffect(() => {
+    if (!selectedPageId) return;
     if (draft.pages.some((page) => page.id === selectedPageId)) return;
-    setSelectedPageId(draft.pages.find((page) => page.id === draft.currentPageId)?.id || draft.pages[0]?.id || '');
+    setSelectedPageId(draft.pages.find((page) => page.id === draft.currentPageId)?.id || draft.pages[0]?.id || null);
   }, [draft.currentPageId, draft.pages, selectedPageId]);
 
   const selectPage = (pageId: string) => {
@@ -130,8 +131,8 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onUploadDraftChange, 
     <main className="graph-workspace">
       <section className="graph-main">
         <div className="graph-toolbar"><div><PanelsTopLeft size={16} /><strong>Page 对象图</strong><span>{draft.pages.length} 个 Page</span></div><div><button type="button" className="button" onClick={() => setUploadOpen(true)}><ImageUp size={15} />新增 Page</button></div></div>
-        <div className="graph-board-scroll">
-          <div className="graph-board" style={{ width, height }}>
+        <div className="graph-board-scroll" onClick={(event) => { if (event.target === event.currentTarget) setSelectedPageId(null); }}>
+          <div className="graph-board" style={{ width, height }} onClick={(event) => { if (event.target === event.currentTarget) setSelectedPageId(null); }}>
             {draft.pages.map((page, index) => {
               const position = pagePosition(index, columns);
               const status = pageWorkflowStatus(draft, page);
@@ -148,14 +149,14 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onUploadDraftChange, 
         </div>
         <section className="page-detail-preview" aria-label="选中页面大图">
           <header>
-            <div><strong>{currentPage?.name || '未选择 Page'}</strong><span>{currentFrameId ? `最新截图 · ${currentPageElements.length} 个页面元素` : '暂无截图'}</span></div>
+            <div><strong>{selectedPage?.name || '未选择 Page'}</strong><span>{selectedFrameId ? `最新截图 · ${selectedPageElements.length} 个页面元素` : selectedPage ? '暂无截图' : '未选择页面'}</span></div>
             <label><input type="checkbox" checked={showElementBboxes} onChange={(event) => setShowElementBboxes(event.target.checked)} /><span>显示元素 bbox</span></label>
           </header>
-          {currentPage && currentFrameId ? <PageDetailImage frameId={currentFrameId} page={currentPage} elements={currentPageElements} showElementBboxes={showElementBboxes} /> : <div className="page-detail-image"><div className="page-detail-empty">选择含截图的 Page 后在此查看大图</div></div>}
+          {selectedPage && selectedFrameId ? <PageDetailImage frameId={selectedFrameId} page={selectedPage} elements={selectedPageElements} showElementBboxes={showElementBboxes} /> : <div className="page-detail-image"><div className="page-detail-empty">{selectedPage ? '该页面暂无截图' : '请选择一个页面卡片'}</div></div>}
         </section>
       </section>
       <aside className="graph-editor">
-        {currentPage ? <PageEditor page={currentPage} status={pageWorkflowStatus(draft, currentPage)} onUpdate={(patch, key) => onUpdatePage(currentPage.id, patch, key)} onDelete={() => onDeletePage(currentPage.id)} onChangeEnd={onChangeEnd} /> : <div className="empty-state">先新增一个 Page</div>}
+        {selectedPage ? <PageEditor page={selectedPage} status={pageWorkflowStatus(draft, selectedPage)} onUpdate={(patch, key) => onUpdatePage(selectedPage.id, patch, key)} onDelete={() => onDeletePage(selectedPage.id)} onChangeEnd={onChangeEnd} /> : <div className="empty-state">请选择一个页面卡片</div>}
       </aside>
       <PageUploadDialog open={uploadOpen} draftDirty={draftDirty} onClose={() => setUploadOpen(false)} onDraftChange={onUploadDraftChange} />
     </main>

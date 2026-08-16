@@ -119,7 +119,12 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
       className={`annotation-stage ${drawing ? 'annotation-stage-drawing' : ''}`}
       style={fittedSize || undefined}
       onPointerDown={(event) => {
-        if (!drawing || !stageRef.current || event.target !== event.currentTarget) return;
+        const isBackground = event.target === event.currentTarget || event.target instanceof HTMLImageElement;
+        if (!stageRef.current || !isBackground) return;
+        if (!drawing) {
+          onSelect(null);
+          return;
+        }
         const start = point(event, stageRef.current);
         event.currentTarget.setPointerCapture(event.pointerId);
         setGesture({ type: 'draw', startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });

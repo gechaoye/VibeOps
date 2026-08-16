@@ -22,7 +22,6 @@ import {
   Redo2,
   RefreshCw,
   RotateCcw,
-  Save,
   ScanSearch,
   Settings2,
   Smartphone,
@@ -82,6 +81,21 @@ function invalidateChangedPagePublications(previous: Draft, next: Draft): Draft 
 }
 
 const emptyDevice: DeviceState = { online: false, session: null, runtimeInfo: null, targets: [] };
+
+function createEmptyWorkingPage(): DraftPage {
+  return {
+    id: 'draft-page-current',
+    key: 'page.current',
+    name: '当前页面',
+    surfaceType: 'unknown',
+    stateSummary: '',
+    scrollableRegions: [],
+    featurePath: [],
+    frameIds: [],
+    elementIds: [],
+    publishedAt: null,
+  };
+}
 
 const editableElementFields: Array<keyof DraftElement> = [
   'label', 'controlType', 'visualDescription', 'capabilities', 'actionEffects', 'state', 'parentId',
@@ -155,6 +169,8 @@ function AppContent() {
   const [continuousCapture, setContinuousCapture] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [workerControlBusy, setWorkerControlBusy] = useState<'worker-a' | 'worker-b' | null>(null);
   const [notice, setNotice] = useState<{ type: 'info' | 'error' | 'success'; text: string } | null>(null);
   const [workerActivity, setWorkerActivity] = useState<WorkerActivity | null>(null);
@@ -176,6 +192,10 @@ function AppContent() {
   const preAcceptStatusRef = useRef(new Map<string, DraftElement['reviewStatus']>());
   const preRejectStatusRef = useRef(new Map<string, DraftElement['reviewStatus']>());
   const connectionRefreshInFlightRef = useRef(false);
+  const autoSaveInFlightRef = useRef(false);
+  const autoSaveQueuedRef = useRef(false);
+  const annotationEntryDraftRef = useRef<Draft | null>(null);
+  const lastSavedDraftRef = useRef<Draft | null>(null);
   const workerAResultRef = useRef<WorkerResult | null>(null);
   const workerBResultRef = useRef<WorkerResult | null>(null);
 
@@ -185,8 +205,8 @@ function AppContent() {
   const canRestoreSelectedElement = Boolean(selectedElement && initialSelectedElement && JSON.stringify(selectedElement) !== JSON.stringify(initialSelectedElement));
   const canRestoreAllElements = Boolean(draft && JSON.stringify(draft.elements) !== JSON.stringify(initialAllElementsRef.current));
   const currentElements = useMemo(() => draft ? draft.elements.filter((element) => elementAvailableOnPage(element, draft.currentPageId, draft.elements)) : [], [draft]);
-  const currentPage = draft?.pages.find((page) => page.id === draft.currentPageId) || null;
-  const currentPageStatus = draft && currentPage ? pageWorkflowStatus(draft, currentPage) : null;
+  const currentPageHasPrivateElements = Boolean(draft?.elements.some((element) => element.pageId === draft.currentPageId));
+  const historyBlockedForPendingPage = Boolean(draft?.currentFrameId && !currentPageHasPrivateElements && draft.pages.find((page) => page.id === draft.currentPageId)?.frameIds.includes(draft.currentFrameId));
   const allCurrentChecked = currentElements.length > 0 && currentElements.every((element) => checkedIds.has(element.id));
   const frameUrl = draft?.currentFrameId
     ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(draft.currentFrameId)}/image`)
@@ -223,6 +243,12 @@ function AppContent() {
     draftRef.current = nextDraft;
     setDraft(nextDraft);
     setDirty(markDirty);
+    if (!annotationEntryDraftRef.current
+      || annotationEntryDraftRef.current.currentPageId !== nextDraft.currentPageId
+      || annotationEntryDraftRef.current.currentFrameId !== nextDraft.currentFrameId) {
+      annotationEntryDraftRef.current = structuredClone(nextDraft);
+    }
+    lastSavedDraftRef.current = structuredClone(nextDraft);
     pastRef.current = [];
     futureRef.current = [];
     historyGroupRef.current = null;
@@ -319,7 +345,7 @@ function AppContent() {
   const undo = () => {
     const current = draftRef.current;
     const previous = pastRef.current.at(-1);
-    if (!current || !previous) return;
+    if (!current || !previous || historyBlockedForPendingPage) return;
     appendElementActivity('撤销', current, previous);
     endHistoryGroup();
     pastRef.current = pastRef.current.slice(0, -1);
@@ -332,7 +358,7 @@ function AppContent() {
   const redo = () => {
     const current = draftRef.current;
     const next = futureRef.current[0];
-    if (!current || !next) return;
+    if (!current || !next || historyBlockedForPendingPage) return;
     appendElementActivity('取消撤销', current, next);
     endHistoryGroup();
     futureRef.current = futureRef.current.slice(1);
@@ -835,16 +861,127 @@ function AppContent() {
     setWorkerDialogOpen(true);
   };
 
-  const saveDraft = async () => {
-    if (!draft) return;
-    setBusy('save');
+  const persistDraft = async (draftToSave: Draft) => {
+    const result = await workbenchApi.saveDraft(draftToSave);
+    lastSavedDraftRef.current = structuredClone(result.draft);
+    // Autosave replaces the server-normalized draft without resetting the
+    // undo/redo snapshots or the current review baseline.
+    if (draftRef.current === draftToSave) {
+      draftRef.current = result.draft;
+      setDraft(result.draft);
+      setDirty(false);
+    }
+    setServerIssues(result.issues);
+    return result.draft;
+  };
+
+  const runAutoSave = async (draftToSave: Draft) => {
+    if (autoSaveInFlightRef.current) {
+      autoSaveQueuedRef.current = true;
+      return;
+    }
+    autoSaveInFlightRef.current = true;
+    setAutoSaveState('saving');
     try {
-      const result = await workbenchApi.saveDraft(draft);
-      resetDraftState(result.draft, false, true);
-      setServerIssues(result.issues);
-      showNotice('success', '草稿已保存');
+      await persistDraft(draftToSave);
+      setAutoSaveState('saved');
     } catch (error) {
-      showNotice('error', error instanceof Error ? error.message : String(error));
+      setAutoSaveState('error');
+      showNotice('error', `自动保存失败：${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      autoSaveInFlightRef.current = false;
+      if (autoSaveQueuedRef.current && draftRef.current && draftRef.current !== draftToSave) {
+        autoSaveQueuedRef.current = false;
+        void runAutoSave(draftRef.current);
+      } else {
+        autoSaveQueuedRef.current = false;
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (workspaceMode !== 'annotation' || !dirty || !draft?.currentFrameId) return undefined;
+    const timer = window.setTimeout(() => {
+      const latestDraft = draftRef.current;
+      if (latestDraft?.currentFrameId) void runAutoSave(latestDraft);
+    }, 900);
+    return () => window.clearTimeout(timer);
+  }, [draft, dirty, workspaceMode]);
+
+  const reviewReady = currentElements.length > 0 && currentElements.every((element) => element.reviewStatus === 'accepted');
+
+  const completeReview = async () => {
+    const current = draftRef.current;
+    if (!current || !reviewReady || autoSaveInFlightRef.current) return;
+    setBusy('review-complete');
+    try {
+      const emptyPage = createEmptyWorkingPage();
+      const clearedDraft: Draft = {
+        ...current,
+        currentPageId: emptyPage.id,
+        currentFrameId: null,
+        rawModelResultRef: null,
+        page: emptyPage,
+        pages: [...current.pages.filter((page) => page.id !== emptyPage.id), emptyPage],
+      };
+      // Persist the approved elements together with the cleared working page
+      // so a reload starts from the same empty annotation state.
+      const result = await workbenchApi.saveDraft(clearedDraft);
+      setServerIssues(result.issues);
+      // Approval is the only operation that clears undo/redo history and
+      // returns the annotation workspace to its empty initial state.
+      resetDraftState(result.draft, false, true);
+      setSelectedId(null);
+      setCheckedIds(new Set());
+      setDrawing(false);
+      setShowRejected(false);
+      setFrame(null);
+      setWorkerComparison(null);
+      setViewMode('live');
+      setAutoSaveState('idle');
+      showNotice('success', '审核已完成，标注工作区已清空');
+    } catch (error) {
+      showNotice('error', `完成审核失败：${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const requestCancelAnnotation = () => {
+    if (!draftRef.current?.currentFrameId) return;
+    setCancelDialogOpen(true);
+  };
+
+  const restoreAnnotationState = async (source: 'entry' | 'saved') => {
+    const snapshot = source === 'entry' ? annotationEntryDraftRef.current : lastSavedDraftRef.current;
+    if (!snapshot) return;
+    setCancelDialogOpen(false);
+    setBusy('cancel-annotation');
+    try {
+      // Keep the selected snapshot's page/element properties, but clear the
+      // active frame so the annotation surface returns to its initial state.
+      const restoredDraft: Draft = {
+        ...structuredClone(snapshot),
+        currentFrameId: null,
+        rawModelResultRef: null,
+      };
+      const result = await workbenchApi.saveDraft(restoredDraft);
+      lastSavedDraftRef.current = structuredClone(result.draft);
+      setServerIssues(result.issues);
+      resetDraftState(result.draft, false, true);
+      setSelectedId(null);
+      setCheckedIds(new Set());
+      setDrawing(false);
+      setShowRejected(false);
+      setFrame(null);
+      setWorkerComparison(null);
+      // The selected snapshot updates page data, while the annotation canvas
+      // returns to its default live/empty view instead of rendering that snapshot.
+      setViewMode('live');
+      setAutoSaveState('idle');
+      showNotice('success', source === 'entry' ? '已恢复进入标注时的状态' : '已恢复最后一次保存的状态');
+    } catch (error) {
+      showNotice('error', `恢复标注状态失败：${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setBusy(null);
     }
@@ -1111,6 +1248,7 @@ function AppContent() {
     const page = draft?.pages.find((item) => item.id === pageId);
     if (!page) return;
     selectPage(pageId);
+    if (draftRef.current) annotationEntryDraftRef.current = structuredClone(draftRef.current);
     setWorkspaceMode('annotation');
     setViewMode(page.frameIds.length > 0 ? 'review' : 'live');
   };
@@ -1297,7 +1435,7 @@ function AppContent() {
         </div>
         <div className="header-actions">
           <span className={`validation-summary ${errorCount ? 'has-error' : ''}`} title="当前草稿校验结果"><CircleAlert size={15} />{errorCount} / {warningCount}</span>
-          <button type="button" className="button button-primary" disabled={!dirty || busy === 'save'} onClick={() => void saveDraft()}>{busy === 'save' ? <LoaderCircle className="spin" size={16} /> : <Save size={16} />}保存草稿</button>
+          {workspaceMode === 'annotation' && viewMode === 'review' && <button type="button" className="button button-primary" disabled={!reviewReady || busy === 'review-complete' || autoSaveState === 'saving'} onClick={() => void completeReview()}>{busy === 'review-complete' ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />}审核通过</button>}
         </div>
       </header>
 
@@ -1306,7 +1444,6 @@ function AppContent() {
         <label><span>构建</span><input value={draft?.buildRef || ''} placeholder="android-package:..." onBlur={endHistoryGroup} onChange={(event) => updateDraft((current) => ({ ...current, buildRef: event.target.value }), 'draft:buildRef')} /></label>
         <label className="page-switcher"><span>页面</span><select value={draft?.currentPageId || ''} disabled={!draft?.pages.length} onChange={(event) => openPage(event.target.value)}>{draft?.pages.map((page) => { const pageStatus = pageWorkflowStatus(draft, page); return <option key={page.id} value={page.id}>{page.name} · {pageWorkflowStatusLabels[pageStatus]}</option>; })}</select></label>
         <label className="page-name-field"><span>名称</span><input value={draft?.page.name || ''} onBlur={endHistoryGroup} onChange={(event) => draft && updatePage(draft.currentPageId, { name: event.target.value }, 'page:name')} /></label>
-        {currentPageStatus && <span className={`page-status page-status-${currentPageStatus}`}>{pageWorkflowStatusLabels[currentPageStatus]}</span>}
         <div className="workspace-tabs" aria-label="工作区">
           <button type="button" className={workspaceMode === 'annotation' ? 'active' : ''} onClick={() => setWorkspaceMode('annotation')}><MousePointer2 size={14} />标注</button>
           <button type="button" className={workspaceMode === 'graph' ? 'active' : ''} onClick={() => setWorkspaceMode('graph')}><PanelsTopLeft size={14} />页面图</button>
@@ -1320,7 +1457,7 @@ function AppContent() {
         <section className="device-panel">
           <div className="panel-toolbar">
             <div className="view-tabs">
-              <button type="button" className={viewMode === 'live' ? 'active' : ''} disabled={!connected} onClick={() => setViewMode('live')}><Play size={14} />实时操作</button>
+              <button type="button" className={viewMode === 'live' ? 'active' : ''} onClick={() => setViewMode('live')}><Play size={14} />实时操作</button>
               <button type="button" className={viewMode === 'review' ? 'active' : ''} disabled={!draft?.currentFrameId} onClick={() => setViewMode('review')}><Camera size={14} />标注页面</button>
             </div>
             <div className="toolbar-actions">
@@ -1331,6 +1468,7 @@ function AppContent() {
                 </>
               ) : (
                 <>
+                  <button type="button" className="button danger-button" disabled={busy === 'cancel-annotation' || busy === 'review-complete'} onClick={requestCancelAnnotation}><X size={15} />取消标注</button>
                   <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><SquareDashed size={16} /></button>
                   <button type="button" className="icon-button" title={showRejected ? '隐藏已忽略元素' : '显示已忽略元素'} onClick={() => setShowRejected((value) => !value)}>{showRejected ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                   <span className="worker-model" title={explorationMode === 'ultra' ? `Worker A：${status?.workerAModel || '未配置'}；Worker B：${status?.workerBModel || '未配置'}` : `Worker A：${status?.workerAModel || '未配置'}`}>{explorationMode === 'ultra' ? '双 Worker 并发' : `Worker A：${status?.workerAModel || '未配置'}`}</span>
@@ -1341,11 +1479,20 @@ function AppContent() {
               )}
             </div>
           </div>
-          <div className={`device-stage-wrap ${workerComparison && explorationMode === 'ultra' ? 'has-worker-comparison' : ''}`}>
-            {viewMode === 'live' && connected ? (
-              <div className="live-preview">
-                <LiveDevicePreview client={deviceClient} runtimeInfo={device.runtimeInfo!} serverUrl={serverUrl} enabled={!['workers', 'worker-a', 'worker-b'].includes(busy || '')} onError={(message) => showNotice('error', message)} />
-              </div>
+          <div
+            className={`device-stage-wrap ${workerComparison && explorationMode === 'ultra' ? 'has-worker-comparison' : ''}`}
+            onPointerDown={(event) => {
+              if (viewMode === 'review' && event.target === event.currentTarget) setSelectedId(null);
+            }}
+          >
+            {viewMode === 'live' ? (
+              connected ? (
+                <div className="live-preview">
+                  <LiveDevicePreview client={deviceClient} runtimeInfo={device.runtimeInfo!} serverUrl={serverUrl} enabled={!['workers', 'worker-a', 'worker-b'].includes(busy || '')} onError={(message) => showNotice('error', message)} />
+                </div>
+              ) : (
+                <div className="device-empty"><MonitorSmartphone size={42} /><strong>暂无实时设备画面</strong><span>未检测到 Android 设备，连接设备后可开始实时操作</span></div>
+              )
             ) : frameUrl ? (
               explorationMode === 'ultra' && workerComparison ? (
                 <WorkerComparisonPanel imageUrl={frameUrl} workerAResult={workerComparison.workerAResult} workerBResult={workerComparison.workerBResult} applying={busy === 'worker-merge'} candidatePortalTarget={workerCandidatePortal} onApply={(selections) => void applyWorkerComparison(selections)} />
@@ -1353,7 +1500,7 @@ function AppContent() {
                 <AnnotationCanvas imageUrl={frameUrl} elements={currentElements} selectedId={selectedId} drawing={drawing} showRejected={showRejected} onSelect={setSelectedId} onAdd={addElement} onBoxChange={(id, bbox) => updateElement(id, { bbox }, `bbox:${id}`)} onBoxChangeEnd={endHistoryGroup} />
               )
             ) : (
-              <div className="device-empty"><MonitorSmartphone size={42} /><strong>未连接设备</strong><span>本地 Android</span></div>
+              <div className="device-empty"><MonitorSmartphone size={42} /><strong>暂无冻结画面</strong><span>请先在实时操作中冻结设备画面</span></div>
             )}
           </div>
           <div className="frame-status">
@@ -1367,8 +1514,8 @@ function AppContent() {
           <div className="panel-title">
             <div><MousePointer2 size={16} /><strong>页面元素</strong><span>{workerComparison && explorationMode === 'ultra' ? '候选' : currentElements.length}</span></div>
             {!(workerComparison && explorationMode === 'ultra') && <div className="element-toolbar" aria-label="元素全局操作">
-              <button type="button" className="icon-button" title="撤销上一步" disabled={pastRef.current.length === 0} onClick={undo}><Undo2 size={15} /></button>
-              <button type="button" className="icon-button" title="取消撤销" disabled={futureRef.current.length === 0} onClick={redo}><Redo2 size={15} /></button>
+              <button type="button" className="icon-button" title="撤销上一步" disabled={pastRef.current.length === 0 || historyBlockedForPendingPage} onClick={undo}><Undo2 size={15} /></button>
+              <button type="button" className="icon-button" title="取消撤销" disabled={futureRef.current.length === 0 || historyBlockedForPendingPage} onClick={redo}><Redo2 size={15} /></button>
               <button type="button" className="icon-button" title="恢复全部元素" disabled={!canRestoreAllElements} onClick={restoreAllElements}><RotateCcw size={15} /></button>
               {!multiSelect ? (
                 <button type="button" className="icon-button" title="进入多选" disabled={currentElements.length === 0} onClick={() => setMultiSelect(true)}><BoxSelect size={15} /></button>
@@ -1432,6 +1579,16 @@ function AppContent() {
         />
       )}
 
+      {cancelDialogOpen && <div className="annotation-cancel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCancelDialogOpen(false); }}>
+        <section className="annotation-cancel-dialog" role="dialog" aria-modal="true" aria-labelledby="annotation-cancel-title" onMouseDown={(event) => event.stopPropagation()}>
+          <header><div><strong id="annotation-cancel-title">取消标注</strong><span>请选择要恢复的状态，页面和元素信息不会被清空。</span></div><button type="button" className="icon-button" aria-label="关闭" title="关闭" onClick={() => setCancelDialogOpen(false)}><X size={16} /></button></header>
+          <div className="annotation-cancel-options">
+            <button type="button" className="annotation-cancel-option" disabled={!annotationEntryDraftRef.current || busy === 'cancel-annotation'} onClick={() => void restoreAnnotationState('entry')}><strong>恢复进入标注时状态</strong><span>撤销进入标注后产生的识别、编辑和选择变化。</span></button>
+            <button type="button" className="annotation-cancel-option" disabled={!lastSavedDraftRef.current || busy === 'cancel-annotation'} onClick={() => void restoreAnnotationState('saved')}><strong>恢复最后一次保存状态</strong><span>保留最近一次自动保存或服务端保存的内容。</span></button>
+          </div>
+          <footer><button type="button" className="button" onClick={() => setCancelDialogOpen(false)}>继续标注</button></footer>
+        </section>
+      </div>}
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
       {workerDialogOpen && workerActivity && frameUrl && <WorkerProgressPanel activity={workerActivity} modelName={status?.workerAModel || null} workerBModel={status?.workerBModel || null} ultraMode={explorationMode === 'ultra'} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} workerControlBusy={workerControlBusy || (busy === 'worker-a' || busy === 'worker-b' ? busy : null)} onCancel={() => void cancelWorkers()} onCancelWorker={(kind) => void cancelWorker(kind)} onRetryWorker={(kind) => kind === 'worker_a' ? void retryWorkerA() : void retryWorkerB()} onResumeWorker={(kind) => kind === 'worker_a' ? void resumeWorkerA() : void resumeWorkerB()} onRetry={() => workerActivity.resumeKind === 'worker_b' ? void resumeWorkerB() : workerActivity.resumeKind === 'worker_a' ? void resumeWorkerA() : workerActivity.phase === 'worker-b-error' ? void retryWorkerB() : void runWorkers()} onClose={() => { setWorkerDialogOpen(false); if (workerActivity.status !== 'paused') setWorkerActivity(null); }} />}
     </div>
