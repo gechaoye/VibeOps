@@ -1099,6 +1099,22 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   });
 
+  router.get('/staging', async (_req, res, next) => {
+    try {
+      res.json({ versions: await graphWorkflow.listStages() });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/staging/merge', async (req, res, next) => {
+    try {
+      res.json(await graphWorkflow.mergeStages(req.body?.stageIds));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get('/staging/:stageId', async (req, res, next) => {
     try {
       res.json(await graphWorkflow.loadStage(req.params.stageId));
@@ -1107,15 +1123,54 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   });
 
-  router.post('/publish', async (req, res, next) => {
+  router.delete('/staging/:stageId', async (req, res, next) => {
     try {
+      res.json(await graphWorkflow.deleteStage(req.params.stageId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/staging/:stageId/archive', async (req, res, next) => {
+    try {
+      res.json(await graphWorkflow.archiveStage(req.params.stageId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/staging/:stageId/rollback', async (req, res, next) => {
+    try {
+      const result = await graphWorkflow.rollback(req.params.stageId);
       const draft = await store.loadDraft();
-      const result = await graphWorkflow.publish(req.body?.stageId, draft.revision);
-      const publishedAt = new Date().toISOString();
+      const now = new Date().toISOString();
       const nextDraft = normalizeDraftForSave({
         ...draft,
         revision: draft.revision + 1,
-        pages: draft.pages.map((page) => page.frameIds.length > 0 ? { ...page, publishedAt } : page),
+        pages: draft.pages.map((page) => ({ ...page, publishedAt: null })),
+        updatedAt: now,
+      });
+      const issues = validateDraft(nextDraft);
+      await store.saveDraft(nextDraft);
+      res.json({ ...result, draft: nextDraft, issues });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/publish', async (req, res, next) => {
+    try {
+      const draft = await store.loadDraft();
+      const result = await graphWorkflow.publish(req.body?.stageId);
+      const publishedAt = new Date().toISOString();
+      const publishesCurrentDraft = result.version.draftRevision === draft.revision && result.version.operation !== 'rollback';
+      const nextDraft = normalizeDraftForSave({
+        ...draft,
+        revision: draft.revision + 1,
+        pages: draft.pages.map((page) => ({
+          ...page,
+          publishedAt: publishesCurrentDraft && page.frameIds.length > 0 ? publishedAt : null,
+        })),
         updatedAt: publishedAt,
       });
       const issues = validateDraft(nextDraft);

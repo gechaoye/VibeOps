@@ -11,12 +11,12 @@ import {
   Eye,
   EyeOff,
   FileDiff,
-  GitBranch,
   History,
   LoaderCircle,
   MonitorSmartphone,
   MousePointer2,
   BoxSelect,
+  PanelsTopLeft,
   PanelRight,
   Play,
   Redo2,
@@ -40,12 +40,12 @@ import { ElementTree } from './ElementTree';
 import { Inspector } from './Inspector';
 import { LiveDevicePreview } from './LiveDevicePreview';
 import { ModelSettings } from './ModelSettings';
-import { createDraftTransition, createHumanElement, elementAvailableOnPage, pageWorkflowStatus, pageWorkflowStatusLabels, reviewStatusLabels, validateDraftClient } from './model';
+import { createHumanElement, elementAvailableOnPage, pageWorkflowStatus, pageWorkflowStatusLabels, reviewStatusLabels, validateDraftClient } from './model';
 import { PageGraph } from './PageGraph';
 import { WorkerProgressPanel, type WorkerActivity } from './WorkerProgressPanel';
 import { WorkerComparisonPanel } from './WorkerComparisonPanel';
 import { StagingPanel } from './StagingPanel';
-import type { AnalysisSession, BBox, DeviceState, Draft, DraftElement, DraftPage, DraftTransition, ElementActivityRecord, ElementEditRecord, FrameMetadata, WorkerResult, WorkerElementMergeSelection, WorkerResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, BBox, DeviceState, Draft, DraftElement, DraftPage, ElementActivityRecord, ElementEditRecord, FrameMetadata, WorkerResult, WorkerElementMergeSelection, WorkerResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 import './styles.css';
 
 type ViewMode = 'live' | 'review';
@@ -148,7 +148,6 @@ function AppContent() {
     return savedMode === 'manual' || savedMode === 'ai_assist' ? 'manual' : 'ultra';
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(null);
   const [multiSelect, setMultiSelect] = useState(false);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [drawing, setDrawing] = useState(false);
@@ -164,6 +163,7 @@ function AppContent() {
   const [workerComparison, setWorkerComparison] = useState<{ workerAResult: WorkerResult; workerBResult: WorkerResult; modelResultRef: string } | null>(null);
   const [workerCandidatePortal, setWorkerCandidatePortal] = useState<HTMLDivElement | null>(null);
   const [staging, setStaging] = useState<StagingResult | null>(null);
+  const [stagingVersions, setStagingVersions] = useState<StagingResult[]>([]);
   const [elementActivities, setElementActivities] = useState<ElementActivityRecord[]>([]);
   const draftRef = useRef<Draft | null>(null);
   const pastRef = useRef<Draft[]>([]);
@@ -393,6 +393,16 @@ function AppContent() {
     window.localStorage.setItem('uikg-exploration-mode', explorationMode);
   }, [explorationMode]);
 
+  useEffect(() => {
+    if (workspaceMode !== 'staging') return;
+    workbenchApi.stagingVersions()
+      .then(({ versions }) => {
+        setStagingVersions(versions);
+        setStaging((current) => current ? versions.find((version) => version.stageId === current.stageId) || current : versions[0] || null);
+      })
+      .catch((error) => showNotice('error', error instanceof Error ? error.message : String(error)));
+  }, [workspaceMode]);
+
   const connectDevice = async () => {
     if (!selectedDevice) return;
     setBusy('connect');
@@ -434,7 +444,6 @@ function AppContent() {
       workerBResultRef.current = null;
       setWorkerComparison(null);
       setSelectedId(null);
-      setSelectedTransitionId(null);
       setWorkspaceMode('annotation');
       setViewMode(keepLive ? 'live' : 'review');
       setDrawing(false);
@@ -1095,7 +1104,6 @@ function AppContent() {
       page: { id: page.id, key: page.key, name: page.name, surfaceType: page.surfaceType, stateSummary: page.stateSummary, scrollableRegions: page.scrollableRegions },
     }));
     setSelectedId(null);
-    setSelectedTransitionId(null);
     setCheckedIds(new Set());
   };
 
@@ -1153,7 +1161,6 @@ function AppContent() {
       };
     });
     setSelectedId(null);
-    setSelectedTransitionId(null);
     setCheckedIds(new Set());
     setBusy('delete-page');
     try {
@@ -1171,31 +1178,12 @@ function AppContent() {
     }
   };
 
-  const addTransition = () => {
-    if (!draft || draft.pages.length < 2) return;
-    const source = draft.pages.find((page) => page.id === draft.currentPageId) || draft.pages[0];
-    const target = draft.pages.find((page) => page.id !== source.id) || source;
-    const trigger = draft.elements.find((element) => elementAvailableOnPage(element, source.id, draft.elements));
-    if (!trigger) return;
-    const transition = createDraftTransition(source.id, target.id, trigger.id, source.frameIds.at(-1) || '', target.frameIds.at(-1) || '');
-    commitDraft((current) => ({ ...current, transitions: [...current.transitions, transition] }));
-    setSelectedTransitionId(transition.id);
-  };
-
-  const updateTransition = (transitionId: string, patch: Partial<DraftTransition>, historyKey?: string) => {
-    commitDraft((current) => ({ ...current, transitions: current.transitions.map((transition) => transition.id === transitionId ? { ...transition, ...patch } : transition) }), historyKey ? `${transitionId}:${historyKey}` : undefined);
-  };
-
-  const deleteTransition = (transitionId: string) => {
-    commitDraft((current) => ({ ...current, transitions: current.transitions.filter((transition) => transition.id !== transitionId) }));
-    setSelectedTransitionId(null);
-  };
-
   const prepareStaging = async () => {
     setBusy('staging');
     try {
       const result = await workbenchApi.prepareStaging();
       setStaging(result);
+      setStagingVersions((current) => [result, ...current.filter((version) => version.stageId !== result.stageId)]);
       showNotice(result.validation.valid ? 'success' : 'info', result.validation.valid ? 'staging 校验通过' : `staging 有 ${result.validation.errors.length} 个阻断项`);
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
@@ -1204,15 +1192,77 @@ function AppContent() {
     }
   };
 
-  const publishStaging = async () => {
-    if (!staging) return;
+  const publishStaging = async (stageId: string) => {
     setBusy('publish');
     try {
-      const result = await workbenchApi.publish(staging.stageId);
+      const result = await workbenchApi.publish(stageId);
       resetDraftState(result.draft, false, true);
       setServerIssues(result.issues);
       showNotice('success', `已发布 ${result.graphRevision}`);
-      setStaging(null);
+      setStaging(result.version);
+      setStagingVersions((await workbenchApi.stagingVersions()).versions);
+    } catch (error) {
+      showNotice('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const mergeStaging = async (stageIds: string[]) => {
+    setBusy('merge-staging');
+    try {
+      const result = await workbenchApi.mergeStaging(stageIds);
+      setStaging(result);
+      setStagingVersions((current) => [result, ...current.filter((version) => version.stageId !== result.stageId)]);
+      showNotice('success', `已合并 ${stageIds.length} 个版本`);
+    } catch (error) {
+      showNotice('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const deleteStaging = async (stageId: string) => {
+    if (!window.confirm('删除这个未发布版本？该操作无法撤销。')) return;
+    setBusy('delete-staging');
+    try {
+      await workbenchApi.deleteStaging(stageId);
+      const versions = stagingVersions.filter((version) => version.stageId !== stageId);
+      setStagingVersions(versions);
+      if (staging?.stageId === stageId) setStaging(versions[0] || null);
+      showNotice('success', 'Staging 版本已删除');
+    } catch (error) {
+      showNotice('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const archiveStaging = async (stageId: string) => {
+    if (!window.confirm('归档后该版本将永久不能回退，确认归档？')) return;
+    setBusy('archive-staging');
+    try {
+      const version = await workbenchApi.archiveStaging(stageId);
+      setStagingVersions((current) => current.map((item) => item.stageId === stageId ? version : item));
+      if (staging?.stageId === stageId) setStaging(version);
+      showNotice('success', '版本已归档');
+    } catch (error) {
+      showNotice('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const rollbackStaging = async (stageId: string) => {
+    if (!window.confirm('将活动图谱回退到这个版本？系统会保留当前版本并生成一条新的发布记录。')) return;
+    setBusy('rollback-staging');
+    try {
+      const result = await workbenchApi.rollbackStaging(stageId);
+      resetDraftState(result.draft, false, true);
+      setServerIssues(result.issues);
+      setStaging(result.version);
+      setStagingVersions((await workbenchApi.stagingVersions()).versions);
+      showNotice('success', `已回退并发布 ${result.graphRevision}`);
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
@@ -1259,7 +1309,7 @@ function AppContent() {
         {currentPageStatus && <span className={`page-status page-status-${currentPageStatus}`}>{pageWorkflowStatusLabels[currentPageStatus]}</span>}
         <div className="workspace-tabs" aria-label="工作区">
           <button type="button" className={workspaceMode === 'annotation' ? 'active' : ''} onClick={() => setWorkspaceMode('annotation')}><MousePointer2 size={14} />标注</button>
-          <button type="button" className={workspaceMode === 'graph' ? 'active' : ''} onClick={() => setWorkspaceMode('graph')}><GitBranch size={14} />页面图</button>
+          <button type="button" className={workspaceMode === 'graph' ? 'active' : ''} onClick={() => setWorkspaceMode('graph')}><PanelsTopLeft size={14} />页面图</button>
           <button type="button" className={workspaceMode === 'staging' ? 'active' : ''} onClick={() => setWorkspaceMode('staging')}><FileDiff size={14} />Staging</button>
           <button type="button" className={workspaceMode === 'settings' ? 'active' : ''} onClick={() => setWorkspaceMode('settings')}><Settings2 size={14} />模型</button>
         </div>
@@ -1372,9 +1422,9 @@ function AppContent() {
           )}
         </section>
       </main> : workspaceMode === 'graph' && draft ? (
-        <PageGraph draft={draft} draftDirty={dirty} selectedTransitionId={selectedTransitionId} onSelectTransition={setSelectedTransitionId} onOpenPage={openPage} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={updatePage} onDeletePage={deletePage} onAddTransition={addTransition} onUpdateTransition={updateTransition} onDeleteTransition={deleteTransition} onChangeEnd={endHistoryGroup} />
+        <PageGraph draft={draft} draftDirty={dirty} onOpenPage={openPage} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={updatePage} onDeletePage={deletePage} onChangeEnd={endHistoryGroup} />
       ) : workspaceMode === 'staging' ? (
-        <StagingPanel staging={staging} busy={busy} dirty={dirty} onPrepare={() => void prepareStaging()} onPublish={() => void publishStaging()} />
+        <StagingPanel versions={stagingVersions} staging={staging} busy={busy} dirty={dirty} onPrepare={() => void prepareStaging()} onSelect={setStaging} onMerge={(stageIds) => void mergeStaging(stageIds)} onPublish={(stageId) => void publishStaging(stageId)} onDelete={(stageId) => void deleteStaging(stageId)} onRollback={(stageId) => void rollbackStaging(stageId)} onArchive={(stageId) => void archiveStaging(stageId)} />
       ) : (
         <ModelSettings
           onNotice={showNotice}

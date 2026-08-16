@@ -1,4 +1,4 @@
-import type { AnalysisSession, Draft, FrameMetadata, PageUploadTask, WorkerElementMergeSelection, WorkerModelSettings, WorkerResult, WorkerResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, Draft, FrameMetadata, PageUploadTask, WorkerElementMergeSelection, WorkerModelSettings, WorkerResult, WorkerResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -163,8 +163,13 @@ export const workbenchApi = {
     modelResultRef: string;
   }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/workers/merge', { method: 'POST', body: JSON.stringify(payload) }),
   prepareStaging: () => request<StagingResult>('/staging', { method: 'POST', body: '{}' }),
+  stagingVersions: () => request<{ versions: StagingResult[] }>('/staging'),
   staging: (stageId: string) => request<StagingResult>(`/staging/${encodeURIComponent(stageId)}`),
-  publish: (stageId: string) => request<{ published: true; graphRevision: string; backupPath: string; explorationId: string; draft: Draft; issues: ValidationIssue[] }>('/publish', {
+  mergeStaging: (stageIds: string[]) => request<StagingResult>('/staging/merge', { method: 'POST', body: JSON.stringify({ stageIds }) }),
+  deleteStaging: (stageId: string) => request<{ deleted: true; stageId: string }>(`/staging/${encodeURIComponent(stageId)}`, { method: 'DELETE' }),
+  archiveStaging: (stageId: string) => request<StagingResult>(`/staging/${encodeURIComponent(stageId)}/archive`, { method: 'POST', body: '{}' }),
+  rollbackStaging: (stageId: string) => request<StagingPublishResult>(`/staging/${encodeURIComponent(stageId)}/rollback`, { method: 'POST', body: '{}' }),
+  publish: (stageId: string) => request<StagingPublishResult>('/publish', {
     method: 'POST',
     body: JSON.stringify({ stageId }),
   }),

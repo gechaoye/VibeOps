@@ -113,6 +113,68 @@ export class GraphWorkflow {
     if (!(await exists(this.pythonBinary))) this.pythonBinary = 'python3';
   }
 
+  normalizeStageMetadata(stage) {
+    const explorationIds = Array.isArray(stage.explorationIds)
+      ? stage.explorationIds
+      : stage.explorationId ? [stage.explorationId] : [];
+    return {
+      ...stage,
+      status: ['draft', 'published', 'archived'].includes(stage.status) ? stage.status : 'draft',
+      operation: ['prepare', 'merge', 'rollback'].includes(stage.operation) ? stage.operation : 'prepare',
+      sourceStageIds: Array.isArray(stage.sourceStageIds) ? stage.sourceStageIds : [],
+      mergeConflicts: Array.isArray(stage.mergeConflicts) ? stage.mergeConflicts : [],
+      explorationId: stage.explorationId || explorationIds[0] || null,
+      explorationIds,
+      publishedAt: stage.publishedAt || null,
+      archivedAt: stage.archivedAt || null,
+      updatedAt: stage.updatedAt || stage.createdAt,
+    };
+  }
+
+  stageRoot(stageId) {
+    if (!/^stage-[A-Za-z0-9-]+$/.test(stageId)) throw new Error('无效的 staging ID');
+    return path.join(this.stagingRoot, stageId);
+  }
+
+  async saveStage(stage) {
+    const normalized = this.normalizeStageMetadata(stage);
+    const stageRoot = this.stageRoot(normalized.stageId);
+    await mkdir(stageRoot, { recursive: true });
+    const target = path.join(stageRoot, 'stage.json');
+    const temporary = `${target}.${process.pid}.tmp`;
+    await writeFile(temporary, `${JSON.stringify(normalized, null, 2)}\n`, 'utf8');
+    await rename(temporary, target);
+    return normalized;
+  }
+
+  async listStages() {
+    const entries = await readdir(this.stagingRoot, { withFileTypes: true });
+    const stages = await Promise.all(entries
+      .filter((entry) => entry.isDirectory() && /^stage-[A-Za-z0-9-]+$/.test(entry.name))
+      .map(async (entry) => {
+        try {
+          return await this.loadStage(entry.name);
+        } catch {
+          return null;
+        }
+      }));
+    const manifests = new Map();
+    const withActivity = await Promise.all(stages.filter(Boolean).map(async (stage) => {
+      if (!manifests.has(stage.appKey)) {
+        manifests.set(stage.appKey, readFile(path.join(this.graphRoot, 'apps', stage.appKey, 'manifest.yaml'), 'utf8')
+          .then((content) => this.yaml.load(content))
+          .catch(() => null));
+      }
+      const activeManifest = await manifests.get(stage.appKey);
+      return {
+        ...stage,
+        isCurrent: Boolean(activeManifest && activeManifest.graphRevision === stage.graphRevision),
+        isStale: Boolean(stage.status === 'draft' && activeManifest && activeManifest.rootHash !== stage.baseRootHash),
+      };
+    }));
+    return withActivity.sort((left, right) => String(right.createdAt).localeCompare(String(left.createdAt)));
+  }
+
   async loadFrameMetadata(frameId) {
     const digest = frameId.replace(/^sha256:/, '');
     return JSON.parse(await readFile(path.join(this.dataRoot, 'evidence', 'frames', `${digest}.json`), 'utf8'));
@@ -661,6 +723,54 @@ export class GraphWorkflow {
     return diff;
   }
 
+  async refreshSnapshotManifest(stageGraphRoot, appKey, stageId) {
+    const appRoot = path.join(stageGraphRoot, 'apps', appKey);
+    const index = await this.loadCanonicalIndex(appRoot);
+    const manifestPath = path.join(appRoot, 'manifest.yaml');
+    const previous = this.yaml.load(await readFile(manifestPath, 'utf8'));
+    const entries = (await listFiles(appRoot, (file) => /\.ya?ml$/i.test(file) && path.basename(file) !== 'manifest.yaml'))
+      .map((file) => normalizePath(path.relative(appRoot, file)));
+    const graphRevision = `workbench-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${stageId.slice(-6)}`;
+    const manifest = {
+      ...previous,
+      generatedAt: new Date().toISOString(),
+      graphRevision,
+      entries,
+      entityIds: index.records.filter((record) => record.value.entityType).map((record) => record.value.id).sort(),
+    };
+    delete manifest.rootHash;
+    await this.writeYaml(manifestPath, manifest);
+    manifest.rootHash = await this.rootHash(appRoot);
+    await this.writeYaml(manifestPath, manifest);
+
+    const navIndex = path.join(stageGraphRoot, 'obsidian', appKey, '导航', '导航路网索引.md');
+    if (await exists(navIndex)) {
+      const content = await readFile(navIndex, 'utf8');
+      await writeFile(navIndex, content
+        .replace(/graph_revision:\s*.*$/m, `graph_revision: ${graphRevision}`)
+        .replace(/Graph Revision：`[^`]+`/, `Graph Revision：\`${graphRevision}\``), 'utf8');
+    }
+    return {
+      graphRevision,
+      rootHash: manifest.rootHash,
+      index,
+      counts: {
+        pages: index.byType.get('Page')?.length || 0,
+        elements: index.byType.get('Element')?.length || 0,
+        transitions: index.byType.get('Transition')?.length || 0,
+      },
+    };
+  }
+
+  canonicalTouched(index) {
+    return index.records.flatMap((record) => record.value.entityType ? [{
+      entityType: record.value.entityType,
+      key: record.value.key || record.value.id,
+      label: record.value.label || record.value.key || record.value.id,
+      path: record.file,
+    }] : []);
+  }
+
   async prepare(draftValue) {
     const draft = normalizeDraftShape(draftValue);
     const stageId = `stage-${Date.now()}-${randomUUID().slice(0, 8)}`;
@@ -681,25 +791,136 @@ export class GraphWorkflow {
       draftRevision: draft.revision,
       baseRootHash: activeManifest.rootHash,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'draft',
+      operation: 'prepare',
+      sourceStageIds: [],
+      mergeConflicts: [],
       graphRevision: materialized.graphRevision,
       diff,
       validation,
       counts: materialized.counts,
       explorationId: materialized.evidence.explorationId,
+      explorationIds: [materialized.evidence.explorationId],
+      publishedAt: null,
+      archivedAt: null,
     };
-    await writeFile(path.join(stageRoot, 'stage.json'), JSON.stringify(result, null, 2), 'utf8');
-    return result;
+    await writeFile(path.join(stageRoot, 'draft.json'), `${JSON.stringify(draft, null, 2)}\n`, 'utf8');
+    return this.saveStage(result);
   }
 
   async loadStage(stageId) {
-    if (!/^stage-[A-Za-z0-9-]+$/.test(stageId)) throw new Error('无效的 staging ID');
-    return JSON.parse(await readFile(path.join(this.stagingRoot, stageId, 'stage.json'), 'utf8'));
+    return this.normalizeStageMetadata(JSON.parse(await readFile(path.join(this.stageRoot(stageId), 'stage.json'), 'utf8')));
   }
 
-  async publish(stageId, draftRevision) {
+  async deleteStage(stageId) {
     const stage = await this.loadStage(stageId);
+    if (stage.status !== 'draft') throw new Error('只有未发布版本可以删除');
+    await rm(this.stageRoot(stageId), { recursive: true, force: true });
+    return { deleted: true, stageId };
+  }
+
+  async archiveStage(stageId) {
+    const stage = await this.loadStage(stageId);
+    if (stage.status !== 'published') throw new Error('只有已发布版本可以归档');
+    const now = new Date().toISOString();
+    return this.saveStage({ ...stage, status: 'archived', archivedAt: now, updatedAt: now });
+  }
+
+  async mergeStages(stageIds) {
+    const ids = unique(stageIds || []);
+    if (ids.length < 2) throw new Error('至少选择两个 Staging 版本进行合并');
+    const sources = (await Promise.all(ids.map((id) => this.loadStage(id))))
+      .sort((left, right) => String(left.createdAt).localeCompare(String(right.createdAt)));
+    if (sources.some((stage) => stage.status !== 'draft')) throw new Error('只能合并未发布版本');
+    const appKeys = unique(sources.map((stage) => stage.appKey));
+    if (appKeys.length !== 1) throw new Error('不同应用的 Staging 版本不能合并');
+    const appKey = appKeys[0];
+    const activeManifest = this.yaml.load(await readFile(path.join(this.graphRoot, 'apps', appKey, 'manifest.yaml'), 'utf8'));
+    if (sources.some((stage) => stage.baseRootHash !== activeManifest.rootHash)) {
+      throw new Error('存在基于旧活动图谱生成的版本，请重新生成后再合并');
+    }
+
+    const stageId = `stage-${Date.now()}-${randomUUID().slice(0, 8)}`;
+    const stageRoot = this.stageRoot(stageId);
+    const stageGraphRoot = path.join(stageRoot, 'knowledge_graph');
+    await mkdir(stageGraphRoot, { recursive: true });
+    await Promise.all([
+      cp(path.join(this.graphRoot, 'apps'), path.join(stageGraphRoot, 'apps'), { recursive: true }),
+      cp(path.join(this.graphRoot, 'obsidian'), path.join(stageGraphRoot, 'obsidian'), { recursive: true }),
+    ]);
+
+    const applied = new Map();
+    const mergeConflicts = [];
+    const obsidianTouched = new Map();
+    for (const source of sources) {
+      for (const area of ['apps', 'obsidian']) {
+        const sourceRoot = path.join(this.stageRoot(source.stageId), 'knowledge_graph', area, appKey);
+        const activeRoot = path.join(this.graphRoot, area, appKey);
+        if (!(await exists(sourceRoot))) continue;
+        for (const sourceFile of await listFiles(sourceRoot)) {
+          const relative = path.relative(sourceRoot, sourceFile);
+          if (area === 'apps' && relative === 'manifest.yaml') continue;
+          const sourceBytes = await readFile(sourceFile);
+          const activeBytes = await readFile(path.join(activeRoot, relative)).catch(() => null);
+          if (activeBytes && stableHash(sourceBytes) === stableHash(activeBytes)) continue;
+          const key = `${area}/${normalizePath(relative)}`;
+          const hash = stableHash(sourceBytes);
+          const previous = applied.get(key);
+          if (previous && previous.hash !== hash) {
+            mergeConflicts.push({ path: key, previousStageId: previous.stageId, overridingStageId: source.stageId });
+          }
+          const destination = path.join(stageGraphRoot, area, appKey, relative);
+          await mkdir(path.dirname(destination), { recursive: true });
+          await cp(sourceFile, destination);
+          applied.set(key, { hash, stageId: source.stageId });
+          if (area === 'obsidian') obsidianTouched.set(key, { entityType: 'Obsidian', key, label: path.basename(relative), path: destination });
+        }
+      }
+      for (const explorationId of source.explorationIds) {
+        const sourceExploration = path.join(this.stageRoot(source.stageId), 'knowledge_graph', 'explorations', explorationId);
+        if (await exists(sourceExploration)) {
+          await mkdir(path.join(stageGraphRoot, 'explorations'), { recursive: true });
+          await cp(sourceExploration, path.join(stageGraphRoot, 'explorations', explorationId), { recursive: true });
+        }
+      }
+    }
+
+    const refreshed = await this.refreshSnapshotManifest(stageGraphRoot, appKey, stageId);
+    const materialized = { appRoot: path.join(stageGraphRoot, 'apps', appKey), ...refreshed };
+    const validation = await this.validateStage(stageGraphRoot, { elements: [], transitions: [] }, materialized);
+    if (mergeConflicts.length) {
+      validation.warnings.push(...mergeConflicts.map((conflict) => `合并覆盖：${conflict.path}，采用较新版本 ${conflict.overridingStageId}`));
+    }
+    const touched = [...this.canonicalTouched(refreshed.index), ...obsidianTouched.values()];
+    const diff = await this.semanticDiff(this.graphRoot, stageGraphRoot, appKey, touched);
+    const now = new Date().toISOString();
+    return this.saveStage({
+      stageId,
+      appKey,
+      draftRevision: Math.max(...sources.map((stage) => stage.draftRevision)),
+      baseRootHash: activeManifest.rootHash,
+      createdAt: now,
+      updatedAt: now,
+      status: 'draft',
+      operation: 'merge',
+      sourceStageIds: sources.map((stage) => stage.stageId),
+      mergeConflicts,
+      graphRevision: refreshed.graphRevision,
+      diff,
+      validation,
+      counts: refreshed.counts,
+      explorationId: sources.flatMap((stage) => stage.explorationIds)[0] || null,
+      explorationIds: unique(sources.flatMap((stage) => stage.explorationIds)),
+      publishedAt: null,
+      archivedAt: null,
+    });
+  }
+
+  async publish(stageId) {
+    const stage = await this.loadStage(stageId);
+    if (stage.status !== 'draft') throw new Error('只有未发布版本可以发布');
     if (!stage.validation.valid) throw new Error('staging 仍有发布阻断项');
-    if (stage.draftRevision !== draftRevision) throw new Error('Draft 已变化，请重新生成 staging Diff');
     const activeManifest = this.yaml.load(await readFile(path.join(this.graphRoot, 'apps', stage.appKey, 'manifest.yaml'), 'utf8'));
     if (activeManifest.rootHash !== stage.baseRootHash) throw new Error('活动图谱已变化，请重新生成 staging Diff');
     const stageGraphRoot = path.join(this.stagingRoot, stageId, 'knowledge_graph');
@@ -707,8 +928,6 @@ export class GraphWorkflow {
     const activeObsidian = path.join(this.graphRoot, 'obsidian', stage.appKey);
     const stagedApp = path.join(stageGraphRoot, 'apps', stage.appKey);
     const stagedObsidian = path.join(stageGraphRoot, 'obsidian', stage.appKey);
-    const stagedExploration = path.join(stageGraphRoot, 'explorations', stage.explorationId);
-    const activeExploration = path.join(this.graphRoot, 'explorations', stage.explorationId);
     const backup = path.join(this.backupRoot, `${Date.now()}-${stageId}`);
     const preparedApp = path.join(this.graphRoot, 'apps', `.${stage.appKey}-${stageId}`);
     const preparedObsidian = path.join(this.graphRoot, 'obsidian', `.${stage.appKey}-${stageId}`);
@@ -719,6 +938,7 @@ export class GraphWorkflow {
     ]);
     let appSwitched = false;
     let obsidianSwitched = false;
+    const copiedExplorations = [];
     try {
       await rename(activeApp, path.join(backup, 'app'));
       await rename(preparedApp, activeApp);
@@ -726,11 +946,16 @@ export class GraphWorkflow {
       await rename(activeObsidian, path.join(backup, 'obsidian'));
       await rename(preparedObsidian, activeObsidian);
       obsidianSwitched = true;
-      if (await exists(stagedExploration)) {
-        await cp(stagedExploration, activeExploration, { recursive: true });
+      for (const explorationId of stage.explorationIds) {
+        const stagedExploration = path.join(stageGraphRoot, 'explorations', explorationId);
+        if (await exists(stagedExploration)) {
+          const activeExploration = path.join(this.graphRoot, 'explorations', explorationId);
+          await cp(stagedExploration, activeExploration, { recursive: true });
+          copiedExplorations.push(activeExploration);
+        }
       }
     } catch (error) {
-      await rm(activeExploration, { recursive: true, force: true });
+      await Promise.all(copiedExplorations.map((exploration) => rm(exploration, { recursive: true, force: true })));
       if (obsidianSwitched) await rm(activeObsidian, { recursive: true, force: true });
       if (await exists(path.join(backup, 'obsidian'))) await rename(path.join(backup, 'obsidian'), activeObsidian);
       if (appSwitched) await rm(activeApp, { recursive: true, force: true });
@@ -739,6 +964,51 @@ export class GraphWorkflow {
     } finally {
       await Promise.all([rm(preparedApp, { recursive: true, force: true }), rm(preparedObsidian, { recursive: true, force: true })]);
     }
-    return { published: true, graphRevision: stage.graphRevision, backupPath: backup, explorationId: stage.explorationId };
+    const publishedAt = new Date().toISOString();
+    const version = await this.saveStage({
+      ...stage,
+      status: 'published',
+      publishedAt,
+      updatedAt: publishedAt,
+      backupPath: backup,
+    });
+    return { published: true, graphRevision: stage.graphRevision, backupPath: backup, explorationId: stage.explorationId, version };
+  }
+
+  async rollback(stageId) {
+    const target = await this.loadStage(stageId);
+    if (target.status === 'archived') throw new Error('已归档版本不能回退');
+    if (target.status !== 'published') throw new Error('只能回退到已发布版本');
+    const activeManifest = this.yaml.load(await readFile(path.join(this.graphRoot, 'apps', target.appKey, 'manifest.yaml'), 'utf8'));
+    const rollbackStageId = `stage-${Date.now()}-${randomUUID().slice(0, 8)}`;
+    const rollbackRoot = this.stageRoot(rollbackStageId);
+    const rollbackGraphRoot = path.join(rollbackRoot, 'knowledge_graph');
+    await mkdir(rollbackRoot, { recursive: true });
+    await cp(path.join(this.stageRoot(stageId), 'knowledge_graph'), rollbackGraphRoot, { recursive: true });
+    const refreshed = await this.refreshSnapshotManifest(rollbackGraphRoot, target.appKey, rollbackStageId);
+    const materialized = { appRoot: path.join(rollbackGraphRoot, 'apps', target.appKey), ...refreshed };
+    const validation = await this.validateStage(rollbackGraphRoot, { elements: [], transitions: [] }, materialized);
+    const diff = await this.semanticDiff(this.graphRoot, rollbackGraphRoot, target.appKey, this.canonicalTouched(refreshed.index));
+    const now = new Date().toISOString();
+    await this.saveStage({
+      ...target,
+      stageId: rollbackStageId,
+      baseRootHash: activeManifest.rootHash,
+      graphRevision: refreshed.graphRevision,
+      createdAt: now,
+      updatedAt: now,
+      status: 'draft',
+      operation: 'rollback',
+      rollbackOfStageId: stageId,
+      sourceStageIds: [stageId],
+      mergeConflicts: [],
+      diff,
+      validation,
+      counts: refreshed.counts,
+      publishedAt: null,
+      archivedAt: null,
+      backupPath: null,
+    });
+    return this.publish(rollbackStageId);
   }
 }

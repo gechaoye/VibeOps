@@ -313,7 +313,23 @@ export interface StagingResult {
   draftRevision: number;
   baseRootHash: string;
   createdAt: string;
+  updatedAt: string;
+  status: 'draft' | 'published' | 'archived';
+  operation: 'prepare' | 'merge' | 'rollback';
+  sourceStageIds: string[];
+  rollbackOfStageId?: string;
+  mergeConflicts: Array<{
+    path: string;
+    previousStageId: string;
+    overridingStageId: string;
+  }>;
   graphRevision: string;
+  explorationId?: string | null;
+  explorationIds: string[];
+  publishedAt: string | null;
+  archivedAt: string | null;
+  isCurrent?: boolean;
+  isStale?: boolean;
   diff: StagingDiffItem[];
   validation: {
     valid: boolean;
@@ -327,6 +343,16 @@ export interface StagingResult {
     elements: number;
     transitions: number;
   };
+}
+
+export interface StagingPublishResult {
+  published: true;
+  graphRevision: string;
+  backupPath: string;
+  explorationId: string | null;
+  version: StagingResult;
+  draft: Draft;
+  issues: ValidationIssue[];
 }
 
 export interface DeviceState {
