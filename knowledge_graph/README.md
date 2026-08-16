@@ -39,4 +39,4 @@ Canonical 只保存已验证原子 Transition 和唯一 AuthorityContract；导�
 
 当前特别关注物化、共享导航迁移和检查结果位于 `normalization/zto-connect-fat-messages-special-follow-normalization-20260728`。退出 Canonical 的旧 ID 由 `apps/zto.connect/observations/shared-navigation-model-migrations.yaml` 保持可查询。
 
-当前底部导航的历史导航记录仍缺少完整原子证据，特别关注历史探索也缺少独立 Scout 结果，因此活动图谱保持 `incomplete`。结构正确不等于探索证据完成。
+当前底部导航的历史导航记录仍缺少完整原子证据，特别关注历史探索也缺少完整的双 Worker 答卷与字段合并记录，因此活动图谱保持 `incomplete`。结构正确不等于探索证据完成。

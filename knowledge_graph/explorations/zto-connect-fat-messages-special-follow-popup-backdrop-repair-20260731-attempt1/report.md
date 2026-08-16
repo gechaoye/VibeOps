@@ -5,7 +5,7 @@
 - Device: `sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36`
 - Frames: 2
 - Actions: 2
-- Evidence: live Midscene GPT + independent Scout on frozen frames
+- Evidence: live Midscene Worker B + independent Worker A on frozen frames
 - Scope: complete popup-interval modal backdrop boundary
 - Retry artifacts: 0 incomplete frames archived outside canonical coverage
 
@@ -29,4 +29,4 @@
 - 查询：`messages.root` 到 `messages.special_follow.settings.popup_interval_selector` 的 3 步路径可按需确定性计算。
 - 幂等性：发布前两次物化一致；发布后活动 App、Obsidian、Normalization 与独立物化结果逐字节一致。
 - 回滚：`knowledge_graph/.rollback/before-popup-backdrop-redbox-repair-20260731`。
-- 图谱总体状态仍为 `incomplete`，仅因为其他历史特别关注状态保留 GPT-only 证据；本次背景遮罩修复范围已闭合。
+- 图谱总体状态仍为 `incomplete`，仅因为其他历史特别关注状态保留 仅 Worker B 证据；本次背景遮罩修复范围已闭合。

@@ -153,7 +153,7 @@ def collect_evidence(source_root: Path) -> dict[str, Any]:
     traces: list[dict[str, Any]] = []
     sessions: dict[str, dict[str, Any]] = {}
     session_roots: dict[str, Path] = {}
-    scout_refs: list[str] = []
+    workerA_refs: list[str] = []
     for session_dir in sorted(source_root.glob("explorations/*special-follow*/raw-evidence/sessions/*")):
         session_path = session_dir / "raw-session.json"
         if not session_path.is_file():
@@ -168,8 +168,8 @@ def collect_evidence(source_root: Path) -> dict[str, Any]:
             observations[observation.get("frameRef")] = observation
         for frame in read_jsonl(session_dir / "raw-frames.jsonl"):
             frames[frame["id"]] = frame
-            if any(result.get("operation") == "aiScout" for result in frame.get("recognitionResults", [])):
-                scout_refs.append(frame["id"])
+            if any(result.get("operation") == "worker_a" for result in frame.get("recognitionResults", [])):
+                workerA_refs.append(frame["id"])
         traces.extend(read_jsonl(session_dir / "raw-action-traces.jsonl"))
     valid_frames = {
         frame_id: frame
@@ -197,7 +197,7 @@ def collect_evidence(source_root: Path) -> dict[str, Any]:
         "validFrames": valid_frames,
         "validTraces": valid_traces,
         "byHint": by_hint,
-        "scoutFrameRefs": scout_refs,
+        "workerAFrameRefs": workerA_refs,
     }
 
 
@@ -257,16 +257,16 @@ def collect_live_evidence_source(source_root: Path, config: dict[str, Any]) -> d
         screenshot_path = resolved_graph_path(exploration_root, frame["screenshotPath"])
         if "sha256:" + hashlib.sha256(screenshot_path.read_bytes()).hexdigest() != frame_id:
             raise ValueError(f"live screenshot bytes do not match frameId: {state_key}")
-        scout_path = resolved_graph_path(exploration_root, frame["scoutRef"])
-        reconciliation_path = resolved_graph_path(exploration_root, frame["reconciliationRef"])
+        workerA_path = resolved_graph_path(exploration_root, frame["workerARef"])
+        worker_b_path = resolved_graph_path(exploration_root, frame["workerBRef"])
         locator_path = resolved_graph_path(exploration_root, frame["locatorRef"])
-        scout = read_json(scout_path)
-        reconciliation = read_json(reconciliation_path)
+        workerA = read_json(workerA_path)
+        worker_b_answer = read_json(worker_b_path)
         locator_record = read_json(locator_path)
-        if scout.get("frameId") != frame_id:
-            raise ValueError(f"Scout result is not bound to live frame: {state_key}")
-        if not reconciliation:
-            raise ValueError(f"GPT reconciliation is empty: {state_key}")
+        if workerA.get("frameId") != frame_id:
+            raise ValueError(f"Worker A result is not bound to live frame: {state_key}")
+        if not worker_b_answer:
+            raise ValueError(f"Worker B answer is empty: {state_key}")
         if locator_record.get("frameId") != frame_id or locator_record.get("screenshotRef") != frame_id:
             raise ValueError(f"locator record is not bound to live frame: {state_key}")
         record_locators = locator_record.get("locators", {})
@@ -278,8 +278,8 @@ def collect_live_evidence_source(source_root: Path, config: dict[str, Any]) -> d
         frame["locators"] = validated_locators
         frame["explorationRef"] = exploration_ref
         frame["sourcePath"] = screenshot_path
-        frame["scoutPath"] = scout_path
-        frame["reconciliationPath"] = reconciliation_path
+        frame["workerAPath"] = workerA_path
+        frame["workerBPath"] = worker_b_path
         frame["locatorPath"] = locator_path
         if frame_id in frames or state_key in by_state:
             raise ValueError(f"duplicate live frame identity or state: {state_key}")
@@ -460,12 +460,12 @@ def frame_observation(frame: dict[str, Any], evidence: dict[str, Any]) -> dict[s
         },
         "stateProperties": {
             "planStateKeyHint": frame.get("planStateKeyHint"),
-            "independentScout": "missing_from_legacy_capture",
-            "gptRecognition": "complete",
+            "independentWorker A": "missing_from_legacy_capture",
+            "workerBRecognition": "complete",
         },
         "screenshotRef": screenshot_ref,
         "rawEvidenceRef": str(raw_root.relative_to(GRAPH_ROOT) / "sessions" / frame["sessionRef"]),
-        "evidenceStatus": "gpt_verified_pending_independent_scout",
+        "evidenceStatus": "workerB_verified_pending_independent_workerA",
     }
 
 
@@ -509,8 +509,8 @@ def live_frame_observation(frame: dict[str, Any], exploration_ref: str) -> dict[
         "viewport": deepcopy(frame["viewport"]),
         "stateProperties": {
             "planStateKeyHint": frame["stateKey"],
-            "independentScout": "complete",
-            "gptReconciliation": "complete",
+            "independentWorker A": "complete",
+            "workerBReconciliation": "complete",
         },
         "screenshotRef": frame["screenshotRef"],
         "rawEvidenceRef": f"explorations/{exploration_ref}",
@@ -955,13 +955,13 @@ def render_page_card(
         lines.append("- 无已闭合的离开 Transition。")
     evidence_statuses = {item.get("evidenceStatus", "") for item in page.get("observations", [])}
     has_live_dual_model = any(status == "dual_model_verified_live_frame" for status in evidence_statuses)
-    has_legacy_pending_scout = any("pending_independent_scout" in status for status in evidence_statuses)
-    if has_live_dual_model and has_legacy_pending_scout:
-        evidence_note = "当前页面同时包含实时双模型闭合帧和历史 GPT-only 帧；后者仍待独立 Scout 对账。"
+    has_legacy_pending_workerA = any("pending_independent_workerA" in status for status in evidence_statuses)
+    if has_live_dual_model and has_legacy_pending_workerA:
+        evidence_note = "当前页面同时包含实时双模型闭合帧和历史 仅 Worker B 帧；后者仍待独立 Worker A 对账。"
     elif has_live_dual_model:
-        evidence_note = "当前页面实例已具备独立 Scout、GPT 对账和实时冻结帧证据。"
+        evidence_note = "当前页面实例已具备独立 Worker A、Worker B 答卷和实时冻结帧证据。"
     else:
-        evidence_note = "该页面当前仅有历史 GPT 视觉证据，尚待独立 Scout 对账。"
+        evidence_note = "该页面当前仅有历史 Worker B 视觉证据，尚待独立 Worker A 对账。"
     lines.extend(
         [
             "",
@@ -1179,17 +1179,17 @@ def render_element_card(
     evidence_statuses = {item.get("evidenceStatus", "") for item in element.get("observations", [])}
     has_live_dual_model = any(status == "dual_model_verified_live_frame" for status in evidence_statuses)
     if has_live_dual_model:
-        gpt_note = "实时帧已完成 GPT 对账、定位及适用动作断言。"
-        scout_note = "当前实例已完成独立 Scout 清点。"
+        workerB_note = "实时帧已完成 Worker B 答卷、定位及适用动作断言。"
+        workerA_note = "当前实例已完成独立 Worker A 清点。"
     else:
-        gpt_note = "历史冻结帧的 GPT 识别、定位或断言证据已保留，仍待当前规范复核。"
-        scout_note = "历史采集中缺失，当前状态为待补采。"
+        workerB_note = "历史冻结帧的 Worker B 识别、定位或断言证据已保留，仍待当前规范复核。"
+        workerA_note = "历史采集中缺失，当前状态为待补采。"
     lines.extend(
         [
             "## 来源",
             "",
-            f"- GPT: {gpt_note}",
-            f"- Scout: {scout_note}",
+            f"- Worker B: {workerB_note}",
+            f"- Worker A: {workerA_note}",
         ]
     )
     if related_contracts:
@@ -1311,12 +1311,12 @@ def main() -> None:
                     "sourceType": "mixed_verified_evidence",
                     "materializationSpec": SPEC_PATH.name,
                     "liveExplorationRefs": evidence["pageLiveExplorationRefs"],
-                    "limitations": ["some historical states remain GPT-only pending independent Scout"],
+                    "limitations": ["some historical states remain 仅 Worker B pending independent Worker A"],
                 }
             elif page.get("provenance", {}).get("sourceType") == "legacy_uikg_v2_import":
-                page["status"] = "partially_reconciled_gpt_only_pending_scout"
+                page["status"] = "partially_reconciled_workerB_only_pending_workerA"
             else:
-                page["status"] = "observed_gpt_only_pending_scout"
+                page["status"] = "observed_workerB_only_pending_workerA"
             page["summary"] = candidate.get("summary", page.get("summary"))
         else:
             page = {
@@ -1331,7 +1331,7 @@ def main() -> None:
                 "status": (
                     "observed_dual_model_verified"
                     if has_live_evidence
-                    else "observed_gpt_only_pending_scout"
+                    else "observed_workerB_only_pending_workerA"
                 ),
                 "summary": candidate.get("summary", ""),
                 "states": selected_states,
@@ -1349,7 +1349,7 @@ def main() -> None:
                     else {
                         "sourceType": "verified_legacy_midscene_evidence",
                         "materializationSpec": SPEC_PATH.name,
-                        "limitations": ["independent aiScout evidence is absent from the historical capture"],
+                        "limitations": ["independent worker_a evidence is absent from the historical capture"],
                     }
                 ),
             }
@@ -1428,15 +1428,15 @@ def main() -> None:
                 )
                 if live_binding
                 else (
-                    "executed_verified_gpt_only_pending_scout"
+                    "executed_verified_workerB_only_pending_workerA"
                     if candidate.get("activation") == "executed_verified"
-                    else "observed_not_activated_gpt_only_pending_scout"
+                    else "observed_not_activated_workerB_only_pending_workerA"
                 )
             ),
             "status": (
                 "dual_model_verified_live"
                 if live_binding
-                else "gpt_verified_pending_independent_scout"
+                else "workerB_verified_pending_independent_workerA"
             ),
             "risk": candidate.get("risk", "unknown"),
             "provenance": (
@@ -1446,9 +1446,9 @@ def main() -> None:
                     "liveExplorationRef": live_binding.get(
                         "explorationRef", evidence["liveExplorationRef"]
                     ),
-                    "scoutModel": evidence["liveModelDiagnosticsByExploration"]
+                    "workerAModel": evidence["liveModelDiagnosticsByExploration"]
                     .get(live_binding.get("explorationRef"), {})
-                    .get("scout", {})
+                    .get("worker_a", {})
                     .get("name"),
                     "operatorModel": evidence["liveModelDiagnosticsByExploration"]
                     .get(live_binding.get("explorationRef"), {})
@@ -1459,7 +1459,7 @@ def main() -> None:
                 else {
                     "sourceType": "verified_legacy_midscene_evidence",
                     "materializationSpec": SPEC_PATH.name,
-                    "limitations": ["independent aiScout evidence is absent from the historical capture"],
+                    "limitations": ["independent worker_a evidence is absent from the historical capture"],
                 }
             ),
         }
@@ -1561,7 +1561,7 @@ def main() -> None:
         elif matching:
             trace = matching[0]
             action_name = trace.get("invocation", {}).get("operation")
-            verification_status = "success_gpt_only_pending_scout"
+            verification_status = "success_workerB_only_pending_workerA"
             transition_evidence = {
                 "actionTraceRef": trace["id"],
                 "beforeFrameRef": trace["beforeFrameRef"],
@@ -1573,7 +1573,7 @@ def main() -> None:
             }
             provenance = {
                 "sourceType": "verified_legacy_midscene_action_trace",
-                "limitations": ["independent aiScout evidence is absent from the historical capture"],
+                "limitations": ["independent worker_a evidence is absent from the historical capture"],
             }
         else:
             pending_transitions.append(key)
@@ -1823,7 +1823,7 @@ def main() -> None:
         "- 提示音选项和成员行使用普通复合容器，行主动作与试听/移除按钮保持独立边界。\n"
         "- 旧帮助 Page 和三个重复帮助图标已通过迁移账本退出 Canonical。\n"
         "- 非 UI 的系统返回动作不再伪装成 Element/Transition；原始动作证据继续保留。\n"
-        "- 本次模型修正与实时范围已闭合；历史 GPT-only 状态仍待独立 Scout，因此总体图谱保持 `incomplete`。\n",
+        "- 本次模型修正与实时范围已闭合；历史 仅 Worker B 状态仍待独立 Worker A，因此总体图谱保持 `incomplete`。\n",
         encoding="utf-8",
     )
 
@@ -1919,7 +1919,7 @@ def main() -> None:
             "",
             "## 状态",
             "",
-            f"- 本次 UIKG 3.0.1 规范化已具备 {len(evidence['liveFrames'])} 个双模型实时帧；其他特别关注历史状态仍缺少独立 Scout。",
+            f"- 本次 UIKG 3.0.1 规范化已具备 {len(evidence['liveFrames'])} 个双模型实时帧；其他特别关注历史状态仍缺少独立 Worker A。",
             "- 底部导航是 Application 持有的共享 Element；“更多”抽屉是共享 Element 状态，不建立同名 Page。",
             "- Obsidian 游离节点验收范围仅为 `knowledge_graph/obsidian/`。",
         ]
@@ -1930,7 +1930,7 @@ def main() -> None:
         "recordType": "UiGraphMaterializationAudit",
         "explorationRef": evidence["liveExplorationRef"] or EXPLORATION_ID,
         "status": "incomplete",
-        "reason": "uikg_3_0_1_model_normalization_complete_but_historical_states_remain_gpt_only",
+        "reason": "uikg_3_0_1_model_normalization_complete_but_historical_states_remain_workerB_only",
         "sourceSpec": SPEC_PATH.name,
         "normalizationPolicy": POLICY_PATH.name,
         "evidence": {
@@ -1938,7 +1938,7 @@ def main() -> None:
             "qualifiedFrames": len(evidence["validFrames"]),
             "rawActionTraces": len(evidence["traces"]),
             "qualifiedActionTraces": len(evidence["validTraces"]),
-            "aiScoutFrames": len(evidence["scoutFrameRefs"]) + len(evidence["liveFrames"]),
+            "worker_aFrames": len(evidence["workerAFrameRefs"]) + len(evidence["liveFrames"]),
             "liveDualModelFrames": len(evidence["liveFrames"]),
             "liveVerifiedActions": len(evidence["liveActions"]),
             "liveExplorationRef": evidence["liveExplorationRef"],
@@ -2121,7 +2121,7 @@ def main() -> None:
         "scope": {
             "mode": "uikg_3_0_1_popup_backdrop_redbox_repair",
             "deviceActions": f"{len(evidence['liveActions'])} verified Midscene actions; no ADB UI actions",
-            "reason": "设备已连接；弹窗提醒间隔选择器的完整背景遮罩已获得实时帧、独立 Scout、GPT 对账和独立 locator。",
+            "reason": "设备已连接；弹窗提醒间隔选择器的完整背景遮罩已获得实时帧、独立 Worker A、Worker B 答卷和独立 locator。",
         },
         "graph": {
             "root": str(source_root),
@@ -2157,7 +2157,7 @@ def main() -> None:
         "completion": {
             "correctionStatus": "complete",
             "resultingGraphStatus": "incomplete",
-            "remainingLimitation": "本次模型规范化与实时范围已闭合；历史特别关注状态仍有 GPT-only 证据，整体图谱继续标记 incomplete。",
+            "remainingLimitation": "本次模型规范化与实时范围已闭合；历史特别关注状态仍有 仅 Worker B 证据，整体图谱继续标记 incomplete。",
         },
     }
     dump_yaml(normalization_root / "scope.yaml", scope)
@@ -2173,7 +2173,7 @@ def main() -> None:
         "- 普通复合控件：提示音行区分选择与试听，成员行区分主行与移除按钮。\n"
         "- 重复清理：旧帮助 Page 和 `settings.help.*` 重复元素通过审核迁移记录退出 Canonical。\n"
         "- 运行冲突：旧“再次点击问号关闭”边已从可执行路网移除并保留反例证据。\n"
-        "- 总体状态：模型规范化完成；历史 GPT-only 状态仍缺独立 Scout，图谱保持 `incomplete`。\n",
+        "- 总体状态：模型规范化完成；历史 仅 Worker B 状态仍缺独立 Worker A，图谱保持 `incomplete`。\n",
         encoding="utf-8",
     )
     print(yaml.safe_dump(audit, allow_unicode=True, sort_keys=False), end="")

@@ -902,10 +902,10 @@ def main() -> None:
     audit = yaml.safe_load(audit_path.read_text(encoding="utf-8")) if audit_path.is_file() else {}
     graph_status = audit.get("status", manifest.get("status", "unknown"))
     if audit:
-        scout_frames = audit.get("evidence", {}).get("aiScoutFrames", 0)
+        workerA_frames = audit.get("evidence", {}).get("worker_aFrames", 0)
         live_frames = audit.get("evidence", {}).get("liveDualModelFrames", 0)
-        if live_frames <= 0 or scout_frames < live_frames:
-            errors.append("special-follow live repair lacks independently scouted frame coverage")
+        if live_frames <= 0 or workerA_frames < live_frames:
+            errors.append("special-follow live repair lacks independent Worker A frame coverage")
         if audit.get("status") == "complete" and contains_marker(audit, "unresolved_setting_row"):
             errors.append("complete materialization audit contains unresolved_setting_row")
     for coverage_path in root.glob("explorations/*/coverage.yaml"):

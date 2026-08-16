@@ -13,12 +13,12 @@
 
 ## 实际批次
 
-1. `initial-navigation-attempt1` 启动了同一个 Midscene `AndroidAgent`，冻结了首帧并调用了独立 `qwen3-vl-plus` Scout。Scout 响应的 `approximateRegion` 未满足技能 schema 的归一化约束，分支在动作前以 `unresolved` 结束。
+1. `initial-navigation-attempt1` 启动了同一个 Midscene `AndroidAgent`，冻结了首帧并调用了独立 `qwen3-vl-plus` Worker A。Worker A 响应的 `approximateRegion` 未满足技能 schema 的归一化约束，分支在动作前以 `unresolved` 结束。
 2. `initial-navigation-attempt2` 在截图前被设备门禁阻断：设备处于梦境锁屏状态，系统 NotificationShade 获得焦点。未执行任何 UI 动作；`stay_on_while_plugged_in` 已恢复到起始值 `0`。
 
 ## 未完成项
 
-设备需要人工唤醒并保持解锁、让中通宝盒回到前台消息页。恢复后应从 `plans/initial-navigation.plan.json` 继续，并重新验证首帧 Scout schema，再执行入口导航和递归队列。
+设备需要人工唤醒并保持解锁、让中通宝盒回到前台消息页。恢复后应从 `plans/initial-navigation.plan.json` 继续，并重新验证首帧 Worker A schema，再执行入口导航和递归队列。
 
 ## 证据
 

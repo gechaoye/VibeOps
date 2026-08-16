@@ -130,17 +130,17 @@ test('Midscene repository .env is loaded without overriding inherited settings o
   await fs.writeFile(
     path.join(midsceneRepo, '.env'),
     [
-      'MIDSCENE_MODEL_BASE_URL=https://fixture.invalid/v1',
-      'MIDSCENE_MODEL_API_KEY=fixture-secret-must-not-be-returned',
-      'MIDSCENE_MODEL_NAME=file-model',
-      'MIDSCENE_MODEL_FAMILY=gpt-5',
-      'MIDSCENE_MODEL_TIMEOUT=60000',
+      'MIDSCENE_WORKER_A_MODEL_BASE_URL=https://fixture.invalid/v1',
+      'MIDSCENE_WORKER_A_MODEL_API_KEY=fixture-secret-must-not-be-returned',
+      'MIDSCENE_WORKER_A_MODEL_NAME=file-model',
+      'MIDSCENE_WORKER_A_MODEL_FAMILY=gpt-5',
+      'MIDSCENE_WORKER_A_MODEL_TIMEOUT=60000',
       'UNRELATED_VALUE=must-not-be-loaded',
       '',
     ].join('\n'),
     'utf8',
   );
-  const env = {MIDSCENE_MODEL_NAME: 'inherited-model'};
+  const env = {MIDSCENE_WORKER_A_MODEL_NAME: 'inherited-model'};
   const result = await loadMidsceneEnvironment({midsceneRepo, env});
 
   assert.deepEqual(result, {
@@ -149,9 +149,9 @@ test('Midscene repository .env is loaded without overriding inherited settings o
     preservedKeyCount: 1,
     ignoredKeyCount: 1,
   });
-  assert.equal(env.MIDSCENE_MODEL_NAME, 'inherited-model');
-  assert.equal(env.MIDSCENE_MODEL_FAMILY, 'gpt-5');
-  assert.equal(env.MIDSCENE_MODEL_TIMEOUT, '60000');
+  assert.equal(env.MIDSCENE_WORKER_A_MODEL_NAME, 'inherited-model');
+  assert.equal(env.MIDSCENE_WORKER_A_MODEL_FAMILY, 'gpt-5');
+  assert.equal(env.MIDSCENE_WORKER_A_MODEL_TIMEOUT, '60000');
   assert.equal(env.UNRELATED_VALUE, undefined);
   assert.doesNotMatch(JSON.stringify(result), /fixture-secret|fixture\.invalid/);
 });
@@ -159,12 +159,14 @@ test('Midscene repository .env is loaded without overriding inherited settings o
 test('incomplete auto-loaded model configuration fails before Midscene runtime import', async (t) => {
   const midsceneRepo = await fs.mkdtemp(path.join(os.tmpdir(), 'uikg-midscene-env-incomplete-'));
   const keys = [
-    'MIDSCENE_MODEL_NAME',
-    'MIDSCENE_MODEL_FAMILY',
-    'MIDSCENE_MODEL_BASE_URL',
-    'MIDSCENE_MODEL_API_KEY',
-    'OPENAI_BASE_URL',
-    'OPENAI_API_KEY',
+    'MIDSCENE_WORKER_A_MODEL_NAME',
+    'MIDSCENE_WORKER_A_MODEL_FAMILY',
+    'MIDSCENE_WORKER_A_MODEL_BASE_URL',
+    'MIDSCENE_WORKER_A_MODEL_API_KEY',
+    'MIDSCENE_WORKER_B_MODEL_NAME',
+    'MIDSCENE_WORKER_B_MODEL_FAMILY',
+    'MIDSCENE_WORKER_B_MODEL_BASE_URL',
+    'MIDSCENE_WORKER_B_MODEL_API_KEY',
   ];
   const previous = new Map(keys.map((key) => [key, process.env[key]]));
   for (const key of keys) delete process.env[key];
@@ -177,16 +179,24 @@ test('incomplete auto-loaded model configuration fails before Midscene runtime i
   });
   await fs.writeFile(
     path.join(midsceneRepo, '.env'),
-    'MIDSCENE_MODEL_NAME=fixture-model\nMIDSCENE_MODEL_FAMILY=gpt-5\n',
+    [
+      'MIDSCENE_WORKER_A_MODEL_NAME=fixture-model-a',
+      'MIDSCENE_WORKER_A_MODEL_FAMILY=gpt-5',
+      'MIDSCENE_WORKER_A_MODEL_BASE_URL=https://fixture.invalid/v1',
+      'MIDSCENE_WORKER_A_MODEL_API_KEY=fixture-key',
+      'MIDSCENE_WORKER_B_MODEL_NAME=fixture-model-b',
+      'MIDSCENE_WORKER_B_MODEL_FAMILY=gpt-5',
+      '',
+    ].join('\n'),
     'utf8',
   );
 
   await assert.rejects(
     createRealRuntime({serial: 'fixture-device', midsceneRepo}),
     (error) =>
-      error.code === 'MIDSCENE_MODEL_CONFIG_MISSING' &&
+      error.code === 'WORKER_MODEL_CONFIG_MISSING' &&
       error.stage === 'model_gate' &&
-      /base URL/.test(error.message),
+      /Base URL/.test(error.message),
   );
 });
 

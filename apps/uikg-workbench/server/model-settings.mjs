@@ -1,14 +1,24 @@
 import { chmod, readFile, rename, stat, writeFile } from 'node:fs/promises';
 import dotenv from 'dotenv';
 
-export const SCOUT_MODEL_PRESETS = [
+export const WORKER_MODEL_PRESETS = [
+  {
+    id: 'gpt-5.6-sol',
+    name: 'GPT 5.6 Sol',
+    modelName: 'gpt-5.6-sol',
+    modelFamily: 'gpt-5',
+    badge: '高质量',
+    summary: '复杂画面的高质量结构化识别',
+    inputPrice: null,
+    outputPrice: null,
+  },
   {
     id: 'qwen3.7-flash',
     name: 'Qwen3.7 Flash',
     modelName: 'qwen3.7-flash',
     modelFamily: 'qwen3',
     badge: '推荐',
-    summary: '长 JSON 成本低，适合作为默认 Scout',
+    summary: '长 JSON 成本低，适合作为默认 Worker',
     inputPrice: '¥0.20',
     outputPrice: '¥0.80',
   },
@@ -56,24 +66,24 @@ export const MODEL_FAMILIES = [
   'xiaomi-mimo',
 ];
 
-const SCOUT_KEYS = [
-  'MIDSCENE_SCOUT_MODEL_BASE_URL',
-  'MIDSCENE_SCOUT_MODEL_API_KEY',
-  'MIDSCENE_SCOUT_MODEL_NAME',
-  'MIDSCENE_SCOUT_MODEL_FAMILY',
-  'MIDSCENE_SCOUT_MODEL_TIMEOUT',
-  'MIDSCENE_SCOUT_MODEL_TEMPERATURE',
-  'MIDSCENE_SCOUT_MODEL_REASONING_ENABLED',
+const WORKER_A_KEYS = [
+  'MIDSCENE_WORKER_A_MODEL_BASE_URL',
+  'MIDSCENE_WORKER_A_MODEL_API_KEY',
+  'MIDSCENE_WORKER_A_MODEL_NAME',
+  'MIDSCENE_WORKER_A_MODEL_FAMILY',
+  'MIDSCENE_WORKER_A_MODEL_TIMEOUT',
+  'MIDSCENE_WORKER_A_MODEL_TEMPERATURE',
+  'MIDSCENE_WORKER_A_MODEL_REASONING_ENABLED',
 ];
 
-const REVIEWER_KEYS = [
-  'MIDSCENE_MODEL_BASE_URL',
-  'MIDSCENE_MODEL_API_KEY',
-  'MIDSCENE_MODEL_NAME',
-  'MIDSCENE_MODEL_FAMILY',
-  'MIDSCENE_MODEL_TIMEOUT',
-  'MIDSCENE_MODEL_TEMPERATURE',
-  'MIDSCENE_MODEL_REASONING_ENABLED',
+const WORKER_B_KEYS = [
+  'MIDSCENE_WORKER_B_MODEL_BASE_URL',
+  'MIDSCENE_WORKER_B_MODEL_API_KEY',
+  'MIDSCENE_WORKER_B_MODEL_NAME',
+  'MIDSCENE_WORKER_B_MODEL_FAMILY',
+  'MIDSCENE_WORKER_B_MODEL_TIMEOUT',
+  'MIDSCENE_WORKER_B_MODEL_TEMPERATURE',
+  'MIDSCENE_WORKER_B_MODEL_REASONING_ENABLED',
 ];
 
 function settingsError(message) {
@@ -102,9 +112,9 @@ function apiKeyHint(value) {
   return `${'•'.repeat(8)}${tail}`;
 }
 
-async function loadRoleModelSettings(envPath, runtimeEnv, role) {
+async function loadWorkerModelSettings(envPath, runtimeEnv, worker) {
   const { values } = await readEnvDocument(envPath);
-  const prefix = role === 'scout' ? 'MIDSCENE_SCOUT_MODEL' : 'MIDSCENE_MODEL';
+  const prefix = worker === 'worker_a' ? 'MIDSCENE_WORKER_A_MODEL' : 'MIDSCENE_WORKER_B_MODEL';
   const apiKey = valueFrom(values, runtimeEnv, `${prefix}_API_KEY`);
   const config = {
     baseUrl: valueFrom(values, runtimeEnv, `${prefix}_BASE_URL`),
@@ -119,24 +129,24 @@ async function loadRoleModelSettings(envPath, runtimeEnv, role) {
   const runtimeModel = runtimeEnv[`${prefix}_NAME`] || null;
   return {
     envPath,
-    role,
+    worker,
     config,
-    presets: role === 'scout' ? SCOUT_MODEL_PRESETS : [{ id: 'gpt-5.6-sol', name: 'GPT 5.6 Sol', modelName: 'gpt-5.6-sol', modelFamily: 'gpt-5', badge: '默认审核', summary: '独立重识别冻结画面，与 Scout 结果并列对照', inputPrice: null, outputPrice: null }],
+    presets: WORKER_MODEL_PRESETS,
     modelFamilies: MODEL_FAMILIES,
     runtimeModel,
     runtimeSynced: runtimeModel === config.modelName,
   };
 }
 
-export async function loadScoutModelSettings(envPath, runtimeEnv = process.env) {
-  return loadRoleModelSettings(envPath, runtimeEnv, 'scout');
+export async function loadWorkerAModelSettings(envPath, runtimeEnv = process.env) {
+  return loadWorkerModelSettings(envPath, runtimeEnv, 'worker_a');
 }
 
-export async function loadReviewerModelSettings(envPath, runtimeEnv = process.env) {
-  return loadRoleModelSettings(envPath, runtimeEnv, 'reviewer');
+export async function loadWorkerBModelSettings(envPath, runtimeEnv = process.env) {
+  return loadWorkerModelSettings(envPath, runtimeEnv, 'worker_b');
 }
 
-function normalizePayload(payload, role = 'scout') {
+function normalizePayload(payload) {
   const baseUrl = String(payload?.baseUrl || '').trim();
   const modelName = String(payload?.modelName || '').trim();
   const modelFamily = String(payload?.modelFamily || '').trim();
@@ -174,42 +184,42 @@ function quoteEnvValue(value) {
   return JSON.stringify(String(value));
 }
 
-export function updateEnvDocument(content, patch, role = 'scout') {
+export function updateEnvDocument(content, patch, worker = 'worker_a') {
   const lines = content ? content.replace(/\r\n/g, '\n').replace(/\n$/, '').split('\n') : [];
   const requested = new Set(Object.keys(patch));
   const updatedKeys = new Set();
-  let lastRoleLine = -1;
+  let lastWorkerLine = -1;
   const updated = lines.map((line, index) => {
     const match = line.match(/^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*=/);
     const key = match?.[1];
-    if (role === 'scout' && key?.startsWith('MIDSCENE_SCOUT_MODEL_')) lastRoleLine = index;
-    if (role === 'reviewer' && key?.startsWith('MIDSCENE_MODEL_') && !key.startsWith('MIDSCENE_SCOUT_MODEL_')) lastRoleLine = index;
+    if (worker === 'worker_a' && key?.startsWith('MIDSCENE_WORKER_A_MODEL_')) lastWorkerLine = index;
+    if (worker === 'worker_b' && key?.startsWith('MIDSCENE_WORKER_B_MODEL_')) lastWorkerLine = index;
     if (!key || !requested.has(key)) return line;
     updatedKeys.add(key);
     return `${key}=${quoteEnvValue(patch[key])}`;
   });
 
-  const keys = role === 'scout' ? SCOUT_KEYS : REVIEWER_KEYS;
+  const keys = worker === 'worker_a' ? WORKER_A_KEYS : WORKER_B_KEYS;
   const additions = keys.filter((key) => requested.has(key) && !updatedKeys.has(key)).map((key) => `${key}=${quoteEnvValue(patch[key])}`);
   if (additions.length > 0) {
-    if (lastRoleLine >= 0) updated.splice(lastRoleLine + 1, 0, ...additions);
-    else updated.unshift(role === 'scout' ? '# === Scout 视觉模型 ===' : '# === Reviewer 审核模型 ===', ...additions, ...(updated.length ? [''] : []));
+    if (lastWorkerLine >= 0) updated.splice(lastWorkerLine + 1, 0, ...additions);
+    else updated.unshift(worker === 'worker_a' ? '# === Worker A 模型 ===' : '# === Worker B 模型 ===', ...additions, ...(updated.length ? [''] : []));
   }
   return `${updated.join('\n')}\n`;
 }
 
-export async function saveScoutModelSettings(envPath, payload, runtimeEnv = process.env) {
-  const next = normalizePayload(payload, 'scout');
+export async function saveWorkerAModelSettings(envPath, payload, runtimeEnv = process.env) {
+  const next = normalizePayload(payload);
   const { content } = await readEnvDocument(envPath);
   const patch = {
-    MIDSCENE_SCOUT_MODEL_BASE_URL: next.baseUrl,
-    MIDSCENE_SCOUT_MODEL_NAME: next.modelName,
-    MIDSCENE_SCOUT_MODEL_FAMILY: next.modelFamily,
-    MIDSCENE_SCOUT_MODEL_TIMEOUT: String(next.timeout),
-    MIDSCENE_SCOUT_MODEL_TEMPERATURE: String(next.temperature),
-    MIDSCENE_SCOUT_MODEL_REASONING_ENABLED: String(next.reasoningEnabled),
+    MIDSCENE_WORKER_A_MODEL_BASE_URL: next.baseUrl,
+    MIDSCENE_WORKER_A_MODEL_NAME: next.modelName,
+    MIDSCENE_WORKER_A_MODEL_FAMILY: next.modelFamily,
+    MIDSCENE_WORKER_A_MODEL_TIMEOUT: String(next.timeout),
+    MIDSCENE_WORKER_A_MODEL_TEMPERATURE: String(next.temperature),
+    MIDSCENE_WORKER_A_MODEL_REASONING_ENABLED: String(next.reasoningEnabled),
   };
-  if (next.apiKey) patch.MIDSCENE_SCOUT_MODEL_API_KEY = next.apiKey;
+  if (next.apiKey) patch.MIDSCENE_WORKER_A_MODEL_API_KEY = next.apiKey;
 
   const temporaryPath = `${envPath}.${process.pid}.${Date.now()}.tmp`;
   let mode = 0o600;
@@ -221,27 +231,27 @@ export async function saveScoutModelSettings(envPath, payload, runtimeEnv = proc
   await rename(temporaryPath, envPath);
 
   for (const [key, value] of Object.entries(patch)) runtimeEnv[key] = value;
-  return loadScoutModelSettings(envPath, runtimeEnv);
+  return loadWorkerAModelSettings(envPath, runtimeEnv);
 }
 
-export async function saveReviewerModelSettings(envPath, payload, runtimeEnv = process.env) {
-  const next = normalizePayload(payload, 'reviewer');
+export async function saveWorkerBModelSettings(envPath, payload, runtimeEnv = process.env) {
+  const next = normalizePayload(payload);
   const { content } = await readEnvDocument(envPath);
   const patch = {
-    MIDSCENE_MODEL_BASE_URL: next.baseUrl,
-    MIDSCENE_MODEL_NAME: next.modelName,
-    MIDSCENE_MODEL_FAMILY: next.modelFamily,
-    MIDSCENE_MODEL_TIMEOUT: String(next.timeout),
-    MIDSCENE_MODEL_TEMPERATURE: String(next.temperature),
-    MIDSCENE_MODEL_REASONING_ENABLED: String(next.reasoningEnabled),
+    MIDSCENE_WORKER_B_MODEL_BASE_URL: next.baseUrl,
+    MIDSCENE_WORKER_B_MODEL_NAME: next.modelName,
+    MIDSCENE_WORKER_B_MODEL_FAMILY: next.modelFamily,
+    MIDSCENE_WORKER_B_MODEL_TIMEOUT: String(next.timeout),
+    MIDSCENE_WORKER_B_MODEL_TEMPERATURE: String(next.temperature),
+    MIDSCENE_WORKER_B_MODEL_REASONING_ENABLED: String(next.reasoningEnabled),
   };
-  if (next.apiKey) patch.MIDSCENE_MODEL_API_KEY = next.apiKey;
+  if (next.apiKey) patch.MIDSCENE_WORKER_B_MODEL_API_KEY = next.apiKey;
   const temporaryPath = `${envPath}.${process.pid}.${Date.now()}.tmp`;
   let mode = 0o600;
   try { mode = (await stat(envPath)).mode; } catch {}
-  await writeFile(temporaryPath, updateEnvDocument(content, patch, 'reviewer'), { encoding: 'utf8', mode });
+  await writeFile(temporaryPath, updateEnvDocument(content, patch, 'worker_b'), { encoding: 'utf8', mode });
   await chmod(temporaryPath, mode);
   await rename(temporaryPath, envPath);
   for (const [key, value] of Object.entries(patch)) runtimeEnv[key] = value;
-  return loadReviewerModelSettings(envPath, runtimeEnv);
+  return loadWorkerBModelSettings(envPath, runtimeEnv);
 }

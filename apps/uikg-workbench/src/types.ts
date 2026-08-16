@@ -22,17 +22,6 @@ export interface MeaningEvidence {
   }>;
 }
 
-export type AIReviewStatus = 'pass' | 'needs_review' | 'reject';
-
-export interface AIReview {
-  status: AIReviewStatus;
-  confidence: number;
-  summary: string;
-  issues: string[];
-  model: string;
-  reviewedAt: string;
-}
-
 export interface DraftElement {
   id: string;
   candidateKey: string;
@@ -63,10 +52,9 @@ export interface DraftElement {
   availableOnPageIds: string[];
   interactionBoundary: string;
   reviewStatus: ReviewStatus;
-  source: 'ai_scout' | 'human' | 'mixed';
-  scoutModel: string | null;
+  source: 'ai_worker' | 'human' | 'mixed';
+  workerModel: string | null;
   lastModelProposal: Record<string, unknown> | null;
-  aiReview: AIReview | null;
 }
 
 export interface DraftPage {
@@ -79,6 +67,7 @@ export interface DraftPage {
   featurePath: string[];
   frameIds: string[];
   elementIds: string[];
+  publishedAt?: string | null;
 }
 
 export interface DraftTransitionEvidence {
@@ -143,7 +132,7 @@ export interface Draft {
   elements: DraftElement[];
   elementEditRecords: ElementEditRecord[];
   transitions: DraftTransition[];
-  lastScoutModel: string | null;
+  lastWorkerModel: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -166,16 +155,35 @@ export interface FrameMetadata {
   imageUrl: string;
 }
 
+export type PageUploadStatus = 'queued' | 'uploading' | 'completed' | 'failed';
+
+export interface PageUploadTask {
+  id: string;
+  sourceType: 'file' | 'url';
+  name: string;
+  url: string | null;
+  mimeType: string | null;
+  totalBytes: number | null;
+  uploadedBytes: number;
+  status: PageUploadStatus;
+  errorReason: string | null;
+  pageId: string | null;
+  frameId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  processing?: boolean;
+}
+
 export interface WorkbenchStatus {
   ok: boolean;
   agentConnected: boolean;
-  scoutRunning: boolean;
-  scoutConfigured: boolean;
-  scoutModel: string | null;
-  reviewerConfigured: boolean;
-  reviewerModel: string | null;
-  scoutSession: ScoutResumeSession | null;
-  reviewSession: ReviewResumeSession | null;
+  workersRunning: boolean;
+  workerAConfigured: boolean;
+  workerAModel: string | null;
+  workerBConfigured: boolean;
+  workerBModel: string | null;
+  workerASession: WorkerResumeSession | null;
+  workerBSession: WorkerResumeSession | null;
   spec: {
     version: string;
     schemaVersion: string;
@@ -185,10 +193,11 @@ export interface WorkbenchStatus {
   session: PlaygroundSessionState | null;
 }
 
-export interface ScoutResumeSession {
+export interface WorkerResumeSession {
   id: string;
   status: 'paused';
   frameId: string;
+  pageId?: string | null;
   pageContext: string;
   model: string | null;
   completedCandidates: number;
@@ -206,33 +215,22 @@ export interface ScoutResumeSession {
   outputContent?: string;
 }
 
-export interface ReviewResumeSession {
-  id: string;
-  status: 'paused';
-  frameId: string;
-  model: string | null;
-  createdAt: string;
-  updatedAt: string;
-  errorMessage: string;
-  reasoningContent?: string;
-  outputContent?: string;
-}
-
 export interface AnalysisSession {
   id: string;
-  kind: 'scout' | 'review';
+  kind: 'worker_a' | 'worker_b';
   status: 'running' | 'completed' | 'failed' | 'cancelled';
   frameId: string | null;
+  pageId?: string | null;
   model: string | null;
   startedAt: string;
   updatedAt: string;
   errorMessage?: string | null;
   reasoningContent: string;
   outputContent: string;
-  retryAttempts?: ScoutResumeSession['retryAttempts'];
+  retryAttempts?: WorkerResumeSession['retryAttempts'];
 }
 
-export interface ReviewerElementCandidate {
+export interface WorkerElementCandidate {
   candidateKey: string;
   label?: string | null;
   visualDescription?: string;
@@ -242,10 +240,10 @@ export interface ReviewerElementCandidate {
   [key: string]: unknown;
 }
 
-export interface ReviewerResult {
+export interface WorkerResult {
   frameId: string;
   page: Record<string, unknown>;
-  elements: ReviewerElementCandidate[];
+  elements: WorkerElementCandidate[];
   relationships: Array<Record<string, unknown>>;
   actionCandidates: Array<Record<string, unknown>>;
   comparison: Record<string, unknown>;
@@ -254,7 +252,17 @@ export interface ReviewerResult {
   [key: string]: unknown;
 }
 
-export interface ScoutModelPreset {
+export type WorkerMergeSource = 'workerA' | 'workerB';
+
+export interface WorkerElementMergeSelection {
+  candidateKey: string;
+  workerACandidateKey?: string;
+  workerBCandidateKey?: string;
+  baseSource: WorkerMergeSource;
+  fieldSources: Record<string, WorkerMergeSource>;
+}
+
+export interface WorkerModelPreset {
   id: string;
   name: string;
   modelName: string;
@@ -265,29 +273,15 @@ export interface ScoutModelPreset {
   outputPrice: string | null;
 }
 
-export interface ScoutModelSettings {
-  envPath: string;
-  config: {
-    baseUrl: string;
-    modelName: string;
-    modelFamily: string;
-    timeout: number;
-    temperature: number;
-    reasoningEnabled: boolean;
-    apiKeyConfigured: boolean;
-    apiKeyHint: string | null;
-  };
-  presets: ScoutModelPreset[];
-  modelFamilies: string[];
-  runtimeModel: string | null;
-  runtimeSynced: boolean;
+export interface WorkerModelSettings {
+  workerA: WorkerSlotSettings;
+  workerB: WorkerSlotSettings;
   runtimeReloaded?: boolean;
-  reviewer?: ModelRoleSettings;
 }
 
-export interface ModelRoleSettings {
+export interface WorkerSlotSettings {
   envPath: string;
-  role: 'scout' | 'reviewer';
+  worker: 'worker_a' | 'worker_b';
   config: {
     baseUrl: string;
     modelName: string;
@@ -298,7 +292,7 @@ export interface ModelRoleSettings {
     apiKeyConfigured: boolean;
     apiKeyHint: string | null;
   };
-  presets: ScoutModelPreset[];
+  presets: WorkerModelPreset[];
   modelFamilies: string[];
   runtimeModel: string | null;
   runtimeSynced: boolean;

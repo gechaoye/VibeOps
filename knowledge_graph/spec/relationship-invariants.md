@@ -135,7 +135,7 @@ Page or Shared Ancestor
 - 同时包含设置名称、当前值与箭头等 affordance；
 - 包含帮助图标或点击后显示的帮助内容；
 - 同时包含说明内容和独立动作入口；
-- Scout/GPT 对账或用户认证事实明确指出该行存在多个语义成员或多个交互边界。
+- 双 Worker 答卷、字段合并或用户认证事实明确指出该行存在多个语义成员或多个交互边界。
 
 每个设置行候选必须产生以下两种结果之一：
 
@@ -160,7 +160,7 @@ Page or Shared Ancestor
 
 图级校验器必须拒绝：
 
-- evidence/Scout/GPT reconciliation 已识别为复合设置行，却仍由 Page 直接持有单个扁平 `list_entry`、`toggle` 或同义控件；
+- 双 Worker 证据及字段合并已识别为复合设置行，却仍由 Page 直接持有单个扁平 `list_entry`、`toggle` 或同义控件；
 - 设置行容器缺少 profile、缺少必需角色、使用其他 profile 的必需角色集合，或角色引用不满足父子闭合；
 - Page 直接引用设置行子元素；
 - 说明内容、当前值或帮助内容在无独立证据时拥有 capability 或成为 Transition/AuthorityContract Trigger；

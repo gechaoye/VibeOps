@@ -1,4 +1,4 @@
-import { mkdir, readdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createEmptyDraft, normalizeDraftShape } from './draft-model.mjs';
 
@@ -18,6 +18,8 @@ export class DraftStore {
     this.framesRoot = path.join(root, 'evidence', 'frames');
     this.modelResultsRoot = path.join(root, 'evidence', 'model-results');
     this.sessionsRoot = path.join(root, 'sessions');
+    this.pageUploadsRoot = path.join(root, 'page-uploads');
+    this.pageUploadPartsRoot = path.join(this.pageUploadsRoot, 'parts');
   }
 
   async initialize() {
@@ -25,21 +27,22 @@ export class DraftStore {
       mkdir(this.framesRoot, { recursive: true }),
       mkdir(this.modelResultsRoot, { recursive: true }),
       mkdir(this.sessionsRoot, { recursive: true }),
+      mkdir(this.pageUploadPartsRoot, { recursive: true }),
     ]);
     if (!(await exists(this.draftPath))) {
       await this.saveDraft(createEmptyDraft());
     }
+    const interruptedTasks = (await this.listPageUploadTasks()).filter((task) => task.status === 'uploading');
+    await Promise.all(interruptedTasks.map((task) => this.savePageUploadTask({
+      ...task,
+      status: 'failed',
+      errorReason: '上传进程已中断，请重试以从断点继续',
+      updatedAt: new Date().toISOString(),
+    })));
   }
 
   async loadDraft() {
     const draft = JSON.parse(await readFile(this.draftPath, 'utf8'));
-    if (!draft.lastScoutModel && draft.rawModelResultRef) {
-      const resultPath = path.join(this.modelResultsRoot, path.basename(draft.rawModelResultRef));
-      if (await exists(resultPath)) {
-        const modelResult = JSON.parse(await readFile(resultPath, 'utf8'));
-        draft.lastScoutModel = modelResult.model || null;
-      }
-    }
     return normalizeDraftShape(draft);
   }
 
@@ -106,5 +109,69 @@ export class DraftStore {
       .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
       .map(async (entry) => JSON.parse(await readFile(path.join(this.sessionsRoot, entry.name), 'utf8'))));
     return sessions.sort((a, b) => String(b.updatedAt || b.startedAt).localeCompare(String(a.updatedAt || a.startedAt)));
+  }
+
+  pageUploadTaskPath(taskId) {
+    return path.join(this.pageUploadsRoot, `${String(taskId).replace(/[^a-zA-Z0-9._-]/g, '-')}.json`);
+  }
+
+  pageUploadPartPath(taskId) {
+    return path.join(this.pageUploadPartsRoot, `${String(taskId).replace(/[^a-zA-Z0-9._-]/g, '-')}.part`);
+  }
+
+  async savePageUploadTask(task) {
+    const taskPath = this.pageUploadTaskPath(task.id);
+    const temporaryPath = `${taskPath}.${process.pid}.tmp`;
+    await writeFile(temporaryPath, `${JSON.stringify(task, null, 2)}\n`, 'utf8');
+    await rename(temporaryPath, taskPath);
+    return task;
+  }
+
+  async loadPageUploadTask(taskId) {
+    return JSON.parse(await readFile(this.pageUploadTaskPath(taskId), 'utf8'));
+  }
+
+  async listPageUploadTasks() {
+    const entries = await readdir(this.pageUploadsRoot, { withFileTypes: true });
+    const tasks = await Promise.all(entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+      .map(async (entry) => JSON.parse(await readFile(path.join(this.pageUploadsRoot, entry.name), 'utf8'))));
+    return tasks.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  }
+
+  async pageUploadPartSize(taskId) {
+    try {
+      return (await stat(this.pageUploadPartPath(taskId))).size;
+    } catch (error) {
+      if (error?.code === 'ENOENT') return 0;
+      throw error;
+    }
+  }
+
+  async appendPageUploadChunk(taskId, offset, buffer) {
+    const currentSize = await this.pageUploadPartSize(taskId);
+    if (currentSize !== offset) {
+      const error = new Error(`上传偏移不一致，服务端已接收 ${currentSize} 字节`);
+      error.code = 'UPLOAD_OFFSET_MISMATCH';
+      error.expectedOffset = currentSize;
+      throw error;
+    }
+    await writeFile(this.pageUploadPartPath(taskId), buffer, { flag: 'a' });
+    return currentSize + buffer.length;
+  }
+
+  async resetPageUploadPart(taskId) {
+    await writeFile(this.pageUploadPartPath(taskId), Buffer.alloc(0));
+  }
+
+  async loadPageUploadBuffer(taskId) {
+    return readFile(this.pageUploadPartPath(taskId));
+  }
+
+  async deletePageUploadTask(taskId) {
+    await Promise.allSettled([
+      unlink(this.pageUploadTaskPath(taskId)),
+      unlink(this.pageUploadPartPath(taskId)),
+    ]);
   }
 }

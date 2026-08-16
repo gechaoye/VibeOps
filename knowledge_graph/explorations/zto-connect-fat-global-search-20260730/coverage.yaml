@@ -8,11 +8,11 @@ modelSlots:
     name: gpt-5.6-sol
     family: gpt-5
     intent: insight
-  scout:
+  workerA:
     name: qwen3-vl-plus
     family: qwen3-vl
-    intent: scout
-    slot: scout
+    intent: workerA
+    slot: workerA
 pages: []
 elements: []
 authorityContractClosures:
@@ -26,9 +26,9 @@ boundaries:
     evidence:
       - initial-navigation-attempt2/raw-evidence/sessions/01KYS35BW2W9TND42SF74YE80J/raw-session.json
 unresolved:
-  - kind: scout_schema
+  - kind: workerA_schema
     status: unresolved
-    reason: '首轮 Scout 的 approximateRegion 未满足 schema 的 0..1 归一化约束；分支未执行动作。'
+    reason: '首轮 Worker A 的 approximateRegion 未满足 schema 的 0..1 归一化约束；分支未执行动作。'
     evidence:
       - initial-navigation-attempt1/raw-evidence/resources/sha256/f2/f280a883d78e3b49affe4ce2c89b2bc8926e28b8df39ebde469424b0e971a8cf.json
   - kind: device_gate
@@ -37,7 +37,7 @@ unresolved:
     evidence:
       - initial-navigation-attempt2/raw-evidence/sessions/01KYS35BW2W9TND42SF74YE80J/raw-session.json
 remaining:
-  - capture application.foreground with valid Scout and insight reconciliation
+  - capture application.foreground with valid Worker A and insight reconciliation
   - activate shared.bottom_tab.messages via live aiLocate and aiTap
   - capture messages.root and activate messages.toolbar.global_search
   - recursively explore all safe-reachable global_search.root controls, overlays, states, and scroll views

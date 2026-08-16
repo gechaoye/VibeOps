@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Full-frame UI worker inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["frameId", "page", "elements", "relationships", "actionCandidates", "comparison", "uncertainties"],
+  "properties": {
+    "frameId": { "type": "string", "minLength": 1 },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "surfaceType", "stateSummary", "scrollableRegions"],
+      "properties": {
+        "name": { "type": ["string", "null"] },
+        "surfaceType": { "type": "string", "enum": ["page", "dialog", "drawer", "bottom-sheet", "menu", "shared-component", "unknown"] },
+        "stateSummary": { "type": "string" },
+        "scrollableRegions": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["candidateKey", "label", "visualDescription", "controlType", "interactive", "state", "approximateRegion", "meaning", "dynamicContent", "geometryKind", "geometryConfidence", "confidence"],
+        "properties": {
+          "candidateKey": { "type": "string", "minLength": 1 },
+          "label": { "type": ["string", "null"] },
+          "visualDescription": { "type": "string", "minLength": 1 },
+          "controlType": { "type": "string", "enum": ["", "navigation-bar", "sidebar", "drawer", "hamburger", "tab", "breadcrumb", "page-indicator", "pagination", "text-button", "icon-button", "floating-button", "radio", "checkbox", "switch", "input", "search-input", "password-input", "number-input", "amount-input", "url-input", "email-input", "phone-input", "verification-code-input", "pin-input", "text-area", "search", "dropdown", "spinner", "select", "date-picker", "time-picker", "date-time-picker", "city-picker", "number-picker", "address-picker", "autocomplete", "slider", "text", "label", "title", "subtitle", "caption", "badge", "static-chip", "selectable-chip", "filter-chip", "action-chip", "input-chip", "avatar", "avatar-group", "image", "banner", "thumbnail", "preview", "product-image", "carousel", "list", "list-item", "grouped-list", "swipe-list", "expandable-list", "container", "card", "panel", "section", "group", "form", "grid", "dialog", "alert", "confirm-dialog", "bottom-sheet", "popup", "tooltip", "snackbar", "toast", "scroll-view", "horizontal-scroll", "recycler-view", "pager", "error", "warning", "success", "info", "status", "progress-bar", "circular-progress", "loading", "skeleton", "download-progress", "video", "audio", "image-viewer", "camera", "file-preview", "live-stream", "screen-share", "remote-control", "map", "marker", "location", "route", "zoom-control", "compass", "status-bar", "system-navigation-bar", "permission-dialog", "keyboard", "ime", "system-dialog", "notification", "quick-settings", "system-date-picker", "system-picker", "share-sheet", "gesture-region", "message-bubble", "chat-input", "send-button", "voice-button", "emoji-button", "attachment-button", "mention", "reply", "forward", "read-status", "typing-indicator", "product-card", "price", "discount", "sku-selector", "quantity-stepper", "cart-button", "buy-button", "coupon", "approval-node", "approval-status", "signature", "department-selector", "employee-selector", "date-range", "file-item", "folder", "file-tree", "upload", "download", "rename", "move", "share", "other"] },
+          "interactive": { "type": "boolean" },
+          "enabled": { "type": ["boolean", "null"] },
+          "state": { "type": ["string", "null"] },
+          "approximateRegion": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["x", "y", "width", "height"],
+            "properties": {
+              "x": { "type": "number", "minimum": 0, "maximum": 1 },
+              "y": { "type": "number", "minimum": 0, "maximum": 1 },
+              "width": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+              "height": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+            }
+          },
+          "geometryKind": { "type": "string", "enum": ["boundary", "tap-target", "approximate"] },
+          "geometryConfidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "meaning": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "description", "evidence"],
+            "properties": {
+              "status": { "type": "string", "enum": ["known", "candidate", "unknown"] },
+              "description": { "type": ["string", "null"] },
+              "evidence": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["visibleTexts", "visibleIcons", "visibleStates", "visualCues", "userContext", "unclassified"],
+                "properties": {
+                  "visibleTexts": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+                  "visibleIcons": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+                  "visibleStates": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+                  "visualCues": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+                  "userContext": { "type": ["string", "null"] },
+                  "unclassified": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["type", "detail"],
+                      "properties": {
+                        "type": { "type": "string", "minLength": 1 },
+                        "detail": { "type": ["string", "null"] }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "dynamicContent": { "type": "boolean" },
+          "riskSignals": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fromCandidateKey", "type", "toCandidateKey"],
+        "properties": {
+          "fromCandidateKey": { "type": "string" },
+          "type": { "type": "string", "enum": ["contains", "labels", "controls", "belongs-to", "adjacent-to"] },
+          "toCandidateKey": { "type": "string" }
+        }
+      }
+    },
+    "actionCandidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["triggerCandidateKey", "action", "expectedOutcome", "basis", "riskSignals", "confidence"],
+        "properties": {
+          "triggerCandidateKey": { "type": "string", "minLength": 1 },
+          "action": { "type": "string", "enum": ["tap", "double_tap", "long_press", "input", "delete", "scroll_vertical", "scroll_horizontal", "swipe", "drag", "zoom", "multi_touch"] },
+          "expectedOutcome": { "type": ["string", "null"] },
+          "basis": { "type": "string", "enum": ["visible-affordance", "user-context", "requirement-document", "existing-graph", "authority-contract", "unknown"] },
+          "riskSignals": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basisFrameId", "status", "changes"],
+      "properties": {
+        "basisFrameId": { "type": ["string", "null"] },
+        "status": { "type": "string", "enum": ["not-requested", "no-change", "changed", "uncertain"] },
+        "changes": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "uncertainties": { "type": "array", "items": { "type": "string" } }
+  }
+}

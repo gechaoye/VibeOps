@@ -1,5 +1,5 @@
-import { Bot, Check, CircleAlert, CircleCheck, Eye, EyeOff, RotateCcw, Trash2, X } from 'lucide-react';
-import { actionEffectsFor, capabilityGroups, capabilityLabel, defaultDescriptionForElementType, elementTypeGroups, recommendedActionsForElementType } from './model';
+import { Check, Eye, EyeOff, RotateCcw, Trash2, X } from 'lucide-react';
+import { actionEffectsFor, capabilityGroups, capabilityLabel, defaultDescriptionForElementType, elementTypeGroups, interactionBoundaryForActions, recommendedActionsForElementType } from './model';
 import type { DraftElement, DraftPage } from './types';
 
 interface InspectorProps {
@@ -27,12 +27,6 @@ const meaningStatusLabels = {
   unknown: '含义未知',
 } as const;
 
-const aiReviewStatusLabels = {
-  pass: '初审通过',
-  needs_review: '重点复核',
-  reject: '建议忽略',
-} as const;
-
 function EvidenceValues({ values }: { values: string[] }) {
   return values.length > 0 ? <>{values.map((value) => <span className="evidence-chip" key={value}>{value}</span>)}</> : <span className="evidence-empty">无</span>;
 }
@@ -51,7 +45,7 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
   const possibleParents = elements.filter((candidate) => candidate.id !== element.id && candidate.reviewStatus !== 'rejected');
   const updateField = (field: keyof DraftElement, value: unknown, group = false) => onChange({ [field]: value } as Partial<DraftElement>, group ? `field:${field}` : undefined);
   const fieldModified = (...fields: Array<keyof DraftElement>) => Boolean(initialElement && fields.some((field) => !fieldValuesEqual(field, element[field], initialElement[field])));
-  const fieldClass = (...fields: Array<keyof DraftElement>) => `field${fieldModified(...fields) ? ' field-modified' : ''}`;
+  const fieldClass = (...fields: Array<keyof DraftElement>) => `field${fieldModified(...fields) ? ' field-modified' : ''}${fields.includes('controlType') && !element.controlType ? ' field-invalid' : ''}`;
   const groupClass = (...fields: Array<keyof DraftElement>) => `field-group${fieldModified(...fields) ? ' field-modified' : ''}`;
   const bboxModified = (key: keyof DraftElement['bbox']) => Boolean(initialElement && element.bbox[key] !== initialElement.bbox[key]);
   const accepted = element.reviewStatus === 'accepted';
@@ -64,6 +58,7 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
       visualDescription: defaultDescriptionForElementType(controlType),
       capabilities,
       actionEffects: actionEffectsFor(controlType, capabilities),
+      interactionBoundary: interactionBoundaryForActions(capabilities, element.interactionBoundary),
     });
   };
   const toggleAction = (action: string, checked: boolean) => {
@@ -71,7 +66,11 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
       ? action === 'none' ? ['none'] : [...element.capabilities.filter((item) => item !== 'none' && item !== action), action]
       : element.capabilities.filter((item) => item !== action);
     if (capabilities.length === 0) capabilities = ['none'];
-    onChange({ capabilities, actionEffects: actionEffectsFor(element.controlType, capabilities, element.actionEffects) });
+    onChange({
+      capabilities,
+      actionEffects: actionEffectsFor(element.controlType, capabilities, element.actionEffects),
+      interactionBoundary: interactionBoundaryForActions(capabilities, element.interactionBoundary),
+    });
   };
   const updateActionEffect = (action: string, effect: string) => {
     onChange({ actionEffects: displayedActionEffects.map((item) => item.action === action ? { ...item, effect } : item) }, `field:actionEffects:${action}`);
@@ -89,7 +88,7 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
       </div>
 
       <label className={fieldClass('label')}><span>元素名称</span><input value={element.label} onBlur={onChangeEnd} onChange={(event) => updateField('label', event.target.value, true)} /></label>
-      <label className={fieldClass('controlType')}><span>元素类型</span><select value={element.controlType} onChange={(event) => changeElementType(event.target.value)}>{elementTypeGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</optgroup>)}</select></label>
+      <label className={fieldClass('controlType')}><span>元素类型</span><select value={element.controlType} onChange={(event) => changeElementType(event.target.value)}><option value="" disabled />{elementTypeGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</optgroup>)}</select></label>
       <label className={fieldClass('visualDescription')}><span>元素描述</span><input value={element.visualDescription} onBlur={onChangeEnd} onChange={(event) => updateField('visualDescription', event.target.value, true)} /></label>
 
       <fieldset className={groupClass('capabilities')}>
@@ -124,7 +123,7 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
           </div>
         </fieldset>
       )}
-      <label className={fieldClass('interactionBoundary')}><span>交互区域</span><select value={element.interactionBoundary} onChange={(event) => updateField('interactionBoundary', event.target.value)}><option value="candidate_bbox">候选边框，待校准</option><option value="whole_element">整个元素可操作</option><option value="trailing_control">仅尾部控件可操作</option><option value="point_only">仅验证中心点</option><option value="unresolved">尚未确定</option></select></label>
+      <label className={fieldClass('interactionBoundary')}><span>交互区域</span><select value={element.interactionBoundary} disabled={element.capabilities.includes('none')} onChange={(event) => updateField('interactionBoundary', event.target.value)}><option value="none">无</option><option value="candidate_bbox">候选边框，待校准</option><option value="whole_element">整个元素可操作</option><option value="trailing_control">仅尾部控件可操作</option><option value="point_only">仅验证中心点</option><option value="unresolved">尚未确定</option></select></label>
 
       <fieldset className="field-group">
         <legend>边框位置（百分比）</legend>
@@ -137,19 +136,9 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
 
       <div className="evidence-summary">
         <div><span>识别可信度</span><strong>{Math.round(element.confidence * 100)}%</strong></div>
-        <div><span>信息来源</span><strong title={element.scoutModel || undefined}>{element.source === 'ai_scout' ? `AI Scout · ${element.scoutModel || '模型未知'}` : element.source === 'human' ? '人工新增' : `AI Scout · ${element.scoutModel || '模型未知'} + 人工`}</strong></div>
+        <div><span>信息来源</span><strong title={element.workerModel || undefined}>{element.source === 'ai_worker' ? `AI Worker · ${element.workerModel || '模型未知'}` : element.source === 'human' ? '人工新增' : `AI Worker · ${element.workerModel || '模型未知'} + 人工`}</strong></div>
         <div><span>人工审核</span><strong>{element.reviewStatus === 'pending' ? '待人工确认' : element.reviewStatus === 'accepted' ? '已确认' : element.reviewStatus === 'edited' ? '人工修订' : '已忽略'}</strong></div>
       </div>
-
-      {element.aiReview && <section className={`ai-review-card ai-review-${element.aiReview.status}`}>
-        <header>
-          <span>{element.aiReview.status === 'pass' ? <CircleCheck size={16} /> : <CircleAlert size={16} />}<strong>{aiReviewStatusLabels[element.aiReview.status]}</strong></span>
-          <span><Bot size={13} />{element.aiReview.model} · {Math.round(element.aiReview.confidence * 100)}%</span>
-        </header>
-        <p>{element.aiReview.summary}</p>
-        {element.aiReview.issues.length > 0 && <div>{element.aiReview.issues.map((issue) => <span key={issue}>{issue}</span>)}</div>}
-        {element.reviewStatus === 'pending' && <footer>AI 初审不替代人工确认</footer>}
-      </section>}
 
       <details className="meaning-evidence" open>
         <summary>元素含义与识别依据</summary>

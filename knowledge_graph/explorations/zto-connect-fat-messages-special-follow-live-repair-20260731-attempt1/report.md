@@ -5,6 +5,6 @@
 - Device: `sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36`
 - Frames: 9
 - Actions: 8
-- Evidence: live Midscene GPT + independent Scout on frozen frames
+- Evidence: live Midscene Worker B + independent Worker A on frozen frames
 - Scope: three setting-row compositions, three help popovers, reminder-method phone option
 - Retry artifacts: 12 noncanonical frames archived outside canonical coverage; failed dismissal actions remain preserved as runtime-conflict evidence

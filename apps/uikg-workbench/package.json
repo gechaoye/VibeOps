@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "dev": "node server/dev.mjs",
+    "dev:frontend": "vite --host 127.0.0.1",
     "dev:server": "node --watch server/index.mjs",
     "build": "tsc -b && vite build",
     "start": "node server/index.mjs",

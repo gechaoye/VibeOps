@@ -236,7 +236,7 @@ def make_page(record: dict, instances: list[dict], transition_refs: list[str]) -
         "provenance": {
             "sourceType": "legacy_uikg_v2_import",
             "sourceEntityId": record["id"],
-            "limitations": ["legacy observations include OCR-derived semantics", "no current aiScout reconciliation"],
+            "limitations": ["legacy observations include OCR-derived semantics", "no current worker_a reconciliation"],
         },
     }
 
@@ -351,7 +351,7 @@ status: {page['status']}
 
 ## 边界与待确认
 
-- 该卡片由 UIKG 2.0 历史数据迁入；原始观测包含 OCR 语义，尚未经过本技能要求的 Scout/GPT 对账。
+- 该卡片由 UIKG 2.0 历史数据迁入；原始观测包含 OCR 语义，尚未经过本技能要求的 Worker A/Worker B 答卷。
 """
     write_text(root / page_card_path(page), body)
 
@@ -411,7 +411,7 @@ status: {element['coverage']}
 
 ## 来源
 
-- 历史视觉观测已保留，但其 OCR 语义与定位均须在当前帧经 `aiScout`、`aiQuery` 和 `aiLocate` 复核后才能用于动作。
+- 历史视觉观测已保留，但其 OCR 语义与定位均须在当前帧经 `worker_a`、`aiQuery` 和 `aiLocate` 复核后才能用于动作。
 """
     write_text(root / element_card_path(element), body)
 
@@ -566,7 +566,7 @@ status: unresolved-legacy-import
         "entry": {"description": "existing first-level graph", "knownFacts": ["Only published first-level canonical entities are normalized.", "Special-follow records remain unmaterialized evidence."]},
         "scope": {"mode": "normalization_only", "deviceActions": "none", "reason": "No new UI exploration was requested; this migration must not fabricate dual-model evidence."},
         "graph": {"root": str(GRAPH_ROOT), "mergePolicy": "additive-upsert", "preserveHistoricalEntities": True, "stageBeforePublish": True, "baseline": {**baseline_tree, "entityIdsHash": "sha256:" + sha256_bytes(canonical_json(baseline_ids).encode()), "protectedSharedNavigationRefs": ["01KY6Z7BD84VK4BNARMMSEET0K", "01KY9E733GCWPPT489SF5YPP3B"]}},
-        "completion": {"status": "incomplete", "reason": "Legacy first-level evidence was normalized, but it has not undergone fresh Scout/GPT reconciliation and atomic transition closure."},
+        "completion": {"status": "incomplete", "reason": "Legacy first-level evidence was normalized, but it has not undergone fresh Worker A/Worker B answer and atomic transition closure."},
     }
     normalization_root = STAGE_ROOT / "normalization" / EXPLORATION_ID
     write_yaml(normalization_root / "scope.yaml", scope)

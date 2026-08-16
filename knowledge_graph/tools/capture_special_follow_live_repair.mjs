@@ -7,6 +7,9 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
+import { normalizeWorkerOutput } from '../../apps/uikg-workbench/server/draft-model.mjs';
+import { runWorkerModel } from '../../apps/uikg-workbench/server/worker-client.mjs';
+import { buildWorkerPrompt } from '../../apps/uikg-workbench/server/worker-prompt.mjs';
 
 const REPO_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -45,7 +48,7 @@ const requireFromMidscene = createRequire(
 );
 const dotenv = requireFromMidscene('dotenv');
 dotenv.config({
-  path: path.join(MIDSCENE_ROOT, '.env'),
+  path: path.join(REPO_ROOT, '.env'),
   override: true,
   quiet: true,
 });
@@ -59,24 +62,22 @@ function requireConfigured(name) {
 const DEVICE_SERIAL = requireConfigured('ANDROID_DEVICE_SERIAL');
 
 const modelDiagnostics = {
-  default: {
-    intent: 'default',
-    slot: 'default',
-    name: requireConfigured('MIDSCENE_MODEL_NAME'),
-    family: requireConfigured('MIDSCENE_MODEL_FAMILY'),
+  worker_a: {
+    slot: 'worker_a',
+    name: requireConfigured('MIDSCENE_WORKER_A_MODEL_NAME'),
+    family: requireConfigured('MIDSCENE_WORKER_A_MODEL_FAMILY'),
   },
-  scout: {
-    intent: 'scout',
-    slot: 'scout',
-    name: requireConfigured('MIDSCENE_SCOUT_MODEL_NAME'),
-    family: requireConfigured('MIDSCENE_SCOUT_MODEL_FAMILY'),
+  worker_b: {
+    slot: 'worker_b',
+    name: requireConfigured('MIDSCENE_WORKER_B_MODEL_NAME'),
+    family: requireConfigured('MIDSCENE_WORKER_B_MODEL_FAMILY'),
   },
 };
-requireConfigured('MIDSCENE_SCOUT_MODEL_API_KEY');
-requireConfigured('MIDSCENE_SCOUT_MODEL_BASE_URL');
-if (modelDiagnostics.scout.name === modelDiagnostics.default.name) {
-  throw new Error('Scout must resolve to an independent model slot');
-}
+requireConfigured('MIDSCENE_WORKER_A_MODEL_API_KEY');
+requireConfigured('MIDSCENE_WORKER_A_MODEL_BASE_URL');
+requireConfigured('MIDSCENE_WORKER_B_MODEL_API_KEY');
+requireConfigured('MIDSCENE_WORKER_B_MODEL_BASE_URL');
+const workerSchema = JSON.parse(await readFile(path.join(REPO_ROOT, 'apps/uikg-workbench/server/worker-output.schema.json'), 'utf8'));
 
 const { agentFromAdbDevice } = await import(
   pathToFileURL(
@@ -253,29 +254,21 @@ async function locateWithRetry(agent, prompt, name) {
 
 async function readOnlyModelCallWithRetry(name, operation) {
   let lastError;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
     try {
       return await operation();
     } catch (error) {
       lastError = error;
-      if (attempt === 2) break;
-      const message = String(error);
-      const retryDelay =
-        message.includes('502') ||
-        message.includes('Connection error') ||
-        message.includes('ECONNRESET')
-          ? 60000
-          : 5000;
+      if (attempt === 4) break;
       process.stdout.write(
-        `${JSON.stringify({ event: 'read-only-model-retry', name, attempt: attempt + 1, retryDelay })}\n`,
+        `${JSON.stringify({ event: 'worker-retry', name, message: `正在重试：${attempt + 1}/5` })}\n`,
       );
-      await sleep(retryDelay);
     }
   }
   throw lastError;
 }
 
-function requiredScoutKeys(stateKey) {
+function requiredWorkerKeys(stateKey) {
   if (stateKey.endsWith('popup_backdrop_repair.overlay')) {
     return ['popup-backdrop'];
   }
@@ -369,28 +362,28 @@ function requiredScoutKeys(stateKey) {
   return keys;
 }
 
-function validateScout(frameId, stateKey, value) {
+function validateWorkerAnswer(frameId, stateKey, value, label) {
   if (!value || typeof value !== 'object') {
-    throw new Error(`Scout output for ${frameId} is not an object`);
+    throw new Error(`${label} output for ${frameId} is not an object`);
   }
   if (value.frameId !== frameId) {
     throw new Error(
-      `Scout frame mismatch: expected ${frameId}, got ${value.frameId}`,
+      `${label} frame mismatch: expected ${frameId}, got ${value.frameId}`,
     );
   }
   if (!value.page || !Array.isArray(value.elements)) {
-    throw new Error(`Scout output for ${frameId} lacks page/elements`);
+    throw new Error(`${label} output for ${frameId} lacks page/elements`);
   }
   if (!Array.isArray(value.relationships) || !Array.isArray(value.uncertainties)) {
-    throw new Error(`Scout output for ${frameId} lacks relationship fields`);
+    throw new Error(`${label} output for ${frameId} lacks relationship fields`);
   }
   const actualKeys = new Set(value.elements.map((item) => item?.candidateKey));
-  const missing = requiredScoutKeys(stateKey).filter(
+  const missing = requiredWorkerKeys(stateKey).filter(
     (candidateKey) => !actualKeys.has(candidateKey),
   );
   if (missing.length) {
     throw new Error(
-      `Scout output for ${stateKey} omitted required candidates: ${missing.join(', ')}`,
+      `${label} output for ${stateKey} omitted required candidates: ${missing.join(', ')}`,
     );
   }
   for (const item of value.elements) {
@@ -408,7 +401,7 @@ function validateScout(frameId, stateKey, value) {
       region.height > 1
     ) {
       throw new Error(
-        `Scout output for ${stateKey} has an invalid approximateRegion on ${item?.candidateKey}`,
+        `${label} output for ${stateKey} has an invalid approximateRegion on ${item?.candidateKey}`,
       );
     }
   }
@@ -418,24 +411,18 @@ function validateScout(frameId, stateKey, value) {
     );
     if (help?.controlType !== 'icon-button' || help?.interactive !== true) {
       throw new Error(
-        'Scout must inventory the visible group-DND circled-question-mark as an interactive icon-button',
+        `${label} must inventory the visible group-DND circled-question-mark as an interactive icon-button`,
       );
     }
   }
 }
 
-function normalizeScoutResult(value) {
-  return {
-    frameId: value?.frameId,
-    page: value?.page,
-    elements: value?.elements,
-    relationships: value?.relationships,
-    uncertainties: value?.uncertainties,
-  };
+function normalizeWorkerAnswer(value) {
+  return normalizeWorkerOutput(value).workerResult;
 }
 
-const scoutDemand = (frameId, stateKey, validationCorrection = null) => {
-  const required = requiredScoutKeys(stateKey);
+const workerADemand = (frameId, stateKey, validationCorrection = null) => {
+  const required = requiredWorkerKeys(stateKey);
   return {
   frameId: `string, exactly \"${frameId}\"`,
   page:
@@ -467,38 +454,25 @@ async function captureState(agent, stateKey, locatorDefinitions = []) {
     await mkdir(FRAMES_ROOT, { recursive: true });
     await writeFile(screenshotPath, bytes);
 
-    let scout;
-    let validationCorrection = null;
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      scout = normalizeScoutResult(await readOnlyModelCallWithRetry(
-        `${stateKey}.scout`,
-        () => agent.aiScout(scoutDemand(frameId, stateKey, validationCorrection)),
-      ));
-      try {
-        validateScout(frameId, stateKey, scout);
-        break;
-      } catch (error) {
-        if (attempt === 2) throw error;
-        validationCorrection =
-          `The previous inventory failed validation: ${String(error)}. ` +
-          'Re-inventory the same frozen frame from visible pixels and user-certified facts. Include every required exact candidateKey once, use positive non-zero normalized regions, and do not emit placeholders for visible controls.';
-      }
-    }
-    const reconciliation = await readOnlyModelCallWithRetry(
-      `${stateKey}.reconciliation`,
-      () => agent.aiQuery({
-      pageIdentity:
-        'string: identify the current business page and any visible overlay without inventing a new page for a transient help bubble',
-      stateSummary:
-        'string: summarize current settings, help popover visibility and selector state',
-      rowCompositions:
-        'array of objects for each visible target setting row, with rowName, labelText, helpIconPresent, helpPopoverPresent, togglePresent, and a statement of which sub-element is actionable',
-      candidateReconciliation:
-        'array mapping every Scout candidate to existing element, new element candidate, dynamic data, duplicate, unknown, or out-of-scope, including owner/container reasoning',
-      interactionBoundaryAssertions:
-        'string[] explicitly distinguishing non-actionable setting names and containers from help icons and toggles',
+    const pageContext = JSON.stringify(workerADemand(frameId, stateKey));
+    const prompt = buildWorkerPrompt(frameId, pageContext);
+    const runWorker = (worker) => readOnlyModelCallWithRetry(
+      `${stateKey}.${worker}`,
+      () => runWorkerModel({
+        worker,
+        prompt,
+        imageBuffer: bytes,
+        responseSchema: workerSchema,
       }),
     );
+    const [workerARaw, workerBRaw] = await Promise.all([
+      runWorker('worker_a'),
+      runWorker('worker_b'),
+    ]);
+    const workerA = normalizeWorkerAnswer(workerARaw);
+    const workerB = normalizeWorkerAnswer(workerBRaw);
+    validateWorkerAnswer(frameId, stateKey, workerA, 'Worker A');
+    validateWorkerAnswer(frameId, stateKey, workerB, 'Worker B');
     await ensureKeepAwakeSetting();
 
     const locators = {};
@@ -543,19 +517,19 @@ async function captureState(agent, stateKey, locatorDefinitions = []) {
       screenshotRef: `sha256:${screenshotSha}`,
       screenshotPath: path.relative(EXPLORATION_ROOT, screenshotPath),
       dpr: context.deprecatedDpr || 1,
-      scoutRef: `model-results/${safeName(stateKey)}.scout.json`,
-      reconciliationRef: `model-results/${safeName(stateKey)}.gpt.json`,
+      workerARef: `model-results/${safeName(stateKey)}.worker-a.json`,
+      workerBRef: `model-results/${safeName(stateKey)}.worker-b.json`,
       locatorRef: `locators/${safeName(stateKey)}.json`,
       evidenceStatus: 'dual_model_verified_live_frame',
       locators,
     };
     await writeJson(
-      path.join(MODEL_ROOT, `${safeName(stateKey)}.scout.json`),
-      scout,
+      path.join(MODEL_ROOT, `${safeName(stateKey)}.worker-a.json`),
+      workerA,
     );
     await writeJson(
-      path.join(MODEL_ROOT, `${safeName(stateKey)}.gpt.json`),
-      reconciliation,
+      path.join(MODEL_ROOT, `${safeName(stateKey)}.worker-b.json`),
+      workerB,
     );
     await writeJson(
       path.join(LOCATOR_ROOT, `${safeName(stateKey)}.json`),
@@ -1768,8 +1742,8 @@ try {
     frames: capturedStates.map((item) => ({
       frameId: item.frameId,
       stateKey: item.stateKey,
-      scout: 'complete',
-      reconciliation: 'complete',
+      workerA: 'complete',
+      workerB: 'complete',
       locators: Object.keys(item.locators),
     })),
     actions: actionRecords.map((item) => ({ id: item.id, status: item.status })),
@@ -1800,7 +1774,7 @@ try {
       `- Device: \`${DEVICE_REF}\``,
       `- Frames: ${capturedStates.length}`,
       `- Actions: ${actionRecords.length}`,
-      '- Evidence: live Midscene GPT + independent Scout on frozen frames',
+      '- Evidence: live Midscene Worker B + independent Worker A on frozen frames',
       POPUP_BACKDROP_REPAIR
         ? '- Scope: complete popup-interval modal backdrop boundary'
         : REMAINING_MODEL_REPAIR

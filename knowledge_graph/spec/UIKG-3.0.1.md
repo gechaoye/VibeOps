@@ -38,7 +38,7 @@ Canonical 不创建独立的 PageInstance、ElementInstance、坐标节点、截
 
 ### 2.2 Exploration Evidence
 
-`explorations/<exploration-id>/` 保存任务范围、冻结全帧、Scout 清点、GPT 对账、实时 locator、动作 Trace、断言、Coverage 和报告。证据可以支持或反驳 Canonical 知识，但不能仅因某帧缺失就删除稳定实体。
+`explorations/<exploration-id>/` 保存任务范围、冻结全帧、Worker A/B 原始答卷、字段合并决策、实时 locator、动作 Trace、断言、Coverage 和报告。证据可以支持或反驳 Canonical 知识，但不能仅因某帧缺失就删除稳定实体。
 
 ### 2.3 Obsidian 投影
 
@@ -204,11 +204,12 @@ Page 和 Element 不得平铺在类型根目录。功能树不得保留空目录
 
 ## 12. 完成状态
 
-`complete` 表示本次范围内递归队列、候选对账、允许动作、双模型证据、Canonical、投影和全部门禁都已闭合。
+`complete` 表示本次范围内递归队列、候选配对与字段合并、允许动作、双 Worker 证据、Canonical、投影和全部门禁都已闭合。
 
 以下任一情况存在时必须使用 `incomplete`：
 
-- Scout 未覆盖要求的冻结帧；
+- 任一 Worker 未覆盖要求的冻结帧且没有明确的失败与续写记录；
+- 仍有未处理的候选配对或字段差异；
 - 可见设置行未归入规范 profile、存在 `unresolved_setting_row`，或实际交互边界尚未确定；
 - 仍有未处理或无原因的队列项；
 - 实际经过的 AuthorityContract 仍为 `pending`；

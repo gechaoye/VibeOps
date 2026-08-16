@@ -8,7 +8,7 @@ featurePath:
 - 通用组件
 - 会话
 surfaceType: page
-status: observed_gpt_only_pending_scout
+status: observed_worker_b_only_pending_workerA
 summary: APP级通用会话边界；本次只记录从特别关注会话或成员进入以及系统返回，不探索会话内部。
 states:
 - key: opened_from_conversation
@@ -36,11 +36,11 @@ observations:
     orientation: portrait
   stateProperties:
     planStateKeyHint: boundary.common.conversation.lian_liangwei
-    independentScout: missing_from_legacy_capture
+    independentWorker A: missing_from_legacy_capture
     gptRecognition: complete
   screenshotRef: sha256:4f734320b288191469f77c3199349f85efdef26e97d6d6d5b93f51542554dc3c
   rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt4/raw-evidence/sessions/01KYJ4FXEX0ZV2MQDJVS4B3MYB
-  evidenceStatus: gpt_verified_pending_independent_scout
+  evidenceStatus: worker_b_verified_pending_independent_workerA
 - frameRef: 01KYJ4RSHBHNHX2XJZASNB6YRC
   observedAt: '2026-07-27T15:58:20.973Z'
   buildRef: android-package:com.zto.connect.fat@10542
@@ -51,14 +51,14 @@ observations:
     orientation: portrait
   stateProperties:
     planStateKeyHint: boundary.common.conversation.lian_liangwei_from_member
-    independentScout: missing_from_legacy_capture
+    independentWorker A: missing_from_legacy_capture
     gptRecognition: complete
   screenshotRef: sha256:bc7955fdf29ea9d6bfda44e4cd078aa11249c13687f4654107c99979d229d3b7
   rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5/raw-evidence/sessions/01KYJ4QEBBQZP44ANFGP77NE7J
-  evidenceStatus: gpt_verified_pending_independent_scout
+  evidenceStatus: worker_b_verified_pending_independent_workerA
 provenance:
   sourceType: verified_legacy_midscene_evidence
   materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
   limitations:
-  - independent aiScout evidence is absent from the historical capture
+  - independent worker_a evidence is absent from the historical capture
 boundaryNote: 仅记录入口和返回，不递归探索会话内部。

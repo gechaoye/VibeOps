@@ -24,5 +24,5 @@
 - 路径查询：`messages.special_follow.settings` 到 `messages.special_follow.people` 为 1 步 verified Transition，触发元素是右侧箭头。
 - 幂等性：第一次 staging 与发布后第二次物化的 Canonical、Obsidian 逐文件一致。
 
-活动图谱仍为 `incomplete`，唯一原因是既有探索证据缺少独立 aiScout，并仍有明确待补项；该状态不再包含结构违规。
+活动图谱仍为 `incomplete`，唯一原因是既有探索证据缺少独立 worker_a，并仍有明确待补项；该状态不再包含结构违规。
 

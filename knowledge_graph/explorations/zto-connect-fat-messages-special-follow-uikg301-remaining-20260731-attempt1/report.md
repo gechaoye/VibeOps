@@ -5,6 +5,6 @@
 - Device: `sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36`
 - Frames: 11
 - Actions: 10
-- Evidence: live Midscene GPT + independent Scout on frozen frames
+- Evidence: live Midscene Worker B + independent Worker A on frozen frames
 - Scope: remaining setting-row profiles, selector option hit rows, sound preview children, all-members row composition
 - Retry artifacts: 0 incomplete frames archived outside canonical coverage

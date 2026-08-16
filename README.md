@@ -11,10 +11,10 @@ cp .env.example .env
 python -m pip install -r requirements.txt
 pnpm install
 pnpm build
-pnpm dev:server
+pnpm dev
 ```
 
-Open `http://127.0.0.1:5800`. To develop the frontend with hot reload, run `pnpm dev` in a second terminal and open `http://127.0.0.1:5173`.
+Open `http://127.0.0.1:5173`. The development command starts both the frontend and the Android/workbench service. Use `pnpm dev:server` only when running the backend separately.
 
 ## Knowledge Graph
 
@@ -27,4 +27,4 @@ pnpm graph:query -- --from messages.root --to messages.special_follow.settings -
 
 ## Workbench
 
-`apps/uikg-workbench/` maintains graph drafts from a connected Android device. It supports live device interaction, frozen-frame evidence, Scout inventory, editable annotations, consistency validation, AI review, staging, and publication.
+`apps/uikg-workbench/` maintains graph drafts from a connected Android device. It supports live device interaction, frozen-frame evidence, Worker A inventory, editable annotations, consistency validation, AI review, staging, and publication.

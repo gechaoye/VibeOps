@@ -8,7 +8,7 @@ featurePath:
 - 消息
 - 特别关注
 surfaceType: dialog
-status: observed_gpt_only_pending_scout
+status: observed_worker_b_only_pending_workerA
 summary: 确认或取消移除当前特别关注成员。
 states:
 - key: awaiting_confirmation
@@ -34,13 +34,13 @@ observations:
     orientation: portrait
   stateProperties:
     planStateKeyHint: messages.special_follow.people.remove_dialog
-    independentScout: missing_from_legacy_capture
+    independentWorker A: missing_from_legacy_capture
     gptRecognition: complete
   screenshotRef: sha256:f0a1a31d88fbce8f6ef4a671479c7bb2493f93c1fc04fb05db108a95e455212d
   rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1/raw-evidence/sessions/01KYHBRRQ0FNFNTS8NJB3DVSTP
-  evidenceStatus: gpt_verified_pending_independent_scout
+  evidenceStatus: worker_b_verified_pending_independent_workerA
 provenance:
   sourceType: verified_legacy_midscene_evidence
   materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
   limitations:
-  - independent aiScout evidence is absent from the historical capture
+  - independent worker_a evidence is absent from the historical capture

@@ -40,17 +40,46 @@ import { ElementTree } from './ElementTree';
 import { Inspector } from './Inspector';
 import { LiveDevicePreview } from './LiveDevicePreview';
 import { ModelSettings } from './ModelSettings';
-import { createDraftPage, createDraftTransition, createHumanElement, elementAvailableOnPage, reviewStatusLabels, validateDraftClient } from './model';
+import { createDraftTransition, createHumanElement, elementAvailableOnPage, pageWorkflowStatus, pageWorkflowStatusLabels, reviewStatusLabels, validateDraftClient } from './model';
 import { PageGraph } from './PageGraph';
-import { ScoutProgressPanel, type ScoutActivity } from './ScoutProgressPanel';
+import { WorkerProgressPanel, type WorkerActivity } from './WorkerProgressPanel';
+import { WorkerComparisonPanel } from './WorkerComparisonPanel';
 import { StagingPanel } from './StagingPanel';
-import type { AnalysisSession, BBox, DeviceState, Draft, DraftElement, DraftPage, DraftTransition, ElementActivityRecord, ElementEditRecord, FrameMetadata, ReviewerResult, ReviewResumeSession, ScoutResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, BBox, DeviceState, Draft, DraftElement, DraftPage, DraftTransition, ElementActivityRecord, ElementEditRecord, FrameMetadata, WorkerResult, WorkerElementMergeSelection, WorkerResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 import './styles.css';
 
 type ViewMode = 'live' | 'review';
 type SideTab = 'elements' | 'validation' | 'history';
 type WorkspaceMode = 'annotation' | 'graph' | 'staging' | 'settings';
-type ExplorationMode = 'auto' | 'ai_assist';
+type ExplorationMode = 'ultra' | 'manual';
+
+function aggregateUltraWorkerStatus(workerAStatus?: WorkerActivity['status'], workerBStatus?: WorkerActivity['status']): WorkerActivity['status'] {
+  const statuses = [workerAStatus, workerBStatus].filter(Boolean) as WorkerActivity['status'][];
+  if (statuses.some((status) => status === 'running')) return 'running';
+  if (statuses.some((status) => status === 'cancelling')) return 'cancelling';
+  if (statuses.some((status) => status === 'paused')) return 'paused';
+  if (statuses.some((status) => status === 'error')) return 'error';
+  if (statuses.some((status) => status === 'cancelled')) return 'cancelled';
+  return 'completed';
+}
+
+function pageContentSignature(draft: Draft, pageId: string) {
+  const page = draft.pages.find((candidate) => candidate.id === pageId);
+  if (!page) return '';
+  const { publishedAt: _publishedAt, ...pageContent } = page;
+  const elements = draft.elements.filter((element) => element.pageId === pageId || element.availableOnPageIds.includes(pageId));
+  const transitions = draft.transitions.filter((transition) => transition.sourcePageId === pageId || transition.targetPageId === pageId);
+  return JSON.stringify({ page: pageContent, elements, transitions });
+}
+
+function invalidateChangedPagePublications(previous: Draft, next: Draft): Draft {
+  const pages = next.pages.map((page) => {
+    const previousPage = previous.pages.find((candidate) => candidate.id === page.id);
+    if (!page.publishedAt || !previousPage?.publishedAt) return page;
+    return pageContentSignature(previous, page.id) === pageContentSignature(next, page.id) ? page : { ...page, publishedAt: null };
+  });
+  return pages.some((page, index) => page !== next.pages[index]) ? { ...next, pages } : next;
+}
 
 const emptyDevice: DeviceState = { online: false, session: null, runtimeInfo: null, targets: [] };
 
@@ -70,31 +99,35 @@ function editableElementValuesEqual(current: DraftElement, initial: DraftElement
   });
 }
 
-function pausedScoutActivity(session: ScoutResumeSession): ScoutActivity {
-  const manuallyInterrupted = session.errorMessage === '用户中断 Scout';
+function pausedWorkerAActivity(session: WorkerResumeSession): WorkerActivity {
+  const manuallyInterrupted = session.errorMessage === '用户中断 Worker A';
   return {
     status: 'paused',
     phase: 'paused',
-    phaseMessage: manuallyInterrupted ? 'Scout 已中断，可从断点继续' : '自动续写 5 次仍未完成，可从断点继续',
+    phaseMessage: manuallyInterrupted ? 'Worker A 已中断，可从断点继续' : '自动续写 5 次仍未完成，可从断点继续',
     reasoningContent: session.reasoningContent || '',
     outputContent: session.outputContent || '',
     errorMessage: manuallyInterrupted ? undefined : session.errorMessage,
     resumeSessionId: session.id,
-    resumeKind: 'scout',
+    resumeKind: 'worker_a',
     completedCandidates: session.completedCandidates,
+    workerAStatus: 'paused',
+    workerAResumeSessionId: session.id,
   };
 }
 
-function pausedReviewActivity(session: ReviewResumeSession): ScoutActivity {
+function pausedWorkerBActivity(session: WorkerResumeSession): WorkerActivity {
   return {
     status: 'paused',
-    phase: 'review-paused',
-    phaseMessage: 'Reviewer 已中断，可从断点继续',
+    phase: 'worker-b-paused',
+    phaseMessage: 'Worker B 已中断，可从断点继续',
     reasoningContent: session.reasoningContent || '',
     outputContent: session.outputContent || '',
     errorMessage: undefined,
     resumeSessionId: session.id,
-    resumeKind: 'review',
+    resumeKind: 'worker_b',
+    workerBStatus: 'paused',
+    workerBResumeSessionId: session.id,
   };
 }
 
@@ -103,26 +136,33 @@ function AppContent() {
   const [status, setStatus] = useState<WorkbenchStatus | null>(null);
   const [device, setDevice] = useState<DeviceState>(emptyDevice);
   const [selectedDevice, setSelectedDevice] = useState('');
+  const [deviceDiscoveryError, setDeviceDiscoveryError] = useState<string | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]);
   const [frame, setFrame] = useState<FrameMetadata | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('live');
   const [sideTab, setSideTab] = useState<SideTab>('elements');
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('annotation');
-  const [explorationMode, setExplorationMode] = useState<ExplorationMode>(() => window.localStorage.getItem('uikg-exploration-mode') === 'ai_assist' ? 'ai_assist' : 'auto');
+  const [explorationMode, setExplorationMode] = useState<ExplorationMode>(() => {
+    const savedMode = window.localStorage.getItem('uikg-exploration-mode');
+    return savedMode === 'manual' || savedMode === 'ai_assist' ? 'manual' : 'ultra';
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedTransitionId, setSelectedTransitionId] = useState<string | null>(null);
   const [multiSelect, setMultiSelect] = useState(false);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [drawing, setDrawing] = useState(false);
   const [showRejected, setShowRejected] = useState(false);
+  const [continuousCapture, setContinuousCapture] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [workerControlBusy, setWorkerControlBusy] = useState<'worker-a' | 'worker-b' | null>(null);
   const [notice, setNotice] = useState<{ type: 'info' | 'error' | 'success'; text: string } | null>(null);
-  const [scoutActivity, setScoutActivity] = useState<ScoutActivity | null>(null);
-  const [scoutDialogOpen, setScoutDialogOpen] = useState(false);
+  const [workerActivity, setWorkerActivity] = useState<WorkerActivity | null>(null);
+  const [workerDialogOpen, setWorkerDialogOpen] = useState(false);
   const [analysisSessions, setAnalysisSessions] = useState<AnalysisSession[]>([]);
-  const [reviewComparison, setReviewComparison] = useState<{ scoutElements: DraftElement[]; reviewerResult: ReviewerResult; modelResultRef: string } | null>(null);
+  const [workerComparison, setWorkerComparison] = useState<{ workerAResult: WorkerResult; workerBResult: WorkerResult; modelResultRef: string } | null>(null);
+  const [workerCandidatePortal, setWorkerCandidatePortal] = useState<HTMLDivElement | null>(null);
   const [staging, setStaging] = useState<StagingResult | null>(null);
   const [elementActivities, setElementActivities] = useState<ElementActivityRecord[]>([]);
   const draftRef = useRef<Draft | null>(null);
@@ -136,6 +176,8 @@ function AppContent() {
   const preAcceptStatusRef = useRef(new Map<string, DraftElement['reviewStatus']>());
   const preRejectStatusRef = useRef(new Map<string, DraftElement['reviewStatus']>());
   const connectionRefreshInFlightRef = useRef(false);
+  const workerAResultRef = useRef<WorkerResult | null>(null);
+  const workerBResultRef = useRef<WorkerResult | null>(null);
 
   const issues = useMemo(() => draft ? validateDraftClient(draft) : serverIssues, [draft, serverIssues]);
   const selectedElement = draft?.elements.find((element) => element.id === selectedId) || null;
@@ -143,11 +185,26 @@ function AppContent() {
   const canRestoreSelectedElement = Boolean(selectedElement && initialSelectedElement && JSON.stringify(selectedElement) !== JSON.stringify(initialSelectedElement));
   const canRestoreAllElements = Boolean(draft && JSON.stringify(draft.elements) !== JSON.stringify(initialAllElementsRef.current));
   const currentElements = useMemo(() => draft ? draft.elements.filter((element) => elementAvailableOnPage(element, draft.currentPageId, draft.elements)) : [], [draft]);
+  const currentPage = draft?.pages.find((page) => page.id === draft.currentPageId) || null;
+  const currentPageStatus = draft && currentPage ? pageWorkflowStatus(draft, currentPage) : null;
   const allCurrentChecked = currentElements.length > 0 && currentElements.every((element) => checkedIds.has(element.id));
   const frameUrl = draft?.currentFrameId
     ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(draft.currentFrameId)}/image`)
     : null;
-  const hasAnalyzedCurrentFrame = Boolean(draft?.currentFrameId && analysisSessions.some((session) => session.kind === 'scout' && session.frameId === draft.currentFrameId && session.status !== 'running'));
+  const pageHistorySessions = useMemo(() => {
+    if (!draft) return [];
+    const currentPage = draft.pages.find((page) => page.id === draft.currentPageId);
+    const pageFrameIds = new Set(currentPage?.frameIds || []);
+    if (draft.currentFrameId) pageFrameIds.add(draft.currentFrameId);
+    return analysisSessions.filter((session) => session.pageId
+      ? session.pageId === draft.currentPageId
+      : Boolean(session.frameId && pageFrameIds.has(session.frameId)));
+  }, [analysisSessions, draft]);
+  const hasAnalyzedCurrentFrame = Boolean(draft?.currentFrameId && pageHistorySessions.some((session) => session.kind === 'worker_a' && session.frameId === draft.currentFrameId && session.status !== 'running'));
+  const acceptedHistorySessionId = useMemo(() => {
+    if (!draft?.rawModelResultRef) return null;
+    return pageHistorySessions.find((session) => draft.rawModelResultRef?.includes(session.id))?.id || null;
+  }, [pageHistorySessions, draft?.rawModelResultRef]);
 
   const refreshAnalysisSessions = async () => {
     try {
@@ -244,7 +301,7 @@ function AppContent() {
   const commitDraft = (updater: (current: Draft) => Draft, historyKey?: string, activityLabel = '编辑元素') => {
     const current = draftRef.current;
     if (!current) return;
-    const next = updater(current);
+    const next = invalidateChangedPagePublications(current, updater(current));
     if (next === current) return;
     const mergeActivity = Boolean(historyKey && historyGroupRef.current === historyKey);
     if (!historyKey || historyGroupRef.current !== historyKey) {
@@ -289,38 +346,42 @@ function AppContent() {
     if (connectionRefreshInFlightRef.current) return;
     connectionRefreshInFlightRef.current = true;
     try {
-      const [online, workbenchStatus, session, targets] = await Promise.all([
-        deviceClient.checkStatus(),
+      const online = await deviceClient.checkStatus();
+      if (!online) throw new Error('设备服务未启动，请使用 pnpm dev 同时启动前端和设备服务');
+      const [workbenchStatus, session, targets] = await Promise.all([
         workbenchApi.status(),
         deviceClient.getSessionInfo(),
         deviceClient.listSessionTargets(forceTargetRefresh),
       ]);
       const runtimeInfo = workbenchStatus.agentConnected ? await deviceClient.getRuntimeInfo() : null;
       setStatus(workbenchStatus);
-      if (workbenchStatus.scoutSession) {
-        setScoutActivity((current) => current || pausedScoutActivity(workbenchStatus.scoutSession!));
+      if (workbenchStatus.workerASession) {
+        setWorkerActivity((current) => current || pausedWorkerAActivity(workbenchStatus.workerASession!));
       }
-      if (workbenchStatus.reviewSession) {
-        setScoutActivity((current) => current || pausedReviewActivity(workbenchStatus.reviewSession!));
+      if (workbenchStatus.workerBSession) {
+        setWorkerActivity((current) => current || pausedWorkerBActivity(workbenchStatus.workerBSession!));
       }
       setDevice({ online, session, runtimeInfo, targets });
+      setDeviceDiscoveryError(null);
       setSelectedDevice((current) => current || targets[0]?.id || '');
     } catch (error) {
       setDevice((current) => ({ ...current, online: false }));
-      showNotice('error', error instanceof Error ? error.message : String(error));
+      const message = error instanceof Error ? error.message : String(error);
+      setDeviceDiscoveryError(message);
+      showNotice('error', message);
     } finally {
       connectionRefreshInFlightRef.current = false;
     }
   }, [deviceClient]);
 
   useEffect(() => {
-    Promise.all([refreshConnection(), workbenchApi.draft(), workbenchApi.scoutSession(), workbenchApi.reviewSession(), workbenchApi.sessions()])
-      .then(([, result, scoutSessionResult, reviewSessionResult, sessionHistory]) => {
+    Promise.all([refreshConnection(), workbenchApi.draft(), workbenchApi.workerASession(), workbenchApi.workerBSession(), workbenchApi.sessions()])
+      .then(([, result, workerASessionResult, workerBSessionResult, sessionHistory]) => {
         resetDraftState(result.draft);
         setServerIssues(result.issues);
         if (result.draft.currentFrameId) setViewMode('review');
-        if (reviewSessionResult.session) setScoutActivity(pausedReviewActivity(reviewSessionResult.session));
-        else if (scoutSessionResult.session) setScoutActivity(pausedScoutActivity(scoutSessionResult.session));
+        if (workerBSessionResult.session) setWorkerActivity(pausedWorkerBActivity(workerBSessionResult.session));
+        else if (workerASessionResult.session) setWorkerActivity(pausedWorkerAActivity(workerASessionResult.session));
         setAnalysisSessions(sessionHistory.sessions);
       })
       .catch((error) => showNotice('error', error instanceof Error ? error.message : String(error)));
@@ -365,14 +426,19 @@ function AppContent() {
   const freezeFrame = async () => {
     setBusy('freeze');
     try {
-      const result = await workbenchApi.freezeFrame();
+      const keepLive = continuousCapture;
+      const result = await workbenchApi.freezeFrame(keepLive);
       setFrame(result.frame);
       resetDraftState(result.draft);
+      workerAResultRef.current = null;
+      workerBResultRef.current = null;
+      setWorkerComparison(null);
       setSelectedId(null);
       setSelectedTransitionId(null);
-      setViewMode('review');
+      setWorkspaceMode('annotation');
+      setViewMode(keepLive ? 'live' : 'review');
       setDrawing(false);
-      showNotice('success', '已保存冻结帧');
+      showNotice('success', keepLive ? '截图已加入页面图，可继续操作设备' : '截图已加入页面图，请标注或识别页面');
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
@@ -380,16 +446,16 @@ function AppContent() {
     }
   };
 
-  const handleScoutEvent = (event: { type: string; [key: string]: unknown }) => {
+  const handleWorkerEvent = (event: { type: string; [key: string]: unknown }) => {
     if (event.type === 'stage') {
-      setScoutActivity((current) => current ? {
+      setWorkerActivity((current) => current ? {
         ...current,
         phase: String(event.phase || current.phase),
         phaseMessage: String(event.message || current.phaseMessage),
       } : current);
     }
     if (event.type === 'chunk') {
-      setScoutActivity((current) => current ? {
+      setWorkerActivity((current) => current ? {
         ...current,
         reasoningContent: current.reasoningContent + String(event.reasoningContent || ''),
         outputContent: current.outputContent + String(event.content || ''),
@@ -397,161 +463,256 @@ function AppContent() {
     }
   };
 
-  const finishScout = async (result: Awaited<ReturnType<typeof workbenchApi.scoutStream>>, runReview: boolean) => {
+  const handleUltraWorkerAEvent = (event: { type: string; [key: string]: unknown }) => {
+    if (event.type === 'chunk') {
+      setWorkerActivity((current) => current ? {
+        ...current,
+        workerAReasoningContent: (current.workerAReasoningContent || '') + String(event.reasoningContent || ''),
+        workerAOutputContent: (current.workerAOutputContent || '') + String(event.content || ''),
+      } : current);
+    }
+  };
+
+  const handleUltraWorkerBEvent = (event: { type: string; [key: string]: unknown }) => {
+    if (event.type === 'chunk') {
+      setWorkerActivity((current) => current ? {
+        ...current,
+        reasoningContent: current.reasoningContent + String(event.reasoningContent || ''),
+        outputContent: current.outputContent + String(event.content || ''),
+      } : current);
+    }
+  };
+
+  const finishManualWorkerA = async (result: Awaited<ReturnType<typeof workbenchApi.workerAStream>>) => {
+    if (!result.draft || !result.issues) throw new Error('Worker A 已完成，但没有返回草稿');
     resetDraftState(result.draft);
     setServerIssues(result.issues);
     setSelectedId(result.draft.elements[0]?.id || null);
-    setStatus((current) => current ? { ...current, scoutSession: null } : current);
-    if (!runReview) {
-      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: 'Scout 分析完成，等待人工确认', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
-      showNotice('success', `Scout 已识别 ${result.draft.elements.length} 个候选元素`);
-      await refreshAnalysisSessions();
-      return;
-    }
-    setScoutActivity((current) => current ? {
-      ...current,
-      status: 'running',
-      phase: 'review',
-      phaseMessage: 'Scout 完成，Reviewer 正在重新识别画面',
-      scoutReasoningContent: current.reasoningContent,
-      scoutOutputContent: current.outputContent,
-      reasoningContent: '',
-      outputContent: '',
-      errorMessage: undefined,
-      resumeSessionId: undefined,
-      resumeKind: undefined,
-    } : current);
-    try {
-      const reviewed = await workbenchApi.reviewStream(result.draft.currentFrameId!, handleScoutEvent);
-      setReviewComparison({ scoutElements: reviewed.scoutCandidates, reviewerResult: reviewed.reviewerResult, modelResultRef: reviewed.modelResultRef });
-      setStatus((current) => current ? { ...current, reviewSession: null } : current);
-      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'review-compare', phaseMessage: '双模型识别完成，请选择要保留的元素', errorMessage: undefined } : current);
-      showNotice('success', 'Reviewer 已完成独立识别，请选择合并结果');
-    } catch (error) {
-      handleReviewFailure(error, 'Scout 结果已保留；Reviewer 识别失败');
-    } finally {
-      await refreshAnalysisSessions();
-    }
+    setStatus((current) => current ? { ...current, workerASession: null } : current);
+    setWorkerActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: 'Worker A 分析完成', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
+    showNotice('success', `Worker A 已识别 ${result.draft.elements.length} 个候选元素`);
+    await refreshAnalysisSessions();
   };
 
-  const retryReview = async () => {
+  const retryWorkerB = async () => {
     const currentDraft = draftRef.current;
     if (!currentDraft?.currentFrameId) return;
-    setBusy('review');
-    setScoutDialogOpen(true);
-    setReviewComparison(null);
-    setScoutActivity((current) => current ? { ...current, status: 'running', phase: 'review', phaseMessage: 'Reviewer 正在重新识别画面', reasoningContent: '', outputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
+    setWorkerControlBusy('worker-b');
+    setWorkerDialogOpen(true);
+    setWorkerComparison(null);
+    setWorkerActivity((current) => current ? { ...current, status: 'running', workerBStatus: 'running', phase: 'worker_b', phaseMessage: 'Worker B 正在重新识别画面', reasoningContent: '', outputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined, workerBResumeSessionId: undefined } : current);
     try {
-      const reviewed = await workbenchApi.reviewStream(currentDraft.currentFrameId, handleScoutEvent);
-      setReviewComparison({ scoutElements: reviewed.scoutCandidates, reviewerResult: reviewed.reviewerResult, modelResultRef: reviewed.modelResultRef });
-      setStatus((current) => current ? { ...current, reviewSession: null } : current);
-      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'review-compare', phaseMessage: '双模型识别完成，请选择要保留的元素', errorMessage: undefined } : current);
-      showNotice('success', 'Reviewer 已完成独立识别，请选择合并结果');
+      const pageContext = [currentDraft.page.name, currentDraft.page.stateSummary].filter(Boolean).join('；');
+      const result = await workbenchApi.workerBStream(currentDraft.currentFrameId, pageContext, explorationMode === 'ultra' ? handleUltraWorkerBEvent : handleWorkerEvent, currentDraft.currentPageId);
+      workerBResultRef.current = result.workerResult;
+      if (workerAResultRef.current) setWorkerComparison({ workerAResult: workerAResultRef.current, workerBResult: result.workerResult, modelResultRef: result.modelResultRef });
+      setStatus((current) => current ? { ...current, workerBSession: null } : current);
+      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus(current.workerAStatus, 'completed'), workerBStatus: 'completed', phase: workerAResultRef.current ? 'compare' : 'complete', phaseMessage: 'Worker B 识别完成', errorMessage: undefined } : current);
+      showNotice('success', 'Worker B 已完成独立识别，可在冻结区域选择元素');
     } catch (error) {
-      handleReviewFailure(error, 'Reviewer 重新识别失败');
+      handleWorkerBFailure(error, 'Worker B 重新识别失败');
     } finally {
-      setBusy(null);
+      setWorkerControlBusy(null);
       await refreshAnalysisSessions();
     }
   };
 
-  const handleScoutFailure = (error: unknown) => {
+  const retryWorkerA = async () => {
+    const currentDraft = draftRef.current;
+    if (!currentDraft?.currentFrameId) return;
+    setWorkerControlBusy('worker-a');
+    setWorkerDialogOpen(true);
+    setWorkerComparison(null);
+    setWorkerActivity((current) => current ? { ...current, status: 'running', workerAStatus: 'running', phase: 'worker_a', phaseMessage: 'Worker A 正在重新识别画面', workerAReasoningContent: '', workerAOutputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined, workerAResumeSessionId: undefined } : current);
+    try {
+      const pageContext = [currentDraft.page.name, currentDraft.page.stateSummary].filter(Boolean).join('；');
+      const result = await workbenchApi.workerAStream(currentDraft.currentFrameId, pageContext, false, handleUltraWorkerAEvent, currentDraft.currentPageId);
+      workerAResultRef.current = result.workerResult;
+      if (workerBResultRef.current) setWorkerComparison({ workerAResult: result.workerResult, workerBResult: workerBResultRef.current, modelResultRef: result.modelResultRef });
+      setStatus((current) => current ? { ...current, workerASession: null } : current);
+      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus('completed', current.workerBStatus), workerAStatus: 'completed', phase: workerBResultRef.current ? 'compare' : 'complete', phaseMessage: 'Worker A 识别完成', errorMessage: undefined } : current);
+      showNotice('success', 'Worker A 已完成重新识别');
+    } catch (error) {
+      handleWorkerAFailure(error);
+    } finally {
+      setWorkerControlBusy(null);
+      await refreshAnalysisSessions();
+    }
+  };
+
+  const handleWorkerAFailure = (error: unknown) => {
     const cancelled = error instanceof Error && error.name === 'AnalysisCancelledError';
     const details = error instanceof Error ? (error as Error & { details?: Record<string, unknown> }).details : undefined;
-    const resumeSession = details?.resumableSession as ScoutResumeSession | undefined;
+    const resumeSession = details?.resumableSession as WorkerResumeSession | undefined;
     if (resumeSession?.id) {
-      setScoutActivity((current) => ({
-        ...(current || pausedScoutActivity(resumeSession)),
+      if (explorationMode === 'ultra') {
+        setWorkerActivity((current) => current ? {
+          ...current,
+          status: aggregateUltraWorkerStatus('paused', current.workerBStatus),
+          workerAStatus: 'paused',
+          workerAResumeSessionId: resumeSession.id,
+          phase: 'worker-a-paused',
+          phaseMessage: cancelled ? 'Worker A 已中断，可从断点继续' : 'Worker A 已暂停，可从断点继续',
+          errorMessage: cancelled ? undefined : resumeSession.errorMessage,
+          resumeSessionId: resumeSession.id,
+          resumeKind: 'worker_a',
+          completedCandidates: resumeSession.completedCandidates,
+        } : current);
+        setStatus((current) => current ? { ...current, workerASession: resumeSession } : current);
+        showNotice('info', `Worker A 已保留 ${resumeSession.completedCandidates} 个候选的断点`);
+        return;
+      }
+      setWorkerActivity((current) => ({
+        ...(current || pausedWorkerAActivity(resumeSession)),
         status: 'paused',
         phase: 'paused',
-        phaseMessage: cancelled ? 'Scout 已中断，可从断点继续' : '自动续写 5 次仍未完成，可从断点继续',
+        phaseMessage: cancelled ? 'Worker A 已中断，可从断点继续' : '自动续写 5 次仍未完成，可从断点继续',
         errorMessage: cancelled ? undefined : resumeSession.errorMessage,
         resumeSessionId: resumeSession.id,
-        resumeKind: 'scout',
+        resumeKind: 'worker_a',
         completedCandidates: resumeSession.completedCandidates,
       }));
-      setStatus((current) => current ? { ...current, scoutSession: resumeSession } : current);
-      showNotice('info', `Scout 已保留 ${resumeSession.completedCandidates} 个候选的断点`);
+      setStatus((current) => current ? { ...current, workerASession: resumeSession } : current);
+      showNotice('info', `Worker A 已保留 ${resumeSession.completedCandidates} 个候选的断点`);
       return;
     }
-    setScoutActivity((current) => current ? {
+    if (explorationMode === 'ultra') {
+      setWorkerActivity((current) => current ? {
+        ...current,
+        status: aggregateUltraWorkerStatus(cancelled ? 'cancelled' : 'error', current.workerBStatus),
+        workerAStatus: cancelled ? 'cancelled' : 'error',
+        phase: cancelled ? 'worker-a-cancelled' : 'worker-a-error',
+        phaseMessage: cancelled ? 'Worker A 已中断' : 'Worker A 分析失败',
+        errorMessage: cancelled ? undefined : error instanceof Error ? error.message : String(error),
+      } : current);
+      showNotice(cancelled ? 'info' : 'error', cancelled ? 'Worker A 已中断' : error instanceof Error ? error.message : String(error));
+      return;
+    }
+    setWorkerActivity((current) => current ? {
       ...current,
       status: cancelled ? 'cancelled' : 'error',
       phase: cancelled ? 'cancelled' : 'error',
-      phaseMessage: cancelled ? 'Scout 已中断' : 'Scout 分析失败',
+      phaseMessage: cancelled ? 'Worker A 已中断' : 'Worker A 分析失败',
       errorMessage: cancelled ? undefined : error instanceof Error ? error.message : String(error),
     } : current);
-    showNotice(cancelled ? 'info' : 'error', cancelled ? 'Scout 已中断，草稿未更新' : error instanceof Error ? error.message : String(error));
+    showNotice(cancelled ? 'info' : 'error', cancelled ? 'Worker A 已中断，草稿未更新' : error instanceof Error ? error.message : String(error));
   };
 
-  const handleReviewFailure = (error: unknown, fallbackMessage: string) => {
+  const handleWorkerBFailure = (error: unknown, fallbackMessage: string) => {
     const cancelled = error instanceof Error && error.name === 'AnalysisCancelledError';
     const details = error instanceof Error ? (error as Error & { details?: Record<string, unknown> }).details : undefined;
-    const resumeSession = details?.resumableSession as ReviewResumeSession | undefined;
+    const resumeSession = details?.resumableSession as WorkerResumeSession | undefined;
+    const message = error instanceof Error ? error.message : String(error);
     if (resumeSession?.id) {
-      setScoutActivity((current) => ({
-        ...(current || pausedReviewActivity(resumeSession)),
+      if (explorationMode === 'ultra') {
+        setWorkerActivity((current) => current ? {
+          ...current,
+          status: aggregateUltraWorkerStatus(current.workerAStatus, 'paused'),
+          workerBStatus: 'paused',
+          workerBResumeSessionId: resumeSession.id,
+          phase: 'worker-b-paused',
+          phaseMessage: 'Worker B 已暂停，可从断点继续',
+          errorMessage: undefined,
+          resumeSessionId: resumeSession.id,
+          resumeKind: 'worker_b',
+        } : current);
+        setStatus((current) => current ? { ...current, workerBSession: resumeSession } : current);
+        showNotice('info', 'Worker B 已中断并保存当前输出断点');
+        return;
+      }
+      setWorkerActivity((current) => ({
+        ...(current || pausedWorkerBActivity(resumeSession)),
         status: 'paused',
-        phase: 'review-paused',
-        phaseMessage: 'Reviewer 已中断，可从断点继续',
+        phase: 'worker-b-paused',
+        phaseMessage: 'Worker B 已中断，可从断点继续',
         errorMessage: undefined,
         resumeSessionId: resumeSession.id,
-        resumeKind: 'review',
+        resumeKind: 'worker_b',
       }));
-      setStatus((current) => current ? { ...current, reviewSession: resumeSession } : current);
-      showNotice('info', 'Reviewer 已中断并保存当前输出断点');
+      setStatus((current) => current ? { ...current, workerBSession: resumeSession } : current);
+      showNotice('info', 'Worker B 已中断并保存当前输出断点');
       return;
     }
-    const message = error instanceof Error ? error.message : String(error);
-    setScoutActivity((current) => current ? {
+    if (explorationMode === 'ultra') {
+      setWorkerActivity((current) => current ? {
+        ...current,
+        status: aggregateUltraWorkerStatus(current.workerAStatus, cancelled ? 'cancelled' : 'error'),
+        workerBStatus: cancelled ? 'cancelled' : 'error',
+        phase: cancelled ? 'worker-b-cancelled' : 'worker-b-error',
+        phaseMessage: cancelled ? 'Worker B 已中断' : fallbackMessage,
+        errorMessage: cancelled ? undefined : message,
+      } : current);
+      showNotice(cancelled ? 'info' : 'error', cancelled ? 'Worker B 已中断' : message);
+      return;
+    }
+    setWorkerActivity((current) => current ? {
       ...current,
       status: cancelled ? 'cancelled' : 'error',
-      phase: cancelled ? 'review-cancelled' : 'review-error',
-      phaseMessage: cancelled ? 'Reviewer 已中断' : fallbackMessage,
+      phase: cancelled ? 'worker-b-cancelled' : 'worker-b-error',
+      phaseMessage: cancelled ? 'Worker B 已中断' : fallbackMessage,
       errorMessage: cancelled ? undefined : message,
     } : current);
-    showNotice(cancelled ? 'info' : 'error', cancelled ? 'Reviewer 已中断' : message);
+    showNotice(cancelled ? 'info' : 'error', cancelled ? 'Worker B 已中断' : message);
   };
 
-  const runScout = async () => {
+  const runWorkers = async () => {
     if (!draft?.currentFrameId) return;
-    setBusy('scout');
-    setScoutDialogOpen(true);
-    setReviewComparison(null);
-    setScoutActivity({
-      status: 'running',
-      phase: 'starting',
-      phaseMessage: '正在启动 Scout',
-      reasoningContent: '',
-      outputContent: '',
-    });
+    setBusy('workers');
+    setWorkerDialogOpen(true);
+    setWorkerComparison(null);
+    workerAResultRef.current = null;
+    workerBResultRef.current = null;
+    const ultraMode = explorationMode === 'ultra';
+    setWorkerActivity({ status: 'running', phase: ultraMode ? 'ultra-running' : 'starting', phaseMessage: ultraMode ? 'Worker A 与 Worker B 正在并发识别画面' : '正在启动 Worker A', reasoningContent: '', outputContent: '', workerAReasoningContent: '', workerAOutputContent: '', workerAStatus: ultraMode ? 'running' : undefined, workerBStatus: ultraMode ? 'running' : undefined });
     try {
       const pageContext = [draft.page.name, draft.page.stateSummary].filter(Boolean).join('；');
-      await finishScout(await workbenchApi.scoutStream(draft.currentFrameId, pageContext, handleScoutEvent), explorationMode === 'auto');
+      if (!ultraMode) {
+        await finishManualWorkerA(await workbenchApi.workerAStream(draft.currentFrameId, pageContext, true, handleWorkerEvent, draft.currentPageId));
+        return;
+      }
+      const workerAPromise = workbenchApi.workerAStream(draft.currentFrameId, pageContext, false, handleUltraWorkerAEvent, draft.currentPageId).then((result) => {
+        workerAResultRef.current = result.workerResult;
+        if (workerBResultRef.current) setWorkerComparison({ workerAResult: result.workerResult, workerBResult: workerBResultRef.current, modelResultRef: result.modelResultRef });
+        setStatus((current) => current ? { ...current, workerASession: null } : current);
+        setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus('completed', current.workerBStatus), workerAStatus: 'completed', workerAResumeSessionId: undefined } : current);
+        return result;
+      }, (error) => { handleWorkerAFailure(error); throw error; });
+      const workerBPromise = workbenchApi.workerBStream(draft.currentFrameId, pageContext, handleUltraWorkerBEvent, draft.currentPageId).then((result) => {
+        workerBResultRef.current = result.workerResult;
+        if (workerAResultRef.current) setWorkerComparison({ workerAResult: workerAResultRef.current, workerBResult: result.workerResult, modelResultRef: result.modelResultRef });
+        setStatus((current) => current ? { ...current, workerBSession: null } : current);
+        setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus(current.workerAStatus, 'completed'), workerBStatus: 'completed', workerBResumeSessionId: undefined } : current);
+        return result;
+      }, (error) => { handleWorkerBFailure(error, 'Worker B 识别失败'); throw error; });
+      const [workerAOutcome, workerBOutcome] = await Promise.allSettled([workerAPromise, workerBPromise]);
+      if (workerAOutcome.status === 'fulfilled' && workerBOutcome.status === 'fulfilled') {
+        setWorkerActivity((current) => current ? { ...current, status: 'completed', workerAStatus: 'completed', workerBStatus: 'completed', phase: 'compare', phaseMessage: '双 Worker 并发识别完成', errorMessage: undefined } : current);
+        showNotice('success', '两份独立识别答卷已完成，可在双画面或页面元素区域选择');
+      }
     } catch (error) {
-      handleScoutFailure(error);
+      handleWorkerAFailure(error);
     } finally {
       setBusy(null);
       await refreshAnalysisSessions();
     }
   };
 
-  const applyReviewComparison = async (selectedScoutKeys: string[], selectedReviewerKeys: string[]) => {
-    if (!draft?.currentFrameId || !reviewComparison) return;
-    setBusy('review-apply');
+  const applyWorkerComparison = async (selections: WorkerElementMergeSelection[]) => {
+    if (!draft?.currentFrameId || !workerComparison) return;
+    setBusy('worker-merge');
     try {
-      const result = await workbenchApi.applyReviewSelection({
+      const result = await workbenchApi.mergeWorkerResults({
         frameId: draft.currentFrameId,
-        reviewerResult: reviewComparison.reviewerResult,
-        selectedScoutKeys,
-        selectedReviewerKeys,
-        modelResultRef: reviewComparison.modelResultRef,
+        workerAResult: workerComparison.workerAResult,
+        workerBResult: workerComparison.workerBResult,
+        selections,
+        modelResultRef: workerComparison.modelResultRef,
       });
       resetDraftState(result.draft);
       setServerIssues(result.issues);
       setSelectedId(result.draft.elements[0]?.id || null);
-      setReviewComparison(null);
-      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: '识别结果已合并，等待人工确认' } : current);
+      setWorkerComparison(null);
+      setWorkerActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: '识别结果已合并，可在页面元素区域编辑审核' } : current);
       showNotice('success', `已合并 ${result.draft.elements.length} 个候选元素`);
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
@@ -560,79 +721,109 @@ function AppContent() {
     }
   };
 
-  const resumeScout = async () => {
-    const sessionId = scoutActivity?.resumeSessionId;
+  const resumeWorkerA = async () => {
+    const sessionId = workerActivity?.workerAResumeSessionId || (workerActivity?.resumeKind === 'worker_a' ? workerActivity.resumeSessionId : undefined);
     if (!sessionId) return;
-    setBusy('scout');
-    setScoutDialogOpen(true);
-    setScoutActivity((current) => current ? {
+    setWorkerControlBusy('worker-a');
+    setWorkerDialogOpen(true);
+    setWorkerActivity((current) => current ? {
       ...current,
       status: 'running',
+      workerAStatus: 'running',
       phase: 'resume',
-      phaseMessage: '正在从已保存断点继续 Scout',
+      phaseMessage: '正在从已保存断点继续 Worker A',
       errorMessage: undefined,
     } : current);
     try {
-      await finishScout(await workbenchApi.resumeScoutStream(sessionId, handleScoutEvent), explorationMode === 'auto');
+      const result = await workbenchApi.resumeWorkerAStream(sessionId, explorationMode === 'ultra' ? handleUltraWorkerAEvent : handleWorkerEvent);
+      if (explorationMode === 'ultra') {
+        workerAResultRef.current = result.workerResult;
+        if (workerBResultRef.current) setWorkerComparison({ workerAResult: result.workerResult, workerBResult: workerBResultRef.current, modelResultRef: result.modelResultRef });
+        setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus('completed', current.workerBStatus), workerAStatus: 'completed', workerAResumeSessionId: undefined, phase: workerBResultRef.current ? 'compare' : 'complete', phaseMessage: 'Worker A 已从断点完成', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
+      } else {
+        await finishManualWorkerA(result);
+      }
     } catch (error) {
-      handleScoutFailure(error);
+      handleWorkerAFailure(error);
     } finally {
-      setBusy(null);
+      setWorkerControlBusy(null);
     }
   };
 
-  const resumeReview = async () => {
-    const sessionId = scoutActivity?.resumeSessionId;
+  const resumeWorkerB = async () => {
+    const sessionId = workerActivity?.workerBResumeSessionId || (workerActivity?.resumeKind === 'worker_b' ? workerActivity.resumeSessionId : undefined);
     if (!sessionId) return;
-    setBusy('review');
-    setScoutDialogOpen(true);
-    setScoutActivity((current) => current ? {
+    setWorkerControlBusy('worker-b');
+    setWorkerDialogOpen(true);
+    setWorkerActivity((current) => current ? {
       ...current,
       status: 'running',
-      phase: 'review-resume',
-      phaseMessage: '正在从已保存断点继续 Reviewer',
+      workerBStatus: 'running',
+      phase: 'worker_b-resume',
+      phaseMessage: '正在从已保存断点继续 Worker B',
       errorMessage: undefined,
     } : current);
     try {
-      const reviewed = await workbenchApi.resumeReviewStream(sessionId, handleScoutEvent);
-      setReviewComparison({ scoutElements: reviewed.scoutCandidates, reviewerResult: reviewed.reviewerResult, modelResultRef: reviewed.modelResultRef });
-      setStatus((current) => current ? { ...current, reviewSession: null } : current);
-      setScoutActivity((current) => current ? { ...current, status: 'completed', phase: 'review-compare', phaseMessage: '双模型识别完成，请选择要保留的元素', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
-      showNotice('success', 'Reviewer 已从断点完成识别');
+      const result = await workbenchApi.resumeWorkerBStream(sessionId, explorationMode === 'ultra' ? handleUltraWorkerBEvent : handleWorkerEvent);
+      workerBResultRef.current = result.workerResult;
+      if (workerAResultRef.current) setWorkerComparison({ workerAResult: workerAResultRef.current, workerBResult: result.workerResult, modelResultRef: result.modelResultRef });
+      setStatus((current) => current ? { ...current, workerBSession: null } : current);
+      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus(current.workerAStatus, 'completed'), workerBStatus: 'completed', workerBResumeSessionId: undefined, phase: workerAResultRef.current ? 'compare' : 'complete', phaseMessage: 'Worker B 已从断点完成识别', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
+      showNotice('success', 'Worker B 已从断点完成识别');
     } catch (error) {
-      handleReviewFailure(error, 'Reviewer 断点续写失败');
+      handleWorkerBFailure(error, 'Worker B 断点续写失败');
     } finally {
-      setBusy(null);
+      setWorkerControlBusy(null);
       await refreshAnalysisSessions();
     }
   };
 
-  const cancelAnalysis = async () => {
-    const reviewing = Boolean(scoutActivity?.phase.startsWith('review'));
-    setScoutActivity((current) => current ? { ...current, status: 'cancelling', phaseMessage: '正在中断模型请求' } : current);
+  const cancelWorker = async (kind: 'worker_a' | 'worker_b') => {
+    const busyKey = kind === 'worker_a' ? 'worker-a' : 'worker-b';
+    setWorkerControlBusy(busyKey);
+    setWorkerActivity((current) => current ? {
+      ...current,
+      [`${kind === 'worker_a' ? 'workerA' : 'workerB'}Status`]: 'cancelling',
+      phaseMessage: `${kind === 'worker_a' ? 'Worker A' : 'Worker B'} 正在中断`,
+    } : current);
     try {
-      const result = reviewing ? await workbenchApi.cancelReview() : await workbenchApi.cancelScout();
-      if (!result.cancelled) {
-        setScoutActivity((current) => current ? { ...current, phaseMessage: '模型已结束，正在接收最终结果' } : current);
+      const result = kind === 'worker_a' ? await workbenchApi.cancelWorkerA() : await workbenchApi.cancelWorkerB();
+      if (!result.cancelled) showNotice('info', `${kind === 'worker_a' ? 'Worker A' : 'Worker B'} 已结束，无需中断`);
+    } catch (error) {
+      showNotice('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setWorkerControlBusy(null);
+    }
+  };
+
+  const cancelWorkers = async () => {
+    const workerBActive = Boolean(workerActivity?.phase.startsWith('worker_b') || workerActivity?.phase.startsWith('worker-b'));
+    setWorkerActivity((current) => current ? { ...current, status: 'cancelling', phaseMessage: '正在中断模型请求' } : current);
+    try {
+      const results = explorationMode === 'ultra'
+        ? await Promise.all([workbenchApi.cancelWorkerA(), workbenchApi.cancelWorkerB()])
+        : [workerBActive ? await workbenchApi.cancelWorkerB() : await workbenchApi.cancelWorkerA()];
+      if (!results.some((result) => result.cancelled)) {
+        setWorkerActivity((current) => current ? { ...current, phaseMessage: '模型已结束，正在接收最终结果' } : current);
       }
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
     }
   };
 
-  const openAnalysisHistory = () => {
-    const latest = analysisSessions[0];
+  const openWorkerHistory = () => {
+    const latest = pageHistorySessions[0];
     if (!latest) return;
-    setReviewComparison(null);
-    setScoutActivity({
+    setWorkerComparison(null);
+    setWorkerActivity({
       status: latest.status === 'completed' ? 'completed' : latest.status === 'cancelled' ? 'cancelled' : latest.status === 'running' ? 'running' : 'error',
       phase: 'history',
-      phaseMessage: latest.kind === 'scout' ? 'Scout 识别会话' : 'Reviewer 重识别会话',
+      phaseMessage: latest.kind === 'worker_a' ? 'Worker A 识别会话' : 'Worker B 识别会话',
       reasoningContent: latest.reasoningContent || '',
       outputContent: latest.outputContent || '',
       errorMessage: latest.errorMessage || undefined,
     });
-    setScoutDialogOpen(true);
+    setWorkerDialogOpen(true);
   };
 
   const saveDraft = async () => {
@@ -742,7 +933,7 @@ function AppContent() {
     if (checkedIds.size === 0) return;
     updateDraft((current) => ({ ...current, elements: current.elements.map((element) => {
       if (!checkedIds.has(element.id) || element.reviewStatus !== 'accepted') return element;
-      return { ...element, reviewStatus: preAcceptStatusRef.current.get(element.id) || (element.source === 'ai_scout' ? 'pending' : 'edited') };
+      return { ...element, reviewStatus: preAcceptStatusRef.current.get(element.id) || (element.source === 'ai_worker' ? 'pending' : 'edited') };
     }) }), undefined, '取消批量确认');
     for (const id of checkedIds) preAcceptStatusRef.current.delete(id);
   };
@@ -767,7 +958,7 @@ function AppContent() {
       controlType: 'container',
       role: 'container',
       actionEffects: [{ action: 'none', effect: '容器仅组织所选元素，不触发交互' }],
-      interactionBoundary: 'candidate_bbox',
+      interactionBoundary: 'none',
       parentId,
       ownerKind: parentId ? 'component' as const : 'page' as const,
       ownerRef: parentId || draft.currentPageId,
@@ -805,7 +996,7 @@ function AppContent() {
   const toggleAccept = (element: DraftElement) => {
     if (element.reviewStatus === 'accepted') {
       const previous = preAcceptStatusRef.current.get(element.id);
-      const reviewStatus = previous || (element.source === 'ai_scout' ? 'pending' : 'edited');
+      const reviewStatus = previous || (element.source === 'ai_worker' ? 'pending' : 'edited');
       updateElement(element.id, { reviewStatus }, undefined, false, '取消确认元素');
       preAcceptStatusRef.current.delete(element.id);
       return;
@@ -817,7 +1008,7 @@ function AppContent() {
   const toggleReject = (element: DraftElement) => {
     if (element.reviewStatus === 'rejected') {
       const previous = preRejectStatusRef.current.get(element.id);
-      const reviewStatus = previous || (element.source === 'ai_scout' ? 'pending' : 'edited');
+      const reviewStatus = previous || (element.source === 'ai_worker' ? 'pending' : 'edited');
       updateElement(element.id, { reviewStatus }, undefined, false, '取消忽略元素');
       preRejectStatusRef.current.delete(element.id);
       return;
@@ -893,7 +1084,7 @@ function AppContent() {
     }, undefined, '删除元素');
   };
 
-  const switchPage = (pageId: string) => {
+  const selectPage = (pageId: string) => {
     if (!draft) return;
     const page = draft.pages.find((item) => item.id === pageId);
     if (!page) return;
@@ -908,17 +1099,12 @@ function AppContent() {
     setCheckedIds(new Set());
   };
 
-  const addPage = () => {
-    const page = createDraftPage(null);
-    commitDraft((current) => ({
-      ...current,
-      currentPageId: page.id,
-      currentFrameId: null,
-      page: { id: page.id, key: page.key, name: page.name, surfaceType: page.surfaceType, stateSummary: page.stateSummary, scrollableRegions: page.scrollableRegions },
-      pages: [...current.pages, page],
-    }));
-    setSelectedId(null);
-    setSelectedTransitionId(null);
+  const openPage = (pageId: string) => {
+    const page = draft?.pages.find((item) => item.id === pageId);
+    if (!page) return;
+    selectPage(pageId);
+    setWorkspaceMode('annotation');
+    setViewMode(page.frameIds.length > 0 ? 'review' : 'live');
   };
 
   const updatePage = (pageId: string, patch: Partial<DraftPage>, historyKey?: string) => {
@@ -929,10 +1115,10 @@ function AppContent() {
     }, historyKey ? `${pageId}:${historyKey}` : undefined);
   };
 
-  const deletePage = (pageId: string) => {
-    if (!draft || draft.pages.length <= 1) return;
-    const fallback = draft.pages.find((page) => page.id !== pageId);
-    if (!fallback) return;
+  const deletePage = async (pageId: string) => {
+    const beforeDelete = draftRef.current;
+    const wasDirty = dirty;
+    if (!beforeDelete || !beforeDelete.pages.some((page) => page.id === pageId)) return;
     commitDraft((current) => {
       const removedElementIds = new Set(current.elements.filter((element) => element.pageId === pageId).map((element) => element.id));
       const elements = current.elements
@@ -945,11 +1131,21 @@ function AppContent() {
         elementIds: page.elementIds.filter((id) => !removedElementIds.has(id)),
       }));
       const nextPage = current.currentPageId === pageId ? pages[0] : pages.find((page) => page.id === current.currentPageId) || pages[0];
+      const emptyPage = {
+        id: 'draft-page-empty',
+        key: 'page.empty',
+        name: '',
+        surfaceType: 'unknown',
+        stateSummary: '',
+        scrollableRegions: [],
+      };
       return {
         ...current,
-        currentPageId: nextPage.id,
-        currentFrameId: nextPage.frameIds.at(-1) || null,
-        page: { id: nextPage.id, key: nextPage.key, name: nextPage.name, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions },
+        currentPageId: nextPage?.id || emptyPage.id,
+        currentFrameId: nextPage?.frameIds.at(-1) || null,
+        page: nextPage
+          ? { id: nextPage.id, key: nextPage.key, name: nextPage.name, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions }
+          : emptyPage,
         pages,
         elements,
         elementEditRecords: current.elementEditRecords.filter((record) => !removedElementIds.has(record.elementId)),
@@ -959,6 +1155,20 @@ function AppContent() {
     setSelectedId(null);
     setSelectedTransitionId(null);
     setCheckedIds(new Set());
+    setBusy('delete-page');
+    try {
+      const nextDraft = draftRef.current;
+      if (!nextDraft) return;
+      const result = await workbenchApi.saveDraft(nextDraft);
+      resetDraftState(result.draft, false, true);
+      setServerIssues(result.issues);
+      showNotice('success', '页面已删除');
+    } catch (error) {
+      resetDraftState(beforeDelete, wasDirty, true);
+      showNotice('error', error instanceof Error ? `页面删除失败：${error.message}` : `页面删除失败：${String(error)}`);
+    } finally {
+      setBusy(null);
+    }
   };
 
   const addTransition = () => {
@@ -999,6 +1209,8 @@ function AppContent() {
     setBusy('publish');
     try {
       const result = await workbenchApi.publish(staging.stageId);
+      resetDraftState(result.draft, false, true);
+      setServerIssues(result.issues);
       showNotice('success', `已发布 ${result.graphRevision}`);
       setStaging(null);
     } catch (error) {
@@ -1017,9 +1229,9 @@ function AppContent() {
       <header className="topbar">
         <div className="brand"><Boxes size={20} /><div><strong>UIKG Workbench</strong><span>{status?.spec.version || 'UIKG'}</span></div></div>
         <div className="device-controls">
-          <div className={`connection-dot ${connected ? 'connected' : ''}`} />
+          <div className={`connection-dot ${connected ? 'connected' : deviceDiscoveryError ? 'error' : ''}`} title={deviceDiscoveryError || (connected ? '设备已连接' : '设备未连接')} />
           <select value={selectedDevice} disabled={connected || busy === 'connect'} onChange={(event) => setSelectedDevice(event.target.value)} aria-label="Android 设备">
-            {device.targets.length === 0 && <option value="">未发现 Android 设备</option>}
+            {device.targets.length === 0 && <option value="">{deviceDiscoveryError ? '设备服务不可用' : '未发现 Android 设备'}</option>}
             {device.targets.map((target) => <option key={target.id} value={target.id}>{target.description || target.label}</option>)}
           </select>
           <button type="button" className="icon-button" title="刷新设备列表" onClick={() => void refreshConnection(true)}><RefreshCw size={16} /></button>
@@ -1030,8 +1242,8 @@ function AppContent() {
           )}
         </div>
         <div className="mode-segment" aria-label="探索模式">
-          <button type="button" className={explorationMode === 'auto' ? 'active' : ''} title="Scout 识别后由 GPT 初审，再由人工确认" onClick={() => setExplorationMode('auto')}>Auto</button>
-          <button type="button" className={explorationMode === 'ai_assist' ? 'active' : ''} title="Scout 识别后直接进入人工审核" onClick={() => setExplorationMode('ai_assist')}>AI Assist</button>
+          <button type="button" className={explorationMode === 'ultra' ? 'active' : ''} title="Worker A 与 Worker B 并发识别，再按元素和字段选择合并" onClick={() => setExplorationMode('ultra')}>Ultra</button>
+          <button type="button" className={explorationMode === 'manual' ? 'active' : ''} title="使用 Worker A 单 Worker 识别后直接人工审核" onClick={() => setExplorationMode('manual')}>Manual</button>
         </div>
         <div className="header-actions">
           <span className={`validation-summary ${errorCount ? 'has-error' : ''}`} title="当前草稿校验结果"><CircleAlert size={15} />{errorCount} / {warningCount}</span>
@@ -1042,7 +1254,9 @@ function AppContent() {
       <div className="contextbar">
         <label><span>应用</span><input value={draft?.appKey || ''} onBlur={endHistoryGroup} onChange={(event) => updateDraft((current) => ({ ...current, appKey: event.target.value }), 'draft:appKey')} /></label>
         <label><span>构建</span><input value={draft?.buildRef || ''} placeholder="android-package:..." onBlur={endHistoryGroup} onChange={(event) => updateDraft((current) => ({ ...current, buildRef: event.target.value }), 'draft:buildRef')} /></label>
-        <label className="page-name-field"><span>页面</span><input value={draft?.page.name || ''} onBlur={endHistoryGroup} onChange={(event) => draft && updatePage(draft.currentPageId, { name: event.target.value }, 'page:name')} /></label>
+        <label className="page-switcher"><span>页面</span><select value={draft?.currentPageId || ''} disabled={!draft?.pages.length} onChange={(event) => openPage(event.target.value)}>{draft?.pages.map((page) => { const pageStatus = pageWorkflowStatus(draft, page); return <option key={page.id} value={page.id}>{page.name} · {pageWorkflowStatusLabels[pageStatus]}</option>; })}</select></label>
+        <label className="page-name-field"><span>名称</span><input value={draft?.page.name || ''} onBlur={endHistoryGroup} onChange={(event) => draft && updatePage(draft.currentPageId, { name: event.target.value }, 'page:name')} /></label>
+        {currentPageStatus && <span className={`page-status page-status-${currentPageStatus}`}>{pageWorkflowStatusLabels[currentPageStatus]}</span>}
         <div className="workspace-tabs" aria-label="工作区">
           <button type="button" className={workspaceMode === 'annotation' ? 'active' : ''} onClick={() => setWorkspaceMode('annotation')}><MousePointer2 size={14} />标注</button>
           <button type="button" className={workspaceMode === 'graph' ? 'active' : ''} onClick={() => setWorkspaceMode('graph')}><GitBranch size={14} />页面图</button>
@@ -1057,30 +1271,37 @@ function AppContent() {
           <div className="panel-toolbar">
             <div className="view-tabs">
               <button type="button" className={viewMode === 'live' ? 'active' : ''} disabled={!connected} onClick={() => setViewMode('live')}><Play size={14} />实时操作</button>
-              <button type="button" className={viewMode === 'review' ? 'active' : ''} disabled={!draft?.currentFrameId} onClick={() => setViewMode('review')}><Camera size={14} />冻结标注</button>
+              <button type="button" className={viewMode === 'review' ? 'active' : ''} disabled={!draft?.currentFrameId} onClick={() => setViewMode('review')}><Camera size={14} />标注页面</button>
             </div>
             <div className="toolbar-actions">
               {viewMode === 'live' ? (
-                <button type="button" className="button" disabled={!connected || busy === 'freeze'} onClick={() => void freezeFrame()}>{busy === 'freeze' ? <LoaderCircle className="spin" size={15} /> : <Camera size={15} />}冻结画面</button>
+                <>
+                  <label className="continuous-capture"><input type="checkbox" checked={continuousCapture} onChange={(event) => setContinuousCapture(event.target.checked)} /><span>连续截图</span></label>
+                  <button type="button" className="button" disabled={!connected || busy === 'freeze'} onClick={() => void freezeFrame()}>{busy === 'freeze' ? <LoaderCircle className="spin" size={15} /> : <Camera size={15} />}冻结画面</button>
+                </>
               ) : (
                 <>
                   <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><SquareDashed size={16} /></button>
                   <button type="button" className="icon-button" title={showRejected ? '隐藏已忽略元素' : '显示已忽略元素'} onClick={() => setShowRejected((value) => !value)}>{showRejected ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-                  <span className="scout-model" title={explorationMode === 'auto' ? `Scout：${status?.scoutModel || '未配置'}；Reviewer：${status?.reviewerModel || '未配置'}` : `Scout：${status?.scoutModel || '未配置'}`}>{explorationMode === 'auto' ? `Scout + Reviewer` : `Scout：${status?.scoutModel || '未配置'}`}</span>
-                  {scoutActivity?.status === 'paused' && <button type="button" className="button scout-resume-button" onClick={() => setScoutDialogOpen(true)}><RefreshCw size={15} />继续 Scout · {scoutActivity.completedCandidates || 0}</button>}
-                  <button type="button" className="icon-button" title="模型会话历史" disabled={analysisSessions.length === 0} onClick={openAnalysisHistory}><History size={15} /></button>
-                  <button type="button" className="button" disabled={!draft?.currentFrameId || busy === 'scout' || busy === 'review' || scoutActivity?.status === 'paused' || (explorationMode === 'auto' && !status?.reviewerConfigured)} onClick={() => void runScout()}>{busy === 'scout' || busy === 'review' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}{hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'}</button>
+                  <span className="worker-model" title={explorationMode === 'ultra' ? `Worker A：${status?.workerAModel || '未配置'}；Worker B：${status?.workerBModel || '未配置'}` : `Worker A：${status?.workerAModel || '未配置'}`}>{explorationMode === 'ultra' ? '双 Worker 并发' : `Worker A：${status?.workerAModel || '未配置'}`}</span>
+                  {workerActivity?.status === 'paused' && <button type="button" className="button worker-resume-button" onClick={() => setWorkerDialogOpen(true)}><RefreshCw size={15} />继续 Worker · {workerActivity.completedCandidates || 0}</button>}
+                  <button type="button" className="icon-button" title="页面识别历史" disabled={pageHistorySessions.length === 0} onClick={openWorkerHistory}><History size={15} /></button>
+                  <button type="button" className="button" disabled={!draft?.currentFrameId || busy === 'workers' || busy === 'worker-a' || busy === 'worker-b' || workerActivity?.status === 'paused' || (explorationMode === 'ultra' && !status?.workerBConfigured)} onClick={() => void runWorkers()}>{busy === 'workers' || busy === 'worker-a' || busy === 'worker-b' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}{hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'}</button>
                 </>
               )}
             </div>
           </div>
-          <div className="device-stage-wrap">
+          <div className={`device-stage-wrap ${workerComparison && explorationMode === 'ultra' ? 'has-worker-comparison' : ''}`}>
             {viewMode === 'live' && connected ? (
               <div className="live-preview">
-                <LiveDevicePreview client={deviceClient} runtimeInfo={device.runtimeInfo!} serverUrl={serverUrl} enabled={busy !== 'scout'} onError={(message) => showNotice('error', message)} />
+                <LiveDevicePreview client={deviceClient} runtimeInfo={device.runtimeInfo!} serverUrl={serverUrl} enabled={!['workers', 'worker-a', 'worker-b'].includes(busy || '')} onError={(message) => showNotice('error', message)} />
               </div>
             ) : frameUrl ? (
-              <AnnotationCanvas imageUrl={frameUrl} elements={currentElements} selectedId={selectedId} drawing={drawing} showRejected={showRejected} onSelect={setSelectedId} onAdd={addElement} onBoxChange={(id, bbox) => updateElement(id, { bbox }, `bbox:${id}`)} onBoxChangeEnd={endHistoryGroup} />
+              explorationMode === 'ultra' && workerComparison ? (
+                <WorkerComparisonPanel imageUrl={frameUrl} workerAResult={workerComparison.workerAResult} workerBResult={workerComparison.workerBResult} applying={busy === 'worker-merge'} candidatePortalTarget={workerCandidatePortal} onApply={(selections) => void applyWorkerComparison(selections)} />
+              ) : (
+                <AnnotationCanvas imageUrl={frameUrl} elements={currentElements} selectedId={selectedId} drawing={drawing} showRejected={showRejected} onSelect={setSelectedId} onAdd={addElement} onBoxChange={(id, bbox) => updateElement(id, { bbox }, `bbox:${id}`)} onBoxChangeEnd={endHistoryGroup} />
+              )
             ) : (
               <div className="device-empty"><MonitorSmartphone size={42} /><strong>未连接设备</strong><span>本地 Android</span></div>
             )}
@@ -1094,8 +1315,8 @@ function AppContent() {
 
         <section className="tree-panel">
           <div className="panel-title">
-            <div><MousePointer2 size={16} /><strong>页面元素</strong><span>{currentElements.length}</span></div>
-            <div className="element-toolbar" aria-label="元素全局操作">
+            <div><MousePointer2 size={16} /><strong>页面元素</strong><span>{workerComparison && explorationMode === 'ultra' ? '候选' : currentElements.length}</span></div>
+            {!(workerComparison && explorationMode === 'ultra') && <div className="element-toolbar" aria-label="元素全局操作">
               <button type="button" className="icon-button" title="撤销上一步" disabled={pastRef.current.length === 0} onClick={undo}><Undo2 size={15} /></button>
               <button type="button" className="icon-button" title="取消撤销" disabled={futureRef.current.length === 0} onClick={redo}><Redo2 size={15} /></button>
               <button type="button" className="icon-button" title="恢复全部元素" disabled={!canRestoreAllElements} onClick={restoreAllElements}><RotateCcw size={15} /></button>
@@ -1110,11 +1331,12 @@ function AppContent() {
                   <button type="button" className="icon-button" title="退出多选" onClick={() => { setMultiSelect(false); setCheckedIds(new Set()); }}><X size={15} /></button>
                 </>
               )}
-            </div>
+            </div>}
           </div>
-          <ElementTree elements={currentElements} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} onSelect={setSelectedId} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} />
-          <div className="tree-legend">
-            {(Object.entries(reviewStatusLabels) as [keyof typeof reviewStatusLabels, string][]).map(([statusKey, label]) => <span key={statusKey}><i className={`legend-${statusKey}`} />{label}</span>)}
+          {workerComparison && explorationMode === 'ultra' ? <div className="worker-candidate-portal" ref={setWorkerCandidatePortal} /> : <ElementTree elements={currentElements} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} onSelect={setSelectedId} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} />}
+          <div className={`tree-legend ${workerComparison && explorationMode === 'ultra' ? 'worker-source-legend' : ''}`}>
+            {workerComparison && explorationMode === 'ultra' ? <><span><i className="legend-worker-a" />Worker A</span><span><i className="legend-worker-b" />Worker B</span></> :
+              (Object.entries(reviewStatusLabels) as [keyof typeof reviewStatusLabels, string][]).map(([statusKey, label]) => <span key={statusKey}><i className={`legend-${statusKey}`} />{label}</span>)}
           </div>
         </section>
 
@@ -1150,18 +1372,18 @@ function AppContent() {
           )}
         </section>
       </main> : workspaceMode === 'graph' && draft ? (
-        <PageGraph draft={draft} selectedTransitionId={selectedTransitionId} onSelectTransition={setSelectedTransitionId} onSwitchPage={switchPage} onAddPage={addPage} onUpdatePage={updatePage} onDeletePage={deletePage} onAddTransition={addTransition} onUpdateTransition={updateTransition} onDeleteTransition={deleteTransition} onChangeEnd={endHistoryGroup} />
+        <PageGraph draft={draft} draftDirty={dirty} selectedTransitionId={selectedTransitionId} onSelectTransition={setSelectedTransitionId} onOpenPage={openPage} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={updatePage} onDeletePage={deletePage} onAddTransition={addTransition} onUpdateTransition={updateTransition} onDeleteTransition={deleteTransition} onChangeEnd={endHistoryGroup} />
       ) : workspaceMode === 'staging' ? (
         <StagingPanel staging={staging} busy={busy} dirty={dirty} onPrepare={() => void prepareStaging()} onPublish={() => void publishStaging()} />
       ) : (
         <ModelSettings
           onNotice={showNotice}
-          onSaved={(settings) => setStatus((current) => current ? { ...current, scoutConfigured: Boolean(settings.config.modelName), scoutModel: settings.config.modelName, reviewerConfigured: Boolean(settings.reviewer?.config.modelName), reviewerModel: settings.reviewer?.config.modelName || null } : current)}
+          onSaved={(settings) => setStatus((current) => current ? { ...current, workerAConfigured: Boolean(settings.workerA.config.modelName), workerAModel: settings.workerA.config.modelName, workerBConfigured: Boolean(settings.workerB.config.modelName), workerBModel: settings.workerB.config.modelName || null } : current)}
         />
       )}
 
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
-      {scoutDialogOpen && scoutActivity && <ScoutProgressPanel activity={scoutActivity} modelName={status?.scoutModel || null} reviewerModel={status?.reviewerModel || null} autoMode={explorationMode === 'auto'} sessions={analysisSessions} comparison={reviewComparison} applyingComparison={busy === 'review-apply'} onApplyComparison={(scoutKeys, reviewerKeys) => void applyReviewComparison(scoutKeys, reviewerKeys)} onCancel={() => void cancelAnalysis()} onRetry={() => scoutActivity.resumeKind === 'review' ? void resumeReview() : scoutActivity.resumeKind === 'scout' ? void resumeScout() : scoutActivity.phase === 'review-error' ? void retryReview() : void resumeScout()} onClose={() => { setScoutDialogOpen(false); if (scoutActivity.status !== 'paused') setScoutActivity(null); }} />}
+      {workerDialogOpen && workerActivity && frameUrl && <WorkerProgressPanel activity={workerActivity} modelName={status?.workerAModel || null} workerBModel={status?.workerBModel || null} ultraMode={explorationMode === 'ultra'} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} workerControlBusy={workerControlBusy || (busy === 'worker-a' || busy === 'worker-b' ? busy : null)} onCancel={() => void cancelWorkers()} onCancelWorker={(kind) => void cancelWorker(kind)} onRetryWorker={(kind) => kind === 'worker_a' ? void retryWorkerA() : void retryWorkerB()} onResumeWorker={(kind) => kind === 'worker_a' ? void resumeWorkerA() : void resumeWorkerB()} onRetry={() => workerActivity.resumeKind === 'worker_b' ? void resumeWorkerB() : workerActivity.resumeKind === 'worker_a' ? void resumeWorkerA() : workerActivity.phase === 'worker-b-error' ? void retryWorkerB() : void runWorkers()} onClose={() => { setWorkerDialogOpen(false); if (workerActivity.status !== 'paused') setWorkerActivity(null); }} />}
     </div>
   );
 }

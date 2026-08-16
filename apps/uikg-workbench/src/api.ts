@@ -1,4 +1,4 @@
-import type { AnalysisSession, Draft, FrameMetadata, ReviewerResult, ReviewResumeSession, ScoutModelSettings, ScoutResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, Draft, FrameMetadata, PageUploadTask, WorkerElementMergeSelection, WorkerModelSettings, WorkerResult, WorkerResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -16,31 +16,41 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(body.error || `请求失败：${response.status}`) as Error & {
-      details?: unknown;
-    };
+    const error = new Error(body.error || `请求失败：${response.status}`) as Error & { details?: unknown };
     error.details = body;
     throw error;
   }
   return body as T;
 }
 
-type ScoutStreamResult = { draft: Draft; issues: ValidationIssue[]; modelResultRef: string };
-type ReviewStreamResult = {
+async function binaryRequest<T>(path: string, options: RequestInit): Promise<T> {
+  const response = await fetch(`${serverUrl}/workbench/api${path}`, options);
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(body.error || `请求失败：${response.status}`) as Error & { details?: Record<string, unknown> };
+    error.details = body;
+    throw error;
+  }
+  return body as T;
+}
+
+export type WorkerStreamResult = {
   frameId: string;
-  reviewerResult: ReviewerResult;
-  scoutCandidates: Draft['elements'];
+  worker: 'worker_a' | 'worker_b';
+  workerResult: WorkerResult;
   modelResultRef: string;
-  reviewerModel: string;
+  model: string | null;
   reasoningContent?: string;
   outputContent?: string;
+  draft?: Draft;
+  issues?: ValidationIssue[];
 };
 
-async function consumeModelStream<T>(
+async function consumeWorkerStream(
   path: string,
   body: Record<string, unknown>,
   onEvent: (event: { type: string; [key: string]: unknown }) => void,
-): Promise<T> {
+): Promise<WorkerStreamResult> {
   const response = await fetch(`${serverUrl}/workbench/api${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
@@ -50,12 +60,12 @@ async function consumeModelStream<T>(
     const responseBody = await response.json().catch(() => ({}));
     throw new Error(responseBody.error || `请求失败：${response.status}`);
   }
-  if (!response.body) throw new Error('Scout 流式响应不可用');
+  if (!response.body) throw new Error('Worker 流式响应不可用');
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
-  let result: T | null = null;
+  let result: WorkerStreamResult | null = null;
   const consume = (block: string) => {
     let eventType = 'message';
     let data = '';
@@ -66,7 +76,7 @@ async function consumeModelStream<T>(
     if (!data) return;
     const payload = JSON.parse(data) as Record<string, unknown>;
     onEvent({ type: eventType, ...payload });
-    if (eventType === 'result') result = payload as T;
+    if (eventType === 'result') result = payload as WorkerStreamResult;
     if (eventType === 'error') {
       const error = new Error(String(payload.message || '模型分析失败')) as Error & { details?: Record<string, unknown> };
       error.details = payload;
@@ -97,16 +107,11 @@ async function consumeModelStream<T>(
   return result;
 }
 
-const consumeScoutStream = (path: string, body: Record<string, unknown>, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
-  consumeModelStream<ScoutStreamResult>(path, body, onEvent);
-const consumeReviewStream = (path: string, body: Record<string, unknown>, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
-  consumeModelStream<ReviewStreamResult>(path, body, onEvent);
-
 export const workbenchApi = {
   status: () => request<WorkbenchStatus>('/status'),
-  modelSettings: () => request<ScoutModelSettings>('/model-settings'),
+  modelSettings: () => request<WorkerModelSettings>('/model-settings'),
   saveModelSettings: (config: {
-    role?: 'scout' | 'reviewer';
+    worker: 'worker_a' | 'worker_b';
     baseUrl: string;
     modelName: string;
     modelFamily: string;
@@ -114,65 +119,55 @@ export const workbenchApi = {
     temperature: number;
     reasoningEnabled: boolean;
     apiKey: string;
-  }) => request<ScoutModelSettings>('/model-settings', {
-    method: 'PUT',
-    body: JSON.stringify(config),
-  }),
-  review: (frameId: string) =>
-    request<ReviewStreamResult>('/review', {
-      method: 'POST',
-      body: JSON.stringify({ frameId }),
-    }),
-  reviewStream: (
-    frameId: string,
-    onEvent: (event: { type: string; [key: string]: unknown }) => void,
-  ): Promise<ReviewStreamResult> => consumeReviewStream('/review/stream', { frameId }, onEvent),
-  reviewSession: () => request<{ session: ReviewResumeSession | null }>('/review/session'),
-  resumeReviewStream: (
-    sessionId: string,
-    onEvent: (event: { type: string; [key: string]: unknown }) => void,
-  ): Promise<ReviewStreamResult> => consumeReviewStream('/review/resume/stream', { sessionId }, onEvent),
-  cancelReview: () =>
-    request<{ cancelled: boolean }>('/review/cancel', { method: 'POST', body: '{}' }),
-  applyReviewSelection: (payload: { frameId: string; reviewerResult: ReviewerResult; selectedScoutKeys: string[]; selectedReviewerKeys: string[]; modelResultRef: string }) =>
-    request<{ draft: Draft; issues: ValidationIssue[] }>('/review/apply', { method: 'POST', body: JSON.stringify(payload) }),
+  }) => request<WorkerModelSettings>('/model-settings', { method: 'PUT', body: JSON.stringify(config) }),
   sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),
   draft: () => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft'),
-  saveDraft: (draft: Draft) =>
-    request<{ draft: Draft; issues: ValidationIssue[] }>('/draft', {
-      method: 'PUT',
-      body: JSON.stringify(draft),
-    }),
-  freezeFrame: () =>
-    request<{ frame: FrameMetadata; draft: Draft }>('/frames', {
-      method: 'POST',
-      body: '{}',
-    }),
-  scout: (frameId: string, pageContext: string) =>
-    request<{ draft: Draft; issues: ValidationIssue[]; modelResultRef: string }>('/scout', {
-      method: 'POST',
-      body: JSON.stringify({ frameId, pageContext }),
-    }),
-  scoutStream: async (
+  saveDraft: (draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft', { method: 'PUT', body: JSON.stringify(draft) }),
+  pageUploads: () => request<{ tasks: PageUploadTask[] }>('/page-uploads'),
+  createPageUploads: (items: Array<{ sourceType: 'file' | 'url'; name: string; mimeType?: string; size?: number; url?: string }>) => request<{ tasks: PageUploadTask[] }>('/page-uploads', { method: 'POST', body: JSON.stringify({ items }) }),
+  uploadPageChunk: (taskId: string, chunk: Blob, offset: number, signal?: AbortSignal) => binaryRequest<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/chunk`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Offset': String(offset) },
+    body: chunk,
+    signal,
+  }),
+  processPageUpload: (taskId: string) => request<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/process`, { method: 'POST', body: '{}' }),
+  deletePageUploads: (ids: string[], deletePages: boolean) => request<{ deletedIds: string[]; draft: Draft }>('/page-uploads', { method: 'DELETE', body: JSON.stringify({ ids, deletePages }) }),
+  freezeFrame: (forceNewPage = false) => request<{ frame: FrameMetadata; draft: Draft }>('/frames', { method: 'POST', body: JSON.stringify({ forceNewPage }) }),
+  workerAStream: (
+    frameId: string,
+    pageContext: string,
+    mergeIntoDraft: boolean,
+    onEvent: (event: { type: string; [key: string]: unknown }) => void,
+    pageId?: string,
+  ) => consumeWorkerStream('/workers/a/stream', { frameId, pageId, pageContext, mergeIntoDraft }, onEvent),
+  workerBStream: (
     frameId: string,
     pageContext: string,
     onEvent: (event: { type: string; [key: string]: unknown }) => void,
-  ): Promise<ScoutStreamResult> => consumeScoutStream('/scout/stream', { frameId, pageContext }, onEvent),
-  scoutSession: () => request<{ session: ScoutResumeSession | null }>('/scout/session'),
-  resumeScoutStream: (
-    sessionId: string,
-    onEvent: (event: { type: string; [key: string]: unknown }) => void,
-  ): Promise<ScoutStreamResult> => consumeScoutStream('/scout/resume/stream', { sessionId }, onEvent),
-  cancelScout: () =>
-    request<{ cancelled: boolean }>('/scout/cancel', { method: 'POST', body: '{}' }),
-  prepareStaging: () =>
-    request<StagingResult>('/staging', { method: 'POST', body: '{}' }),
+    pageId?: string,
+  ) => consumeWorkerStream('/workers/b/stream', { frameId, pageId, pageContext }, onEvent),
+  workerASession: () => request<{ session: WorkerResumeSession | null }>('/workers/a/session'),
+  workerBSession: () => request<{ session: WorkerResumeSession | null }>('/workers/b/session'),
+  resumeWorkerAStream: (sessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+    consumeWorkerStream('/workers/a/resume/stream', { sessionId }, onEvent),
+  resumeWorkerBStream: (sessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+    consumeWorkerStream('/workers/b/resume/stream', { sessionId }, onEvent),
+  cancelWorkerA: () => request<{ cancelled: boolean }>('/workers/a/cancel', { method: 'POST', body: '{}' }),
+  cancelWorkerB: () => request<{ cancelled: boolean }>('/workers/b/cancel', { method: 'POST', body: '{}' }),
+  mergeWorkerResults: (payload: {
+    frameId: string;
+    workerAResult: WorkerResult;
+    workerBResult: WorkerResult;
+    selections: WorkerElementMergeSelection[];
+    modelResultRef: string;
+  }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/workers/merge', { method: 'POST', body: JSON.stringify(payload) }),
+  prepareStaging: () => request<StagingResult>('/staging', { method: 'POST', body: '{}' }),
   staging: (stageId: string) => request<StagingResult>(`/staging/${encodeURIComponent(stageId)}`),
-  publish: (stageId: string) =>
-    request<{ published: true; graphRevision: string; backupPath: string; explorationId: string }>('/publish', {
-      method: 'POST',
-      body: JSON.stringify({ stageId }),
-    }),
+  publish: (stageId: string) => request<{ published: true; graphRevision: string; backupPath: string; explorationId: string; draft: Draft; issues: ValidationIssue[] }>('/publish', {
+    method: 'POST',
+    body: JSON.stringify({ stageId }),
+  }),
 };
 
 export function absoluteAssetUrl(url: string): string {

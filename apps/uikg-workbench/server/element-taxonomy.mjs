@@ -20,8 +20,8 @@ export const ELEMENT_TYPES = [
   'file-item', 'folder', 'file-tree', 'upload', 'download', 'rename', 'move', 'share', 'other',
 ];
 
-export const SCOUT_ACTIONS = ['tap', 'double_tap', 'long_press', 'input', 'delete', 'scroll_vertical', 'scroll_horizontal', 'swipe', 'drag', 'zoom', 'multi_touch'];
-export const ELEMENT_ACTIONS = ['none', ...SCOUT_ACTIONS];
+export const WORKER_ACTIONS = ['tap', 'double_tap', 'long_press', 'input', 'delete', 'scroll_vertical', 'scroll_horizontal', 'swipe', 'drag', 'zoom', 'multi_touch'];
+export const ELEMENT_ACTIONS = ['none', ...WORKER_ACTIONS];
 
 export function stringUnion(values) {
   return values.map((value) => JSON.stringify(value)).join('|');

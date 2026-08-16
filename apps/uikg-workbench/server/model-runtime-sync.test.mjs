@@ -9,7 +9,22 @@ import { createEmptyDraft } from './draft-model.mjs';
 import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
-const MODEL_KEYS = ['MIDSCENE_MODEL_NAME', 'MIDSCENE_MODEL_FAMILY', 'MIDSCENE_SCOUT_MODEL_NAME'];
+const MODEL_KEYS = [
+  'MIDSCENE_WORKER_B_MODEL_NAME',
+  'MIDSCENE_WORKER_B_MODEL_FAMILY',
+  'MIDSCENE_WORKER_A_MODEL_NAME',
+  'MIDSCENE_WORKER_A_MODEL_BASE_URL',
+  'MIDSCENE_WORKER_A_MODEL_API_KEY',
+  'MIDSCENE_WORKER_A_MODEL_FAMILY',
+  'MIDSCENE_WORKER_A_MODEL_TIMEOUT',
+  'MIDSCENE_WORKER_A_MODEL_TEMPERATURE',
+  'MIDSCENE_MODEL_NAME',
+  'MIDSCENE_MODEL_BASE_URL',
+  'MIDSCENE_MODEL_API_KEY',
+  'MIDSCENE_MODEL_FAMILY',
+  'MIDSCENE_MODEL_TIMEOUT',
+  'MIDSCENE_MODEL_TEMPERATURE',
+];
 
 test('冻结画面会热加载新增和变化的模型配置', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-model-runtime-'));
@@ -20,7 +35,7 @@ test('冻结画面会热加载新增和变化的模型配置', async () => {
   const app = express();
   let draft = createEmptyDraft();
   let clearCount = 0;
-  let expectedModel = 'review-model-v1';
+  let expectedModel = 'worker-b-model-v1';
   const agent = {
     interface: {},
     modelConfigManager: {
@@ -28,8 +43,14 @@ test('冻结画面会热加载新增和变化的模型配置', async () => {
     },
     async unfreezePageContext() {},
     async freezePageContext() {
-      assert.equal(process.env.MIDSCENE_MODEL_NAME, expectedModel);
-      assert.equal(process.env.MIDSCENE_MODEL_FAMILY, 'gpt-5');
+      assert.equal(process.env.MIDSCENE_WORKER_B_MODEL_NAME, expectedModel);
+      assert.equal(process.env.MIDSCENE_WORKER_B_MODEL_FAMILY, 'gpt-5');
+      assert.equal(process.env.MIDSCENE_MODEL_NAME, 'workerA-v1');
+      assert.equal(process.env.MIDSCENE_MODEL_BASE_URL, 'https://worker-a.example/v1');
+      assert.equal(process.env.MIDSCENE_MODEL_API_KEY, 'worker-a-secret');
+      assert.equal(process.env.MIDSCENE_MODEL_FAMILY, 'qwen3-vl');
+      assert.equal(process.env.MIDSCENE_MODEL_TIMEOUT, '180000');
+      assert.equal(process.env.MIDSCENE_MODEL_TEMPERATURE, '0');
     },
     async _snapshotContext() {
       return { screenshot: { base64: `data:image/png;base64,${PNG_1X1}`, capturedAt: Date.now() } };
@@ -55,15 +76,16 @@ test('冻结画面会热加载新增和变化的模型配置', async () => {
   await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
   const baseUrl = `http://127.0.0.1:${httpServer.address().port}`;
   try {
-    await writeFile(envPath, 'MIDSCENE_MODEL_NAME="review-model-v1"\nMIDSCENE_MODEL_FAMILY="gpt-5"\nMIDSCENE_SCOUT_MODEL_NAME="scout-v1"\n', 'utf8');
+    const workerAConfig = 'MIDSCENE_WORKER_A_MODEL_NAME="workerA-v1"\nMIDSCENE_WORKER_A_MODEL_BASE_URL="https://worker-a.example/v1"\nMIDSCENE_WORKER_A_MODEL_API_KEY="worker-a-secret"\nMIDSCENE_WORKER_A_MODEL_FAMILY="qwen3-vl"\nMIDSCENE_WORKER_A_MODEL_TIMEOUT="180000"\nMIDSCENE_WORKER_A_MODEL_TEMPERATURE="0"\n';
+    await writeFile(envPath, `MIDSCENE_WORKER_B_MODEL_NAME="worker-b-model-v1"\nMIDSCENE_WORKER_B_MODEL_FAMILY="gpt-5"\n${workerAConfig}`, 'utf8');
     assert.equal((await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' })).status, 200);
     assert.equal(clearCount, 1);
 
     assert.equal((await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' })).status, 200);
     assert.equal(clearCount, 1, '配置未变化时不应反复清理模型缓存');
 
-    expectedModel = 'review-model-v2';
-    await writeFile(envPath, 'MIDSCENE_MODEL_NAME="review-model-v2"\nMIDSCENE_MODEL_FAMILY="gpt-5"\nMIDSCENE_SCOUT_MODEL_NAME="scout-v1"\n', 'utf8');
+    expectedModel = 'worker-b-model-v2';
+    await writeFile(envPath, `MIDSCENE_WORKER_B_MODEL_NAME="worker-b-model-v2"\nMIDSCENE_WORKER_B_MODEL_FAMILY="gpt-5"\n${workerAConfig}`, 'utf8');
     assert.equal((await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' })).status, 200);
     assert.equal(clearCount, 2);
   } finally {

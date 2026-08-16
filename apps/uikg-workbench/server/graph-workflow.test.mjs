@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createEmptyDraft, mergeScoutIntoDraft } from './draft-model.mjs';
+import { createEmptyDraft, mergeWorkerIntoDraft } from './draft-model.mjs';
 import { draftTransitionIssues } from './graph-workflow.mjs';
 
-function minimalScout() {
+function minimalWorker() {
   return {
     frameId: 'sha256:before',
     page: { name: '来源页', surfaceType: 'page', stateSummary: '默认', scrollableRegions: [] },
@@ -24,7 +24,7 @@ function minimalScout() {
 }
 
 test('Transition 仅在完整动作证据闭环后通过', () => {
-  const draft = mergeScoutIntoDraft(createEmptyDraft(), minimalScout(), 'model.json', 'qwen3-vl-plus');
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), minimalWorker(), 'model.json', 'qwen3-vl-plus');
   draft.pages.push({ ...draft.pages[0], id: 'draft-page-target', key: 'page.target', name: '目标页', frameIds: ['sha256:after'], elementIds: [] });
   const transition = {
     id: 'draft-transition-1', key: 'source.open_target', sourcePageId: draft.currentPageId, sourceStateKey: 'default',

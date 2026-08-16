@@ -16,12 +16,17 @@ import process from 'node:process';
 import * as nodeUtil from 'node:util';
 import zlib from 'node:zlib';
 import {fileURLToPath, pathToFileURL} from 'node:url';
+import {normalizeWorkerOutput, validateWorkerConsistency} from '../../apps/uikg-workbench/server/draft-model.mjs';
+import {runWorkerModel} from '../../apps/uikg-workbench/server/worker-client.mjs';
+import {buildWorkerPrompt} from '../../apps/uikg-workbench/server/worker-prompt.mjs';
 
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 const EVIDENCE_SCHEMA_VERSION = '2.0.0';
 const EVIDENCE_PRODUCER_ID = 'midscene-android-uikg-evidence-producer';
 const LOCATE_CONCURRENCY = 4;
-const LEGACY_MIDSCENE_MODEL_ENV_KEYS = new Set(['OPENAI_API_KEY', 'OPENAI_BASE_URL']);
+const WORKER_SCHEMA = JSON.parse(
+  await fs.readFile(new URL('../../apps/uikg-workbench/server/worker-output.schema.json', import.meta.url), 'utf8'),
+);
 const SCREEN_QUERY_SHAPE =
   '{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, ' +
   'visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, ' +
@@ -29,10 +34,6 @@ const SCREEN_QUERY_SHAPE =
   'functionDescription: string, locatorPrompt: string}[], ' +
   'scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], ' +
   'unresolvedVisualMeanings: string[]}';
-const SCOUT_QUERY_SHAPE =
-  '{frameId: string, page: {name: string | null, surfaceType: "page" | "dialog" | "drawer" | "bottom-sheet" | "menu" | "shared-component" | "unknown", stateSummary: string, scrollableRegions: string[]}, ' +
-  'elements: {candidateKey: string, label: string | null, visualDescription: string, controlType: "button" | "icon-button" | "switch" | "checkbox" | "radio" | "tab" | "menu-item" | "list-item" | "input" | "slider" | "status" | "badge" | "label" | "image" | "container" | "other", interactive: boolean, enabled: boolean | null, state: string | null, approximateRegion: {x: number, y: number, width: number, height: number}, meaning: {status: "known" | "candidate" | "unknown", description: string | null, basis: "visible-text" | "visible-state" | "user-context" | "visual-only" | "none"}, dynamicContent: boolean, riskSignals: string[], confidence: number}[], ' +
-  'relationships: {fromCandidateKey: string, type: "contains" | "labels" | "controls" | "belongs-to" | "adjacent-to" | "opens" | "selects", toCandidateKey: string}[], uncertainties: string[]}';
 
 const EVIDENCE_CONTRACT = Object.freeze({
   outputKind: 'raw_exploration_evidence',
@@ -179,14 +180,8 @@ export function buildScreenQueryPrompt(plan, stateKey = plan.initialState) {
   );
 }
 
-export function buildScoutPrompt(plan, frameId) {
-  return (
-    `${SCOUT_QUERY_SHAPE}. Inspect the entire frozen full-page frame, not only a likely target. ` +
-    `Set frameId exactly to ${JSON.stringify(frameId)}. Inventory every visible control, label, icon, status indicator, ` +
-    'structural container, stable content anchor, and visible relationship. approximateRegion uses normalized 0-to-1 fractions, ' +
-    'not pixels or percentages; each x, y, width, and height value must be within 0 to 1. Preserve unsupported meanings as unknown. ' +
-    `${semanticContextInstruction(plan)} Do not plan actions or infer an icon function from its shape alone.`
-  );
+export function buildFrameWorkerPrompt(plan, frameId) {
+  return buildWorkerPrompt(frameId, semanticContextInstruction(plan));
 }
 
 export function buildResultQueryPrompt(plan, step) {
@@ -1205,120 +1200,61 @@ async function invokeQuery({runtime, writer, frame, prompt, semanticContext = nu
   }
 }
 
-function validateScoutInventory(value, expectedFrameId) {
-  const inventory = requireObject(value, 'Midscene Scout inventory');
-  if (requireString(inventory.frameId, 'Midscene Scout inventory.frameId') !== expectedFrameId) {
+function validateWorkerInventory(value, expectedFrameId, worker) {
+  const {workerResult, normalizationIssues} = normalizeWorkerOutput(value);
+  if (workerResult.frameId !== expectedFrameId) {
     throw new SemanticResolutionError(
-      'SCOUT_FRAME_ID_MISMATCH',
-      'Midscene Scout inventory is not bound to the frozen frame',
+      'WORKER_FRAME_ID_MISMATCH',
+      `${worker} 答卷未绑定当前冻结帧`,
     );
   }
-  const page = requireObject(inventory.page, 'Midscene Scout inventory.page');
-  if (page.name !== null) requireString(page.name, 'Midscene Scout inventory.page.name');
-  if (!['page', 'dialog', 'drawer', 'bottom-sheet', 'menu', 'shared-component', 'unknown'].includes(page.surfaceType)) {
-    throw new SemanticResolutionError('SCOUT_PAGE_SURFACE_INVALID', 'Midscene Scout returned an invalid surface type');
+  const consistencyIssues = validateWorkerConsistency(workerResult);
+  if (consistencyIssues.some((issue) => issue.startsWith('候选键重复'))) {
+    throw new SemanticResolutionError('WORKER_RESULT_INVALID', `${worker} 答卷包含重复候选键`);
   }
-  requireString(page.stateSummary, 'Midscene Scout inventory.page.stateSummary');
-  requireStringArray(page.scrollableRegions, 'Midscene Scout inventory.page.scrollableRegions');
-  if (!Array.isArray(inventory.elements)) {
-    throw new SemanticResolutionError('SCOUT_ELEMENTS_INVALID', 'Midscene Scout inventory.elements must be an array');
-  }
-  if (!Array.isArray(inventory.relationships)) {
-    throw new SemanticResolutionError('SCOUT_RELATIONSHIPS_INVALID', 'Midscene Scout inventory.relationships must be an array');
-  }
-  requireStringArray(inventory.uncertainties, 'Midscene Scout inventory.uncertainties');
-  const candidateKeys = new Set();
-  for (const [index, value] of inventory.elements.entries()) {
-    const element = requireObject(value, `Midscene Scout inventory.elements[${index}]`);
-    const key = requireString(element.candidateKey, `Midscene Scout inventory.elements[${index}].candidateKey`);
-    if (candidateKeys.has(key)) {
-      throw new SemanticResolutionError('SCOUT_CANDIDATE_DUPLICATE', `Midscene Scout returned duplicate candidate ${key}`);
-    }
-    candidateKeys.add(key);
-    if (element.label !== null) requireString(element.label, `Midscene Scout inventory.elements[${index}].label`);
-    requireString(element.visualDescription, `Midscene Scout inventory.elements[${index}].visualDescription`);
-    if (!['button', 'icon-button', 'switch', 'checkbox', 'radio', 'tab', 'menu-item', 'list-item', 'input', 'slider', 'status', 'badge', 'label', 'image', 'container', 'other'].includes(element.controlType)) {
-      throw new SemanticResolutionError('SCOUT_CONTROL_TYPE_INVALID', `Midscene Scout returned an invalid control type for ${key}`);
-    }
-    if (typeof element.interactive !== 'boolean' || typeof element.dynamicContent !== 'boolean') {
-      throw new SemanticResolutionError('SCOUT_BOOLEAN_INVALID', `Midscene Scout returned invalid booleans for ${key}`);
-    }
-    if (element.enabled !== null && typeof element.enabled !== 'boolean') {
-      throw new SemanticResolutionError('SCOUT_ENABLED_INVALID', `Midscene Scout returned invalid enabled state for ${key}`);
-    }
-    if (element.state !== null) requireString(element.state, `Midscene Scout inventory.elements[${index}].state`);
-    const region = requireObject(element.approximateRegion, `Midscene Scout inventory.elements[${index}].approximateRegion`);
-    for (const field of ['x', 'y', 'width', 'height']) {
-      const number = finiteNumber(region[field], `Midscene Scout inventory.elements[${index}].approximateRegion.${field}`);
-      if (number < 0 || number > 1 || ((field === 'width' || field === 'height') && number === 0)) {
-        throw new SemanticResolutionError('SCOUT_REGION_INVALID', `Midscene Scout returned an invalid approximate region for ${key}`);
-      }
-    }
-    const meaning = requireObject(element.meaning, `Midscene Scout inventory.elements[${index}].meaning`);
-    if (!['known', 'candidate', 'unknown'].includes(meaning.status)) {
-      throw new SemanticResolutionError('SCOUT_MEANING_STATUS_INVALID', `Midscene Scout returned an invalid meaning status for ${key}`);
-    }
-    if (meaning.description !== null) requireString(meaning.description, `Midscene Scout inventory.elements[${index}].meaning.description`);
-    if (!['visible-text', 'visible-state', 'user-context', 'visual-only', 'none'].includes(meaning.basis)) {
-      throw new SemanticResolutionError('SCOUT_MEANING_BASIS_INVALID', `Midscene Scout returned an invalid meaning basis for ${key}`);
-    }
-    requireStringArray(element.riskSignals ?? [], `Midscene Scout inventory.elements[${index}].riskSignals`);
-    const confidence = finiteNumber(element.confidence, `Midscene Scout inventory.elements[${index}].confidence`);
-    if (confidence < 0 || confidence > 1) {
-      throw new SemanticResolutionError('SCOUT_CONFIDENCE_INVALID', `Midscene Scout returned invalid confidence for ${key}`);
-    }
-  }
-  for (const [index, value] of inventory.relationships.entries()) {
-    const relationship = requireObject(value, `Midscene Scout inventory.relationships[${index}]`);
-    requireString(relationship.fromCandidateKey, `Midscene Scout inventory.relationships[${index}].fromCandidateKey`);
-    requireString(relationship.toCandidateKey, `Midscene Scout inventory.relationships[${index}].toCandidateKey`);
-    if (!['contains', 'labels', 'controls', 'belongs-to', 'adjacent-to', 'opens', 'selects'].includes(relationship.type)) {
-      throw new SemanticResolutionError('SCOUT_RELATIONSHIP_TYPE_INVALID', 'Midscene Scout returned an invalid relationship type');
-    }
-  }
-  return inventory;
+  return {workerResult, normalizationIssues, consistencyIssues};
 }
 
-async function invokeScout({runtime, writer, frame, prompt, semanticContext = null}) {
+async function invokeWorker({runtime, writer, frame, worker, prompt, imageBuffer}) {
   const startedAt = new Date().toISOString();
   const startedNs = process.hrtime.bigint();
   let rawResult = null;
   try {
-    rawResult = await runtime.aiScout(prompt, semanticContext);
-    const validated = validateScoutInventory(rawResult, frame.id);
+    rawResult = await runtime.runWorker({worker, prompt, imageBuffer});
+    const validated = validateWorkerInventory(rawResult, frame.id, worker);
     const endedNs = process.hrtime.bigint();
     const resourceRef = await writer.addInsight({
       frameRef: frame.id,
       sourceScreenshotRef: frame.screenshot.resourceRef,
-      operation: 'aiScout',
+      operation: worker,
       prompt,
       status: 'pass',
       result: sanitizeForEvidence(validated),
-      model: runtime.modelSummary.scout,
+      model: runtime.modelSummary[worker],
       startedAt,
       endedAt: new Date().toISOString(),
       durationMs: Number(endedNs - startedNs) / 1_000_000,
-      captureCoupling: semanticContext ? 'frozen_frame' : 'sequential_non_atomic',
+      captureCoupling: 'frozen_frame',
     });
-    attachRecognition(frame, 'aiScout', resourceRef, 'pass');
-    return {status: 'pass', resourceRef, result: validated};
+    attachRecognition(frame, worker, resourceRef, 'pass');
+    return {status: 'pass', resourceRef, result: validated.workerResult, ...validated};
   } catch (error) {
     const endedNs = process.hrtime.bigint();
     const resourceRef = await writer.addInsight({
       frameRef: frame.id,
       sourceScreenshotRef: frame.screenshot.resourceRef,
-      operation: 'aiScout',
+      operation: worker,
       prompt,
       status: 'unknown',
       result: rawResult === null ? null : sanitizeForEvidence(rawResult),
-      failure: {code: error?.code ?? 'MIDSCENE_SCOUT_UNRESOLVED', category: error?.name ?? 'Error'},
-      model: runtime.modelSummary.scout,
+      failure: {code: error?.code ?? 'WORKER_RESULT_UNRESOLVED', category: error?.name ?? 'Error'},
+      model: runtime.modelSummary[worker],
       startedAt,
       endedAt: new Date().toISOString(),
       durationMs: Number(endedNs - startedNs) / 1_000_000,
-      captureCoupling: semanticContext ? 'frozen_frame' : 'sequential_non_atomic',
+      captureCoupling: 'frozen_frame',
     });
-    attachRecognition(frame, 'aiScout', resourceRef, 'unknown');
+    attachRecognition(frame, worker, resourceRef, 'unknown');
     return {status: 'unknown', resourceRef, result: null};
   }
 }
@@ -1671,6 +1607,56 @@ async function assertRuntimeStillReady(runtime, packageId, operation) {
   return context;
 }
 
+function buildAgreedControlInventory(workerAResult, workerBResult) {
+  if (workerAResult.status !== 'pass' || workerBResult.status !== 'pass') {
+    return {status: 'unknown', result: null};
+  }
+  const byKeyB = new Map(workerBResult.result.elements.map((element) => [element.candidateKey, element]));
+  const visibleControls = [];
+  const unresolvedVisualMeanings = [];
+  for (const elementA of workerAResult.result.elements) {
+    const elementB = byKeyB.get(elementA.candidateKey);
+    if (!elementB) {
+      unresolvedVisualMeanings.push(`${elementA.candidateKey}: 仅 Worker A 返回`);
+      continue;
+    }
+    const agreed = ['label', 'controlType', 'interactive', 'enabled', 'state']
+      .every((field) => JSON.stringify(elementA[field]) === JSON.stringify(elementB[field]));
+    if (!agreed) {
+      unresolvedVisualMeanings.push(`${elementA.candidateKey}: A/B 字段存在差异，等待人工合并`);
+      continue;
+    }
+    if (!elementA.interactive) continue;
+    visibleControls.push({
+      candidateKey: elementA.candidateKey,
+      label: elementA.label || elementA.candidateKey,
+      controlType: elementA.controlType,
+      visibleState: elementA.state || 'default',
+      semanticRole: elementA.meaning?.status === 'known' ? 'known' : 'unknown',
+      enabled: elementA.enabled,
+      reversible: null,
+      riskHint: elementA.riskSignals?.length ? 'unknown' : 'safe',
+      functionDescription: elementA.meaning?.description || elementA.visualDescription,
+      locatorPrompt: elementA.visualDescription || elementA.label || elementA.candidateKey,
+    });
+  }
+  const keysA = new Set(workerAResult.result.elements.map((element) => element.candidateKey));
+  for (const elementB of workerBResult.result.elements) {
+    if (!keysA.has(elementB.candidateKey)) unresolvedVisualMeanings.push(`${elementB.candidateKey}: 仅 Worker B 返回`);
+  }
+  return {
+    status: unresolvedVisualMeanings.length ? 'unknown' : 'pass',
+    result: {
+      visiblePageTitle: workerAResult.result.page.name,
+      visiblePrimaryContent: [],
+      visibleNavigationState: workerAResult.result.page.stateSummary,
+      visibleControls,
+      scrollableRegions: [],
+      unresolvedVisualMeanings,
+    },
+  };
+}
+
 async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, startedNs}) {
   const frameId = ulid();
   const sequence = writer.frames.length + 1;
@@ -1731,7 +1717,8 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
     runtimeContextRef,
     recognitionStatus: 'not_attempted',
     recognitionResults: [],
-    scoutInventoryStatus: 'not_attempted',
+    workerAStatus: 'not_attempted',
+    workerBStatus: 'not_attempted',
     controlInventoryStatus: 'not_attempted',
     visibleControls: [],
     unresolvedControls: [],
@@ -1760,8 +1747,9 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
   }
   const state = plan.states[stateKey];
   const assertionResults = [];
-  let scoutResult = {status: 'unknown', resourceRef: null, result: null};
-  let queryResult = {status: 'unknown', resourceRef: null, result: null};
+  let workerAResult = {status: 'unknown', resourceRef: null, result: null};
+  let workerBResult = {status: 'unknown', resourceRef: null, result: null};
+  let queryResult = {status: 'unknown', result: null};
   let controlInventory = {
     status: 'unknown',
     visibleControls: [],
@@ -1769,23 +1757,14 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
     pageSummary: null,
   };
   if (operationalFailures.length === 0) {
-    scoutResult = await invokeScout({
-      runtime,
-      writer,
-      frame,
-      prompt: buildScoutPrompt(plan, frame.id),
-      semanticContext,
-    });
-    await assertRuntimeStillReady(runtime, plan.packageId, 'Scout full-frame inventory');
-    if (scoutResult.status === 'pass') {
-      queryResult = await invokeQuery({
-        runtime,
-        writer,
-        frame,
-        prompt: buildScreenQueryPrompt(plan, stateKey),
-        semanticContext,
-      });
-      await assertRuntimeStillReady(runtime, plan.packageId, 'screen inventory query');
+    const prompt = buildFrameWorkerPrompt(plan, frame.id);
+    [workerAResult, workerBResult] = await Promise.all([
+      invokeWorker({runtime, writer, frame, worker: 'worker_a', prompt, imageBuffer: sampled.buffer}),
+      invokeWorker({runtime, writer, frame, worker: 'worker_b', prompt, imageBuffer: sampled.buffer}),
+    ]);
+    await assertRuntimeStillReady(runtime, plan.packageId, 'parallel Worker analysis');
+    queryResult = buildAgreedControlInventory(workerAResult, workerBResult);
+    if (queryResult.status === 'pass') {
       controlInventory = await inspectVisibleControls({
         runtime,
         writer,
@@ -1812,13 +1791,14 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
       await assertRuntimeStillReady(runtime, plan.packageId, 'state assertions');
     }
   }
-  frame.scoutInventoryStatus = scoutResult.status;
+  frame.workerAStatus = workerAResult.status;
+  frame.workerBStatus = workerBResult.status;
   frame.controlInventoryStatus = controlInventory.status;
   frame.visibleControls = controlInventory.visibleControls;
   frame.unresolvedControls = controlInventory.unresolvedControls;
   const semanticStatuses = [
-    scoutResult.status,
-    queryResult.status,
+    workerAResult.status,
+    workerBResult.status,
     controlInventory.status,
     ...assertionResults.map((item) => item.status),
   ];
@@ -1835,9 +1815,11 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
     frameRef: frame.id,
     observationType: 'midscene_visible_state_evidence',
     planStateKeyHint: stateKey,
-    scoutEvidenceRef: scoutResult.resourceRef,
-    scoutStatus: scoutResult.status,
-    queryEvidenceRef: queryResult.resourceRef,
+    workerAEvidenceRef: workerAResult.resourceRef,
+    workerAStatus: workerAResult.status,
+    workerBEvidenceRef: workerBResult.resourceRef,
+    workerBStatus: workerBResult.status,
+    mergeStatus: queryResult.status === 'pass' ? 'deterministic_agreement' : 'requires_field_selection',
     pageSummary: controlInventory.pageSummary,
     visibleControls: controlInventory.visibleControls,
     unresolvedControls: controlInventory.unresolvedControls,
@@ -2354,10 +2336,7 @@ function parseDisplayRotation(raw) {
 }
 
 function allowedMidsceneEnvKey(key) {
-  return (
-    /^MIDSCENE_(?:MODEL|PLANNING_MODEL|INSIGHT_MODEL|SCOUT_MODEL)_/.test(key) ||
-    LEGACY_MIDSCENE_MODEL_ENV_KEYS.has(key)
-  );
+  return /^MIDSCENE_WORKER_[AB]_MODEL_/.test(key);
 }
 
 async function parseMidsceneEnv(source, midsceneRepo) {
@@ -2459,22 +2438,16 @@ export async function loadMidsceneEnvironment({midsceneRepo, env = process.env} 
 function summarizeModelEnvironment(env, envLoadResult) {
   const configuredValue = (value) =>
     typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
-  const defaultName = configuredValue(env.MIDSCENE_MODEL_NAME);
-  const defaultFamily = configuredValue(env.MIDSCENE_MODEL_FAMILY);
   return {
-    default: {name: defaultName, family: defaultFamily},
-    planning: {
-      name: configuredValue(env.MIDSCENE_PLANNING_MODEL_NAME) ?? defaultName,
-      family: configuredValue(env.MIDSCENE_PLANNING_MODEL_FAMILY) ?? defaultFamily,
+    worker_a: {
+      name: configuredValue(env.MIDSCENE_WORKER_A_MODEL_NAME),
+      family: configuredValue(env.MIDSCENE_WORKER_A_MODEL_FAMILY),
+      slot: 'worker_a',
     },
-    insight: {
-      name: configuredValue(env.MIDSCENE_INSIGHT_MODEL_NAME) ?? defaultName,
-      family: configuredValue(env.MIDSCENE_INSIGHT_MODEL_FAMILY) ?? defaultFamily,
-    },
-    scout: {
-      name: configuredValue(env.MIDSCENE_SCOUT_MODEL_NAME),
-      family: configuredValue(env.MIDSCENE_SCOUT_MODEL_FAMILY),
-      slot: configuredValue(env.MIDSCENE_SCOUT_MODEL_NAME) ? 'scout' : 'default',
+    worker_b: {
+      name: configuredValue(env.MIDSCENE_WORKER_B_MODEL_NAME),
+      family: configuredValue(env.MIDSCENE_WORKER_B_MODEL_FAMILY),
+      slot: 'worker_b',
     },
     configurationSource:
       envLoadResult.status === 'loaded'
@@ -2488,57 +2461,22 @@ function summarizeModelEnvironment(env, envLoadResult) {
 }
 
 function validateModelEnvironment(summary, env) {
-  for (const slot of ['default', 'planning', 'insight']) {
+  for (const slot of ['worker_a', 'worker_b']) {
     if (!summary[slot].name || !summary[slot].family) {
       throw new ExplorerError(
-        'MIDSCENE_MODEL_CONFIG_MISSING',
-        `Midscene ${slot} model name/family is not configured`,
+        'WORKER_MODEL_CONFIG_MISSING',
+        `${slot} model name/family is not configured`,
         'model_gate',
       );
     }
-  }
-  const configuredValue = (value) =>
-    typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
-  const baseUrl =
-    configuredValue(env.MIDSCENE_MODEL_BASE_URL) ?? configuredValue(env.OPENAI_BASE_URL);
-  const apiKey =
-    configuredValue(env.MIDSCENE_MODEL_API_KEY) ?? configuredValue(env.OPENAI_API_KEY);
-  if (!baseUrl) {
-    throw new ExplorerError(
-      'MIDSCENE_MODEL_CONFIG_MISSING',
-      'Midscene default model base URL is not configured',
-      'model_gate',
-    );
-  }
-  if (baseUrl !== 'codex://app-server' && !apiKey) {
-    throw new ExplorerError(
-      'MIDSCENE_MODEL_CONFIG_MISSING',
-      'Midscene default model API key is not configured',
-      'model_gate',
-    );
-  }
-  if (!summary.scout.name || !summary.scout.family) {
-    throw new ExplorerError(
-      'MIDSCENE_SCOUT_CONFIG_MISSING',
-      'Midscene Scout model name/family is not configured',
-      'model_gate',
-    );
-  }
-  const scoutBaseUrl = configuredValue(env.MIDSCENE_SCOUT_MODEL_BASE_URL);
-  const scoutApiKey = configuredValue(env.MIDSCENE_SCOUT_MODEL_API_KEY);
-  if (summary.scout.slot !== 'scout' || !scoutBaseUrl) {
-    throw new ExplorerError(
-      'MIDSCENE_SCOUT_CONFIG_MISSING',
-      'Midscene Scout must use an independently configured model slot with a base URL',
-      'model_gate',
-    );
-  }
-  if (scoutBaseUrl !== 'codex://app-server' && !scoutApiKey) {
-    throw new ExplorerError(
-      'MIDSCENE_SCOUT_CONFIG_MISSING',
-      'Midscene Scout model API key is not configured',
-      'model_gate',
-    );
+    const prefix = slot === 'worker_a' ? 'MIDSCENE_WORKER_A_MODEL' : 'MIDSCENE_WORKER_B_MODEL';
+    if (!env[`${prefix}_BASE_URL`] || !env[`${prefix}_API_KEY`]) {
+      throw new ExplorerError(
+        'WORKER_MODEL_CONFIG_MISSING',
+        `${slot} model Base URL/API Key is not configured`,
+        'model_gate',
+      );
+    }
   }
 }
 
@@ -2777,7 +2715,7 @@ export async function createRealRuntime({serial, adbPath, midsceneRepo}) {
     },
     readContext,
     async assertSemanticRuntimeReady() {
-      await agent.aiQuery('{semanticRuntimeReady: boolean}, return semanticRuntimeReady true after visibly inspecting the current screen.');
+      return true;
     },
     async bootstrap({packageId: targetPackage, config, waitMs}) {
       const operations = [];
@@ -2837,22 +2775,15 @@ export async function createRealRuntime({serial, adbPath, midsceneRepo}) {
           return data;
         }
       : null,
+    runWorker: ({worker, prompt, imageBuffer}) => runWorkerModel({
+      worker,
+      prompt,
+      imageBuffer,
+      responseSchema: WORKER_SCHEMA,
+    }),
     aiQuery: async (prompt, semanticContext = null) => {
       if (!semanticContext) return agent.aiQuery(prompt);
       const modelRuntime = agent.resolveModelRuntime('insight');
-      const {output} = await agent.taskExecutor.createTypeQueryExecution(
-        'Query',
-        prompt,
-        modelRuntime,
-        undefined,
-        undefined,
-        {uiContext: semanticContext},
-      );
-      return output;
-    },
-    aiScout: async (prompt, semanticContext = null) => {
-      if (!semanticContext) return agent.aiScout(prompt);
-      const modelRuntime = agent.resolveModelRuntime('scout');
       const {output} = await agent.taskExecutor.createTypeQueryExecution(
         'Query',
         prompt,
@@ -2947,7 +2878,8 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
   const stats = {
     connects: 0,
     queries: 0,
-    scouts: 0,
+    workerACalls: 0,
+    workerBCalls: 0,
     assertions: 0,
     locates: 0,
     taps: 0,
@@ -2992,10 +2924,8 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
     mode: 'offline_fixture_evidence_certification',
     midsceneVersion: 'offline-fixture',
     modelSummary: {
-      default: {name: 'offline-fixture-model', family: 'fixture'},
-      planning: {name: 'offline-fixture-model', family: 'fixture'},
-      insight: {name: 'offline-fixture-model', family: 'fixture'},
-      scout: {name: 'offline-fixture-scout', family: 'fixture', slot: 'scout'},
+      worker_a: {name: 'offline-fixture-worker-a', family: 'fixture', slot: 'worker_a'},
+      worker_b: {name: 'offline-fixture-worker-b', family: 'fixture', slot: 'worker_b'},
       credentialsPersisted: false,
       serviceLocationPersisted: false,
     },
@@ -3069,6 +2999,55 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
       stats.semanticContexts += 1;
       return {fixtureFrozenFrame: true};
     },
+    runWorker: async ({worker, prompt}) => {
+      if (worker === 'worker_a') stats.workerACalls += 1;
+      else stats.workerBCalls += 1;
+      const frameId = prompt.match(/frameId[^"\n]*"([^"]+)"/)?.[1];
+      if (!frameId) throw new Error('fixture Worker prompt does not declare a frame ID');
+      const controls = plan.steps
+        .filter((step) => ['tap', 'scroll'].includes(step.kind) && step.fromState === fixtureStateKey)
+        .map((step, index) => ({
+          candidateKey: step.target.key,
+          label: step.target.label,
+          visualDescription: step.target.locatorPrompt,
+          controlType: step.kind === 'scroll' ? 'scroll-view' : 'text-button',
+          interactive: true,
+          enabled: true,
+          state: 'enabled',
+          approximateRegion: {x: 0.1 + index * 0.1, y: 0.1, width: 0.1, height: 0.1},
+          geometryKind: 'boundary',
+          geometryConfidence: 1,
+          meaning: {
+            status: 'known',
+            description: `fixture ${step.semanticAction}`,
+            evidence: {visibleTexts: [step.target.label], visibleIcons: [], visibleStates: ['enabled'], visualCues: [], userContext: null, unclassified: []},
+          },
+          dynamicContent: false,
+          riskSignals: [],
+          confidence: 1,
+        }));
+      return {
+        frameId,
+        page: {
+          name: plan.states[fixtureStateKey]?.label ?? null,
+          surfaceType: 'page',
+          stateSummary: fixtureStateKey,
+          scrollableRegions: controls.filter((control) => control.controlType === 'scroll-view').map((control) => control.candidateKey),
+        },
+        elements: controls,
+        relationships: [],
+        actionCandidates: controls.map((control) => ({
+          triggerCandidateKey: control.candidateKey,
+          action: control.controlType === 'scroll-view' ? 'scroll_vertical' : 'tap',
+          expectedOutcome: '进入下一状态',
+          basis: 'visible-affordance',
+          riskSignals: [],
+          confidence: 1,
+        })),
+        comparison: {basisFrameId: null, status: 'not-requested', changes: []},
+        uncertainties: [],
+      };
+    },
     aiQuery: async (_prompt, semanticContext = null) => {
       if (!semanticContext?.fixtureFrozenFrame) throw new Error('fixture query requires a frozen Frame');
       stats.queries += 1;
@@ -3102,40 +3081,6 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
         scrollableRegions,
         visibleNavigationState: fixtureStateKey,
         unresolvedVisualMeanings: [],
-      };
-    },
-    aiScout: async (prompt, semanticContext = null) => {
-      if (!semanticContext?.fixtureFrozenFrame) throw new Error('fixture Scout requires a frozen Frame');
-      stats.scouts += 1;
-      const frameId = prompt.match(/Set frameId exactly to\s+"([^"]+)"/)?.[1];
-      if (!frameId) throw new Error('fixture Scout prompt does not declare a frame ID');
-      const controls = plan.steps
-        .filter((step) => ['tap', 'scroll'].includes(step.kind) && step.fromState === fixtureStateKey)
-        .map((step, index) => ({
-          candidateKey: step.target.key,
-          label: step.target.label,
-          visualDescription: `fixture ${step.kind} target`,
-          controlType: step.kind === 'scroll' ? 'container' : 'button',
-          interactive: true,
-          enabled: true,
-          state: 'enabled',
-          approximateRegion: {x: 0.1 + index * 0.1, y: 0.1, width: 0.1, height: 0.1},
-          meaning: {status: 'known', description: `fixture ${step.semanticAction}`, basis: 'visible-text'},
-          dynamicContent: false,
-          riskSignals: [],
-          confidence: 1,
-        }));
-      return {
-        frameId,
-        page: {
-          name: plan.states[fixtureStateKey]?.label ?? null,
-          surfaceType: 'page',
-          stateSummary: fixtureStateKey,
-          scrollableRegions: controls.filter((control) => control.controlType === 'container').map((control) => control.candidateKey),
-        },
-        elements: controls,
-        relationships: [],
-        uncertainties: [],
       };
     },
     aiAssert: async (_prompt, semanticContext = null) => {

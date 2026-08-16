@@ -3,6 +3,22 @@ import type { BBox, Draft, DraftElement, DraftPage, DraftTransition, ValidationI
 type Option = readonly [value: string, label: string];
 type OptionGroup = { label: string; options: readonly Option[] };
 
+export type PageWorkflowStatus = 'pending-recognition' | 'pending-review' | 'ready' | 'published';
+
+export const pageWorkflowStatusLabels: Record<PageWorkflowStatus, string> = {
+  'pending-recognition': '待识别',
+  'pending-review': '待审核',
+  ready: '待发布',
+  published: '已发布',
+};
+
+export function pageWorkflowStatus(draft: Draft, page: DraftPage): PageWorkflowStatus {
+  const pageElements = draft.elements.filter((element) => elementAvailableOnPage(element, page.id, draft.elements));
+  if (page.frameIds.length === 0 || pageElements.length === 0) return 'pending-recognition';
+  if (pageElements.some((element) => element.reviewStatus === 'pending')) return 'pending-review';
+  return page.publishedAt ? 'published' : 'ready';
+}
+
 export const elementTypeGroups: readonly OptionGroup[] = [
   { label: '导航 Navigation', options: [
     ['navigation-bar', '导航栏'], ['sidebar', '侧边栏'], ['drawer', '抽屉'], ['hamburger', '汉堡菜单'],
@@ -164,6 +180,11 @@ export function actionEffectsFor(value: string, actions: string[], current: Draf
   return actions.map((action) => ({ action, effect: current.find((item) => item.action === action)?.effect || defaultActionEffect(value, action) }));
 }
 
+export function interactionBoundaryForActions(actions: string[], current = 'candidate_bbox') {
+  if (!actions.some((action) => action !== 'none')) return 'none';
+  return current === 'none' ? 'candidate_bbox' : current;
+}
+
 export function createHumanElement(bbox: BBox, pageId: string): DraftElement {
   const suffix = `${Date.now()}-${crypto.randomUUID().slice(0, 6)}`;
   return {
@@ -201,12 +222,11 @@ export function createHumanElement(bbox: BBox, pageId: string): DraftElement {
     childrenIds: [],
     pageId,
     availableOnPageIds: [],
-    interactionBoundary: 'candidate_bbox',
+    interactionBoundary: 'none',
     reviewStatus: 'edited',
     source: 'human',
-    scoutModel: null,
+    workerModel: null,
     lastModelProposal: null,
-    aiReview: null,
   };
 }
 
@@ -222,6 +242,7 @@ export function createDraftPage(frameId: string | null): DraftPage {
     featurePath: ['待归类'],
     frameIds: frameId ? [frameId] : [],
     elementIds: [],
+    publishedAt: null,
   };
 }
 
@@ -306,10 +327,10 @@ export function validateDraftClient(draft: Draft): ValidationIssue[] {
       issues.push({ level: 'warning', code: 'review_pending', elementId: element.id, message: 'AI 候选尚未完成人工审核' });
     }
     if (element.riskSignals.includes('geometry-clamped-to-frame')) {
-      issues.push({ level: 'warning', code: 'scout_bbox_clamped', elementId: element.id, message: 'AI 候选框超出截图边缘，已自动裁剪，请人工校准' });
+      issues.push({ level: 'warning', code: 'worker_bbox_clamped', elementId: element.id, message: 'AI 候选框超出截图边缘，已自动裁剪，请人工校准' });
     }
     if (element.riskSignals.includes('model-action-inconsistent')) {
-      issues.push({ level: 'warning', code: 'scout_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
+      issues.push({ level: 'warning', code: 'worker_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
     }
     const visited = new Set([element.id]);
     let cursor: DraftElement | undefined = element;

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYS331HYEVKRAGBA2ACX9XFH",
+  "sessionRef": "01KYS2MZ2HQBPK0G7RGMQVE3ZN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYS2NTV30MFQB2TXR6MXS607",
+  "sourceScreenshotRef": "sha256:c157e07ccf15083ea85b5c2c3b40ded7b86a3e4e755d9d27e12b33f4e22456ef",
+  "operation": "aiLocate",
+  "prompt": "定位“最近使用”区域第二项、文字为“任务中心”的入口。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 466,
+      "y": 792
+    },
+    "rect": {
+      "x": 386,
+      "y": 771,
+      "width": 162,
+      "height": 43
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "worker_a": {
+      "name": "qwen3-vl-plus",
+      "family": "qwen3-vl",
+      "slot": "worker_a"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-30T08:42:41.214Z",
+  "endedAt": "2026-07-30T08:43:37.918Z",
+  "durationMs": 56704.525708,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f594491b533c5bab583c6f238b98feb22208e724c51901659ea832f59b69699b"
+}

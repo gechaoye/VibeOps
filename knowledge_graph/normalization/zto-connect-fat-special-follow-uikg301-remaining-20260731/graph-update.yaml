@@ -97,7 +97,7 @@ pages:
   featurePath:
   - 消息
   surfaceType: page
-  status: partially_reconciled_gpt_only_pending_scout
+  status: partially_reconciled_worker_b_only_pending_workerA
   summary: 消息一级页；顶部工具栏提供特别关注入口，并以橙黄色高亮表示特别关注人员存在未读消息。
   states:
   - key: default
@@ -143,11 +143,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.root
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:466f55e3cddcb2b99fb892676fe39bea1a07df178d3ff05d184d8da4ae43b5ec
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch1-attempt3/raw-evidence/sessions/01KYH63WB9HEC5SS6RJPRAPGPK
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYK66H0196RNQ2KCZ37DDJY5
     observedAt: '2026-07-28T01:42:34.112Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -158,17 +158,17 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.root.with_special_follow_unread_highlight
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:503f6642dd3a7ec0861ea629fe386871eb88029d2dcfad745e914d95d0e7ef88
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2/raw-evidence/sessions/01KYK660P4DEBSA3NGF1SET476
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   provenance:
     sourceType: legacy_uikg_v2_import
     sourceEntityId: 01KY6Z7BD8D0X91GX7D73CBFMH
     limitations:
     - legacy observations include OCR-derived semantics
-    - no current aiScout reconciliation
+    - no current worker_a reconciliation
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Page
@@ -180,7 +180,7 @@ pages:
   - 消息
   - 特别关注
   surfaceType: page
-  status: observed_gpt_only_pending_scout
+  status: observed_worker_b_only_pending_workerA
   summary: 展示特别关注成员与其会话；特别关注人员存在未读消息时展示对应会话和实时未读数量角标。
   states:
   - key: empty
@@ -220,11 +220,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.initial
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:704115d3518683fb7638e881b82c8b8f4b22326761a3ce58f64897137b30413b
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch2-attempt1/raw-evidence/sessions/01KYH6NHN6076HNCGH2DPQ39KC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYJ4QSVND1N3RN1BZQDJJHVJ
     observedAt: '2026-07-27T15:57:48.385Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -235,11 +235,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.with_read_lian_liangwei
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:8cdae4359c0ac661f07691fadd5a5b513934479445b1150dc7743be33cfa0449
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5/raw-evidence/sessions/01KYJ4QEBBQZP44ANFGP77NE7J
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYK4NAGXAAV2ZW3CKHC0QW5H
     observedAt: '2026-07-28T01:15:41.628Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -250,16 +250,16 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.with_unread_member
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:2d24e0d54e7a9e36a3b520ff52be5f0eb8d50490adb76a06ad2ad9973c6aee1c
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch46-attempt1/raw-evidence/sessions/01KYK4MYZH0C3R62M164MET7HS
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Page
@@ -451,11 +451,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:933ebc7a58f248e6a2ba1c12a2919ae2b7e0a0b9c5c9f4ee27e02fbb66ee9ee6
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch22-attempt1/raw-evidence/sessions/01KYHJ90Y09R87C9B2E1SVSHMK
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHZM3PG4J0GQKMGJH4FCNFQ
     observedAt: '2026-07-27T14:28:24.605Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -466,11 +466,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.top
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:d0d79aae27d5a8b6ca8a572bd405db41d6406412e2de602fd463dd865770a388
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch40-attempt1/raw-evidence/sessions/01KYHZCNHDWB9DNF17R8JNMBC9
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYJ1300BRDETCNZASH2NHWZ0
     observedAt: '2026-07-27T14:54:00.915Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -481,11 +481,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.with_member
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:5e1bb52a49ca5c8197683f1df80821986b61a77a239e31af536c7b08f0b28398
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHG3F3H61V5WQ22Q3TXXS4F
     observedAt: '2026-07-27T09:57:10.595Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -496,11 +496,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.interval_30
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:e093090ce089f0c64927338754a61b92569a11de56326725669f56858c0de141
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch19-attempt1/raw-evidence/sessions/01KYHG33TR66C5GH4VQK4PWFMC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHJNVD1FVZMAS8HVF76Y5QP
     observedAt: '2026-07-27T10:42:10.099Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -511,11 +511,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_reminder.on
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:ae177166549b5c20f26fc8eb97608dcfaf7760ebc5df355832fb59a2bb3d11f8
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch23-attempt1/raw-evidence/sessions/01KYHJNH9F2FZV5AKZRQZWGT3T
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHJRETDM2RK6P5ER9W5TMQK
     observedAt: '2026-07-27T10:43:35.547Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -526,11 +526,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_reminder.off
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:89634e7a5a6611592cabec3e15659fc7b6e2db3d940bdee5dad595d2a98ea324
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch23-attempt1/raw-evidence/sessions/01KYHJNH9F2FZV5AKZRQZWGT3T
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHT6K4J7QCPJTBZTJ4BDT7Q
     observedAt: '2026-07-27T12:53:38.728Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -541,11 +541,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone.disabled
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:7838b3c313f2a8fc57f68d270afac585378e1831145e353794c63c5bcb6dbef2
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch33-attempt1/raw-evidence/sessions/01KYHT43FRH9CQVJ09JS5E1JN7
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHT4BT0713AGE02AA0KQN4K
     observedAt: '2026-07-27T12:52:25.696Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -556,11 +556,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone.enabled
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:6fbc6b2932db913c26acd5e72a90d8b223766bb40149601bfdf23bd740a3817a
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch33-attempt1/raw-evidence/sessions/01KYHT43FRH9CQVJ09JS5E1JN7
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHMN6CVXK36TZZ2MV3GEQQV
     observedAt: '2026-07-27T11:16:45.824Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -571,11 +571,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.interval_10
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:7d109eb9dc7864925198ab445302d770af5ed16817a31b023726646f085e2482
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch26-attempt2/raw-evidence/sessions/01KYHMMSAR8NZXY6JC450Q617D
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHN123VFFT43E9GWFTQ2XZN
     observedAt: '2026-07-27T11:23:14.685Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -586,11 +586,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.interval.dismissed
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:918ecd5df7d837b3b89cc28be36f428da84766947ef1f939aa586e1c43106ec8
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch26-attempt2/raw-evidence/sessions/01KYHMMSAR8NZXY6JC450Q617D
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHRPYD094Q7P84A9QKK20RT
     observedAt: '2026-07-27T12:27:37.364Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -601,11 +601,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.method.dismissed_sms
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:b934f096b7bbc6b3c61941b9d8fc41afd257aadcac21598d187af15f3bbea4af
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch30-attempt1/raw-evidence/sessions/01KYHR8DFGG6PD70AVJAZ2X0PW
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHS8MJ046D6J20D3YQ0YS4C
     observedAt: '2026-07-27T12:37:17.225Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -616,11 +616,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.method.phone
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:a124e3e571fd57e5921fdba5eb84f24182e7938d1852e58409e9d89dbf1dc494
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch31-attempt1/raw-evidence/sessions/01KYHS077KZ57TNBA030189KQS
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHSH0CRCH2M72SBG1W97JD4
     observedAt: '2026-07-27T12:41:51.465Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -631,11 +631,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.dnd.both_off
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:bf7c98e4351e4efeaf628455502b7e61aa13e7225becc863bb16fadd70b3b9c1
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1/raw-evidence/sessions/01KYHSGPGD726FQ3REABKQDMJN
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHSKA6050XNY9HDBYPWPK1J
     observedAt: '2026-07-27T12:43:07.018Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -646,11 +646,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.dnd.night_on
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:1bf5e3d9d2710c613348981517d31fd76dd8994bc3b30a00aefd1e1dd7792293
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1/raw-evidence/sessions/01KYHSGPGD726FQ3REABKQDMJN
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHSS9G8BZJRVG6B9KMH3891
     observedAt: '2026-07-27T12:46:22.918Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -661,11 +661,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.dnd.group_on
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:01b70f6b7a4bfa2d5dea6fd4452518f34be95ddfd625e60c466e6f9834026824
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch32-attempt1/raw-evidence/sessions/01KYHSGPGD726FQ3REABKQDMJN
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHX0MFDY4P13V3DM6TJJ4FX
     observedAt: '2026-07-27T13:42:49.339Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -676,11 +676,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_interval_10
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:aff28dd91bde468559080d6f49ffa065b694f76a6834dcd160f90261f9332a4d
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch37-attempt1/raw-evidence/sessions/01KYHX0BBMR4H0D2NXQNY9ZD52
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHXJN3Q386BC6FCBYW2BCT4
     observedAt: '2026-07-27T13:52:39.760Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -691,11 +691,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_interval_1_hour
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:5fc36ef08a173e0a13e516171dfe0fa9d890fe07671913384bf63c4b2752a39b
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch38-attempt2/raw-evidence/sessions/01KYHXJCZ09T7F5859VFTBTMX4
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHWNF8JKGCZJ4CG1D9RCZ1Y
     observedAt: '2026-07-27T13:36:43.521Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -706,11 +706,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_interval_4_hours
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:3b624c7ef1eb19ec58409c47b92064238ca881eedf0fab0a72b5adc5e4dc89a8
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch36-attempt1/raw-evidence/sessions/01KYHWN4F3BD1S2X6EB0CDNWXJ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHXX310RYKJXVTJ36PC0VBV
     observedAt: '2026-07-27T13:58:21.705Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -721,11 +721,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.briefing
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:f0e96845e8b8ba1f463dfce3d089a80d39a199a7c0cebce30ad99f9ebfd41c25
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHY1V9069RHE7WJZS708BDN
     observedAt: '2026-07-27T14:00:57.606Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -736,11 +736,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.default
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:fa14da614d630a925033e4585813979e550d300b0298ee658791a7e0851d96c1
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHY8SZ9RVS0RDV1PY1BSCSJ
     observedAt: '2026-07-27T14:04:45.652Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -751,11 +751,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.wave
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:03c2726d332af3d379e53b15c0fae162a28c4e5fc5e9efe096b14853f293817e
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHYR7YXD6K3JQDC323XFPVS
     observedAt: '2026-07-27T14:13:11.434Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -766,11 +766,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.bell
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:33cc65b72e360627655654b494362747e1efe537ec2b8c858e7075c5c29f4c60
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch39-attempt1/raw-evidence/sessions/01KYHYQT6XJQ1Y496SNZ495WC0
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHJ36C43GS7B8J5NBZKK55K
     observedAt: '2026-07-27T10:31:58.749Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -781,11 +781,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.dismissed
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:19267b894b74e57dce3835299577d50fe0d55ba345d835a3305e6cd0fe475f45
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHXNP9V02W9JQR4ZJB5XPVT
     observedAt: '2026-07-27T13:54:19.237Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -796,11 +796,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound_visible
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:8c77b67ee5b8ab7c542a871ef9ea80e794ebcc56760a0aab3550497556b46233
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch38-attempt2/raw-evidence/sessions/01KYHXJCZ09T7F5859VFTBTMX4
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d
     observedAt: '2026-07-31T03:39:30.140Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -811,7 +811,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.collapsed
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:c6b5eacd448f7ed7f4aa34423dad9bc2688805ee953732d8042d05625187da5d
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
@@ -826,7 +826,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_help_visible
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:7e36ff27bc929f19a72ab6d20aece656bbefc9171d470c0f579a42420c5f6582
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
@@ -841,7 +841,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_help_visible
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:74234edbb854f75bddeabffc3841d0b40d1b1749bb9094f3d253428e0a5f5d31
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
@@ -856,7 +856,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.group_dnd_help_visible
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:62d4614b0d74a7d0404fdd35472b10a6298bfd0c30b51b3d7362fc22ff00c727
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
@@ -871,7 +871,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.remaining.main_model
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
@@ -883,7 +883,7 @@ pages:
     - zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
     - zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
     limitations:
-    - some historical states remain GPT-only pending independent Scout
+    - some historical states remain 仅 Worker B pending independent Worker A
   outboundAuthorityContractRefs:
   - 01KYKA3ENBFD65M644D2KD5QF3
 - operation: upsert
@@ -932,11 +932,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.people.empty
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:ad985ba2899a9363e3e50048e2bfeecde520921f401c8f18ec74cbe8ac1c92d0
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch40-attempt1/raw-evidence/sessions/01KYHZCNHDWB9DNF17R8JNMBC9
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHBWHWQGPBT3981YK1N3VZW
     observedAt: '2026-07-27T08:43:29.756Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -947,11 +947,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.people.after_cancel_remove
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:de1c524af05ae68af1e3495329043954e7541b445abce74314adf4d2c23edc66
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1/raw-evidence/sessions/01KYHBRRQ0FNFNTS8NJB3DVSTP
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a
     observedAt: '2026-07-31T07:19:45.942Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -962,7 +962,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.remaining.people
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:075753beb4c003a0c0a03c6b87facf98fa55cc183b6cf8e42f055eab8311ee3a
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
@@ -972,7 +972,7 @@ pages:
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRefs: *id001
     limitations:
-    - some historical states remain GPT-only pending independent Scout
+    - some historical states remain 仅 Worker B pending independent Worker A
   inboundAuthorityContractRefs:
   - 01KYKA3ENBFD65M644D2KD5QF3
 - operation: upsert
@@ -986,7 +986,7 @@ pages:
   - 消息
   - 特别关注
   surfaceType: dialog
-  status: observed_gpt_only_pending_scout
+  status: observed_worker_b_only_pending_workerA
   summary: 确认或取消移除当前特别关注成员。
   states:
   - key: awaiting_confirmation
@@ -1012,16 +1012,16 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.people.remove_dialog
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:f0a1a31d88fbce8f6ef4a671479c7bb2493f93c1fc04fb05db108a95e455212d
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1/raw-evidence/sessions/01KYHBRRQ0FNFNTS8NJB3DVSTP
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Page
@@ -1078,11 +1078,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.reminder_interval.sheet
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:5e1f241715960d8744081d3bfe44dbf1b81e3d27e4ab253831acdebe955a1c6a
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch22-attempt1/raw-evidence/sessions/01KYHJ90Y09R87C9B2E1SVSHMK
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHX34DR0973818HGF572TYF
     observedAt: '2026-07-27T13:44:11.077Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1093,11 +1093,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_interval.selector_10
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:67a8c2fb3d7a697d3c551732844291966c2cccfc960006e07077dce4b9652461
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch37-attempt1/raw-evidence/sessions/01KYHX0BBMR4H0D2NXQNY9ZD52
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHWBG7WM4SD9CGN8TBCQ3Q9
     observedAt: '2026-07-27T13:31:16.798Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1108,11 +1108,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_interval.selector_1_hour
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:008361671382ed7a3d19a7ad695dedf45c95e7de3ed6cffe7db560881cda5704
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch34-attempt4/raw-evidence/sessions/01KYHW8REKQPGXF00BST9BPEAQ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHWQXXKWJ3PF9BR1V28VXVN
     observedAt: '2026-07-27T13:38:04.079Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1123,11 +1123,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.popup_interval.selector_4_hours
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:bd603244b677626cbbb5dc046ed86e288dd123a65688a0c46c1123b9a6a2179e
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch36-attempt1/raw-evidence/sessions/01KYHWN4F3BD1S2X6EB0CDNWXJ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17
     observedAt: '2026-07-31T06:25:16.671Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1138,7 +1138,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.remaining.popup_interval_selector
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:9d1e3862de8d5526c7a03058b0aa50ecf60da6ab66974838096cbb45bf4b2b17
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
@@ -1148,7 +1148,7 @@ pages:
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRefs: *id001
     limitations:
-    - some historical states remain GPT-only pending independent Scout
+    - some historical states remain 仅 Worker B pending independent Worker A
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Page
@@ -1192,11 +1192,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.interval.selector
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:e48de91b263277efb307ff324b6fd7b778ec3dd5d3f37e5aa02704afc7ff5c6f
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch25-attempt3/raw-evidence/sessions/01KYHKYAK3XVF7MBHHRVR7W3CB
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHMRC108MP60ZEXMSYNZA7W
     observedAt: '2026-07-27T11:18:29.809Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1207,11 +1207,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.interval.selector_10
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:3e4dcdeda85212e8271d7fa05b6334ed73eb84e7291681e7d750e7ff46e9a7a1
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch26-attempt2/raw-evidence/sessions/01KYHMMSAR8NZXY6JC450Q617D
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e
     observedAt: '2026-07-31T06:37:35.993Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1222,7 +1222,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.remaining.sms_interval_selector
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:0482b568b0401576e521de76615a461da70c8cb297f68301bf70875202cde91e
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
@@ -1232,7 +1232,7 @@ pages:
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRefs: *id001
     limitations:
-    - some historical states remain GPT-only pending independent Scout
+    - some historical states remain 仅 Worker B pending independent Worker A
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Page
@@ -1276,11 +1276,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.method.selector
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:2d3f91910567d5eeb2b7ce6d3dd033754231fa7a9301b744d8778a0f3809c21a
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch27-attempt1/raw-evidence/sessions/01KYHN8S4VCAVNFXMZSEKJ13T7
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHRCSJ3HACWART4W8YZXG41
     observedAt: '2026-07-27T12:22:04.756Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1291,11 +1291,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sms_phone_reminder.method.selector_phone
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:44cb30ab92783661e178c5763a73362ad40fb8a54e1bc49bd81f05a333f44c63
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch30-attempt1/raw-evidence/sessions/01KYHR8DFGG6PD70AVJAZ2X0PW
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: sha256:2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c
     observedAt: '2026-07-31T03:02:45.587Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1306,7 +1306,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.reminder_method_selector
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:2b7593db04f73b280a6d32e1b20e14482a275b4cadf999c22125a6ad6c4fd91c
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
@@ -1321,7 +1321,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.remaining.reminder_method_selector
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:015376142a9d29563cd8c51b6efa841e0aae1807acf7e23bd79058059a04d570
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
@@ -1331,7 +1331,7 @@ pages:
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRefs: *id001
     limitations:
-    - some historical states remain GPT-only pending independent Scout
+    - some historical states remain 仅 Worker B pending independent Worker A
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Page
@@ -1411,11 +1411,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.selector
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:0073f611c0c6ad24c4a7773c493c7a2d435d48cb7b12f3d8c60c019b630b6b1b
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHXZFMD4MWC4N5EJRN9XPB0
     observedAt: '2026-07-27T13:59:40.059Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1426,11 +1426,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.selector_briefing
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:a7f7ecb2f7396bc720d7f91327d25b7f2f9d901d2ff3a6ec3e348f1a5f3d4399
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHY65TSAT6HEDX3TS86EGE6
     observedAt: '2026-07-27T14:03:19.376Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1441,11 +1441,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.selector_default
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:536d85b18f0b371b3ecf28454f589552c37006790978be5b60a6019d08b67d5f
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHYBY2V1DWA1YC0D7HMNCX1
     observedAt: '2026-07-27T14:06:28.143Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1456,11 +1456,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.selector_wave
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:4aae95e1aba208a12ad00ee6e6b2ac26772c698de35ffa4b1b115f4ece434ccd
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHHJH0TF71WZ6HSSQ89F3HD
     observedAt: '2026-07-27T10:22:52.676Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1471,11 +1471,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.preview_default
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:d48663906f403c0dbd62b284c11e92b8e011558e0a3e7c1641fafd1123f2a68d
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHHNFN5Q24BH4NN78FBT8T0
     observedAt: '2026-07-27T10:24:29.527Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1486,11 +1486,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.preview_wave
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:79e8bf17753268fdaa9af6aaffd7aaa6db547584d3d36319dd76cdefbf613835
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHHTA0YV3XE1EAH6MVG8CEC
     observedAt: '2026-07-27T10:27:07.451Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1501,11 +1501,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.preview_briefing
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:0bf108ed91ea8de7bfac41c48f45e5f7415f5d9f84a8170e86d765c22f230237
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYHJ02J33F2PPE1TGTKJWP23
     observedAt: '2026-07-27T10:30:16.559Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1516,11 +1516,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.sound.preview_bell
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:cdcaf5933caa4fb039a1828d9e635392e1c9e0d3ed84b219629bd96c569549d7
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch21-attempt1/raw-evidence/sessions/01KYHHCBBFTFM0QSB7KMGKKXBJ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
     observedAt: '2026-07-31T06:55:23.472Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1531,7 +1531,7 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: messages.special_follow.settings.remaining.sound_selector
-      independentScout: complete
+      independentWorker A: complete
       gptReconciliation: complete
     screenshotRef: sha256:0dc3bf28e4d6c9ae9281e21fc3a29d3833506c6e1c696f2d8b1f84000f9067a0
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
@@ -1541,7 +1541,7 @@ pages:
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRefs: *id001
     limitations:
-    - some historical states remain GPT-only pending independent Scout
+    - some historical states remain 仅 Worker B pending independent Worker A
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Page
@@ -1553,7 +1553,7 @@ pages:
   - 通用组件
   - 选人
   surfaceType: page
-  status: observed_gpt_only_pending_scout
+  status: observed_worker_b_only_pending_workerA
   summary: APP级通用选人边界；本次仅记录特别关注添加入口、选择一人、确认和返回流程，不探索组件内部。
   states:
   - key: none_selected
@@ -1585,11 +1585,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: common.person_picker.initial
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:f8ca555adc2de1f74cb6678b2aafca9594fc54a726b2a7733dc2d2f81f3c2af1
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYJ113NK6S3GQY2NZ128FPRQ
     observedAt: '2026-07-27T14:52:59.229Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1600,16 +1600,16 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: common.person_picker.one_selected
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:c1a2abd820aa8be093cf320f31308521847815dd8e103ac74dafddc157f8aa40
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   boundaryNote: 仅记录入口、完成目标流程和返回，不递归探索内部。
 - operation: upsert
   schemaVersion: 3.0.0
@@ -1622,7 +1622,7 @@ pages:
   - 通用组件
   - 会话
   surfaceType: page
-  status: observed_gpt_only_pending_scout
+  status: observed_worker_b_only_pending_workerA
   summary: APP级通用会话边界；本次只记录从特别关注会话或成员进入以及系统返回，不探索会话内部。
   states:
   - key: opened_from_conversation
@@ -1650,11 +1650,11 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: boundary.common.conversation.lian_liangwei
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:4f734320b288191469f77c3199349f85efdef26e97d6d6d5b93f51542554dc3c
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt4/raw-evidence/sessions/01KYJ4FXEX0ZV2MQDJVS4B3MYB
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   - frameRef: 01KYJ4RSHBHNHX2XJZASNB6YRC
     observedAt: '2026-07-27T15:58:20.973Z'
     buildRef: android-package:com.zto.connect.fat@10542
@@ -1665,16 +1665,16 @@ pages:
       orientation: portrait
     stateProperties:
       planStateKeyHint: boundary.common.conversation.lian_liangwei_from_member
-      independentScout: missing_from_legacy_capture
+      independentWorker A: missing_from_legacy_capture
       gptRecognition: complete
     screenshotRef: sha256:bc7955fdf29ea9d6bfda44e4cd078aa11249c13687f4654107c99979d229d3b7
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5/raw-evidence/sessions/01KYJ4QEBBQZP44ANFGP77NE7J
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   boundaryNote: 仅记录入口和返回，不递归探索会话内部。
 elements:
 - operation: upsert
@@ -1711,7 +1711,7 @@ elements:
       checked: null
     screenshotRef: sha256:ffa63e34c31ca51f9a220914367e2919664561a1c22baf2cb9a4ab81660f2557
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch44-attempt5/raw-evidence/sessions/01KYJ35DNE8CXJRFYN2KJQEZPA
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 45.0
@@ -1728,14 +1728,14 @@ elements:
     dynamicValue: 可见，左上角左箭头旁显示99+
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENB2NKGZ35TEY285N93-01KYJ36HQP0HA783S1YS3AE42N.png
-  coverage: observed_not_activated_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: observed_not_activated_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Element
@@ -1770,7 +1770,7 @@ elements:
       checked: null
     screenshotRef: sha256:f8ca555adc2de1f74cb6678b2aafca9594fc54a726b2a7733dc2d2f81f3c2af1
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 36.0
@@ -1787,14 +1787,14 @@ elements:
     dynamicValue: 左上角显示X形关闭图标，未按下
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBX544RVBP72A3ASWD-01KYJ0ZN10XXR1M9TCC9B23830.png
-  coverage: observed_not_activated_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: observed_not_activated_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Element
@@ -1830,7 +1830,7 @@ elements:
       checked: null
     screenshotRef: sha256:c1a2abd820aa8be093cf320f31308521847815dd8e103ac74dafddc157f8aa40
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 862.0
@@ -1847,14 +1847,14 @@ elements:
     dynamicValue: 蓝色高亮，可用；显示当前已选1人、上限10人
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBFEMQ17HJ3CM4ZDZS-01KYJ113NK6S3GQY2NZ128FPRQ.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: low
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: confirm_person_selection
@@ -1893,7 +1893,7 @@ elements:
       checked: null
     screenshotRef: sha256:c1a2abd820aa8be093cf320f31308521847815dd8e103ac74dafddc157f8aa40
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch41-attempt5/raw-evidence/sessions/01KYJ0ZBGHS38PARSMY4TVCBRC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 29.0
@@ -1910,14 +1910,14 @@ elements:
     dynamicValue: 已选中；行左侧为蓝色圆形勾选标记
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBPYYSWY1RN4GH3SJ6-01KYJ113NK6S3GQY2NZ128FPRQ.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: select_person
@@ -1957,7 +1957,7 @@ elements:
       checked: null
     screenshotRef: sha256:503f6642dd3a7ec0861ea629fe386871eb88029d2dcfad745e914d95d0e7ef88
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2/raw-evidence/sessions/01KYK660P4DEBSA3NGF1SET476
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 264.0
@@ -1974,14 +1974,14 @@ elements:
     dynamicValue: null
     actionTraceRef: 01KYK679X7CSQ4NHGSKBE1VQEP
     redboxRef: assets/element-redboxes/01KYKA3ENBS65Y9X32DWXW2MZ6-01KYK66H0196RNQ2KCZ37DDJY5.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: open_special_follow
@@ -2020,7 +2020,7 @@ elements:
       checked: null
     screenshotRef: sha256:5d49c8062e4c0829cdc77e39f5c46f6f2b968c7114ceccb27f46d0a55637b06d
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch47-attempt1/raw-evidence/sessions/01KYK56EAS2G50YYZCS42HQWRP
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 44.0
@@ -2037,14 +2037,14 @@ elements:
     dynamicValue: null
     actionTraceRef: 01KYK59J1GS7ZSWQ79R7SM0F5Q
     redboxRef: assets/element-redboxes/01KYKA3ENB83A8FJ2AKNQ7SA64-01KYK5821NYFQGTZ65KN3EMYFT.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: close_special_follow
@@ -2084,7 +2084,7 @@ elements:
       checked: null
     screenshotRef: sha256:8e9e69f2932a3057e86294d19af4adf28e2bd1397ea2125aad6eae2f434c57d1
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch44-attempt5/raw-evidence/sessions/01KYJ35DNE8CXJRFYN2KJQEZPA
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 0.0
@@ -2101,14 +2101,14 @@ elements:
     dynamicValue: 会话行可见；右侧时间为10:28；当前视口未见数字未读徽标
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENB2VG2WSYHD5MYXA0V-01KYJ39R3JMEAJG93SJSZEQZ3P.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: open_special_follow_conversation
@@ -2149,7 +2149,7 @@ elements:
       checked: null
     screenshotRef: sha256:8cdae4359c0ac661f07691fadd5a5b513934479445b1150dc7743be33cfa0449
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5/raw-evidence/sessions/01KYJ4QEBBQZP44ANFGP77NE7J
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 42.0
@@ -2166,14 +2166,14 @@ elements:
     dynamicValue: null
     actionTraceRef: 01KYJ4RBREX5GKX3RQR2RAXR5P
     redboxRef: assets/element-redboxes/01KYKA3ENBHBMCRQT56973VBET-01KYJ4QSVND1N3RN1BZQDJJHVJ.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: open_followed_member_conversation
@@ -2211,7 +2211,7 @@ elements:
       checked: null
     screenshotRef: sha256:db0b9a6cca5588aa9336fb19512171c007338b8426556984468151173dbc74bf
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2/raw-evidence/sessions/01KYK660P4DEBSA3NGF1SET476
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 51.0
@@ -2228,14 +2228,14 @@ elements:
     dynamicValue: 可见，未显示按下、禁用或选中状态
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBB47C7G4NBQSF9W56-01KYK6DK5A5GBNPT26DP3ZV4Y3.png
-  coverage: observed_not_activated_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: observed_not_activated_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Element
@@ -2271,7 +2271,7 @@ elements:
       checked: null
     screenshotRef: sha256:db0b9a6cca5588aa9336fb19512171c007338b8426556984468151173dbc74bf
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2/raw-evidence/sessions/01KYK660P4DEBSA3NGF1SET476
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 1064.0
@@ -2288,14 +2288,14 @@ elements:
     dynamicValue: 可见，未显示按下、禁用或选中状态
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENB0S9EJNTQG5PX558C-01KYK6DK5A5GBNPT26DP3ZV4Y3.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: close_people
@@ -2356,7 +2356,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -2424,7 +2424,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -2464,7 +2464,7 @@ elements:
       checked: null
     screenshotRef: sha256:0b032c5170e1166c0d76608d59f8b921736d99e949b3ad50a47810a9bbcdaa21
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1/raw-evidence/sessions/01KYHBRRQ0FNFNTS8NJB3DVSTP
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 202.0
@@ -2481,14 +2481,14 @@ elements:
     dynamicValue: 确认弹窗底部左侧可见且可操作
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBK5H9V0Q0GD6C4N4Q-01KYHC08GF9NJXY200M49HEXPT.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: cancel_remove_member
@@ -2527,7 +2527,7 @@ elements:
       checked: null
     screenshotRef: sha256:0b032c5170e1166c0d76608d59f8b921736d99e949b3ad50a47810a9bbcdaa21
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1/raw-evidence/sessions/01KYHBRRQ0FNFNTS8NJB3DVSTP
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 575.0
@@ -2544,14 +2544,14 @@ elements:
     dynamicValue: 确认弹窗底部右侧可见且可操作
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENB32RHWSPCWKB9GE6J-01KYHC08GF9NJXY200M49HEXPT.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: low
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: confirm_remove_member
@@ -2590,7 +2590,7 @@ elements:
       checked: null
     screenshotRef: sha256:b3cd8ace40d4b53c2b41c58bf9d924313e211a41985bab14e3eba74bc638d40a
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch46-attempt1/raw-evidence/sessions/01KYK4MYZH0C3R62M164MET7HS
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 198.0
@@ -2607,14 +2607,14 @@ elements:
     dynamicValue: null
     actionTraceRef: 01KYK4QWXCWDFGKK1431JYQ5N8
     redboxRef: assets/element-redboxes/01KYKA3ENB4BWWND6KPK6B41C4-01KYK4PCJ2QTBP3H0RYPPA61S5.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: open_person_picker
@@ -2653,7 +2653,7 @@ elements:
       checked: null
     screenshotRef: sha256:db0b9a6cca5588aa9336fb19512171c007338b8426556984468151173dbc74bf
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2/raw-evidence/sessions/01KYK660P4DEBSA3NGF1SET476
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 51.0
@@ -2670,14 +2670,14 @@ elements:
     dynamicValue: 可见，未显示按下、禁用或选中状态
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENB9FS02GM1SX9RS47B-01KYK6DK5A5GBNPT26DP3ZV4Y3.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: navigate_back
@@ -2738,7 +2738,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -2801,7 +2801,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   aliases:
   - 免打扰群通知帮助说明文案泡泡框
@@ -2865,7 +2865,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   aliases:
   - 免打扰群通知名称
@@ -2933,7 +2933,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -3007,7 +3007,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -3045,7 +3045,7 @@ elements:
       checked: null
     screenshotRef: sha256:db0b9a6cca5588aa9336fb19512171c007338b8426556984468151173dbc74bf
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch48-attempt2/raw-evidence/sessions/01KYK660P4DEBSA3NGF1SET476
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 48.0
@@ -3062,14 +3062,14 @@ elements:
     dynamicValue: 可见，显示头像和姓名，未出现高亮、勾选或其他选中态
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBBDFHW8EY0J72KJMK-01KYK6DK5A5GBNPT26DP3ZV4Y3.png
-  coverage: observed_not_activated_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: observed_not_activated_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Element
@@ -3128,7 +3128,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   aliases:
   - 我的特别关注入口
@@ -3205,7 +3205,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
     userContextCertifiedFact: 页面只直接引用该总容器；容器本身不触发导航，导航由其右侧箭头子元素触发。
   aliases:
@@ -3278,7 +3278,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
     userContextCertifiedFact: “我的特别关注”是入口说明文案，不可点击，不触发导航。
   aliases:
@@ -3341,7 +3341,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -3403,7 +3403,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -3473,7 +3473,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -3535,7 +3535,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -3599,7 +3599,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -3670,7 +3670,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -3730,7 +3730,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -3769,7 +3769,7 @@ elements:
       checked: null
     screenshotRef: sha256:fba0090cd672680f8b9268693dd42459561742b141941ef4a0dedb8b43bce985
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch18-attempt2/raw-evidence/sessions/01KYHFQZT1GQK0KW28EB6G20DC
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 500.0
@@ -3786,14 +3786,14 @@ elements:
     dynamicValue: 覆盖标题栏下方背景设置页、位于底部白色面板之外的半透明灰色区域
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBN8DCB50SZ78Q1FMC-01KYHFRBM50J9B3F0GEPPPZZTQ.png
-  coverage: observed_not_activated_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: observed_not_activated_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Element
@@ -3829,7 +3829,7 @@ elements:
       checked: null
     screenshotRef: sha256:5ef168cef91caed85e94c20a422d9f8d761ce7041d62dccfbf6eb98710920df8
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch49-attempt1/raw-evidence/sessions/01KYK75BTZ4TV4ZP32QETPQ4HB
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 522.0
@@ -3846,14 +3846,14 @@ elements:
     dynamicValue: visible; unselected
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBW3P1PVFNGS6QKEW3-01KYK7D9HKV7Y99NDN97J8762D.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: cancel_popup_interval_selector
@@ -3913,7 +3913,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -3974,7 +3974,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -4035,7 +4035,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -4096,7 +4096,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -4156,7 +4156,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -4218,7 +4218,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -4281,7 +4281,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   aliases:
   - 单聊弹窗提醒帮助说明文案泡泡框
@@ -4345,7 +4345,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   aliases:
   - 单聊消息未读弹窗提醒名称
@@ -4413,7 +4413,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   aliases:
   - 单聊弹窗提醒设置项
@@ -4489,7 +4489,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -4553,7 +4553,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -4624,7 +4624,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -4684,7 +4684,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -4724,7 +4724,7 @@ elements:
       checked: null
     screenshotRef: sha256:14e55c8912ec7856e749c9ab74f6c5b4860547d90ba0989824bf22253570a027
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch31-attempt1/raw-evidence/sessions/01KYHS077KZ57TNBA030189KQS
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 520.0
@@ -4741,14 +4741,14 @@ elements:
     dynamicValue: visible
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBNZQ775EX5QX5CENW-01KYHS58X0BTXZV0AR8PYQP26A.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: cancel_reminder_method_selector
@@ -4808,7 +4808,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -4869,7 +4869,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -4929,7 +4929,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -4968,7 +4968,7 @@ elements:
       checked: null
     screenshotRef: sha256:50ae27e4437e89240b3e8769be8f24fbc724dfac4b9fa72768868c8cf5c0d8b0
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch8-attempt1/raw-evidence/sessions/01KYHAC69YW8MBBVJKFVYZ0TD8
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 358.0
@@ -4985,14 +4985,14 @@ elements:
     dynamicValue: 虚线方框内减号，下方显示“移除”
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBPHPHGZ5H0SB9AKPA-01KYHACNP4EZ6VTKFJA8VJJSX2.png
-  coverage: observed_not_activated_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: observed_not_activated_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: low
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 - operation: upsert
   schemaVersion: 3.0.0
   entityType: Element
@@ -5028,7 +5028,7 @@ elements:
       checked: null
     screenshotRef: sha256:5fc36ef08a173e0a13e516171dfe0fa9d890fe07671913384bf63c4b2752a39b
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch38-attempt2/raw-evidence/sessions/01KYHXJCZ09T7F5859VFTBTMX4
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 0.0
@@ -5045,14 +5045,14 @@ elements:
     dynamicValue: 可见且可纵向滚动，右侧显示滚动条
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBX0NPQD3YD3CTTDZ6-01KYHXJN3Q386BC6FCBYW2BCT4.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: scroll_settings
@@ -5113,7 +5113,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -5176,7 +5176,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   aliases:
   - 短信或电话提醒帮助说明文案泡泡框
@@ -5242,7 +5242,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -5313,7 +5313,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -5373,7 +5373,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -5413,7 +5413,7 @@ elements:
       checked: null
     screenshotRef: sha256:5ef168cef91caed85e94c20a422d9f8d761ce7041d62dccfbf6eb98710920df8
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch49-attempt1/raw-evidence/sessions/01KYK75BTZ4TV4ZP32QETPQ4HB
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 522.0
@@ -5430,14 +5430,14 @@ elements:
     dynamicValue: visible; unselected
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBH76ERXC3Y6A1C314-01KYK7D9HKV7Y99NDN97J8762D.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: cancel_sms_phone_interval_selector
@@ -5497,7 +5497,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -5558,7 +5558,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -5618,7 +5618,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -5680,7 +5680,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   aliases:
   - 短信或电话提醒名称
@@ -5748,7 +5748,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -5822,7 +5822,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-live-repair-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -5886,7 +5886,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -5957,7 +5957,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -6017,7 +6017,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -6080,7 +6080,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -6148,7 +6148,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -6211,7 +6211,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -6279,7 +6279,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -6319,7 +6319,7 @@ elements:
       checked: null
     screenshotRef: sha256:4aae95e1aba208a12ad00ee6e6b2ac26772c698de35ffa4b1b115f4ece434ccd
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch35-attempt1/raw-evidence/sessions/01KYHXWRA5CNQ6EAH24XQV0YW8
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 521.0
@@ -6336,14 +6336,14 @@ elements:
     dynamicValue: 可用
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENB66P4S6137G5DSM1Z-01KYHYBY2V1DWA1YC0D7HMNCX1.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: cancel_sound_selector
@@ -6405,7 +6405,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -6473,7 +6473,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -6535,7 +6535,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -6597,7 +6597,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -6659,7 +6659,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -6721,7 +6721,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -6784,7 +6784,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: true
@@ -6852,7 +6852,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -6912,7 +6912,7 @@ elements:
     sourceType: midscene_dual_model_live_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
-    scoutModel: qwen3-vl-plus
+    workerAModel: qwen3-vl-plus
     operatorModel: gpt-5.6-sol
   interactionBoundary:
     actionable: false
@@ -6952,7 +6952,7 @@ elements:
       checked: null
     screenshotRef: sha256:3def539291f397167216cfae5bab8816fbe4f04c1b44f9828fd2ed77d7345611
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch51-attempt1/raw-evidence/sessions/01KYKDKVV8W2XD0Q80SSMFJZBQ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 1015.0
@@ -6969,14 +6969,14 @@ elements:
     dynamicValue: 右上方蓝色文字按钮，可见且未显示按下或禁用状态
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENB72QQADA453C40VHY-01KYKDM4XEBFKJGGXZAVH9Z9BY.png
-  coverage: executed_verified_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: executed_verified_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
   interactionBoundary:
     actionable: true
     function: open_special_follow_settings
@@ -7014,7 +7014,7 @@ elements:
       checked: null
     screenshotRef: sha256:b8eeebf654743c75da46f8b2a603ce0964d07187177a237c9e9451f72d6fd77b
     rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch50-attempt3/raw-evidence/sessions/01KYKA3ENBJPK50A5Y5X5GE0QQ
-    evidenceStatus: gpt_verified_pending_independent_scout
+    evidenceStatus: worker_b_verified_pending_independent_workerA
     locator:
       rect:
         left: 1066.0
@@ -7031,14 +7031,14 @@ elements:
     dynamicValue: 红色圆形角标，本帧显示 4
     actionTraceRef: null
     redboxRef: assets/element-redboxes/01KYKA3ENBGFNT0VFVP5RFDC9S-01KYKA3TGG75X4KQDSYGE61ESX.png
-  coverage: observed_not_activated_gpt_only_pending_scout
-  status: gpt_verified_pending_independent_scout
+  coverage: observed_not_activated_worker_b_only_pending_workerA
+  status: worker_b_verified_pending_independent_workerA
   risk: safe
   provenance:
     sourceType: verified_legacy_midscene_evidence
     materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
     limitations:
-    - independent aiScout evidence is absent from the historical capture
+    - independent worker_a evidence is absent from the historical capture
 transitions:
 - operation: upsert
   schemaVersion: 3.0.0
@@ -7530,7 +7530,7 @@ coverage:
   recordType: UiGraphMaterializationAudit
   explorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1
   status: incomplete
-  reason: uikg_3_0_1_model_normalization_complete_but_historical_states_remain_gpt_only
+  reason: uikg_3_0_1_model_normalization_complete_but_historical_states_remain_worker_b_only
   sourceSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
   normalizationPolicy: zto-connect-fat-messages-special-follow-normalization-policy-20260728.yaml
   evidence:
@@ -7538,7 +7538,7 @@ coverage:
     qualifiedFrames: 171
     rawActionTraces: 129
     qualifiedActionTraces: 101
-    aiScoutFrames: 20
+    worker_aFrames: 20
     liveDualModelFrames: 20
     liveVerifiedActions: 18
     liveExplorationRef: zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1

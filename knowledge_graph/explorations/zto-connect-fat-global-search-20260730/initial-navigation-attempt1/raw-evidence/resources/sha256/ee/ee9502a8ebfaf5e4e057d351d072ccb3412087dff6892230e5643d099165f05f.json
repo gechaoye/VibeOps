@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYS318JGFVQHHB569Q9ED3VT",
+  "sessionRef": "01KYS2MZ2HQBPK0G7RGMQVE3ZN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYS2NTV30MFQB2TXR6MXS607",
+  "sourceScreenshotRef": "sha256:c157e07ccf15083ea85b5c2c3b40ded7b86a3e4e755d9d27e12b33f4e22456ef",
+  "operation": "aiLocate",
+  "prompt": "定位“我的收藏”区域内唯一的加号方块及其下方“添加收藏”文字。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 215,
+      "y": 377
+    },
+    "rect": {
+      "x": 149,
+      "y": 312,
+      "width": 133,
+      "height": 132
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "worker_a": {
+      "name": "qwen3-vl-plus",
+      "family": "qwen3-vl",
+      "slot": "worker_a"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-30T08:42:28.021Z",
+  "endedAt": "2026-07-30T08:42:39.568Z",
+  "durationMs": 11546.966375,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:13db715bb416c1e66749062f6bfcfd3faa28d22da254c282f38e2dea749ad9e1"
+}

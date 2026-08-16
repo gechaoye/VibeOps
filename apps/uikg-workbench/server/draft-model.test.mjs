@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import Ajv2020 from 'ajv/dist/2020.js';
-import { beginFrameCapture, createEmptyDraft, mergeScoutIntoDraft, normalizeDraftShape, normalizeScoutOutput, prepareScoutForDraft, validateDraft, validateScoutConsistency } from './draft-model.mjs';
-import { ELEMENT_TYPES, SCOUT_ACTIONS } from './element-taxonomy.mjs';
+import { beginFrameCapture, createEmptyDraft, mergeWorkerIntoDraft, normalizeDraftShape, normalizeWorkerOutput, prepareWorkerForDraft, removePagesFromDraft, validateDraft, validateWorkerConsistency } from './draft-model.mjs';
+import { ELEMENT_TYPES, WORKER_ACTIONS } from './element-taxonomy.mjs';
 
 function meaningEvidence(overrides = {}) {
   return {
@@ -17,7 +17,7 @@ function meaningEvidence(overrides = {}) {
   };
 }
 
-function sampleScout() {
+function sampleWorker() {
   return {
     frameId: 'sha256:abc',
     page: { name: '设置', surfaceType: 'page', stateSummary: '默认状态', scrollableRegions: [] },
@@ -40,36 +40,38 @@ function sampleScout() {
   };
 }
 
-test('Scout 候选转换为带 owner 的可编辑草稿', () => {
-  const scout = sampleScout();
-  const draft = mergeScoutIntoDraft(createEmptyDraft(), scout, 'model.json');
+test('Worker A 候选转换为带 owner 的可编辑草稿', () => {
+  const workerResult = sampleWorker();
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), workerResult, 'model.json');
   assert.equal(draft.elements.length, 2);
   const row = draft.elements.find((item) => item.candidateKey === 'settings.row');
   const toggle = draft.elements.find((item) => item.candidateKey === 'settings.toggle');
   assert.equal(toggle.parentId, row.id);
   assert.equal(toggle.ownerKind, 'component');
   assert.deepEqual(row.capabilities, ['none']);
+  assert.equal(row.interactionBoundary, 'none');
   assert.deepEqual(toggle.capabilities, ['tap']);
+  assert.equal(toggle.interactionBoundary, 'candidate_bbox');
   assert.deepEqual(toggle.actionEffects, [{ action: 'tap', effect: '切换提醒开关状态' }]);
-  assert.deepEqual(validateScoutConsistency(scout), []);
+  assert.deepEqual(validateWorkerConsistency(workerResult), []);
 });
 
-test('人工审核结果不会被后续 Scout 覆盖', () => {
-  const scout = sampleScout();
-  const first = mergeScoutIntoDraft(createEmptyDraft(), scout, 'first.json');
+test('人工审核结果不会被后续 Worker A 覆盖', () => {
+  const workerResult = sampleWorker();
+  const first = mergeWorkerIntoDraft(createEmptyDraft(), workerResult, 'first.json');
   first.elements[0].label = '人工名称';
   first.elements[0].reviewStatus = 'edited';
   first.elements[0].source = 'mixed';
   first.elementEditRecords.push({ elementId: first.elements[0].id, kind: 'updated', fields: ['label'], editedAt: new Date().toISOString() });
-  const secondScout = sampleScout();
-  secondScout.elements[0].label = '模型新名称';
-  const second = mergeScoutIntoDraft(first, secondScout, 'second.json');
+  const secondWorker = sampleWorker();
+  secondWorker.elements[0].label = '模型新名称';
+  const second = mergeWorkerIntoDraft(first, secondWorker, 'second.json');
   assert.equal(second.elements[0].label, '人工名称');
   assert.equal(second.elements[0].lastModelProposal.label, '模型新名称');
 });
 
 test('草稿校验发现 owner 循环和越界 bbox', () => {
-  const draft = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'model.json');
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'model.json');
   draft.elements[0].parentId = draft.elements[1].id;
   draft.elements[0].ownerKind = 'component';
   draft.elements[0].bbox.width = 2;
@@ -78,31 +80,46 @@ test('草稿校验发现 owner 循环和越界 bbox', () => {
   assert.ok(issues.some((issue) => issue.code === 'bbox_invalid'));
 });
 
-test('可修正的 Scout 几何和动作矛盾进入待审核草稿', () => {
-  const scout = sampleScout();
-  scout.elements[1].interactive = false;
-  scout.elements[1].approximateRegion = { x: 0.9, y: 0.95, width: 0.2, height: 0.1 };
-  const proposal = prepareScoutForDraft(scout);
+test('可修正的 Worker A 几何和动作矛盾进入待审核草稿', () => {
+  const workerResult = sampleWorker();
+  workerResult.elements[1].interactive = false;
+  workerResult.elements[1].approximateRegion = { x: 0.9, y: 0.95, width: 0.2, height: 0.1 };
+  const proposal = prepareWorkerForDraft(workerResult);
   assert.deepEqual(proposal.elements[1].approximateRegion, { x: 0.9, y: 0.95, width: 0.1, height: 0.05 });
   assert.ok(proposal.elements[1].riskSignals.includes('geometry-clamped-to-frame'));
   assert.ok(proposal.elements[1].riskSignals.includes('model-action-inconsistent'));
   assert.equal(proposal.actionCandidates.length, 0);
 });
 
-test('旧单页草稿升级后保留 Page、Frame 和 Scout 模型来源', () => {
-  const legacy = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'model.json', 'qwen3-vl-plus');
+test('旧单页草稿升级后保留 Page、Frame 和 Worker A 模型来源', () => {
+  const legacy = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'model.json', 'qwen3-vl-plus');
   delete legacy.pages;
   delete legacy.elements[0].pageId;
-  delete legacy.elements[0].scoutModel;
+  delete legacy.elements[0].workerModel;
   const upgraded = normalizeDraftShape(legacy);
   assert.equal(upgraded.pages.length, 1);
   assert.deepEqual(upgraded.pages[0].frameIds, ['sha256:abc']);
   assert.equal(upgraded.elements[0].pageId, upgraded.currentPageId);
-  assert.equal(upgraded.elements[0].scoutModel, 'qwen3-vl-plus');
+  assert.equal(upgraded.elements[0].workerModel, 'qwen3-vl-plus');
+});
+
+test('零页面草稿再次冻结时创建新的待识别页面', () => {
+  const empty = createEmptyDraft();
+  empty.currentPageId = 'draft-page-empty';
+  empty.page = { id: 'draft-page-empty', key: 'page.empty', name: '', surfaceType: 'unknown', stateSummary: '', scrollableRegions: [] };
+
+  const normalized = normalizeDraftShape(empty);
+  assert.equal(normalized.pages.length, 0);
+
+  const captured = beginFrameCapture(normalized, 'sha256:new-frame');
+  assert.equal(captured.pages.length, 1);
+  assert.equal(captured.currentFrameId, 'sha256:new-frame');
+  assert.equal(captured.currentPageId, captured.pages[0].id);
+  assert.equal(captured.pages[0].name, '待识别页面');
 });
 
 test('支持操作使用新枚举并去重', () => {
-  const draft = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'model.json');
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'model.json');
   draft.elements[1].controlType = 'button';
   draft.elements[1].actionable = 'yes';
   draft.elements[1].capabilities = ['tap', 'zoom', 'tap'];
@@ -116,16 +133,28 @@ test('支持操作使用新枚举并去重', () => {
   assert.deepEqual(normalized.elements[1].actionEffects.map((item) => item.action), ['tap', 'zoom']);
 });
 
+test('无元素动作时交互区域归一为无', () => {
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'model.json');
+  draft.elements[0].interactionBoundary = 'whole_element';
+  draft.elements[1].capabilities = ['none'];
+  draft.elements[1].interactionBoundary = 'point_only';
+
+  const normalized = normalizeDraftShape(draft);
+
+  assert.equal(normalized.elements[0].interactionBoundary, 'none');
+  assert.equal(normalized.elements[1].interactionBoundary, 'none');
+});
+
 test('探索新页面时保留上一页元素并建立独立 Page', () => {
-  const first = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'first.json', 'qwen3-vl-plus');
-  const nextScout = sampleScout();
-  nextScout.frameId = 'sha256:def';
-  nextScout.page.name = '提醒详情';
-  nextScout.elements[0].candidateKey = 'detail.row';
-  nextScout.elements[1].candidateKey = 'detail.toggle';
-  nextScout.relationships = [{ fromCandidateKey: 'detail.row', type: 'contains', toCandidateKey: 'detail.toggle' }];
-  nextScout.actionCandidates = [{ ...nextScout.actionCandidates[0], triggerCandidateKey: 'detail.toggle' }];
-  const second = mergeScoutIntoDraft(first, nextScout, 'second.json', 'qwen3-vl-plus');
+  const first = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'first.json', 'qwen3-vl-plus');
+  const nextWorker = sampleWorker();
+  nextWorker.frameId = 'sha256:def';
+  nextWorker.page.name = '提醒详情';
+  nextWorker.elements[0].candidateKey = 'detail.row';
+  nextWorker.elements[1].candidateKey = 'detail.toggle';
+  nextWorker.relationships = [{ fromCandidateKey: 'detail.row', type: 'contains', toCandidateKey: 'detail.toggle' }];
+  nextWorker.actionCandidates = [{ ...nextWorker.actionCandidates[0], triggerCandidateKey: 'detail.toggle' }];
+  const second = mergeWorkerIntoDraft(first, nextWorker, 'second.json', 'qwen3-vl-plus');
   assert.equal(second.pages.length, 2);
   assert.equal(second.elements.length, 4);
   assert.ok(second.elements.some((element) => element.candidateKey === 'settings.row'));
@@ -133,7 +162,7 @@ test('探索新页面时保留上一页元素并建立独立 Page', () => {
 });
 
 test('冻结新画面时使用空白待识别 Page 并保留上一页数据', () => {
-  const previous = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'first.json', 'qwen3-vl-plus');
+  const previous = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'first.json', 'qwen3-vl-plus');
   const captured = beginFrameCapture(previous, 'sha256:def');
   assert.notEqual(captured.currentPageId, previous.currentPageId);
   assert.equal(captured.currentFrameId, 'sha256:def');
@@ -145,7 +174,7 @@ test('冻结新画面时使用空白待识别 Page 并保留上一页数据', ()
 });
 
 test('未识别前重复冻结复用当前空白 Page', () => {
-  const previous = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'first.json', 'qwen3-vl-plus');
+  const previous = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'first.json', 'qwen3-vl-plus');
   const firstCapture = beginFrameCapture(previous, 'sha256:def');
   const secondCapture = beginFrameCapture(firstCapture, 'sha256:ghi');
   assert.equal(secondCapture.currentPageId, firstCapture.currentPageId);
@@ -153,19 +182,51 @@ test('未识别前重复冻结复用当前空白 Page', () => {
   assert.deepEqual(secondCapture.pages.find((page) => page.id === secondCapture.currentPageId).frameIds, ['sha256:ghi']);
 });
 
-test('没有人工编辑记录的 Scout 元素始终恢复为初始化状态', () => {
-  const draft = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'model.json', 'qwen3-vl-plus');
+test('连续截图为每个冻结帧创建独立待识别 Page', () => {
+  const firstCapture = beginFrameCapture(createEmptyDraft(), 'sha256:first', { forceNewPage: true });
+  const secondCapture = beginFrameCapture(firstCapture, 'sha256:second', { forceNewPage: true });
+
+  assert.equal(secondCapture.pages.length, 2);
+  assert.notEqual(secondCapture.pages[0].id, secondCapture.pages[1].id);
+  assert.deepEqual(secondCapture.pages.map((page) => page.frameIds), [['sha256:first'], ['sha256:second']]);
+  assert.equal(secondCapture.currentPageId, secondCapture.pages[1].id);
+  assert.equal(secondCapture.pages[1].elementIds.length, 0);
+});
+
+test('批量删除 Page 时同步清理元素、跳转关系和当前页面', () => {
+  const first = beginFrameCapture(createEmptyDraft(), 'sha256:first', { forceNewPage: true });
+  const second = beginFrameCapture(first, 'sha256:second', { forceNewPage: true });
+  const firstPageId = second.pages[0].id;
+  const secondPageId = second.pages[1].id;
+  second.elements = [{
+    id: 'element-first', candidateKey: 'first', label: '按钮', visualDescription: '', controlType: 'button', role: '', capabilities: ['tap'], actionEffects: [], enabled: true,
+    state: '', dynamicContent: false, bbox: { x: 0, y: 0, width: 1, height: 1 }, geometryKind: 'boundary', geometryConfidence: 1, confidence: 1,
+    meaning: { status: 'unknown', description: null, evidence: { visibleTexts: [], visibleIcons: [], visibleStates: [], visualCues: [], userContext: null, unclassified: [] } },
+    riskSignals: [], ownerKind: 'page', ownerRef: firstPageId, parentId: null, childrenIds: [], pageId: firstPageId, availableOnPageIds: [], interactionBoundary: 'self', reviewStatus: 'pending', source: 'human', workerModel: null, lastModelProposal: null,
+  }];
+  second.transitions = [{ id: 'transition-first', sourcePageId: firstPageId, targetPageId: secondPageId, triggerElementId: 'element-first' }];
+  const removed = removePagesFromDraft(second, [secondPageId]);
+  assert.equal(removed.pages.length, 1);
+  assert.equal(removed.currentPageId, firstPageId);
+  assert.equal(removed.currentFrameId, 'sha256:first');
+  assert.equal(removed.transitions.length, 0);
+  assert.equal(removed.elements.length, 1);
+  assert.equal(removed.revision, second.revision + 1);
+});
+
+test('没有人工编辑记录的 Worker A 元素始终恢复为初始化状态', () => {
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'model.json', 'qwen3-vl-plus');
   const row = draft.elements.find((element) => element.candidateKey === 'settings.row');
   row.reviewStatus = 'edited';
   row.source = 'mixed';
   const normalized = normalizeDraftShape(draft);
   const restored = normalized.elements.find((element) => element.id === row.id);
   assert.equal(restored.reviewStatus, 'pending');
-  assert.equal(restored.source, 'ai_scout');
+  assert.equal(restored.source, 'ai_worker');
 });
 
 test('存在人工编辑记录时保留人工修订状态', () => {
-  const draft = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'model.json', 'qwen3-vl-plus');
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'model.json', 'qwen3-vl-plus');
   const row = draft.elements.find((element) => element.candidateKey === 'settings.row');
   row.reviewStatus = 'edited';
   row.source = 'mixed';
@@ -176,39 +237,39 @@ test('存在人工编辑记录时保留人工修订状态', () => {
   assert.equal(preserved.source, 'mixed');
 });
 
-test('Scout 归一化保留原始输出，并仅降级含未知证据的元素', () => {
-  const raw = sampleScout();
+test('Worker A 归一化保留原始输出，并仅降级含未知证据的元素', () => {
+  const raw = sampleWorker();
   raw.elements[0].meaning = { status: 'known', description: '设置容器', basis: 'visible-icon' };
   const original = structuredClone(raw);
 
-  const { scout, normalizationIssues } = normalizeScoutOutput(raw);
+  const { workerResult, normalizationIssues } = normalizeWorkerOutput(raw);
 
   assert.deepEqual(raw, original);
-  assert.notEqual(scout, raw);
-  assert.equal(scout.elements[0].meaning.status, 'candidate');
-  assert.deepEqual(scout.elements[0].meaning.evidence.unclassified, [{ type: 'model-basis', detail: 'visible-icon' }]);
-  assert.ok(scout.elements[0].riskSignals.includes('meaning-evidence-needs-review'));
-  assert.equal(scout.elements[1].meaning.status, 'known');
-  assert.ok(!scout.elements[1].riskSignals.includes('meaning-evidence-needs-review'));
+  assert.notEqual(workerResult, raw);
+  assert.equal(workerResult.elements[0].meaning.status, 'candidate');
+  assert.deepEqual(workerResult.elements[0].meaning.evidence.unclassified, [{ type: 'model-basis', detail: 'visible-icon' }]);
+  assert.ok(workerResult.elements[0].riskSignals.includes('meaning-evidence-needs-review'));
+  assert.equal(workerResult.elements[1].meaning.status, 'known');
+  assert.ok(!workerResult.elements[1].riskSignals.includes('meaning-evidence-needs-review'));
   assert.equal(normalizationIssues.length, 1);
   assert.equal(normalizationIssues[0].candidateKey, 'settings.row');
 });
 
-test('未来模型证据字段进入待归类证据，归一化结果通过 Scout Schema', async () => {
-  const raw = sampleScout();
+test('未来模型证据字段进入待归类证据，归一化结果通过 Worker A Schema', async () => {
+  const raw = sampleWorker();
   raw.elements[0].meaning.evidence.glyphSignature = { family: 'search', score: 0.81 };
-  const { scout } = normalizeScoutOutput(raw);
-  const schema = JSON.parse(await readFile(new URL('./scout-output.schema.json', import.meta.url), 'utf8'));
+  const { workerResult } = normalizeWorkerOutput(raw);
+  const schema = JSON.parse(await readFile(new URL('./worker-output.schema.json', import.meta.url), 'utf8'));
   const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
 
-  assert.deepEqual(scout.elements[0].meaning.evidence.unclassified, [
+  assert.deepEqual(workerResult.elements[0].meaning.evidence.unclassified, [
     { type: 'glyphSignature', detail: '{"family":"search","score":0.81}' },
   ]);
-  assert.equal(validate(scout), true, JSON.stringify(validate.errors));
+  assert.equal(validate(workerResult), true, JSON.stringify(validate.errors));
 });
 
-test('qwen3.7-flash 的 meaning 顶层字段和 candidate_key 可归一化并通过 Scout Schema', async () => {
-  const raw = sampleScout();
+test('qwen3.7-flash 的 meaning 顶层字段和 candidate_key 可归一化并通过 Worker A Schema', async () => {
+  const raw = sampleWorker();
   const element = raw.elements[0];
   element.candidate_key = element.candidateKey;
   delete element.candidateKey;
@@ -219,9 +280,9 @@ test('qwen3.7-flash 的 meaning 顶层字段和 candidate_key 可归一化并通
   delete element.riskSignals;
   delete element.confidence;
 
-  const { scout, normalizationIssues } = normalizeScoutOutput(raw);
-  const normalized = scout.elements[0];
-  const schema = JSON.parse(await readFile(new URL('./scout-output.schema.json', import.meta.url), 'utf8'));
+  const { workerResult, normalizationIssues } = normalizeWorkerOutput(raw);
+  const normalized = workerResult.elements[0];
+  const schema = JSON.parse(await readFile(new URL('./worker-output.schema.json', import.meta.url), 'utf8'));
   const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
 
   assert.equal(normalized.candidateKey, 'settings.row');
@@ -233,55 +294,95 @@ test('qwen3.7-flash 的 meaning 顶层字段和 candidate_key 可归一化并通
   assert.equal('riskSignals' in normalized.meaning, false);
   assert.equal('confidence' in normalized.meaning, false);
   assert.ok(normalizationIssues[0].messages.includes('candidate_key 已归一化为 candidateKey'));
-  assert.equal(validate(scout), true, JSON.stringify(validate.errors));
+  assert.equal(validate(workerResult), true, JSON.stringify(validate.errors));
 });
 
-test('qwen3-vl-plus 的 visible-icon 动作依据可归一化并通过 Scout Schema', async () => {
-  const raw = sampleScout();
+test('qwen3-vl-plus 的 visible-icon 动作依据可归一化并通过 Worker A Schema', async () => {
+  const raw = sampleWorker();
   raw.elements[0].meaning = { status: 'known', description: '设置容器', basis: 'visible-icon' };
   raw.actionCandidates[0].basis = 'visible-icon';
 
-  const { scout, normalizationIssues } = normalizeScoutOutput(raw);
-  const schema = JSON.parse(await readFile(new URL('./scout-output.schema.json', import.meta.url), 'utf8'));
+  const { workerResult, normalizationIssues } = normalizeWorkerOutput(raw);
+  const schema = JSON.parse(await readFile(new URL('./worker-output.schema.json', import.meta.url), 'utf8'));
   const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
 
-  assert.equal(scout.elements[0].meaning.status, 'candidate');
-  assert.deepEqual(scout.elements[0].meaning.evidence.unclassified, [{ type: 'model-basis', detail: 'visible-icon' }]);
-  assert.equal(scout.actionCandidates[0].basis, 'visible-affordance');
+  assert.equal(workerResult.elements[0].meaning.status, 'candidate');
+  assert.deepEqual(workerResult.elements[0].meaning.evidence.unclassified, [{ type: 'model-basis', detail: 'visible-icon' }]);
+  assert.equal(workerResult.actionCandidates[0].basis, 'visible-affordance');
   assert.ok(normalizationIssues.some((issue) => issue.messages.includes('actionCandidates.basis 已从 visible-icon 归一化为 visible-affordance')));
-  assert.equal(validate(scout), true, JSON.stringify(validate.errors));
+  assert.equal(validate(workerResult), true, JSON.stringify(validate.errors));
 });
 
-test('Scout 支持完整操作枚举并通过 Schema', async () => {
-  const raw = sampleScout();
-  raw.actionCandidates = SCOUT_ACTIONS.map((action) => ({ ...raw.actionCandidates[0], action }));
+test('模型误用 container 几何类型时归一化为 boundary 并通过 Worker A Schema', async () => {
+  const raw = sampleWorker();
+  raw.elements[0].geometryKind = 'container';
 
-  const { scout, normalizationIssues } = normalizeScoutOutput(raw);
-  const schema = JSON.parse(await readFile(new URL('./scout-output.schema.json', import.meta.url), 'utf8'));
+  const { workerResult, normalizationIssues } = normalizeWorkerOutput(raw);
+  const schema = JSON.parse(await readFile(new URL('./worker-output.schema.json', import.meta.url), 'utf8'));
   const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
 
-  assert.deepEqual(schema.properties.elements.items.properties.controlType.enum, ELEMENT_TYPES);
-  assert.deepEqual(schema.properties.actionCandidates.items.properties.action.enum, SCOUT_ACTIONS);
-  assert.deepEqual(scout.actionCandidates.map((candidate) => candidate.action), SCOUT_ACTIONS);
-  assert.equal(normalizationIssues.length, 0);
-  assert.equal(validate(scout), true, JSON.stringify(validate.errors));
+  assert.equal(workerResult.elements[0].geometryKind, 'boundary');
+  assert.ok(normalizationIssues.some((issue) => issue.messages.includes('geometryKind 已从 container 归一化为 boundary')));
+  assert.equal(validate(workerResult), true, JSON.stringify(validate.errors));
 });
 
-test('Scout 操作直接转换为元素支持操作', () => {
-  const scout = sampleScout();
-  scout.actionCandidates = ['scroll_vertical', 'swipe', 'long_press', 'drag', 'zoom', 'multi_touch'].map((action) => ({
-    ...scout.actionCandidates[0],
+test('模型返回未知元素类型时留空标红所需字段并通过 Worker A Schema', async () => {
+  const raw = sampleWorker();
+  raw.elements[0].controlType = 'segmented-control';
+
+  const { workerResult, normalizationIssues } = normalizeWorkerOutput(raw);
+  const schema = JSON.parse(await readFile(new URL('./worker-output.schema.json', import.meta.url), 'utf8'));
+  const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
+
+  assert.equal(workerResult.elements[0].controlType, '');
+  assert.ok(workerResult.elements[0].riskSignals.includes('control-type-needs-review'));
+  assert.ok(normalizationIssues.some((issue) => issue.messages.includes('controlType segmented-control 未在当前分类中，已留空等待审核')));
+  assert.equal(validate(workerResult), true, JSON.stringify(validate.errors));
+});
+
+test('GPT-5 在未请求比较时返回文字 changes 可归一化并通过 Worker A Schema', async () => {
+  const raw = sampleWorker();
+  raw.comparison.changes = ['补充了结构容器', '调整了候选区域'];
+
+  const { workerResult, normalizationIssues } = normalizeWorkerOutput(raw);
+  const schema = JSON.parse(await readFile(new URL('./worker-output.schema.json', import.meta.url), 'utf8'));
+  const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
+
+  assert.deepEqual(workerResult.comparison.changes, []);
+  assert.ok(normalizationIssues.some((issue) => issue.messages.includes('comparison.status 为 not-requested，已移除 2 条模型说明')));
+  assert.equal(validate(workerResult), true, JSON.stringify(validate.errors));
+});
+
+test('Worker A 支持完整操作枚举并通过 Schema', async () => {
+  const raw = sampleWorker();
+  raw.actionCandidates = WORKER_ACTIONS.map((action) => ({ ...raw.actionCandidates[0], action }));
+
+  const { workerResult, normalizationIssues } = normalizeWorkerOutput(raw);
+  const schema = JSON.parse(await readFile(new URL('./worker-output.schema.json', import.meta.url), 'utf8'));
+  const validate = new Ajv2020({ allErrors: true, strict: false }).compile(schema);
+
+  assert.deepEqual(schema.properties.elements.items.properties.controlType.enum, ['', ...ELEMENT_TYPES]);
+  assert.deepEqual(schema.properties.actionCandidates.items.properties.action.enum, WORKER_ACTIONS);
+  assert.deepEqual(workerResult.actionCandidates.map((candidate) => candidate.action), WORKER_ACTIONS);
+  assert.equal(normalizationIssues.length, 0);
+  assert.equal(validate(workerResult), true, JSON.stringify(validate.errors));
+});
+
+test('Worker A 操作直接转换为元素支持操作', () => {
+  const workerResult = sampleWorker();
+  workerResult.actionCandidates = ['scroll_vertical', 'swipe', 'long_press', 'drag', 'zoom', 'multi_touch'].map((action) => ({
+    ...workerResult.actionCandidates[0],
     action,
   }));
 
-  const draft = mergeScoutIntoDraft(createEmptyDraft(), scout, 'model.json');
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), workerResult, 'model.json');
   const trigger = draft.elements.find((element) => element.candidateKey === 'settings.toggle');
 
   assert.deepEqual(trigger.capabilities, ['scroll_vertical', 'swipe', 'long_press', 'drag', 'zoom', 'multi_touch']);
 });
 
 test('旧草稿 meaning.basis 不迁移，缺少新证据时语义降级为未知', () => {
-  const draft = mergeScoutIntoDraft(createEmptyDraft(), sampleScout(), 'model.json');
+  const draft = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'model.json');
   draft.elements[0].meaning = { status: 'known', description: '旧草稿说明', basis: 'visible-text' };
 
   const normalized = normalizeDraftShape(draft);

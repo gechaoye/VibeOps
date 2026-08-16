@@ -8,33 +8,45 @@ import express from 'express';
 import { imageSize } from 'image-size';
 import {
   beginFrameCapture,
-  mergeScoutIntoDraft,
+  mergeWorkerIntoDraft,
   normalizeDraftForSave,
-  normalizeScoutOutput,
-  prepareScoutForDraft,
+  normalizeWorkerOutput,
+  prepareWorkerForDraft,
+  removePagesFromDraft,
   validateDraft,
-  validateScoutConsistency,
+  validateWorkerConsistency,
 } from './draft-model.mjs';
-import { buildAIReviewDemand, reviewCandidates } from './ai-review.mjs';
-import { ELEMENT_TYPES, SCOUT_ACTIONS, stringUnion } from './element-taxonomy.mjs';
-import { loadReviewerModelSettings, loadScoutModelSettings, saveReviewerModelSettings, saveScoutModelSettings } from './model-settings.mjs';
-import { recoverScoutCheckpointFromStream, runResumableScout, SCOUT_ERROR_RETRY_LIMIT } from './resumable-scout.mjs';
-import { runScoutModel } from './scout-client.mjs';
-import { runReviewerModel } from './reviewer-client.mjs';
+import { loadWorkerAModelSettings, loadWorkerBModelSettings, saveWorkerAModelSettings, saveWorkerBModelSettings } from './model-settings.mjs';
+import { recoverWorkerCheckpointFromStream, runResumableWorker, WORKER_ERROR_RETRY_LIMIT } from './resumable-worker.mjs';
+import { runWorkerModel } from './worker-client.mjs';
+import { buildWorkerContinuationPrompt, buildWorkerPrompt } from './worker-prompt.mjs';
 
-function imagePayload(base64) {
-  const match = String(base64).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/s);
-  const mimeType = match?.[1] || 'image/png';
-  const buffer = Buffer.from(match?.[2] || base64, 'base64');
-  const detected = buffer[0] === 0xff && buffer[1] === 0xd8 ? 'jpeg' : 'png';
-  const dimensions = imageSize(buffer);
+const MAX_PAGE_UPLOAD_BATCH = 20;
+const MAX_PAGE_IMAGE_BYTES = 25 * 1024 * 1024;
+
+function imageBufferPayload(buffer, mimeType = '') {
+  let dimensions;
+  try {
+    dimensions = imageSize(buffer);
+  } catch {
+    throw workbenchError(415, '图片文件损坏或格式无法识别');
+  }
+  const detected = dimensions.type === 'jpg' ? 'jpeg' : dimensions.type;
+  if (!['jpeg', 'png', 'webp'].includes(detected)) {
+    throw workbenchError(415, '仅支持 PNG、JPEG 或 WebP 图片');
+  }
   return {
     buffer,
-    mimeType: match?.[1] || `image/${detected}`,
-    extension: detected === 'jpeg' ? 'jpg' : 'png',
+    mimeType: `image/${detected}`,
+    extension: detected === 'jpeg' ? 'jpg' : detected,
     width: dimensions.width,
     height: dimensions.height,
   };
+}
+
+function imagePayload(base64) {
+  const match = String(base64).match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/s);
+  return imageBufferPayload(Buffer.from(match?.[2] || base64, 'base64'), match?.[1] || 'image/png');
 }
 
 function hashFrame(buffer) {
@@ -46,43 +58,6 @@ function workbenchError(status, message, details = {}) {
   error.status = status;
   error.details = details;
   return error;
-}
-
-const ELEMENT_TYPE_UNION = stringUnion(ELEMENT_TYPES);
-const SCOUT_ACTION_UNION = stringUnion(SCOUT_ACTIONS);
-const SCOUT_ELEMENT_SHAPE = `{candidateKey: string, label: string|null, visualDescription: string, controlType: ${ELEMENT_TYPE_UNION}, interactive: boolean, enabled: boolean|null, state: string|null, approximateRegion: {x:number,y:number,width:number,height:number}, geometryKind:"boundary"|"tap-target"|"approximate", geometryConfidence:number, meaning:{status:"known"|"candidate"|"unknown",description:string|null,evidence:{visibleTexts:string[],visibleIcons:string[],visibleStates:string[],visualCues:string[],userContext:string|null,unclassified:{type:string,detail:string|null}[]}}, dynamicContent:boolean, riskSignals:string[], confidence:number}`;
-
-function buildScoutPrompt(frameId, pageContext = '') {
-  return `请查看完整、稳定的 Android 截图，并严格返回以下结构的一个 JSON 对象。所有自然语言字段必须使用简体中文，不要输出 Markdown：
-{
-  frameId: string,
-  page: {name: string|null, surfaceType: "page"|"dialog"|"drawer"|"bottom-sheet"|"menu"|"shared-component"|"unknown", stateSummary: string, scrollableRegions: string[]},
-  elements: [${SCOUT_ELEMENT_SHAPE}],
-  relationships: [{fromCandidateKey:string,type:"contains"|"labels"|"controls"|"belongs-to"|"adjacent-to",toCandidateKey:string}],
-  actionCandidates: [{triggerCandidateKey:string,action:${SCOUT_ACTION_UNION},expectedOutcome:string|null,basis:"visible-affordance"|"user-context"|"requirement-document"|"existing-graph"|"authority-contract"|"unknown",riskSignals:string[],confidence:number}],
-  comparison: {basisFrameId:null,status:"not-requested",changes:[]},
-  uncertainties: string[]
-}.
-按照 Navigation、Action、Input、Selection、Display、List、Container、Overlay、Scroll、Feedback、Progress、Media、Map、System、Gesture、Business 分类选择最具体的 controlType。盘点每个可见元素、标签、图标、状态指示器、结构容器、稳定内容锚点和关系。复合行容器、说明标签、当前值和实际触发器需要分开记录。actionCandidates 只使用元素实际支持的操作；没有动作的元素不要返回 actionCandidate；expectedOutcome 必须描述该动作在当前元素上的具体效果。手势区域与交互能力必须分离。在 meaning.evidence 中记录可见事实，不要编造 meaning.basis。visibleTexts 放可见文字，visibleIcons 放可识别图标，visibleStates 放选中、禁用或开关状态，visualCues 放其他形状、颜色和布局证据，userContext 放用户提供的知识，其余证据放入 unclassified。JSON 必须紧凑且完整，所有 required 顶层字段都要返回。approximateRegion 使用 0 到 1 的归一化比例且不得越界。candidateKey 必须是稳定、唯一的 ASCII 语义 key。几何信息只是候选范围，不是精确定位器。无法证实的含义保持 unknown。不要规划或执行操作。frameId 必须严格等于 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
-}
-
-function buildScoutContinuationPrompt(frameId, pageContext, checkpoint, attempt) {
-  return `第 ${attempt} 次请求错误后，请从同一冻结画面的断点继续。这是增量续写，不是重新识别；不要从截图顶部重新开始，也不要重复已完成候选。所有自然语言字段必须使用简体中文。
-已完成候选和覆盖范围：
-${JSON.stringify(checkpoint)}
-
-从归一化纵向位置 ${checkpoint.coveredBottom || 0} 之后开始。如果可见元素已覆盖完毕，则返回 elements:[]，只补齐缺失的顶层字段。禁止返回 completedCandidates 中已有的 candidateKey。只返回剩余工作：
-{
-  frameId: string,
-  page: {name: string|null, surfaceType: "page"|"dialog"|"drawer"|"bottom-sheet"|"menu"|"shared-component"|"unknown", stateSummary: string, scrollableRegions: string[]},
-  elements: [${SCOUT_ELEMENT_SHAPE}],
-  relationships: [{fromCandidateKey:string,type:"contains"|"labels"|"controls"|"belongs-to"|"adjacent-to",toCandidateKey:string}],
-  actionCandidates: [{triggerCandidateKey:string,action:${SCOUT_ACTION_UNION},expectedOutcome:string|null,basis:"visible-affordance"|"user-context"|"requirement-document"|"existing-graph"|"authority-contract"|"unknown",riskSignals:string[],confidence:number}],
-  comparison: {basisFrameId:null,status:"not-requested",changes:[]},
-  uncertainties: string[],
-  done: boolean
-}.
-仅返回断点中不存在的元素，并使用新的稳定 ASCII candidateKey。必要时可返回涉及已有和新增候选的关系与动作。元素类型和元素动作必须使用上述枚举，元素类型与交互能力需要分开判断。只有断点后的所有可见区域及缺失顶层字段都完成后，才能设置 done=true。证据保持简洁。frameId 仍为 ${JSON.stringify(frameId)}。用户页面上下文：${pageContext || '未提供'}。`;
 }
 
 async function freezeAndCapture(agent) {
@@ -100,19 +75,30 @@ async function freezeAndCapture(agent) {
 export async function registerWorkbenchRoutes({ server, store, graphWorkflow, workbenchRoot, modelEnvPath, spec }) {
   const router = express.Router();
   router.use(express.json({ limit: '50mb' }));
-  const schema = JSON.parse(await readFile(path.join(workbenchRoot, 'server', 'scout-output.schema.json'), 'utf8'));
+  const schema = JSON.parse(await readFile(path.join(workbenchRoot, 'server', 'worker-output.schema.json'), 'utf8'));
   const ajv = new Ajv2020({ allErrors: true, strict: false });
   addFormats(ajv);
-  const validateScoutSchema = ajv.compile(schema);
-  let scoutInProgress = false;
-  let reviewInProgress = false;
-  let activeScout = null;
-  let resumableScout = null;
-  let activeReview = null;
-  let resumableReview = null;
+  const validateWorkerSchema = ajv.compile(schema);
+  let workerAInProgress = false;
+  let workerBInProgress = false;
+  let activeWorkerA = null;
+  let activeWorkerB = null;
+  let resumableWorkerA = null;
+  let resumableWorkerB = null;
   let frozenAgent = null;
   let frozenFrameId = null;
   let loadedModelEnvHash = null;
+  let uploadDraftQueue = Promise.resolve();
+  const activePageUploadControllers = new Map();
+  const deletedPageUploadIds = new Set();
+  const workerADefaultModelKeys = [
+    'BASE_URL',
+    'API_KEY',
+    'NAME',
+    'FAMILY',
+    'TIMEOUT',
+    'TEMPERATURE',
+  ];
 
   const syncModelRuntime = async () => {
     if (!modelEnvPath) return false;
@@ -125,16 +111,82 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
     const contentHash = createHash('sha256').update(content).digest('hex');
     if (contentHash === loadedModelEnvHash) return false;
-    Object.assign(process.env, dotenv.parse(content));
+    const values = dotenv.parse(content);
+    Object.assign(process.env, values);
+    for (const suffix of workerADefaultModelKeys) {
+      const workerKey = `MIDSCENE_WORKER_A_MODEL_${suffix}`;
+      const defaultKey = `MIDSCENE_MODEL_${suffix}`;
+      if (values[workerKey] !== undefined) process.env[defaultKey] = values[workerKey];
+    }
     server.agent?.modelConfigManager?.clearModelConfigMap();
     loadedModelEnvHash = contentHash;
     return true;
   };
 
   const loadCombinedModelSettings = async () => ({
-    ...await loadScoutModelSettings(modelEnvPath),
-    reviewer: await loadReviewerModelSettings(modelEnvPath),
+    workerA: await loadWorkerAModelSettings(modelEnvPath),
+    workerB: await loadWorkerBModelSettings(modelEnvPath),
   });
+
+  const queueUploadDraftMutation = (operation) => {
+    const run = uploadDraftQueue.then(operation, operation);
+    uploadDraftQueue = run.catch(() => {});
+    return run;
+  };
+
+  const loadPageUploadTask = async (taskId) => {
+    try {
+      return await store.loadPageUploadTask(taskId);
+    } catch (error) {
+      if (error?.code === 'ENOENT') throw workbenchError(404, '上传任务不存在或已删除');
+      throw error;
+    }
+  };
+
+  const updatePageUploadTask = async (task, patch) => store.savePageUploadTask({
+    ...task,
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  });
+
+  const failPageUploadTask = async (task, error) => updatePageUploadTask(task, {
+    status: 'failed',
+    errorReason: error instanceof Error ? error.message : String(error),
+  });
+
+  const finalizePageUpload = async (task) => {
+    if (deletedPageUploadIds.has(task.id)) throw workbenchError(410, '上传任务已删除');
+    const buffer = await store.loadPageUploadBuffer(task.id);
+    if (buffer.length > MAX_PAGE_IMAGE_BYTES) throw workbenchError(413, '单张图片不能超过 25 MB');
+    if (task.totalBytes && buffer.length !== task.totalBytes) {
+      throw workbenchError(409, `图片尚未上传完整：${buffer.length}/${task.totalBytes} 字节`);
+    }
+    const image = imageBufferPayload(buffer, task.mimeType);
+    const frame = {
+      ...image,
+      frameId: hashFrame(buffer),
+      capturedAt: new Date().toISOString(),
+    };
+    const metadata = await store.saveFrame(frame);
+    const draft = await queueUploadDraftMutation(async () => {
+      if (deletedPageUploadIds.has(task.id)) throw workbenchError(410, '上传任务已删除');
+      const currentDraft = await store.loadDraft();
+      const nextDraft = beginFrameCapture(currentDraft, frame.frameId, { forceNewPage: true });
+      await store.saveDraft(nextDraft);
+      return nextDraft;
+    });
+    if (deletedPageUploadIds.has(task.id)) throw workbenchError(410, '上传任务已删除');
+    const completedTask = await updatePageUploadTask(task, {
+      status: 'completed',
+      uploadedBytes: buffer.length,
+      totalBytes: buffer.length,
+      mimeType: metadata.mimeType,
+      frameId: metadata.frameId,
+      pageId: draft.currentPageId,
+      errorReason: null,
+    });
+    return { task: completedTask, draft };
+  };
 
   const persistAnalysisSession = async (session) => {
     if (typeof store.saveAnalysisSession !== 'function') return;
@@ -145,140 +197,18 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   };
 
-  async function executeReview({ frameId, signal, onProgress = () => {}, resumeSession = null }) {
-    const modelResultId = `review-${Date.now()}-${randomUUID().slice(0, 8)}`;
-    const startedAt = resumeSession?.createdAt || new Date().toISOString();
-    let reasoningContent = resumeSession?.reasoningContent || '';
-    let outputContent = resumeSession?.outputContent || '';
-    let sessionStatus = 'running';
-    let sessionError = null;
-    const emitProgress = (event) => {
-      if (event.type === 'chunk') {
-        reasoningContent += event.reasoningContent || '';
-        outputContent += event.content || '';
-      }
-      onProgress(event);
-    };
-    await persistAnalysisSession({
-      id: modelResultId,
-      kind: 'review',
-      status: sessionStatus,
-      frameId,
-      model: process.env.MIDSCENE_MODEL_NAME || null,
-      startedAt,
-      updatedAt: startedAt,
-      reasoningContent,
-      outputContent,
-    });
-    try {
-      emitProgress({ type: 'stage', phase: 'review', message: '正在重新识别冻结画面' });
-      if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
-      if (!process.env.MIDSCENE_MODEL_NAME) throw workbenchError(503, '未配置 AI Reviewer 模型，请设置 MIDSCENE_MODEL_*');
-      if (!frameId) throw workbenchError(400, '缺少 frameId');
-      if (frozenAgent !== server.agent || frozenFrameId !== frameId) {
-        throw workbenchError(409, '当前进程没有该 frameId 的冻结上下文，请重新冻结画面后再识别');
-      }
-      const frozenFrame = await store.loadFrame(frameId);
-      const currentDraft = await store.loadDraft();
-      if (currentDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
-      const candidates = reviewCandidates(currentDraft);
-      if (candidates.length === 0) throw workbenchError(422, '当前页面没有可供对照的 Scout 候选');
-      signal?.throwIfAborted();
-      resumableReview = null;
-      const rawResult = await runReviewerModel({
-        prompt: buildAIReviewDemand(currentDraft, candidates),
-        imagePath: frozenFrame.imagePath,
-        mimeType: frozenFrame.mimeType,
-        continuationContent: resumeSession?.rawOutput || '',
-        signal,
-        onChunk: (chunk) => emitProgress({
-          type: 'chunk',
-          content: chunk.content || '',
-          reasoningContent: chunk.reasoning_content || '',
-        }),
-      });
-      signal?.throwIfAborted();
-      resumableReview = null;
-      emitProgress({ type: 'stage', phase: 'normalize-review', message: '正在整理 Reviewer 识别结果' });
-      const { scout: normalizedResult, normalizationIssues } = normalizeScoutOutput(rawResult);
-      delete normalizedResult.done;
-      const schemaValid = validateScoutSchema(normalizedResult);
-      const schemaErrors = structuredClone(validateScoutSchema.errors || []);
-      if (!schemaValid) throw workbenchError(422, 'Reviewer 识别结果未通过结构检查', { schemaErrors, normalizationIssues });
-      const completedAt = new Date().toISOString();
-      const resultPath = await store.saveModelResult(modelResultId, {
-        recordType: 'WorkbenchAIReviewResult',
-        modelResultId,
-        frameId,
-        startedAt,
-        completedAt,
-        model: process.env.MIDSCENE_MODEL_NAME,
-        rawResult,
-        normalizedResult,
-        normalizationIssues,
-      });
-      sessionStatus = 'completed';
-      emitProgress({ type: 'stage', phase: 'review-compare', message: 'Reviewer 识别完成，请选择要保留的元素' });
-      return {
-        frameId,
-        reviewerResult: normalizedResult,
-        scoutCandidates: candidates,
-        modelResultRef: path.relative(workbenchRoot, resultPath).split(path.sep).join('/'),
-        reviewerModel: process.env.MIDSCENE_MODEL_NAME,
-        reasoningContent,
-        outputContent,
-      };
-    } catch (error) {
-      if (signal?.aborted && (!error || typeof error !== 'object')) error = new Error('用户中断 Reviewer');
-      sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
-      sessionError = signal?.aborted ? '用户中断 Reviewer' : error instanceof Error ? error.message : String(error);
-      if (signal?.aborted) {
-        resumableReview = {
-          id: modelResultId,
-          frameId,
-          model: process.env.MIDSCENE_MODEL_NAME || null,
-          rawOutput: error && typeof error === 'object' ? error.reviewerOutput || outputContent : outputContent,
-          createdAt: startedAt,
-          updatedAt: new Date().toISOString(),
-          errorMessage: sessionError,
-          reasoningContent,
-          outputContent,
-        };
-        if (error && typeof error === 'object') {
-          error.details = {
-            ...(error.details || {}),
-            resumableSession: publicReviewSession(resumableReview, true),
-          };
-        }
-      }
-      throw error;
-    } finally {
-      await persistAnalysisSession({
-        id: modelResultId,
-        kind: 'review',
-        status: sessionStatus,
-        frameId,
-        model: process.env.MIDSCENE_MODEL_NAME || null,
-        startedAt,
-        updatedAt: new Date().toISOString(),
-        errorMessage: sessionError,
-        reasoningContent,
-        outputContent,
-      });
-    }
-  }
-
-  const inspectScoutResult = (candidate) => {
-    const { scout: normalizedResult, normalizationIssues } = normalizeScoutOutput(candidate);
-    const schemaValid = validateScoutSchema(normalizedResult);
-    const schemaErrors = structuredClone(validateScoutSchema.errors || []);
+  const inspectWorkerResult = (candidate) => {
+    const { workerResult: normalizedResult, normalizationIssues } = normalizeWorkerOutput(candidate);
+    const schemaValid = validateWorkerSchema(normalizedResult);
+    const schemaErrors = structuredClone(validateWorkerSchema.errors || []);
     return { normalizedResult, normalizationIssues, schemaValid, schemaErrors };
   };
 
-  const publicScoutSession = (session, includeStreams = false) => session ? {
+  const publicWorkerSession = (session, includeStreams = false) => session ? {
     id: session.id,
     status: 'paused',
     frameId: session.frameId,
+    pageId: session.pageId || null,
     pageContext: session.pageContext,
     model: session.model,
     completedCandidates: session.completedCandidates,
@@ -292,22 +222,15 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     } : {}),
   } : null;
 
-  const publicReviewSession = (session, includeStreams = false) => session ? {
-    id: session.id,
-    status: 'paused',
-    frameId: session.frameId,
-    model: session.model,
-    createdAt: session.createdAt,
-    updatedAt: session.updatedAt,
-    errorMessage: session.errorMessage,
-    ...(includeStreams ? {
-      reasoningContent: session.reasoningContent,
-      outputContent: session.outputContent,
-    } : {}),
-  } : null;
-
-  async function executeScout({ frameId, pageContext = '', signal, onProgress = () => {}, resumeSession = null }) {
-    const modelResultId = `scout-${Date.now()}-${randomUUID().slice(0, 8)}`;
+  async function executeWorker({ worker, frameId, pageId = null, pageContext = '', mergeIntoDraft = false, signal, onProgress = () => {}, resumeSession = null }) {
+    const label = worker === 'worker_a' ? 'Worker A' : 'Worker B';
+    const envPrefix = worker === 'worker_a' ? 'MIDSCENE_WORKER_A_MODEL' : 'MIDSCENE_WORKER_B_MODEL';
+    const model = process.env[`${envPrefix}_NAME`] || null;
+    const setResumable = (value) => {
+      if (worker === 'worker_a') resumableWorkerA = value;
+      else resumableWorkerB = value;
+    };
+    const modelResultId = `${worker}-${Date.now()}-${randomUUID().slice(0, 8)}`;
     const sessionStartedAt = resumeSession?.createdAt || new Date().toISOString();
     let rawResult = null;
     let modelStarted = false;
@@ -327,10 +250,11 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     try {
       await persistAnalysisSession({
         id: modelResultId,
-        kind: 'scout',
+        kind: worker,
         status: sessionStatus,
         frameId: frameId || null,
-        model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+        pageId: pageId || null,
+        model,
         startedAt: sessionStartedAt,
         updatedAt: new Date().toISOString(),
         reasoningContent,
@@ -339,8 +263,8 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       await syncModelRuntime();
       emitProgress({ type: 'stage', phase: 'validate', message: '正在校验冻结帧' });
       if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
-      if (!process.env.MIDSCENE_SCOUT_MODEL_NAME) {
-        throw workbenchError(503, '未配置独立 Scout 模型，请设置 MIDSCENE_SCOUT_MODEL_*');
+      if (!model) {
+        throw workbenchError(503, `未配置 ${label} 模型，请设置 ${envPrefix}_*`);
       }
       if (!frameId) throw workbenchError(400, '缺少 frameId');
       const frozenFrame = await store.loadFrame(frameId);
@@ -354,14 +278,14 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       emitProgress({
         type: 'stage',
         phase: resumeSession ? 'resume' : 'model',
-        message: resumeSession ? '正在从已保存断点继续 Scout' : '模型正在分析画面',
+        message: resumeSession ? `正在从已保存断点继续 ${label}` : `${label} 正在分析画面`,
       });
-      resumableScout = null;
-      const run = await runResumableScout({
-        initialPrompt: buildScoutPrompt(frameId, pageContext),
+      setResumable(null);
+      const run = await runResumableWorker({
+        initialPrompt: buildWorkerPrompt(frameId, pageContext),
         initialResult: resumeSession?.rawResult,
         initialFallback: { frameId, elements: [] },
-        callScout: async (prompt, attempt) => {
+        callWorker: async (prompt, attempt) => {
           let accumulated = '';
           try {
             const onChunk = (chunk) => {
@@ -369,38 +293,33 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
               emitProgress({
                 type: 'chunk',
                 content: chunk.content || '',
-                reasoningContent: process.env.MIDSCENE_SCOUT_MODEL_REASONING_ENABLED === 'true'
+                reasoningContent: process.env[`${envPrefix}_REASONING_ENABLED`] === 'true'
                   ? chunk.reasoning_content || ''
                   : '',
               });
             };
-            if (typeof server.agent.aiScout === 'function') {
-              return await server.agent.aiScout(prompt, {
-                domIncluded: false,
-                screenshotIncluded: true,
-                stream: true,
-                abortSignal: attempt.signal,
-                onChunk,
-              });
-            }
-            return await runScoutModel({
+            const workerRunner = typeof server.runWorkerModel === 'function' ? server.runWorkerModel : runWorkerModel;
+            return await workerRunner({
+              worker,
               prompt,
               imagePath: frozenFrame.imagePath,
               mimeType: frozenFrame.mimeType,
+              responseSchema: schema,
+              continuation: attempt.continuation,
               signal: attempt.signal,
               onChunk,
             });
           } catch (error) {
-            const recovered = recoverScoutCheckpointFromStream(accumulated);
+            const recovered = recoverWorkerCheckpointFromStream(accumulated);
             if (error && typeof error === 'object') {
-              error.scoutCheckpoint = recovered;
+              error.workerCheckpoint = recovered;
               error.receivedContent = Boolean(accumulated.trim());
             }
             throw error;
           }
         },
-        buildContinuationPrompt: (checkpoint, attempt) => buildScoutContinuationPrompt(frameId, pageContext, checkpoint, attempt),
-        isComplete: (candidate) => inspectScoutResult(candidate).schemaValid,
+        buildContinuationPrompt: (checkpoint, attempt) => buildWorkerContinuationPrompt(frameId, pageContext, checkpoint, attempt),
+        isComplete: (candidate) => inspectWorkerResult(candidate).schemaValid,
         signal,
         onRetry: ({ attempt, retryLimit, checkpoint }) => emitProgress({
           type: 'stage',
@@ -416,16 +335,17 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       signal?.throwIfAborted();
 
       emitProgress({ type: 'stage', phase: 'normalize', message: '正在归一化并校验模型输出' });
-      const { normalizedResult, normalizationIssues, schemaValid, schemaErrors } = inspectScoutResult(rawResult);
-      const consistencyIssues = schemaValid ? validateScoutConsistency(normalizedResult) : [];
+      const { normalizedResult, normalizationIssues, schemaValid, schemaErrors } = inspectWorkerResult(rawResult);
+      const consistencyIssues = schemaValid ? validateWorkerConsistency(normalizedResult) : [];
       const blockingConsistencyIssues = consistencyIssues.filter((issue) => issue.startsWith('候选键重复'));
       const record = {
-        recordType: 'WorkbenchRawScoutResult',
+        recordType: 'WorkbenchWorkerResult',
         modelResultId,
         frameId,
         startedAt,
         completedAt: new Date().toISOString(),
-        model: process.env.MIDSCENE_SCOUT_MODEL_NAME,
+        worker,
+        model,
         frameIntegrity: frozenAgent === server.agent && frozenFrameId === frameId,
         schemaValid,
         schemaErrors,
@@ -442,11 +362,13 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       const modelResultRef = path.relative(workbenchRoot, resultPath).split(path.sep).join('/');
 
       if (run.lastError) {
-        resumableScout = {
+        const resumableSession = {
           id: modelResultId,
           frameId,
+          pageId,
           pageContext,
-          model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+          worker,
+          model,
           rawResult,
           completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
           retryAttempts,
@@ -455,51 +377,59 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
           errorMessage: run.lastError,
           reasoningContent,
           outputContent,
+          mergeIntoDraft,
         };
+        setResumable(resumableSession);
         throw workbenchError(502, run.lastError, {
           modelResultRef,
-          retryLimit: SCOUT_ERROR_RETRY_LIMIT,
+          retryLimit: WORKER_ERROR_RETRY_LIMIT,
           retryAttempts,
           completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
-          resumableSession: publicScoutSession(resumableScout, true),
+          resumableSession: publicWorkerSession(resumableSession, true),
         });
       }
       if (!schemaValid || !run.completed || blockingConsistencyIssues.length > 0) {
-        throw workbenchError(422, 'Scout 输出未通过结构检查，原始结果已保留', {
+        throw workbenchError(422, `${label} 输出未通过结构检查，原始结果已保留`, {
           modelResultRef,
           schemaErrors,
           consistencyIssues,
         });
       }
-      resumableScout = null;
+      setResumable(null);
       if (normalizedResult.frameId !== frameId) {
-        throw workbenchError(422, 'Scout 返回的 frameId 与冻结帧不一致', { modelResultRef });
+        throw workbenchError(422, `${label} 返回的 frameId 与冻结帧不一致`, { modelResultRef });
       }
       signal?.throwIfAborted();
 
-      emitProgress({ type: 'stage', phase: 'merge', message: '正在合并候选元素到草稿' });
-      const currentDraft = await store.loadDraft();
-      const draft = mergeScoutIntoDraft(currentDraft, prepareScoutForDraft(normalizedResult), modelResultRef, process.env.MIDSCENE_SCOUT_MODEL_NAME);
-      const issues = validateDraft(draft);
-      signal?.throwIfAborted();
-      await store.saveDraft(draft);
-      emitProgress({ type: 'stage', phase: 'complete', message: 'Scout 分析完成' });
+      let draft;
+      let issues;
+      if (mergeIntoDraft) {
+        emitProgress({ type: 'stage', phase: 'merge', message: '正在合并候选元素到草稿' });
+        const currentDraft = await store.loadDraft();
+        draft = mergeWorkerIntoDraft(currentDraft, prepareWorkerForDraft(normalizedResult), modelResultRef, model);
+        issues = validateDraft(draft);
+        signal?.throwIfAborted();
+        await store.saveDraft(draft);
+      }
+      emitProgress({ type: 'stage', phase: 'complete', message: `${label} 分析完成` });
       sessionStatus = 'completed';
-      return { draft, issues, modelResultRef };
+      return { frameId, worker, workerResult: normalizedResult, modelResultRef, model, reasoningContent, outputContent, ...(draft ? { draft, issues } : {}) };
     } catch (error) {
-      if (signal?.aborted && (!error || typeof error !== 'object')) error = new Error('用户中断 Scout');
+      if (signal?.aborted && (!error || typeof error !== 'object')) error = new Error(`用户中断 ${label}`);
       sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
-      sessionError = signal?.aborted ? '用户中断 Scout' : error instanceof Error ? error.message : String(error);
+      sessionError = signal?.aborted ? `用户中断 ${label}` : error instanceof Error ? error.message : String(error);
       if (signal?.aborted) {
         const rawCheckpoint = error && typeof error === 'object'
-          ? error.scoutRawResult || recoverScoutCheckpointFromStream(outputContent)
-          : recoverScoutCheckpointFromStream(outputContent);
+          ? error.workerRawResult || recoverWorkerCheckpointFromStream(outputContent)
+          : recoverWorkerCheckpointFromStream(outputContent);
         const rawResultForResume = rawCheckpoint || { frameId, elements: [] };
-        resumableScout = {
+        const resumableSession = {
           id: modelResultId,
           frameId,
+          pageId,
           pageContext,
-          model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+          worker,
+          model,
           rawResult: rawResultForResume,
           completedCandidates: Array.isArray(rawResultForResume?.elements) ? rawResultForResume.elements.length : 0,
           retryAttempts,
@@ -508,23 +438,26 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
           errorMessage: sessionError,
           reasoningContent,
           outputContent,
+          mergeIntoDraft,
         };
+        setResumable(resumableSession);
         if (error && typeof error === 'object') {
           error.details = {
             ...(error.details || {}),
-            resumableSession: publicScoutSession(resumableScout, true),
+            resumableSession: publicWorkerSession(resumableSession, true),
           };
         }
       }
       if (modelStarted && !resultSaved) {
         try {
           const resultPath = await store.saveModelResult(modelResultId, {
-            recordType: signal?.aborted ? 'WorkbenchScoutCancellation' : 'WorkbenchRawScoutFailure',
+            recordType: signal?.aborted ? 'WorkbenchWorkerCancellation' : 'WorkbenchWorkerFailure',
             modelResultId,
             frameId: frameId || null,
             completedAt: new Date().toISOString(),
-            model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
-            error: signal?.aborted ? '用户中断 Scout' : error instanceof Error ? error.message : String(error),
+            worker,
+            model,
+            error: signal?.aborted ? `用户中断 ${label}` : error instanceof Error ? error.message : String(error),
           });
           if (error && typeof error === 'object') {
             error.details = {
@@ -538,10 +471,11 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     } finally {
       await persistAnalysisSession({
         id: modelResultId,
-        kind: 'scout',
+        kind: worker,
         status: sessionStatus,
         frameId: frameId || null,
-        model: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
+        pageId: pageId || null,
+        model,
         startedAt: sessionStartedAt,
         updatedAt: new Date().toISOString(),
         errorMessage: sessionError,
@@ -552,36 +486,36 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   }
 
-  function beginScoutSession() {
-    if (activeScout) throw workbenchError(409, '已有 Scout 分析正在运行');
+  function beginWorkerASession() {
+    if (activeWorkerA) throw workbenchError(409, '已有 Worker A 分析正在运行');
     const session = { id: randomUUID(), controller: new AbortController() };
-    activeScout = session;
-    scoutInProgress = true;
+    activeWorkerA = session;
+    workerAInProgress = true;
     return session;
   }
 
-  function endScoutSession(session) {
-    if (activeScout?.id !== session.id) return;
-    activeScout = null;
-    scoutInProgress = false;
+  function endWorkerASession(session) {
+    if (activeWorkerA?.id !== session.id) return;
+    activeWorkerA = null;
+    workerAInProgress = false;
   }
 
-  function beginReviewSession() {
-    if (scoutInProgress || reviewInProgress) throw workbenchError(409, '已有 AI 分析正在运行');
+  function beginWorkerBSession() {
+    if (activeWorkerB) throw workbenchError(409, '已有 Worker B 分析正在运行');
     const session = { id: randomUUID(), controller: new AbortController() };
-    activeReview = session;
-    reviewInProgress = true;
+    activeWorkerB = session;
+    workerBInProgress = true;
     return session;
   }
 
-  function endReviewSession(session) {
-    if (activeReview?.id !== session.id) return;
-    activeReview = null;
-    reviewInProgress = false;
+  function endWorkerBSession(session) {
+    if (activeWorkerB?.id !== session.id) return;
+    activeWorkerB = null;
+    workerBInProgress = false;
   }
 
   server.app.use((req, res, next) => {
-    if ((scoutInProgress || reviewInProgress) && req.path === '/interact') {
+    if ((workerAInProgress || workerBInProgress) && req.path === '/interact') {
       return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
     }
     next();
@@ -594,13 +528,13 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       res.json({
         ok: true,
         agentConnected: Boolean(server.agent),
-        scoutRunning: scoutInProgress,
-        scoutConfigured: Boolean(process.env.MIDSCENE_SCOUT_MODEL_NAME),
-        scoutModel: process.env.MIDSCENE_SCOUT_MODEL_NAME || null,
-        reviewerConfigured: Boolean(process.env.MIDSCENE_MODEL_NAME),
-        reviewerModel: process.env.MIDSCENE_MODEL_NAME || null,
-        scoutSession: publicScoutSession(resumableScout),
-        reviewSession: publicReviewSession(resumableReview),
+        workersRunning: workerAInProgress || workerBInProgress,
+        workerAConfigured: Boolean(process.env.MIDSCENE_WORKER_A_MODEL_NAME),
+        workerAModel: process.env.MIDSCENE_WORKER_A_MODEL_NAME || null,
+        workerBConfigured: Boolean(process.env.MIDSCENE_WORKER_B_MODEL_NAME),
+        workerBModel: process.env.MIDSCENE_WORKER_B_MODEL_NAME || null,
+        workerASession: publicWorkerSession(resumableWorkerA),
+        workerBSession: publicWorkerSession(resumableWorkerB),
         spec,
         session,
       });
@@ -609,12 +543,12 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   });
 
-  router.get('/scout/session', (_req, res) => {
-    res.json({ session: publicScoutSession(resumableScout, true) });
+  router.get('/workers/a/session', (_req, res) => {
+    res.json({ session: publicWorkerSession(resumableWorkerA, true) });
   });
 
-  router.get('/review/session', (_req, res) => {
-    res.json({ session: publicReviewSession(resumableReview, true) });
+  router.get('/workers/b/session', (_req, res) => {
+    res.json({ session: publicWorkerSession(resumableWorkerB, true) });
   });
 
   router.get('/sessions', async (_req, res, next) => {
@@ -637,10 +571,10 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
 
   router.put('/model-settings', async (req, res, next) => {
     try {
-      if (scoutInProgress || reviewInProgress) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
-      const role = req.body?.role === 'reviewer' ? 'reviewer' : 'scout';
-      if (role === 'reviewer') await saveReviewerModelSettings(modelEnvPath, req.body);
-      else await saveScoutModelSettings(modelEnvPath, req.body);
+      if (workerAInProgress || workerBInProgress) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
+      const worker = req.body?.worker === 'worker_b' ? 'worker_b' : 'worker_a';
+      if (worker === 'worker_b') await saveWorkerBModelSettings(modelEnvPath, req.body);
+      else await saveWorkerAModelSettings(modelEnvPath, req.body);
       let runtimeReloaded = true;
       try {
         server.agent?.modelConfigManager?.clearModelConfigMap();
@@ -655,7 +589,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
 
   router.post('/device/tap', async (req, res, next) => {
     try {
-      if (scoutInProgress || reviewInProgress) return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
+      if (workerAInProgress || workerBInProgress) return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
       if (!server.agent) return res.status(409).json({ error: '请先连接 Android 设备' });
       const x = Number(req.body?.x);
       const y = Number(req.body?.y);
@@ -706,7 +640,180 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   });
 
-  router.post('/frames', async (_req, res, next) => {
+  router.get('/page-uploads', async (_req, res, next) => {
+    try {
+      const tasks = (await store.listPageUploadTasks()).map((task) => ({
+        ...task,
+        processing: activePageUploadControllers.has(task.id),
+      }));
+      res.json({ tasks });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/page-uploads', async (req, res, next) => {
+    try {
+      const items = Array.isArray(req.body?.items) ? req.body.items : [];
+      if (items.length === 0) throw workbenchError(400, '请选择至少一张图片或填写图片链接');
+      if (items.length > MAX_PAGE_UPLOAD_BATCH) throw workbenchError(400, '单次最多上传 20 张图片');
+      const now = new Date().toISOString();
+      const tasks = [];
+      for (const item of items) {
+        const sourceType = item?.sourceType === 'url' ? 'url' : 'file';
+        const url = sourceType === 'url' ? String(item.url || '').trim() : null;
+        if (sourceType === 'url') {
+          let parsed;
+          try {
+            parsed = new URL(url);
+          } catch {
+            throw workbenchError(400, `图片链接格式无效：${url || '空链接'}`);
+          }
+          if (!['http:', 'https:'].includes(parsed.protocol)) throw workbenchError(400, '图片链接仅支持 HTTP 或 HTTPS');
+        }
+        const totalBytes = sourceType === 'file' ? Number(item.size) : null;
+        if (sourceType === 'file' && (!Number.isSafeInteger(totalBytes) || totalBytes <= 0)) throw workbenchError(400, '本地图片大小无效');
+        if (totalBytes && totalBytes > MAX_PAGE_IMAGE_BYTES) throw workbenchError(413, '单张图片不能超过 25 MB');
+        const mimeType = String(item.mimeType || '');
+        if (sourceType === 'file' && !mimeType.startsWith('image/')) throw workbenchError(415, '只能上传图片文件');
+        const task = {
+          id: `page-upload-${randomUUID()}`,
+          sourceType,
+          name: String(item.name || (url ? decodeURIComponent(new URL(url).pathname.split('/').pop() || '') : '') || '待上传图片'),
+          url,
+          mimeType: mimeType || null,
+          totalBytes,
+          uploadedBytes: 0,
+          status: 'queued',
+          errorReason: null,
+          pageId: null,
+          frameId: null,
+          createdAt: now,
+          updatedAt: now,
+        };
+        await store.savePageUploadTask(task);
+        tasks.push(task);
+      }
+      res.status(201).json({ tasks });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.put('/page-uploads/:taskId/chunk', express.raw({ type: 'application/octet-stream', limit: '3mb' }), async (req, res, next) => {
+    let task;
+    try {
+      task = await loadPageUploadTask(req.params.taskId);
+      if (task.sourceType !== 'file') throw workbenchError(400, '链接任务不能接收本地文件分片');
+      if (task.status === 'completed') return res.json({ task });
+      const offset = Number(req.header('x-upload-offset'));
+      if (!Number.isSafeInteger(offset) || offset < 0) throw workbenchError(400, '缺少有效的上传偏移');
+      const chunk = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+      if (chunk.length === 0) throw workbenchError(400, '上传分片不能为空');
+      if (offset + chunk.length > task.totalBytes) throw workbenchError(400, '上传数据超过文件大小');
+      let uploadedBytes;
+      try {
+        uploadedBytes = await store.appendPageUploadChunk(task.id, offset, chunk);
+      } catch (error) {
+        if (error?.code === 'UPLOAD_OFFSET_MISMATCH') throw workbenchError(409, error.message, { expectedOffset: error.expectedOffset });
+        throw error;
+      }
+      task = await updatePageUploadTask(task, { status: 'uploading', uploadedBytes, errorReason: null });
+      if (uploadedBytes === task.totalBytes) return res.json(await finalizePageUpload(task));
+      res.json({ task });
+    } catch (error) {
+      if (task && !deletedPageUploadIds.has(task.id) && error?.status !== 409) await failPageUploadTask(task, error).catch(() => {});
+      next(error);
+    }
+  });
+
+  router.post('/page-uploads/:taskId/process', async (req, res, next) => {
+    let task;
+    let timeout;
+    try {
+      task = await loadPageUploadTask(req.params.taskId);
+      if (task.status === 'completed') return res.json({ task, draft: await store.loadDraft() });
+      const partSize = await store.pageUploadPartSize(task.id);
+      task = await updatePageUploadTask(task, { status: 'uploading', uploadedBytes: partSize, errorReason: null });
+      if (task.sourceType === 'file') {
+        if (partSize !== task.totalBytes) throw workbenchError(409, '请重新选择原文件，从已上传位置继续');
+        return res.json(await finalizePageUpload(task));
+      }
+
+      const controller = new AbortController();
+      activePageUploadControllers.set(task.id, controller);
+      timeout = setTimeout(() => controller.abort(new Error('图片下载超过 120 秒')), 120_000);
+      const headers = partSize > 0 ? { Range: `bytes=${partSize}-` } : {};
+      let response;
+      try {
+        response = await fetch(task.url, { headers, redirect: 'follow', signal: controller.signal });
+      } catch (error) {
+        const reason = error?.cause?.message || error?.message || String(error);
+        throw workbenchError(502, `图片链接访问失败：${reason}`);
+      }
+      if (!response.ok && response.status !== 206) throw workbenchError(502, `图片下载失败：HTTP ${response.status}`);
+      const contentType = response.headers.get('content-type') || task.mimeType || '';
+      if (contentType && !contentType.startsWith('image/') && contentType !== 'application/octet-stream') {
+        throw workbenchError(415, `链接返回的不是图片：${contentType}`);
+      }
+      let offset = partSize;
+      if (partSize > 0 && response.status !== 206) {
+        await store.resetPageUploadPart(task.id);
+        offset = 0;
+      }
+      const contentRangeTotal = Number(response.headers.get('content-range')?.match(/\/(\d+)$/)?.[1]);
+      const contentLength = Number(response.headers.get('content-length'));
+      const totalBytes = Number.isSafeInteger(contentRangeTotal) && contentRangeTotal > 0
+        ? contentRangeTotal
+        : Number.isSafeInteger(contentLength) && contentLength > 0 ? offset + contentLength : task.totalBytes;
+      if (totalBytes && totalBytes > MAX_PAGE_IMAGE_BYTES) throw workbenchError(413, '单张图片不能超过 25 MB');
+      if (!response.body) throw workbenchError(502, '图片链接没有返回可下载内容');
+      const reader = response.body.getReader();
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunk = Buffer.from(value);
+        if (offset + chunk.length > MAX_PAGE_IMAGE_BYTES) throw workbenchError(413, '单张图片不能超过 25 MB');
+        offset = await store.appendPageUploadChunk(task.id, offset, chunk);
+        task = await updatePageUploadTask(task, { status: 'uploading', uploadedBytes: offset, totalBytes: totalBytes || null, mimeType: contentType || null, errorReason: null });
+      }
+      return res.json(await finalizePageUpload(task));
+    } catch (error) {
+      if (task && !deletedPageUploadIds.has(task.id)) await failPageUploadTask(task, error).catch(() => {});
+      next(error);
+    } finally {
+      if (timeout) clearTimeout(timeout);
+      if (task) activePageUploadControllers.delete(task.id);
+    }
+  });
+
+  router.delete('/page-uploads', async (req, res, next) => {
+    try {
+      const ids = [...new Set(Array.isArray(req.body?.ids) ? req.body.ids.map(String) : [])];
+      if (ids.length === 0) throw workbenchError(400, '请选择要删除的上传记录');
+      const tasks = await Promise.all(ids.map(loadPageUploadTask));
+      ids.forEach((id) => deletedPageUploadIds.add(id));
+      for (const task of tasks) activePageUploadControllers.get(task.id)?.abort(new Error('上传任务已删除'));
+      const draft = await queueUploadDraftMutation(async () => {
+        const currentDraft = await store.loadDraft();
+        if (req.body?.deletePages !== true) return currentDraft;
+        const latestTasks = await Promise.all(tasks.map(async (task) => {
+          try { return await store.loadPageUploadTask(task.id); } catch { return task; }
+        }));
+        const pageIds = latestTasks.map((task) => task.pageId).filter(Boolean);
+        if (pageIds.length === 0) return currentDraft;
+        const nextDraft = removePagesFromDraft(currentDraft, pageIds);
+        await store.saveDraft(nextDraft);
+        return nextDraft;
+      });
+      await Promise.all(tasks.map((task) => store.deletePageUploadTask(task.id)));
+      res.json({ deletedIds: ids, draft });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/frames', async (req, res, next) => {
     try {
       if (!server.agent) return res.status(409).json({ error: '请先连接 Android 设备' });
       await syncModelRuntime();
@@ -715,7 +822,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       frozenFrameId = frame.frameId;
       const metadata = await store.saveFrame(frame);
       const draft = await store.loadDraft();
-      const nextDraft = beginFrameCapture(draft, frame.frameId);
+      const nextDraft = beginFrameCapture(draft, frame.frameId, { forceNewPage: req.body?.forceNewPage === true });
       await store.saveDraft(nextDraft);
       res.json({
         frame: {
@@ -739,26 +846,29 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   });
 
-  router.post('/scout', async (req, res, next) => {
+  router.post('/workers/a', async (req, res, next) => {
     let session;
     try {
-      session = beginScoutSession();
-      res.json(await executeScout({
+      session = beginWorkerASession();
+      res.json(await executeWorker({
+        worker: 'worker_a',
         frameId: req.body?.frameId,
+        pageId: req.body?.pageId,
         pageContext: req.body?.pageContext || '',
+        mergeIntoDraft: Boolean(req.body?.mergeIntoDraft),
         signal: session.controller.signal,
       }));
     } catch (error) {
       next(error);
     } finally {
-      if (session) endScoutSession(session);
+      if (session) endWorkerASession(session);
     }
   });
 
-  async function streamScout(req, res, resumeSession = null) {
+  async function streamWorkerA(req, res, resumeSession = null) {
     let session;
     try {
-      session = beginScoutSession();
+      session = beginWorkerASession();
     } catch (error) {
       return res.status(error?.status || 500).json({ error: error instanceof Error ? error.message : String(error), ...(error?.details || {}) });
     }
@@ -777,13 +887,16 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
     res.on('close', () => {
-      if (!responseComplete && activeScout?.id === session.id) session.controller.abort('Scout 流连接已关闭');
+      if (!responseComplete && activeWorkerA?.id === session.id) session.controller.abort('Worker A 流连接已关闭');
     });
 
     try {
-      const result = await executeScout({
+      const result = await executeWorker({
+        worker: 'worker_a',
         frameId: resumeSession?.frameId || req.body?.frameId,
+        pageId: resumeSession?.pageId || req.body?.pageId || null,
         pageContext: resumeSession?.pageContext || req.body?.pageContext || '',
+        mergeIntoDraft: resumeSession?.mergeIntoDraft ?? Boolean(req.body?.mergeIntoDraft),
         signal: session.controller.signal,
         onProgress: (event) => send(event.type, event),
         resumeSession,
@@ -791,7 +904,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       send('result', result);
     } catch (error) {
       if (session.controller.signal.aborted) {
-        send('cancelled', { message: 'Scout 已中断', ...(error?.details || {}) });
+        send('cancelled', { message: 'Worker A 已中断', ...(error?.details || {}) });
       } else {
         send('error', {
           message: error instanceof Error ? error.message : String(error),
@@ -800,35 +913,35 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       }
     } finally {
       responseComplete = true;
-      endScoutSession(session);
+      endWorkerASession(session);
       if (!res.writableEnded) res.end();
     }
   }
 
-  router.post('/scout/stream', async (req, res) => {
-    await streamScout(req, res);
+  router.post('/workers/a/stream', async (req, res) => {
+    await streamWorkerA(req, res);
   });
 
-  router.post('/scout/resume/stream', async (req, res) => {
-    if (!resumableScout || resumableScout.id !== req.body?.sessionId) {
-      return res.status(404).json({ error: '没有可从断点继续的 Scout 会话' });
+  router.post('/workers/a/resume/stream', async (req, res) => {
+    if (!resumableWorkerA || resumableWorkerA.id !== req.body?.sessionId) {
+      return res.status(404).json({ error: '没有可从断点继续的 Worker A 会话' });
     }
-    await streamScout(req, res, resumableScout);
+    await streamWorkerA(req, res, resumableWorkerA);
   });
 
-  router.post('/scout/cancel', (_req, res) => {
-    if (!activeScout) return res.json({ cancelled: false });
-    activeScout.controller.abort('用户中断 Scout');
+  router.post('/workers/a/cancel', (_req, res) => {
+    if (!activeWorkerA) return res.json({ cancelled: false });
+    activeWorkerA.controller.abort('用户中断 Worker A');
     res.json({ cancelled: true });
   });
 
-  async function streamReview(req, res, resumeSession = null) {
+  async function streamWorkerB(req, res, resumeSession = null) {
     let session;
     try {
-      session = beginReviewSession();
+      session = beginWorkerBSession();
       await syncModelRuntime();
     } catch (error) {
-      if (session) endReviewSession(session);
+      if (session) endWorkerBSession(session);
       return res.status(error?.status || 500).json({ error: error instanceof Error ? error.message : String(error) });
     }
     let responseComplete = false;
@@ -843,11 +956,15 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
     res.on('close', () => {
-      if (!responseComplete && activeReview?.id === session.id) session.controller.abort('Reviewer 流连接已关闭');
+      if (!responseComplete && activeWorkerB?.id === session.id) session.controller.abort('Worker B 流连接已关闭');
     });
     try {
-      const result = await executeReview({
+      const result = await executeWorker({
+        worker: 'worker_b',
         frameId: resumeSession?.frameId || String(req.body?.frameId || ''),
+        pageId: resumeSession?.pageId || req.body?.pageId || null,
+        pageContext: resumeSession?.pageContext || req.body?.pageContext || '',
+        mergeIntoDraft: false,
         signal: session.controller.signal,
         onProgress: (event) => send(event.type, event),
         resumeSession,
@@ -855,94 +972,116 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
       send('result', result);
     } catch (error) {
       send(session.controller.signal.aborted ? 'cancelled' : 'error', {
-        message: session.controller.signal.aborted ? 'Reviewer 已中断' : error instanceof Error ? error.message : String(error),
+        message: session.controller.signal.aborted ? 'Worker B 已中断' : error instanceof Error ? error.message : String(error),
         ...(error?.details || {}),
       });
     } finally {
       responseComplete = true;
-      endReviewSession(session);
+      endWorkerBSession(session);
       if (!res.writableEnded) res.end();
     }
   }
 
-  router.post('/review/stream', async (req, res) => {
-    await streamReview(req, res);
+  router.post('/workers/b/stream', async (req, res) => {
+    await streamWorkerB(req, res);
   });
 
-  router.post('/review/resume/stream', async (req, res) => {
-    if (!resumableReview || resumableReview.id !== req.body?.sessionId) {
-      return res.status(404).json({ error: '没有可从断点继续的 Reviewer 会话' });
+  router.post('/workers/b/resume/stream', async (req, res) => {
+    if (!resumableWorkerB || resumableWorkerB.id !== req.body?.sessionId) {
+      return res.status(404).json({ error: '没有可从断点继续的 Worker B 会话' });
     }
-    await streamReview(req, res, resumableReview);
+    await streamWorkerB(req, res, resumableWorkerB);
   });
 
-  router.post('/review/cancel', (_req, res) => {
-    if (!activeReview) return res.json({ cancelled: false });
-    activeReview.controller.abort('用户中断 Reviewer');
+  router.post('/workers/b/cancel', (_req, res) => {
+    if (!activeWorkerB) return res.json({ cancelled: false });
+    activeWorkerB.controller.abort('用户中断 Worker B');
     res.json({ cancelled: true });
   });
 
-  router.post('/review', async (req, res, next) => {
-    if (scoutInProgress || reviewInProgress) return res.status(409).json({ error: '已有 AI 分析正在运行' });
-    reviewInProgress = true;
+  router.post('/workers/b', async (req, res, next) => {
+    let session;
     try {
+      session = beginWorkerBSession();
       await syncModelRuntime();
-      const result = await executeReview({ frameId: String(req.body?.frameId || '') });
+      const result = await executeWorker({
+        worker: 'worker_b',
+        frameId: String(req.body?.frameId || ''),
+        pageId: req.body?.pageId,
+        pageContext: req.body?.pageContext || '',
+        signal: session.controller.signal,
+      });
       res.json(result);
     } catch (error) {
       next(error);
     } finally {
-      reviewInProgress = false;
+      if (session) endWorkerBSession(session);
     }
   });
 
-  router.post('/review/apply', async (req, res, next) => {
+  router.post('/workers/merge', async (req, res, next) => {
     try {
       const frameId = String(req.body?.frameId || '');
       const currentDraft = await store.loadDraft();
       if (!frameId || currentDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
-      const selectedScoutKeys = new Set(Array.isArray(req.body?.selectedScoutKeys) ? req.body.selectedScoutKeys.map(String) : []);
-      const selectedReviewerKeys = new Set(Array.isArray(req.body?.selectedReviewerKeys) ? req.body.selectedReviewerKeys.map(String) : []);
-      const { scout: reviewerResult } = normalizeScoutOutput(req.body?.reviewerResult || {});
-      const selectedScout = currentDraft.elements.filter((element) => selectedScoutKeys.has(element.candidateKey));
-      const scoutElements = selectedScout.map((element) => ({
-        candidateKey: element.candidateKey,
-        label: element.label,
-        visualDescription: element.visualDescription,
-        controlType: element.controlType,
-        interactive: element.capabilities.some((capability) => capability !== 'none'),
-        enabled: element.enabled,
-        state: element.state || null,
-        approximateRegion: element.bbox,
-        geometryKind: element.geometryKind,
-        geometryConfidence: element.geometryConfidence,
-        meaning: element.meaning,
-        dynamicContent: element.dynamicContent,
-        riskSignals: element.riskSignals,
-        confidence: element.confidence,
-      }));
-      const selectedReviewerElements = (reviewerResult.elements || []).filter((element) => selectedReviewerKeys.has(element.candidateKey));
-      const candidateByKey = new Map(scoutElements.map((element) => [element.candidateKey, element]));
-      for (const element of selectedReviewerElements) candidateByKey.set(element.candidateKey, element);
-      const selectedKeys = new Set(candidateByKey.keys());
+      const selections = Array.isArray(req.body?.selections) ? req.body.selections.filter((selection) => selection && typeof selection === 'object') : [];
+      const { workerResult: workerAResult } = normalizeWorkerOutput(req.body?.workerAResult || {});
+      const { workerResult: workerBResult } = normalizeWorkerOutput(req.body?.workerBResult || {});
+      const workerAByKey = new Map((workerAResult.elements || []).map((element) => [element.candidateKey, element]));
+      const workerBByKey = new Map((workerBResult.elements || []).map((element) => [element.candidateKey, element]));
+      const candidateByKey = new Map();
+      const actionSourceByKey = new Map();
+      const workerAKeyToMergedKey = new Map();
+      const workerBKeyToMergedKey = new Map();
+      for (const selection of selections) {
+        const candidateKey = String(selection.candidateKey || '');
+        const workerACandidateKey = String(selection.workerACandidateKey || candidateKey);
+        const workerBCandidateKey = String(selection.workerBCandidateKey || candidateKey);
+        const workerA = workerAByKey.get(workerACandidateKey);
+        const workerB = workerBByKey.get(workerBCandidateKey);
+        const baseSource = selection.baseSource === 'workerB' && workerB ? 'workerB' : workerA ? 'workerA' : workerB ? 'workerB' : null;
+        if (!candidateKey || !baseSource) continue;
+        const base = structuredClone(baseSource === 'workerB' ? workerB : workerA);
+        for (const [field, source] of Object.entries(selection.fieldSources || {})) {
+          if (field === 'actions') continue;
+          const sourceCandidate = source === 'workerB' ? workerB : workerA;
+          if (sourceCandidate && Object.hasOwn(sourceCandidate, field)) base[field] = structuredClone(sourceCandidate[field]);
+        }
+        let mergedKey = String(base.candidateKey || candidateKey);
+        if (candidateByKey.has(mergedKey)) {
+          const suffix = baseSource === 'workerA' ? 'worker_a' : 'worker_b';
+          let sequence = 1;
+          let uniqueKey = `${mergedKey}.${suffix}`;
+          while (candidateByKey.has(uniqueKey)) uniqueKey = `${mergedKey}.${suffix}.${sequence++}`;
+          mergedKey = uniqueKey;
+          base.candidateKey = mergedKey;
+        }
+        candidateByKey.set(mergedKey, base);
+        actionSourceByKey.set(mergedKey, selection.fieldSources?.actions === 'workerB' ? 'workerB' : baseSource);
+        if (workerA) workerAKeyToMergedKey.set(workerACandidateKey, mergedKey);
+        if (workerB) workerBKeyToMergedKey.set(workerBCandidateKey, mergedKey);
+      }
+      const workerBActions = (workerBResult.actionCandidates || []).flatMap((action) => {
+        const mergedKey = workerBKeyToMergedKey.get(action.triggerCandidateKey);
+        return mergedKey && actionSourceByKey.get(mergedKey) === 'workerB' ? [{ ...action, triggerCandidateKey: mergedKey }] : [];
+      });
+      const workerAActions = (workerAResult.actionCandidates || []).flatMap((action) => {
+        const mergedKey = workerAKeyToMergedKey.get(action.triggerCandidateKey);
+        return mergedKey && actionSourceByKey.get(mergedKey) === 'workerA' ? [{ ...action, triggerCandidateKey: mergedKey }] : [];
+      });
+      const remapRelationships = (relationships, keyMap) => (relationships || []).flatMap((relationship) => {
+        const fromCandidateKey = keyMap.get(relationship.fromCandidateKey);
+        const toCandidateKey = keyMap.get(relationship.toCandidateKey);
+        return fromCandidateKey && toCandidateKey ? [{ ...relationship, fromCandidateKey, toCandidateKey }] : [];
+      });
       const combinedResult = {
-        ...reviewerResult,
+        ...(workerAResult.page ? workerAResult : workerBResult),
         frameId,
         elements: [...candidateByKey.values()],
-        relationships: (reviewerResult.relationships || []).filter((relationship) => selectedKeys.has(relationship.fromCandidateKey) && selectedKeys.has(relationship.toCandidateKey)),
-        actionCandidates: [
-          ...(reviewerResult.actionCandidates || []).filter((action) => selectedKeys.has(action.triggerCandidateKey)),
-          ...selectedScout.flatMap((element) => element.capabilities.filter((capability) => capability !== 'none').map((capability) => ({
-            triggerCandidateKey: element.candidateKey,
-            action: capability,
-            expectedOutcome: null,
-            basis: 'existing-graph',
-            riskSignals: [],
-            confidence: element.confidence,
-          }))),
-        ],
+        relationships: [...remapRelationships(workerAResult.relationships, workerAKeyToMergedKey), ...remapRelationships(workerBResult.relationships, workerBKeyToMergedKey)],
+        actionCandidates: [...workerBActions, ...workerAActions],
       };
-      const draft = mergeScoutIntoDraft(currentDraft, prepareScoutForDraft(combinedResult), String(req.body?.modelResultRef || 'review-selection'), process.env.MIDSCENE_MODEL_NAME);
+      const draft = mergeWorkerIntoDraft(currentDraft, prepareWorkerForDraft(combinedResult), String(req.body?.modelResultRef || 'worker-merge'), null);
       await store.saveDraft(draft);
       res.json({ draft, issues: validateDraft(draft) });
     } catch (error) {
@@ -972,7 +1111,16 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     try {
       const draft = await store.loadDraft();
       const result = await graphWorkflow.publish(req.body?.stageId, draft.revision);
-      res.json(result);
+      const publishedAt = new Date().toISOString();
+      const nextDraft = normalizeDraftForSave({
+        ...draft,
+        revision: draft.revision + 1,
+        pages: draft.pages.map((page) => page.frameIds.length > 0 ? { ...page, publishedAt } : page),
+        updatedAt: publishedAt,
+      });
+      const issues = validateDraft(nextDraft);
+      await store.saveDraft(nextDraft);
+      res.json({ ...result, draft: nextDraft, issues });
     } catch (error) {
       next(error);
     }

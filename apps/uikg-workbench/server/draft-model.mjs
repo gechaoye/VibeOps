@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { ELEMENT_ACTIONS, ELEMENT_TYPES, SCOUT_ACTIONS } from './element-taxonomy.mjs';
+import { ELEMENT_ACTIONS, ELEMENT_TYPES, WORKER_ACTIONS } from './element-taxonomy.mjs';
 
 const ELEMENT_TYPE_REPLACEMENTS = {
   'bottom-navigation': 'navigation-bar',
@@ -20,7 +20,7 @@ const ELEMENT_TYPE_REPLACEMENTS = {
 
 function normalizeElementType(value) {
   const candidate = ELEMENT_TYPE_REPLACEMENTS[value] || value;
-  return ELEMENT_TYPES.includes(candidate) ? candidate : 'other';
+  return ELEMENT_TYPES.includes(candidate) ? candidate : '';
 }
 
 export const DRAFT_SCHEMA_VERSION = 'uikg-workbench-draft/1.1';
@@ -57,6 +57,11 @@ function normalizeActionEffects(actionEffects, controlType, capabilities) {
     action,
     effect: current.find((item) => item?.action === action && typeof item?.effect === 'string')?.effect || defaultActionEffect(controlType, action),
   }));
+}
+
+function normalizeInteractionBoundary(interactionBoundary, capabilities) {
+  if (!capabilities.some((capability) => capability !== 'none')) return 'none';
+  return interactionBoundary === 'none' || !interactionBoundary ? 'candidate_bbox' : interactionBoundary;
 }
 
 function evidenceDetail(value) {
@@ -170,11 +175,11 @@ function hasClassifiedMeaningEvidence(evidence) {
   return MEANING_EVIDENCE_FIELDS.some((field) => evidence[field].length > 0) || Boolean(evidence.userContext);
 }
 
-export function normalizeScoutOutput(rawScout) {
-  const scout = structuredClone(rawScout);
+export function normalizeWorkerOutput(rawWorkerResult) {
+  const workerResult = structuredClone(rawWorkerResult);
   const normalizationIssues = [];
-  if (!Array.isArray(scout?.elements)) return { scout, normalizationIssues };
-  scout.elements = scout.elements.map((element, index) => {
+  if (!Array.isArray(workerResult?.elements)) return { workerResult, normalizationIssues };
+  workerResult.elements = workerResult.elements.map((element, index) => {
     const repairIssues = [];
     const meaningIssues = [];
     const normalizedElement = { ...element };
@@ -193,6 +198,29 @@ export function normalizeScoutOutput(rawScout) {
         repairIssues.push('已移除 candidate_key 别名并保留 candidateKey');
       }
       delete normalizedElement.candidate_key;
+    }
+
+    if (normalizedElement.geometryKind === 'container') {
+      normalizedElement.geometryKind = 'boundary';
+      repairIssues.push('geometryKind 已从 container 归一化为 boundary');
+    }
+
+    if (typeof normalizedElement.controlType === 'string') {
+      const rawControlType = normalizedElement.controlType.trim();
+      const repairedControlType = ELEMENT_TYPE_REPLACEMENTS[rawControlType] || rawControlType;
+      if (ELEMENT_TYPES.includes(repairedControlType)) {
+        normalizedElement.controlType = repairedControlType;
+        if (repairedControlType !== rawControlType) {
+          repairIssues.push(`controlType 已从 ${rawControlType} 归一化为 ${repairedControlType}`);
+        }
+      } else {
+        normalizedElement.controlType = '';
+        normalizedElement.riskSignals = [...new Set([
+          ...(Array.isArray(normalizedElement.riskSignals) ? normalizedElement.riskSignals : []),
+          'control-type-needs-review',
+        ])];
+        repairIssues.push(`controlType ${rawControlType || '(empty)'} 未在当前分类中，已留空等待审核`);
+      }
     }
 
     if (typeof rawMeaning.dynamicContent === 'boolean') {
@@ -232,8 +260,8 @@ export function normalizeScoutOutput(rawScout) {
     }
     return { ...normalizedElement, meaning };
   });
-  if (Array.isArray(scout.actionCandidates)) {
-    scout.actionCandidates = scout.actionCandidates.map((actionCandidate, index) => {
+  if (Array.isArray(workerResult.actionCandidates)) {
+    workerResult.actionCandidates = workerResult.actionCandidates.map((actionCandidate, index) => {
       const messages = [];
       const normalized = { ...actionCandidate };
       if (actionCandidate?.basis === 'visible-icon') {
@@ -250,7 +278,25 @@ export function normalizeScoutOutput(rawScout) {
       return normalized;
     });
   }
-  return { scout, normalizationIssues };
+  if (workerResult.comparison && typeof workerResult.comparison === 'object' && Array.isArray(workerResult.comparison.changes)) {
+    const rawChanges = workerResult.comparison.changes;
+    if (workerResult.comparison.status === 'not-requested' && rawChanges.length > 0) {
+      workerResult.comparison.changes = [];
+      normalizationIssues.push({
+        section: 'comparison',
+        messages: [`comparison.status 为 not-requested，已移除 ${rawChanges.length} 条模型说明`],
+      });
+    } else if (rawChanges.some((change) => typeof change === 'string')) {
+      workerResult.comparison.changes = rawChanges.map((change) => (
+        typeof change === 'string' ? { summary: change } : change
+      ));
+      normalizationIssues.push({
+        section: 'comparison',
+        messages: ['comparison.changes 中的文字说明已归一化为对象'],
+      });
+    }
+  }
+  return { workerResult, normalizationIssues };
 }
 
 function pageKeyFromName(name) {
@@ -278,15 +324,16 @@ function makeDraftPage(page, frameId = null, featurePath = []) {
     featurePath: featurePath.length ? [...featurePath] : [page.name || '待归类'],
     frameIds: frameId ? [frameId] : [],
     elementIds: [],
+    publishedAt: null,
   };
 }
 
-export function beginFrameCapture(currentDraft, frameId) {
+export function beginFrameCapture(currentDraft, frameId, { forceNewPage = false } = {}) {
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
   const existingPage = previous.pages.find((page) => page.id === previous.currentPageId);
   const currentPageHasElements = previous.elements.some((element) => element.pageId === previous.currentPageId);
-  const page = existingPage && !currentPageHasElements
-    ? { ...existingPage, frameIds: [frameId], elementIds: [] }
+  const page = existingPage && !currentPageHasElements && !forceNewPage
+    ? { ...existingPage, frameIds: [frameId], elementIds: [], publishedAt: null }
     : makeDraftPage({
         id: draftPageId(),
         key: `page.capture.${randomUUID().slice(0, 8)}`,
@@ -316,6 +363,44 @@ export function beginFrameCapture(currentDraft, frameId) {
   });
 }
 
+export function removePagesFromDraft(currentDraft, pageIds) {
+  const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
+  const removedPageIds = new Set(pageIds || []);
+  if (!previous.pages.some((page) => removedPageIds.has(page.id))) return previous;
+  const removedElementIds = new Set(previous.elements
+    .filter((element) => element.pageId && removedPageIds.has(element.pageId))
+    .map((element) => element.id));
+  const elements = previous.elements
+    .filter((element) => !removedElementIds.has(element.id))
+    .map((element) => element.ownerKind === 'application'
+      ? { ...element, availableOnPageIds: element.availableOnPageIds.filter((id) => !removedPageIds.has(id)) }
+      : element);
+  const pages = previous.pages.filter((page) => !removedPageIds.has(page.id));
+  const nextPage = pages.find((page) => page.id === previous.currentPageId) || pages[0];
+  const emptyPage = {
+    id: 'draft-page-empty',
+    key: 'page.empty',
+    name: '',
+    surfaceType: 'unknown',
+    stateSummary: '',
+    scrollableRegions: [],
+  };
+  return normalizeDraftShape({
+    ...previous,
+    revision: previous.revision + 1,
+    currentPageId: nextPage?.id || emptyPage.id,
+    currentFrameId: nextPage?.frameIds.at(-1) || null,
+    page: nextPage
+      ? { id: nextPage.id, key: nextPage.key, name: nextPage.name, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions }
+      : emptyPage,
+    pages,
+    elements,
+    elementEditRecords: previous.elementEditRecords.filter((record) => !removedElementIds.has(record.elementId)),
+    transitions: previous.transitions.filter((transition) => !removedPageIds.has(transition.sourcePageId) && !removedPageIds.has(transition.targetPageId) && !removedElementIds.has(transition.triggerElementId)),
+    updatedAt: new Date().toISOString(),
+  });
+}
+
 export function createEmptyDraft() {
   const now = new Date().toISOString();
   return {
@@ -339,7 +424,7 @@ export function createEmptyDraft() {
     elements: [],
     elementEditRecords: [],
     transitions: [],
-    lastScoutModel: null,
+    lastWorkerModel: null,
     createdAt: now,
     updatedAt: now,
   };
@@ -372,11 +457,11 @@ export function normalizeDraftShape(value) {
       controlType,
       capabilities,
       actionEffects: normalizeActionEffects(element.actionEffects, controlType, capabilities),
+      interactionBoundary: normalizeInteractionBoundary(element.interactionBoundary, capabilities),
       meaning: normalizeDraftMeaning(element.meaning),
       pageId: element.pageId ?? (['application', 'shared_component'].includes(element.ownerKind) ? null : draft.currentPageId),
       availableOnPageIds: [...(element.availableOnPageIds || (element.ownerKind === 'application' ? [draft.currentPageId] : []))],
-      scoutModel: element.scoutModel || draft.lastScoutModel || null,
-      aiReview: element.aiReview || null,
+      workerModel: element.workerModel || draft.lastWorkerModel || null,
     };
   });
   draft.elementEditRecords = Array.isArray(draft.elementEditRecords)
@@ -388,17 +473,18 @@ export function normalizeDraftShape(value) {
     return {
       ...element,
       reviewStatus: element.reviewStatus === 'edited' ? 'pending' : element.reviewStatus,
-      source: 'ai_scout',
+      source: 'ai_worker',
     };
   });
   draft.transitions = Array.isArray(draft.transitions) ? draft.transitions : [];
-  draft.lastScoutModel ||= null;
+  draft.lastWorkerModel ||= null;
   const pageById = new Map(draft.pages.map((page) => [page.id, page]));
   for (const page of draft.pages) {
     page.key ||= pageKeyFromName(page.name);
     page.featurePath = page.featurePath?.length ? page.featurePath.slice(0, 3) : [page.name || '待归类'];
     page.frameIds = [...new Set(page.frameIds || [])];
     page.elementIds = [];
+    page.publishedAt ||= null;
   }
   for (const element of draft.elements) {
     if (element.pageId && pageById.has(element.pageId)) pageById.get(element.pageId).elementIds.push(element.id);
@@ -430,7 +516,7 @@ function capabilitiesFor(candidateKey, actions) {
   const capabilities = [...new Set(
     actions
       .filter((action) => action.triggerCandidateKey === candidateKey)
-      .map((action) => SCOUT_ACTIONS.includes(action.action) ? action.action : null)
+      .map((action) => WORKER_ACTIONS.includes(action.action) ? action.action : null)
       .filter(Boolean),
   )];
   return capabilities.length > 0 ? capabilities : ['none'];
@@ -443,7 +529,7 @@ function actionEffectsFor(candidateKey, actions, controlType, capabilities) {
   }));
 }
 
-function nextElementFromScout(element, actions, pageId, model) {
+function nextElementFromWorker(element, actions, pageId, model) {
   const capabilities = capabilitiesFor(element.candidateKey, actions);
   return {
     id: draftElementId(element.candidateKey),
@@ -469,12 +555,11 @@ function nextElementFromScout(element, actions, pageId, model) {
     childrenIds: [],
     pageId,
     availableOnPageIds: [],
-    interactionBoundary: 'candidate_bbox',
+    interactionBoundary: normalizeInteractionBoundary(null, capabilities),
     reviewStatus: 'pending',
-    source: 'ai_scout',
-    scoutModel: model || null,
+    source: 'ai_worker',
+    workerModel: model || null,
     lastModelProposal: null,
-    aiReview: null,
   };
 }
 
@@ -494,8 +579,8 @@ function clampUnitBox(box) {
   };
 }
 
-export function prepareScoutForDraft(scout) {
-  const proposal = structuredClone(scout);
+export function prepareWorkerForDraft(workerResult) {
+  const proposal = structuredClone(workerResult);
   const byKey = new Map(proposal.elements.map((element) => [element.candidateKey, element]));
   for (const element of proposal.elements) {
     const original = element.approximateRegion;
@@ -514,7 +599,7 @@ export function prepareScoutForDraft(scout) {
   return proposal;
 }
 
-export function mergeScoutIntoDraft(currentDraft, scout, modelResultRef, model = null) {
+export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef, model = null) {
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
   const editedElementIds = new Set(previous.elementEditRecords.map((record) => record.elementId));
   const currentPageHasElements = previous.elements.some((item) => item.pageId === previous.currentPageId);
@@ -527,14 +612,14 @@ export function mergeScoutIntoDraft(currentDraft, scout, modelResultRef, model =
     && !currentPageIsEmptyCapture
     && previous.page.name
     && previous.page.name !== '当前页面'
-    && scout.page.name
-    && scout.page.name !== previous.page.name,
+    && workerResult.page.name
+    && workerResult.page.name !== previous.page.name,
   );
   const currentPageId = pageChanged ? draftPageId() : previous.currentPageId;
   const currentPageElements = previous.elements.filter((item) => item.pageId === previous.currentPageId || ['application', 'shared_component'].includes(item.ownerKind));
   const previousByKey = new Map(currentPageElements.map((item) => [item.candidateKey, item]));
-  const nextElements = scout.elements.map((candidate) => {
-    const generated = nextElementFromScout(candidate, scout.actionCandidates || [], currentPageId, model);
+  const nextElements = workerResult.elements.map((candidate) => {
+    const generated = nextElementFromWorker(candidate, workerResult.actionCandidates || [], currentPageId, model);
     const existing = previousByKey.get(candidate.candidateKey);
     if (!existing) return generated;
     if (['application', 'shared_component'].includes(existing.ownerKind)) {
@@ -579,7 +664,7 @@ export function mergeScoutIntoDraft(currentDraft, scout, modelResultRef, model =
   });
   const mergedElements = [...preservedElements, ...nextElements];
   const byKey = new Map(nextElements.map((item) => [item.candidateKey, item]));
-  for (const relation of scout.relationships || []) {
+  for (const relation of workerResult.relationships || []) {
     if (relation.type !== 'contains') continue;
     const parent = byKey.get(relation.fromCandidateKey);
     const child = byKey.get(relation.toCandidateKey);
@@ -604,28 +689,29 @@ export function mergeScoutIntoDraft(currentDraft, scout, modelResultRef, model =
   const currentPage = {
     id: currentPageId,
     key: pageChanged || currentPageIsEmptyCapture
-      ? pageKeyFromName(scout.page.name)
-      : (previous.page.key || pageKeyFromName(scout.page.name)),
-    name: scout.page.name || previous.page.name,
-    surfaceType: scout.page.surfaceType,
-    stateSummary: scout.page.stateSummary,
-    scrollableRegions: scout.page.scrollableRegions,
+      ? pageKeyFromName(workerResult.page.name)
+      : (previous.page.key || pageKeyFromName(workerResult.page.name)),
+    name: workerResult.page.name || previous.page.name,
+    surfaceType: workerResult.page.surfaceType,
+    stateSummary: workerResult.page.stateSummary,
+    scrollableRegions: workerResult.page.scrollableRegions,
   };
   const pages = previous.pages.filter((page) => page.id !== currentPageId);
   const existingPage = previous.pages.find((page) => page.id === currentPageId);
   pages.push({
-    ...(existingPage || makeDraftPage(currentPage, scout.frameId, [currentPage.name || '待归类'])),
+    ...(existingPage || makeDraftPage(currentPage, workerResult.frameId, [currentPage.name || '待归类'])),
     ...currentPage,
-    frameIds: [...new Set([...(existingPage?.frameIds || []), scout.frameId])],
+    frameIds: [...new Set([...(existingPage?.frameIds || []), workerResult.frameId])],
     elementIds: mergedElements.filter((element) => element.pageId === currentPageId || (element.ownerKind === 'application' && element.availableOnPageIds.includes(currentPageId))).map((element) => element.id),
+    publishedAt: null,
   });
   return normalizeDraftShape({
     ...previous,
     revision: previous.revision + 1,
     currentPageId,
-    currentFrameId: scout.frameId,
+    currentFrameId: workerResult.frameId,
     rawModelResultRef: modelResultRef,
-    lastScoutModel: model || previous.lastScoutModel,
+    lastWorkerModel: model || previous.lastWorkerModel,
     page: currentPage,
     pages,
     elements: mergedElements,
@@ -634,9 +720,9 @@ export function mergeScoutIntoDraft(currentDraft, scout, modelResultRef, model =
   });
 }
 
-export function validateScoutConsistency(scout) {
+export function validateWorkerConsistency(workerResult) {
   const issues = [];
-  const elements = Array.isArray(scout?.elements) ? scout.elements : [];
+  const elements = Array.isArray(workerResult?.elements) ? workerResult.elements : [];
   const keys = new Set();
   for (const element of elements) {
     if (keys.has(element.candidateKey)) {
@@ -648,17 +734,17 @@ export function validateScoutConsistency(scout) {
       issues.push(`候选框超出截图边界：${element.candidateKey}`);
     }
   }
-  for (const relation of scout?.relationships || []) {
+  for (const relation of workerResult?.relationships || []) {
     if (!keys.has(relation.fromCandidateKey) || !keys.has(relation.toCandidateKey)) {
       issues.push(`关系引用了不可见候选：${relation.fromCandidateKey} -> ${relation.toCandidateKey}`);
     }
   }
-  for (const action of scout?.actionCandidates || []) {
+  for (const action of workerResult?.actionCandidates || []) {
     const trigger = elements.find((item) => item.candidateKey === action.triggerCandidateKey);
     if (!trigger) issues.push(`动作引用了不可见候选：${action.triggerCandidateKey}`);
     else if (!trigger.interactive) issues.push(`动作触发元素不可操作：${action.triggerCandidateKey}`);
   }
-  if (scout?.comparison?.basisFrameId !== null || scout?.comparison?.status !== 'not-requested') {
+  if (workerResult?.comparison?.basisFrameId !== null || workerResult?.comparison?.status !== 'not-requested') {
     issues.push('第一阶段单帧分析必须使用 not-requested 比较状态');
   }
   return issues;
@@ -680,6 +766,10 @@ export function validateDraft(draft) {
       issues.push({ level: 'error', code: 'candidate_key_duplicate', elementId: element.id, message: `候选键重复：${element.candidateKey}` });
     }
     candidateKeys.add(element.candidateKey);
+
+    if (!ELEMENT_TYPES.includes(element.controlType)) {
+      issues.push({ level: 'error', code: 'control_type_required', elementId: element.id, message: '元素类型未识别，请由 Worker B 或人工补齐' });
+    }
 
     const box = element.bbox;
     const validBox = box && [box.x, box.y, box.width, box.height].every(Number.isFinite) && box.x >= 0 && box.y >= 0 && box.width > 0 && box.height > 0 && box.x + box.width <= 1 && box.y + box.height <= 1;
@@ -703,10 +793,10 @@ export function validateDraft(draft) {
       issues.push({ level: 'warning', code: 'review_pending', elementId: element.id, message: 'AI 候选尚未完成人工审核' });
     }
     if (element.riskSignals?.includes('geometry-clamped-to-frame')) {
-      issues.push({ level: 'warning', code: 'scout_bbox_clamped', elementId: element.id, message: 'AI 候选框超出截图边缘，已自动裁剪，请人工校准' });
+      issues.push({ level: 'warning', code: 'worker_bbox_clamped', elementId: element.id, message: 'AI 候选框超出截图边缘，已自动裁剪，请人工校准' });
     }
     if (element.riskSignals?.includes('model-action-inconsistent')) {
-      issues.push({ level: 'warning', code: 'scout_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
+      issues.push({ level: 'warning', code: 'worker_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
     }
   }
 

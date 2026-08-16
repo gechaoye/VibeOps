@@ -8,7 +8,7 @@ featurePath:
 - 消息
 - 特别关注
 surfaceType: page
-status: observed_gpt_only_pending_scout
+status: observed_worker_b_only_pending_workerA
 summary: 展示特别关注成员与其会话；特别关注人员存在未读消息时展示对应会话和实时未读数量角标。
 states:
 - key: empty
@@ -48,11 +48,11 @@ observations:
     orientation: portrait
   stateProperties:
     planStateKeyHint: messages.special_follow.initial
-    independentScout: missing_from_legacy_capture
+    independentWorker A: missing_from_legacy_capture
     gptRecognition: complete
   screenshotRef: sha256:704115d3518683fb7638e881b82c8b8f4b22326761a3ce58f64897137b30413b
   rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch2-attempt1/raw-evidence/sessions/01KYH6NHN6076HNCGH2DPQ39KC
-  evidenceStatus: gpt_verified_pending_independent_scout
+  evidenceStatus: worker_b_verified_pending_independent_workerA
 - frameRef: 01KYJ4QSVND1N3RN1BZQDJJHVJ
   observedAt: '2026-07-27T15:57:48.385Z'
   buildRef: android-package:com.zto.connect.fat@10542
@@ -63,11 +63,11 @@ observations:
     orientation: portrait
   stateProperties:
     planStateKeyHint: messages.special_follow.with_read_lian_liangwei
-    independentScout: missing_from_legacy_capture
+    independentWorker A: missing_from_legacy_capture
     gptRecognition: complete
   screenshotRef: sha256:8cdae4359c0ac661f07691fadd5a5b513934479445b1150dc7743be33cfa0449
   rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch45-attempt5/raw-evidence/sessions/01KYJ4QEBBQZP44ANFGP77NE7J
-  evidenceStatus: gpt_verified_pending_independent_scout
+  evidenceStatus: worker_b_verified_pending_independent_workerA
 - frameRef: 01KYK4NAGXAAV2ZW3CKHC0QW5H
   observedAt: '2026-07-28T01:15:41.628Z'
   buildRef: android-package:com.zto.connect.fat@10542
@@ -78,13 +78,13 @@ observations:
     orientation: portrait
   stateProperties:
     planStateKeyHint: messages.special_follow.with_unread_member
-    independentScout: missing_from_legacy_capture
+    independentWorker A: missing_from_legacy_capture
     gptRecognition: complete
   screenshotRef: sha256:2d24e0d54e7a9e36a3b520ff52be5f0eb8d50490adb76a06ad2ad9973c6aee1c
   rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260728-batch46-attempt1/raw-evidence/sessions/01KYK4MYZH0C3R62M164MET7HS
-  evidenceStatus: gpt_verified_pending_independent_scout
+  evidenceStatus: worker_b_verified_pending_independent_workerA
 provenance:
   sourceType: verified_legacy_midscene_evidence
   materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
   limitations:
-  - independent aiScout evidence is absent from the historical capture
+  - independent worker_a evidence is absent from the historical capture

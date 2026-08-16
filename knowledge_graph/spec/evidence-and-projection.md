@@ -2,13 +2,13 @@
 
 ## 1. 证据原则
 
-Canonical 知识必须可追溯，但证据本身不升格为阅读实体。冻结帧、Scout 输出、GPT 查询、locator、动作 Trace、断言和红框图通过引用进入 Page、Element、Transition 或 AuthorityContract。
+Canonical 知识必须可追溯，但证据本身不升格为阅读实体。冻结帧、Worker A/B 原始答卷、字段合并决策、locator、动作 Trace、断言和红框图通过引用进入 Page、Element、Transition 或 AuthorityContract。
 
 证据等级不能混写：
 
 - 用户认证事实使用 `sourceType: user_context` 和 AuthorityContract。
 - 设备真实执行使用 Frame、locator、Trace 和 assertion。
-- 模型理解必须注明模型角色和证据限制。
+- 模型理解必须注明 Worker 槽位、模型和证据限制；槽位不代表职责或证据优先级。
 - 历史导入必须明确标记历史来源、缺失项和待对账状态。
 
 ## 2. 探索证据包
@@ -31,12 +31,12 @@ explorations/<exploration-id>/
 
 1. 动画稳定后的全分辨率冻结截图。
 2. 由截图字节确定的 `frameId`。
-3. 独立 Scout 对全部可见候选的结构化清点。
-4. GPT 对 Scout、用户事实和既有图谱的逐项对账。
+3. Worker A/B 使用相同输入和 Schema，并发完成两份独立的全帧结构化答卷。
+4. 两侧分别通过结构与一致性检查，并保存元素配对和字段级合并决策。
 5. 每个纳入 Canonical 的可见 Element 的 locator 或明确 unresolved。
 6. 每个候选的归类结果和 Coverage 结论。
 
-对每个可见设置行，Scout 必须分别清点最外层行容器、Label、当前值、帮助图标、帮助内容、设置控件、箭头/affordance 和其他稳定语义成员；未出现的角色不得凭 profile 猜造。GPT reconciliation 必须把该行分类为 `toggle_row`、`selector_row`、`help_toggle_row`、`action_row` 或 `unresolved_setting_row`，并逐项记录角色映射与预期交互边界。
+对每个可见设置行，两侧 Worker 都必须分别清点最外层行容器、Label、当前值、帮助图标、帮助内容、设置控件、箭头/affordance 和其他稳定语义成员；未出现的角色不得凭 profile 猜造。字段级合并必须把该行分类为 `toggle_row`、`selector_row`、`help_toggle_row`、`action_row` 或 `unresolved_setting_row`，并逐项记录角色映射与预期交互边界。
 
 设置行容器和每个纳入 Canonical 的子 Element 都必须独立定位。不同语义 Element 只有在视觉与命中区域确实相同且规范允许同一物理 Element 承担两个角色时才可复用 locator；不能把帮助图标、帮助气泡、Label 或开关重复框选为同一对象。
 
@@ -54,7 +54,7 @@ UI 识别、定位、操作和断言必须通过受控视觉 Agent 链路完成�
 - action Trace；
 - after Frame；
 - 明确 postcondition；
-- GPT 查询或断言结果；
+- `AndroidAgent` 查询或断言结果；
 - 风险、结果和返回 checkpoint。
 
 动作结果只能使用：
@@ -71,7 +71,7 @@ UI 识别、定位、操作和断言必须通过受控视觉 Agent 链路完成�
 对“整行可点击还是仅尾部控件可点击”等边界歧义，证据包还必须保存：
 
 - 候选命中区域及其各自 locator；
-- Scout 与 GPT 的判定及置信限制；
+- Worker A/B 的原始判定、字段差异和证据限制；
 - 用户认证事实，或风险允许时针对候选边界执行的判别动作；
 - 每次判别动作的 before/after Frame、Trace 和 postcondition；
 - 最终 `interactionBoundary` 结论，或明确的 unresolved 原因。
@@ -92,20 +92,20 @@ Page 与 Element 的 `observations` 是运行实例的内嵌投影：
 
 全页截图是视觉证据基准。Element 红框图必须从对应全页截图确定性生成，红框不能超出图像边界，并与 locator 的 rect 一致。
 
-## 5. 双模型职责
+## 5. 双 Worker 协议
 
-| 角色 | 职责 | 不得承担 |
+| 槽位 | 输入与输出 | 不得承担 |
 | --- | --- | --- |
-| Scout | 对冻结全帧清点全部可见控件、状态、容器和内容锚点 | 决定动作或直接创建 Canonical 身份 |
-| GPT | 对账用户事实、现有图谱和 Scout 结果；规划、定位、操作和验证 | 用猜测替代缺失证据 |
+| Worker A | 与 Worker B 相同的冻结帧、上下文、提示词和 Schema；返回完整独立答卷 | 决定动作、审核另一侧或直接创建 Canonical 身份 |
+| Worker B | 与 Worker A 相同的冻结帧、上下文、提示词和 Schema；返回完整独立答卷 | 决定动作、审核另一侧或直接创建 Canonical 身份 |
 
-Scout 和 GPT 冲突时保留双方结果，用户明确事实优先；必要时采集新帧或实际执行验证，不能投票猜测。
+两份答卷冲突时保留双方原始结果并逐字段选择；不投票，不按槽位、模型品牌或自报置信度自动决定胜者。用户明确事实优先；必要时采集新帧或实际执行验证。
 
 ## 6. Coverage
 
 Coverage 必须回答：
 
-- 每个 Scout 候选如何归类；
+- A/B 每个候选如何配对、归类和合并；
 - 每个可见控件、状态、菜单、滚动区域和动作是否处理；
 - 每个 Page/state 是否完成清点；
 - 每个可见设置行采用了哪个规范 profile，各 profile 角色如何映射，实际 Trigger 和不可操作成员如何确定；

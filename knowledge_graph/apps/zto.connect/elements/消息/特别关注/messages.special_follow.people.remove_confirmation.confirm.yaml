@@ -34,7 +34,7 @@ observations:
     checked: null
   screenshotRef: sha256:0b032c5170e1166c0d76608d59f8b921736d99e949b3ad50a47810a9bbcdaa21
   rawEvidenceRef: explorations/zto-connect-fat-messages-special-follow-recursive-20260727-batch11-attempt1/raw-evidence/sessions/01KYHBRRQ0FNFNTS8NJB3DVSTP
-  evidenceStatus: gpt_verified_pending_independent_scout
+  evidenceStatus: worker_b_verified_pending_independent_workerA
   locator:
     rect:
       left: 575.0
@@ -51,14 +51,14 @@ observations:
   dynamicValue: 确认弹窗底部右侧可见且可操作
   actionTraceRef: null
   redboxRef: assets/element-redboxes/01KYKA3ENB32RHWSPCWKB9GE6J-01KYHC08GF9NJXY200M49HEXPT.png
-coverage: executed_verified_gpt_only_pending_scout
-status: gpt_verified_pending_independent_scout
+coverage: executed_verified_worker_b_only_pending_workerA
+status: worker_b_verified_pending_independent_workerA
 risk: low
 provenance:
   sourceType: verified_legacy_midscene_evidence
   materializationSpec: zto-connect-fat-messages-special-follow-recursive-20260728.yaml
   limitations:
-  - independent aiScout evidence is absent from the historical capture
+  - independent worker_a evidence is absent from the historical capture
 interactionBoundary:
   actionable: true
   function: confirm_remove_member

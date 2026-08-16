@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYS2XN7ETGV8NBR1BAV4G1WF",
+  "sessionRef": "01KYS2MZ2HQBPK0G7RGMQVE3ZN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYS2NTV30MFQB2TXR6MXS607",
+  "sourceScreenshotRef": "sha256:c157e07ccf15083ea85b5c2c3b40ded7b86a3e4e755d9d27e12b33f4e22456ef",
+  "operation": "aiLocate",
+  "prompt": "定位状态栏时间右侧小图标组中、两个蓝色图标之间偏左的绿色圆角小图标。",
+  "status": "pass",
+  "result": {
+    "center": {
+      "x": 575,
+      "y": 68
+    },
+    "rect": {
+      "x": 559,
+      "y": 52,
+      "width": 33,
+      "height": 34
+    },
+    "dpr": null
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "worker_a": {
+      "name": "qwen3-vl-plus",
+      "family": "qwen3-vl",
+      "slot": "worker_a"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-30T08:40:23.441Z",
+  "endedAt": "2026-07-30T08:40:41.454Z",
+  "durationMs": 18013.125709,
+  "cacheable": false,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e709e1fdd4ac22f7b7498476f9a44e80bc202a3ab0c81044c50158749282145e"
+}
