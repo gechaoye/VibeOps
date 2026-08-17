@@ -11,6 +11,7 @@ import {
   getViewportForBounds,
   useInternalNode,
   useNodesState,
+  useUpdateNodeInternals,
   type Edge,
   type EdgeProps,
   type InternalNode,
@@ -33,7 +34,7 @@ import {
   type Simulation,
   type SimulationNodeDatum,
 } from 'd3-force';
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { KnowledgeGraphNodeType, KnowledgeGraphViewEdge, KnowledgeGraphViewNode } from './knowledge-graph-view';
 
 interface ForceKnowledgeGraphProps {
@@ -60,6 +61,16 @@ interface ForceNodeData extends Record<string, unknown> {
   active: boolean;
   focused: boolean;
   dimmed: boolean;
+  insideCollapsedContainer: boolean;
+}
+
+interface NavContainerData extends Record<string, unknown> {
+  expanded: boolean;
+  selected: boolean;
+  focused: boolean;
+  dimmed: boolean;
+  radius: number;
+  onToggle: () => void;
 }
 
 interface LayoutNode extends SimulationNodeDatum {
@@ -98,7 +109,7 @@ function ForceGraphNode({ data: rawData }: NodeProps) {
     '--kg-node-size': `${visual.radius * 2}px`,
   } as CSSProperties;
   return <div
-    className={`kg-force-node kg-force-node-${data.node.type} ${data.selected ? 'selected' : ''} ${data.active ? 'active' : ''} ${data.focused ? 'focused' : ''} ${data.dimmed ? 'dimmed' : ''}`}
+    className={`kg-force-node kg-force-node-${data.node.type} ${data.selected ? 'selected' : ''} ${data.active ? 'active' : ''} ${data.focused ? 'focused' : ''} ${data.dimmed ? 'dimmed' : ''} ${data.insideCollapsedContainer ? 'inside-collapsed-container' : ''}`}
     style={style}
     aria-label={`${data.node.layer}：${data.node.label}`}
   >
@@ -111,6 +122,10 @@ function ForceGraphNode({ data: rawData }: NodeProps) {
 }
 
 function nodeRadius(node: InternalNode<Node>) {
+  if (node.type === 'navContainer') {
+    const data = node.data as NavContainerData;
+    return data.expanded ? data.radius : 17;
+  }
   const data = node.data as ForceNodeData;
   const visual = nodeVisuals[data.node.type];
   const scale = data.selected ? 1.48 : data.active ? 1.22 : 1;
@@ -119,10 +134,11 @@ function nodeRadius(node: InternalNode<Node>) {
 
 function FloatingForceEdge({
   id, source, target, markerStart, markerEnd, style, label, labelStyle, labelShowBg,
-  labelBgStyle, labelBgPadding, labelBgBorderRadius, interactionWidth,
+  labelBgStyle, labelBgPadding, labelBgBorderRadius, interactionWidth, data,
 }: EdgeProps) {
-  const sourceNode = useInternalNode(source);
-  const targetNode = useInternalNode(target);
+  const visualNodeIds = data as { visualSourceId?: string; visualTargetId?: string } | undefined;
+  const sourceNode = useInternalNode(visualNodeIds?.visualSourceId || source);
+  const targetNode = useInternalNode(visualNodeIds?.visualTargetId || target);
   if (!sourceNode || !targetNode) return null;
   const sourceCenter = {
     x: sourceNode.internals.positionAbsolute.x + (sourceNode.measured.width || 30) / 2,
@@ -163,12 +179,39 @@ function FloatingForceEdge({
   />;
 }
 
-function NavContainerNode() {
-  return <div className="kg-nav-container"><span>当前底部导航</span></div>;
+function NavContainerNode({ id, data: rawData }: NodeProps) {
+  const data = rawData as NavContainerData;
+  const updateNodeInternals = useUpdateNodeInternals();
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => updateNodeInternals(id));
+    return () => window.cancelAnimationFrame(frame);
+  }, [data.expanded, id, updateNodeInternals]);
+  return <div
+    className={`kg-nav-container ${data.expanded ? 'expanded' : 'collapsed'} ${data.selected ? 'selected' : ''} ${data.focused ? 'focused' : ''} ${data.dimmed ? 'dimmed' : ''}`}
+    aria-label="当前底部导航"
+    role="button"
+    tabIndex={0}
+    onClick={(event) => { event.stopPropagation(); data.onToggle(); }}
+    onKeyDown={(event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        event.stopPropagation();
+        data.onToggle();
+      }
+    }}
+  >
+    <Handle type="target" position={Position.Left} />
+    <i className="kg-nav-ring kg-nav-ring-outer" />
+    <i className="kg-nav-ring kg-nav-ring-middle" />
+    <i className="kg-nav-ring kg-nav-ring-inner" />
+    <span className="kg-nav-container-label">当前底部导航</span>
+    <Handle type="source" position={Position.Right} />
+  </div>;
 }
 
 const nodeTypes = { forceGraph: ForceGraphNode, navContainer: NavContainerNode };
 const edgeTypes = { floating: FloatingForceEdge };
+const navContainerId = 'nav.container';
 
 function layoutSize(compact: boolean) {
   return compact ? { width: 420, height: 760 } : { width: 960, height: 680 };
@@ -273,29 +316,100 @@ function forceLayout(graphNodes: KnowledgeGraphViewNode[], graphEdges: Knowledge
   return new Map(nodes.map((node) => [node.id, { x: Math.max(25, Math.min(width - 25, node.x || width / 2)) - 15, y: Math.max(25, Math.min(height - 34, node.y || height / 2)) - 15 }]));
 }
 
-function navContainerNode(nodes: Node[]): Node {
+function navContainerGeometry(nodes: Node[], expanded: boolean) {
   const navNodes = nodes.filter((node) => node.id.startsWith('nav.'));
-  const minX = Math.min(...navNodes.map((node) => node.position.x)) - 34;
-  const maxX = Math.max(...navNodes.map((node) => node.position.x)) + 64;
-  const minY = Math.min(...navNodes.map((node) => node.position.y)) - 34;
-  const maxY = Math.max(...navNodes.map((node) => node.position.y)) + 78;
+  const centers = navNodes.map((node) => ({ x: node.position.x + 15, y: node.position.y + 15 }));
+  const centerX = centers.reduce((total, point) => total + point.x, 0) / Math.max(1, centers.length);
+  const centerY = centers.reduce((total, point) => total + point.y, 0) / Math.max(1, centers.length);
+  const contentRadius = Math.max(72, ...centers.map((point) => Math.hypot(point.x - centerX, point.y - centerY) + 42));
+  const size = expanded ? contentRadius * 2 : 34;
+  return { centerX, centerY, radius: size / 2, size };
+}
+
+function navContainerNode(
+  nodes: Node[],
+  expanded: boolean,
+  selected: boolean,
+  focused: boolean,
+  dimmed: boolean,
+  onToggle: () => void,
+): Node {
+  const { centerX, centerY, radius, size } = navContainerGeometry(nodes, expanded);
   return {
-    id: 'nav.container',
+    id: navContainerId,
     type: 'navContainer',
-    position: { x: minX, y: minY },
-    data: {},
-    style: { width: maxX - minX, height: maxY - minY },
-    draggable: false,
-    selectable: false,
-    focusable: false,
-    zIndex: -2,
+    position: { x: centerX - size / 2, y: centerY - size / 2 },
+    data: { expanded, selected, focused, dimmed, radius, onToggle } satisfies NavContainerData,
+    style: { width: size, height: size },
+    className: expanded ? 'kg-nav-container-node-expanded' : 'kg-nav-container-node-collapsed',
+    draggable: true,
+    selectable: true,
+    focusable: true,
+    selected,
+    zIndex: 8,
   };
 }
 
+function nodesWithNavContainer(
+  nodes: Node[],
+  expanded: boolean,
+  selected: boolean,
+  focused: boolean,
+  dimmed: boolean,
+  onToggle: () => void,
+): Node[] {
+  const container = navContainerNode(nodes, expanded, selected, focused, dimmed, onToggle);
+  return [container, ...nodes];
+}
+
+function pushNodesOutsideNavContainer(nodes: Node[]) {
+  const geometry = navContainerGeometry(nodes, true);
+  let changed = false;
+  const pushedNodes = nodes.map((node) => {
+    if (node.id === navContainerId || node.id.startsWith('nav.')) return node;
+    const data = node.data as ForceNodeData;
+    const collisionRadius = Math.max(34, Math.min(76, data.node.label.length * 5 + 18));
+    const centerX = node.position.x + 15;
+    const centerY = node.position.y + 15;
+    let deltaX = centerX - geometry.centerX;
+    let deltaY = centerY - geometry.centerY;
+    let distance = Math.hypot(deltaX, deltaY);
+    const minimumDistance = geometry.radius + collisionRadius + 20;
+    if (distance >= minimumDistance) return node;
+    if (distance < 1) {
+      const seed = Array.from(node.id).reduce((total, character) => total + character.charCodeAt(0), 0);
+      const angle = (seed % 360) * Math.PI / 180;
+      deltaX = Math.cos(angle);
+      deltaY = Math.sin(angle);
+      distance = 1;
+    }
+    changed = true;
+    return {
+      ...node,
+      position: {
+        x: geometry.centerX + deltaX / distance * minimumDistance - 15,
+        y: geometry.centerY + deltaY / distance * minimumDistance - 15,
+      },
+    };
+  });
+  return changed ? pushedNodes : nodes;
+}
+
 function visibleGraphBounds(nodes: Node[], compact: boolean) {
-  const graphNodes = nodes.filter((node) => node.id !== 'nav.container');
+  const containerNode = nodes.find((node) => node.id === navContainerId);
+  const containerExpanded = Boolean((containerNode?.data as NavContainerData | undefined)?.expanded);
+  const graphNodes = nodes.filter((node) => {
+    if (node.id === navContainerId) return true;
+    if (!containerExpanded && node.id.startsWith('nav.')) return false;
+    return true;
+  });
   if (graphNodes.length === 0) return { x: 0, y: 0, width: 1, height: 1 };
   const bounds = graphNodes.map((node) => {
+    if (node.id === navContainerId) {
+      const width = typeof node.style?.width === 'number' ? node.style.width : 34;
+      const height = typeof node.style?.height === 'number' ? node.style.height : 34;
+      return { left: node.position.x, right: node.position.x + width, top: node.position.y, bottom: node.position.y + height + (containerExpanded ? 0 : 22) };
+    }
     const data = node.data as ForceNodeData;
     const visual = nodeVisuals[data.node.type];
     const radius = visual.radius * (data.selected ? 1.48 : data.active ? 1.22 : 1);
@@ -325,9 +439,26 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
   const flowInstanceRef = useRef<ReactFlowInstance<Node, Edge> | null>(null);
   const simulationRef = useRef<Simulation<LayoutNode, undefined> | null>(null);
   const simulationNodesRef = useRef(new Map<string, LayoutNode>());
+  const containerDragRef = useRef<{
+    containerPosition: { x: number; y: number };
+    navPositions: Map<string, { x: number; y: number }>;
+  } | null>(null);
   const nodesRef = useRef<Node[]>([]);
   const compactRef = useRef(false);
+  const containerExpandedRef = useRef(false);
+  const containerSelectedRef = useRef(false);
+  const containerFocusedRef = useRef(false);
+  const containerDimmedRef = useRef(false);
+  const previousContainerExpandedRef = useRef(false);
+  const onPaneClickRef = useRef(onPaneClick);
+  onPaneClickRef.current = onPaneClick;
   const [compact, setCompact] = useState(false);
+  const [containerSelected, setContainerSelected] = useState(false);
+  const [containerReflowing, setContainerReflowing] = useState(false);
+  const toggleNavContainer = useCallback(() => {
+    onPaneClickRef.current();
+    setContainerSelected(true);
+  }, []);
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return undefined;
@@ -346,6 +477,22 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
     }
     return ids;
   }, [activeNodeId, graphEdges]);
+  const selectedOneHopIds = useMemo(() => {
+    if (!selectedNodeId) return new Set<string>();
+    const ids = new Set([selectedNodeId]);
+    for (const edge of graphEdges) {
+      if (edge.source === selectedNodeId) ids.add(edge.target);
+      if (edge.target === selectedNodeId) ids.add(edge.source);
+    }
+    return ids;
+  }, [graphEdges, selectedNodeId]);
+  const containerExpanded = containerSelected || [...selectedOneHopIds].some((id) => id.startsWith('nav.'));
+  const containerFocused = Boolean(activeNodeId && [...oneHopIds].some((id) => id.startsWith('nav.')));
+  const containerDimmed = Boolean(activeNodeId && !containerFocused);
+  containerExpandedRef.current = containerExpanded;
+  containerSelectedRef.current = containerSelected;
+  containerFocusedRef.current = containerFocused;
+  containerDimmedRef.current = containerDimmed;
 
   const projectedNodes = useMemo<Node[]>(() => {
     const graphFlowNodes: Node[] = graphNodes.map((node) => {
@@ -361,15 +508,18 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
           selected: node.id === selectedNodeId,
           active: node.id === activeNodeId,
           focused: oneHopIds.has(node.id),
-          dimmed: (matchedNodeIds.size !== graphNodes.length && !matchedNodeIds.has(node.id)) || Boolean(activeNodeId && !oneHopIds.has(node.id)),
+          dimmed: (matchedNodeIds.size !== graphNodes.length && !matchedNodeIds.has(node.id))
+            || Boolean(activeNodeId && !oneHopIds.has(node.id)),
+          insideCollapsedContainer: node.type === 'nav' && !containerExpanded,
         } satisfies ForceNodeData,
         selected: node.id === selectedNodeId,
-        draggable: true,
-        zIndex: node.id === activeNodeId ? 5 : 1,
+        draggable: node.type !== 'nav' || containerExpanded,
+        className: node.type === 'nav' ? (containerExpanded ? 'kg-nav-child-expanded' : 'kg-nav-child-collapsed') : undefined,
+        zIndex: node.type === 'nav' && containerExpanded ? 12 : node.id === activeNodeId ? 5 : 1,
       };
     });
-    return [navContainerNode(graphFlowNodes), ...graphFlowNodes];
-  }, [activeNodeId, graphNodes, matchedNodeIds, oneHopIds, positions, selectedNodeId]);
+    return nodesWithNavContainer(graphFlowNodes, containerExpanded, containerSelected, containerFocused, containerDimmed, toggleNavContainer);
+  }, [activeNodeId, containerDimmed, containerExpanded, containerFocused, containerSelected, graphNodes, matchedNodeIds, oneHopIds, positions, selectedNodeId, toggleNavContainer]);
   const [nodes, setNodes] = useNodesState(projectedNodes);
   nodesRef.current = nodes;
   compactRef.current = compact;
@@ -387,11 +537,23 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
     );
     void instance.setViewport(viewport, { duration, interpolate: 'smooth' });
   };
-  useEffect(() => setNodes((currentNodes) => projectedNodes.map((nextNode) => {
-    const currentNode = currentNodes.find((candidate) => candidate.id === nextNode.id);
-    if (!currentNode || nextNode.id === 'nav.container') return nextNode;
-    return { ...currentNode, ...nextNode, position: currentNode.position, measured: currentNode.measured };
-  })), [projectedNodes, setNodes]);
+  useEffect(() => setNodes((currentNodes) => {
+    const graphFlowNodes = projectedNodes
+      .filter((node) => node.id !== navContainerId)
+      .map((nextNode) => {
+        const currentNode = currentNodes.find((candidate) => candidate.id === nextNode.id);
+        if (!currentNode) return nextNode;
+        return { ...currentNode, ...nextNode, position: currentNode.position, measured: currentNode.measured };
+      });
+    return nodesWithNavContainer(
+      graphFlowNodes,
+      containerExpandedRef.current,
+      containerSelectedRef.current,
+      containerFocusedRef.current,
+      containerDimmedRef.current,
+      toggleNavContainer,
+    );
+  }), [projectedNodes, setNodes, toggleNavContainer]);
   useEffect(() => {
     setNodes(projectedNodes);
     let fitFrame = 0;
@@ -412,7 +574,7 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
   useEffect(() => {
     const { width, height } = layoutSize(compact);
     const depths = radialDepths(graphNodes, graphEdges);
-    const layoutNodes = graphNodes.map((node) => {
+    const layoutNodes: LayoutNode[] = graphNodes.map((node) => {
       const position = positions.get(node.id) || { x: width / 2 - 15, y: height / 2 - 15 };
       return {
         id: node.id,
@@ -427,13 +589,9 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
     const simulationNodeMap = new Map(layoutNodes.map((node) => [node.id, node]));
     const simulation = createSimulation(layoutNodes, graphEdges, compact)
       .on('tick', () => {
-        for (const node of layoutNodes) {
-          node.x = Math.max(25, Math.min(width - 25, node.x || width / 2));
-          node.y = Math.max(25, Math.min(height - 34, node.y || height / 2));
-        }
         setNodes((currentNodes) => {
           const graphFlowNodes = currentNodes
-            .filter((node) => node.id !== 'nav.container')
+            .filter((node) => node.id !== navContainerId)
             .map((node) => {
               const layoutNode = simulationNodeMap.get(node.id);
               if (!layoutNode) return node;
@@ -442,11 +600,25 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
                 position: { x: (layoutNode.x || width / 2) - 15, y: (layoutNode.y || height / 2) - 15 },
               };
             });
-          return [navContainerNode(graphFlowNodes), ...graphFlowNodes];
+          return nodesWithNavContainer(
+            graphFlowNodes,
+            containerExpandedRef.current,
+            containerSelectedRef.current,
+            containerFocusedRef.current,
+            containerDimmedRef.current,
+            toggleNavContainer,
+          );
         });
       })
       .alpha(0)
       .stop();
+    if (!containerExpandedRef.current) {
+      for (const node of layoutNodes) {
+        if (node.type !== 'nav') continue;
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+    }
     simulationRef.current = simulation;
     simulationNodesRef.current = simulationNodeMap;
     return () => {
@@ -455,39 +627,153 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
     };
   }, [compact, graphEdges, graphNodes, positions, setNodes]);
 
+  useEffect(() => {
+    const wasExpanded = previousContainerExpandedRef.current;
+    previousContainerExpandedRef.current = containerExpanded;
+    for (const node of simulationNodesRef.current.values()) {
+      if (node.type !== 'nav') continue;
+      if (containerExpanded) {
+        node.fx = null;
+        node.fy = null;
+      } else {
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+    }
+    if (!containerExpanded || wasExpanded) return undefined;
+
+    setContainerReflowing(true);
+    let settleTimer = 0;
+    const frame = window.requestAnimationFrame(() => {
+      setNodes((currentNodes) => {
+        const graphFlowNodes = currentNodes.filter((node) => node.id !== navContainerId);
+        const pushedNodes = pushNodesOutsideNavContainer(graphFlowNodes);
+        for (const node of pushedNodes) {
+          if (node.id.startsWith('nav.')) continue;
+          const simulationNode = simulationNodesRef.current.get(node.id);
+          if (!simulationNode) continue;
+          simulationNode.x = node.position.x + 15;
+          simulationNode.y = node.position.y + 15;
+          simulationNode.vx = 0;
+          simulationNode.vy = 0;
+        }
+        return nodesWithNavContainer(
+          pushedNodes,
+          containerExpandedRef.current,
+          containerSelectedRef.current,
+          containerFocusedRef.current,
+          containerDimmedRef.current,
+          toggleNavContainer,
+        );
+      });
+      settleTimer = window.setTimeout(() => setContainerReflowing(false), 340);
+    });
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(settleTimer);
+      setContainerReflowing(false);
+    };
+  }, [containerExpanded, setNodes, toggleNavContainer]);
+
   const onNodesChange = (changes: NodeChange[]) => setNodes((currentNodes) => {
-    const nextNodes = applyNodeChanges(changes.filter((change) => !('id' in change) || change.id !== 'nav.container'), currentNodes);
-    const graphFlowNodes = nextNodes.filter((node) => node.id !== 'nav.container');
-    return [navContainerNode(graphFlowNodes), ...graphFlowNodes];
+    const nextNodes = applyNodeChanges(changes.filter((change) => !('id' in change) || change.id !== navContainerId), currentNodes);
+    const graphFlowNodes = nextNodes.filter((node) => node.id !== navContainerId);
+    return nodesWithNavContainer(
+      graphFlowNodes,
+      containerExpandedRef.current,
+      containerSelectedRef.current,
+      containerFocusedRef.current,
+      containerDimmedRef.current,
+      toggleNavContainer,
+    );
   });
 
   const updateDraggedNode = (node: Node) => {
     const simulationNode = simulationNodesRef.current.get(node.id);
     if (!simulationNode) return;
-    const { width, height } = layoutSize(compact);
-    const x = Math.max(25, Math.min(width - 25, node.position.x + 15));
-    const y = Math.max(25, Math.min(height - 34, node.position.y + 15));
+    const x = node.position.x + 15;
+    const y = node.position.y + 15;
     simulationNode.x = x;
     simulationNode.y = y;
     simulationNode.fx = x;
     simulationNode.fy = y;
   };
 
+  const moveNavContainer = (node: Node) => {
+    const origin = containerDragRef.current;
+    if (!origin) return;
+    const deltaX = node.position.x - origin.containerPosition.x;
+    const deltaY = node.position.y - origin.containerPosition.y;
+    setNodes((currentNodes) => {
+      const graphFlowNodes = currentNodes
+        .filter((currentNode) => currentNode.id !== navContainerId)
+        .map((currentNode) => {
+          const initialPosition = origin.navPositions.get(currentNode.id);
+          if (!initialPosition) return currentNode;
+          const position = { x: initialPosition.x + deltaX, y: initialPosition.y + deltaY };
+          const simulationNode = simulationNodesRef.current.get(currentNode.id);
+          if (simulationNode) {
+            simulationNode.x = position.x + 15;
+            simulationNode.y = position.y + 15;
+            simulationNode.fx = simulationNode.x;
+            simulationNode.fy = simulationNode.y;
+          }
+          return { ...currentNode, position };
+        });
+      return nodesWithNavContainer(
+        graphFlowNodes,
+        containerExpandedRef.current,
+        containerSelectedRef.current,
+        containerFocusedRef.current,
+        containerDimmedRef.current,
+        toggleNavContainer,
+      );
+    });
+  };
+
   const onNodeDragStart: OnNodeDrag<Node> = (_event, node) => {
-    if (node.id === 'nav.container') return;
+    setContainerReflowing(false);
+    if (node.id === navContainerId) {
+      containerDragRef.current = {
+        containerPosition: { ...node.position },
+        navPositions: new Map(nodesRef.current
+          .filter((currentNode) => currentNode.id.startsWith('nav.'))
+          .map((currentNode) => [currentNode.id, { ...currentNode.position }])),
+      };
+      const simulation = simulationRef.current;
+      simulation?.force('radial', null).force('entry-orbit', null).force('entry-orbit-y', null).force('center', null);
+      moveNavContainer(node);
+      return;
+    }
     updateDraggedNode(node);
     const simulation = simulationRef.current;
     if (simulation) {
-      simulation.force('radial', null).force('entry-orbit', null).force('entry-orbit-y', null);
+      simulation.force('radial', null).force('entry-orbit', null).force('entry-orbit-y', null).force('center', null);
       const linkForce = simulation.force('link') as ForceLink<LayoutNode, LayoutLink> | undefined;
       linkForce?.strength((link) => link.kind === 'nav-cluster' ? 0.1 : link.kind === 'placement' ? 0.07 : 0.18);
       simulation.alpha(Math.max(simulation.alpha(), 0.32)).alphaTarget(0.18).restart();
     }
   };
 
-  const onNodeDrag: OnNodeDrag<Node> = (_event, node) => updateDraggedNode(node);
+  const onNodeDrag: OnNodeDrag<Node> = (_event, node) => {
+    if (node.id === navContainerId) moveNavContainer(node);
+    else updateDraggedNode(node);
+  };
 
   const onNodeDragStop: OnNodeDrag<Node> = (_event, node) => {
+    if (node.id === navContainerId) {
+      moveNavContainer(node);
+      for (const id of containerDragRef.current?.navPositions.keys() || []) {
+        const simulationNode = simulationNodesRef.current.get(id);
+        if (simulationNode) {
+          simulationNode.fx = containerExpandedRef.current ? null : simulationNode.x;
+          simulationNode.fy = containerExpandedRef.current ? null : simulationNode.y;
+        }
+      }
+      containerDragRef.current = null;
+      simulationRef.current?.alpha(0.12).alphaTarget(0).restart();
+      return;
+    }
     const simulationNode = simulationNodesRef.current.get(node.id);
     if (!simulationNode) return;
     updateDraggedNode(node);
@@ -503,17 +789,39 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
     window.requestAnimationFrame(() => fitGraph());
   };
 
+  const handleNodeClick = (node: Node) => {
+    if (node.id === navContainerId) {
+      toggleNavContainer();
+      return;
+    }
+    setContainerSelected(false);
+    onNodeClick(node.id);
+  };
+
+  const handlePaneClick = () => {
+    setContainerSelected(false);
+    onPaneClick();
+  };
+
   const directEdgeCount = activeNodeId ? graphEdges.filter((edge) => edge.source === activeNodeId || edge.target === activeNodeId).length : 0;
-  const flowEdges = useMemo<Edge[]>(() => graphEdges.map((edge) => {
+  const flowEdges = useMemo<Edge[]>(() => graphEdges.flatMap((edge) => {
     const selected = edge.id === selectedEdgeId;
     const hovered = edge.id === hoveredEdgeId;
-    const connected = activeNodeId ? edge.source === activeNodeId || edge.target === activeNodeId : false;
+    const touchesNavContainer = edge.source.startsWith('nav.') || edge.target.startsWith('nav.');
+    const connected = activeNodeId ? edge.source === activeNodeId || edge.target === activeNodeId : containerSelected && touchesNavContainer;
     const placement = edge.kind === 'placement';
     const stroke = placement ? '#8a7569' : '#71837a';
-    return {
+    const sourceUsesContainer = !containerExpanded && edge.source.startsWith('nav.');
+    const targetUsesContainer = !containerExpanded && edge.target.startsWith('nav.');
+    if (sourceUsesContainer && targetUsesContainer) return [];
+    return [{
       id: edge.id,
       source: edge.source,
       target: edge.target,
+      data: {
+        visualSourceId: sourceUsesContainer ? navContainerId : undefined,
+        visualTargetId: targetUsesContainer ? navContainerId : undefined,
+      },
       type: 'floating',
       label: selected || hovered || (connected && directEdgeCount <= 3) ? edge.label : undefined,
       labelStyle: { fill: '#31443b', fontSize: 9, fontWeight: 650 },
@@ -529,11 +837,10 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
       },
       selected,
       zIndex: selected || hovered || connected ? 4 : 0,
-    };
-  }), [activeNodeId, directEdgeCount, graphEdges, hoveredEdgeId, selectedEdgeId]);
+    }];
+  }), [activeNodeId, containerExpanded, containerSelected, directEdgeCount, graphEdges, hoveredEdgeId, selectedEdgeId]);
 
-  return <div className="kg-force-root" data-layout={compact ? 'compact' : 'wide'} ref={rootRef}><ReactFlow
-    key={compact ? 'compact' : 'wide'}
+  return <div className={`kg-force-root ${containerReflowing ? 'container-reflowing' : ''}`} data-layout={compact ? 'compact' : 'wide'} ref={rootRef}><ReactFlow
     nodes={nodes}
     edges={flowEdges}
     nodeTypes={nodeTypes}
@@ -543,13 +850,13 @@ export function ForceKnowledgeGraph(props: ForceKnowledgeGraphProps) {
     onNodeDrag={onNodeDrag}
     onNodeDragStop={onNodeDragStop}
     onInit={handleInit}
-    onNodeClick={(_event, node) => { if (node.id !== 'nav.container') onNodeClick(node.id); }}
+    onNodeClick={(_event, node) => handleNodeClick(node)}
     onEdgeClick={(_event, edge) => onEdgeClick(edge.id)}
-    onNodeMouseEnter={(_event, node) => { if (node.id !== 'nav.container') onNodeHover(node.id); }}
+    onNodeMouseEnter={(_event, node) => { if (node.id !== navContainerId) onNodeHover(node.id); }}
     onNodeMouseLeave={() => onNodeHover(null)}
     onEdgeMouseEnter={(_event, edge) => onEdgeHover(edge.id)}
     onEdgeMouseLeave={() => onEdgeHover(null)}
-    onPaneClick={onPaneClick}
+    onPaneClick={handlePaneClick}
     nodesConnectable={false}
     minZoom={0.45}
     maxZoom={2.3}
