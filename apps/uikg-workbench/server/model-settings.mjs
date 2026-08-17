@@ -2,6 +2,7 @@ import { getModelRuntime } from './model-runtime.mjs';
 import { modelFamilyForName, ZTO_NEWAPI_VISIBLE_MODELS } from './model-compatibility.mjs';
 
 export const MODEL_TARGETS = ['worker_a', 'worker_b', 'midscene'];
+export const DEFAULT_MODEL_GATEWAY_ID = 'zto-newapi';
 export const MODEL_FAMILIES = [
   'gpt-5',
   'qwen2.5-vl',
@@ -42,6 +43,7 @@ function publicGateway(gateway) {
   const { apiKey, ...settings } = gateway;
   return {
     ...settings,
+    kind: gateway.id === DEFAULT_MODEL_GATEWAY_ID ? 'default' : 'custom',
     apiKeyConfigured: Boolean(apiKey),
     apiKeyHint: apiKeyHint(apiKey),
   };
@@ -212,6 +214,7 @@ export function deleteModelGateway(modelStore, gatewayId) {
   if (!id || !/^[a-z0-9][a-z0-9-]*$/.test(id)) throw settingsError('模型网关 ID 无效');
   const gateway = modelStore.getGateway(id);
   if (!gateway) throw settingsError('模型网关不存在', 404);
+  if (id === DEFAULT_MODEL_GATEWAY_ID) throw settingsError('默认网关不允许删除', 409, { gatewayId: id });
   const targets = modelStore.listAssignments()
     .filter((assignment) => assignment.gatewayId === id)
     .map((assignment) => assignment.target);

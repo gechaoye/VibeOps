@@ -152,6 +152,9 @@ export class ModelSettingsStore {
 
   listGateways({ includeApiKey = false } = {}) {
     const rows = this.ensureDatabase().prepare('SELECT id, label, base_url, api_key, created_at, updated_at FROM model_gateways ORDER BY label COLLATE NOCASE, id').all();
+    const ztoIndex = rows.findIndex((row) => row.id === 'zto-newapi');
+    const cfzIndex = rows.findIndex((row) => row.id === 'cfz');
+    if (ztoIndex !== -1 && cfzIndex !== -1) [rows[ztoIndex], rows[cfzIndex]] = [rows[cfzIndex], rows[ztoIndex]];
     return rows.map((row) => ({
       id: row.id,
       label: row.label,

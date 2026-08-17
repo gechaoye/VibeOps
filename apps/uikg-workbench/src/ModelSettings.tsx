@@ -196,6 +196,13 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
       .map(targetLabel);
   }, [editingGatewayId, settings]);
 
+  const editingGateway = useMemo(() => {
+    if (!editingGatewayId) return null;
+    return settings?.gateways.find((gateway) => gateway.id === editingGatewayId)
+      || catalog?.gateways.find((gateway) => gateway.id === editingGatewayId)
+      || null;
+  }, [catalog, editingGatewayId, settings]);
+
   const deleteGateway = async () => {
     if (!editingGatewayId || !gatewayForm) return;
     setGatewayDeleting(true);
@@ -277,7 +284,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
             {filteredGateways.map((gateway) => (
               <section className="model-gateway-group" key={gateway.id}>
                 <header>
-                  <span><strong>{gateway.label}</strong><code title={gateway.baseUrl}>{gateway.baseUrl}</code></span>
+                  <span><span className="gateway-title"><strong>{gateway.label}</strong><em className={`gateway-kind gateway-kind-${gateway.kind}`}>{gateway.kind === 'default' ? '默认网关' : '自定义网关'}</em></span><code title={gateway.baseUrl}>{gateway.baseUrl}</code></span>
                   <div className="gateway-header-actions"><small>{gateway.error ? '不可用' : `${gateway.models.length} 个`}</small><button type="button" className="icon-button" aria-label={`编辑 ${gateway.label}`} title="编辑网关" onClick={() => openGatewayDialog(gateway)}><Pencil size={12} /></button></div>
                 </header>
                 {gateway.error ? <div className="model-list-error"><CircleAlert size={14} /><span title={gateway.error}>{gateway.error}</span></div> : (
@@ -329,9 +336,10 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
             <label className="settings-field settings-field-wide"><span>Base URL</span><input required type="url" value={gatewayForm.baseUrl} placeholder="https://gateway.example.com/v1" onChange={(event) => setGatewayForm({ ...gatewayForm, baseUrl: event.target.value })} /></label>
             <label className="settings-field settings-field-wide"><span>API Key</span><span className="secret-input"><KeyRound size={14} /><input type="password" autoComplete="new-password" value={gatewayForm.apiKey} placeholder={editingGatewayId ? '留空即保留现有凭据' : '请输入 API Key'} onChange={(event) => setGatewayForm({ ...gatewayForm, apiKey: event.target.value })} /></span><small>{editingGatewayId ? '仅在需要更换凭据时填写。现有密钥不会返回到浏览器。' : '新增网关必须配置凭据。'}</small></label>
           </div>
-          {editingGatewayUsage.length > 0 && <div className="gateway-usage-note"><CircleAlert size={14} /><span>当前被 {editingGatewayUsage.join('、')} 使用，请先为这些运行目标指派其他网关后再移除。</span></div>}
+          {editingGateway?.kind === 'default' && <div className="gateway-default-note"><ServerCog size={14} /><span>这是系统默认网关，不允许删除。</span></div>}
+          {editingGateway?.kind !== 'default' && editingGatewayUsage.length > 0 && <div className="gateway-usage-note"><CircleAlert size={14} /><span>当前被 {editingGatewayUsage.join('、')} 使用，请先为这些运行目标指派其他网关后再移除。</span></div>}
           {confirmingGatewayDelete && <div className="gateway-delete-confirm" role="alertdialog" aria-label="确认移除模型网关"><span><strong>移除 {gatewayForm.label}？</strong><small>网关地址和 API Key 将从数据库删除，此操作不可撤销。</small></span><div><button type="button" className="button" disabled={gatewayDeleting} onClick={() => setConfirmingGatewayDelete(false)}>取消</button><button type="button" className="button danger-button" disabled={gatewayDeleting} onClick={() => void deleteGateway()}>{gatewayDeleting ? <LoaderCircle className="spin" size={14} /> : <Trash2 size={14} />}确认移除</button></div></div>}
-          <footer>{editingGatewayId && <button type="button" className="button danger-button gateway-delete-button" title={editingGatewayUsage.length ? `请先为 ${editingGatewayUsage.join('、')} 指派其他网关` : '移除网关'} disabled={gatewaySaving || gatewayDeleting || editingGatewayUsage.length > 0} onClick={() => setConfirmingGatewayDelete(true)}><Trash2 size={14} />移除网关</button>}<button type="button" className="button" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}>取消</button><button type="submit" className="button button-primary" disabled={gatewaySaving || gatewayDeleting}>{gatewaySaving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}保存网关</button></footer>
+          <footer>{editingGatewayId && <button type="button" className="button danger-button gateway-delete-button" title={editingGateway?.kind === 'default' ? '默认网关不允许删除' : editingGatewayUsage.length ? `请先为 ${editingGatewayUsage.join('、')} 指派其他网关` : '移除网关'} disabled={gatewaySaving || gatewayDeleting || editingGateway?.kind === 'default' || editingGatewayUsage.length > 0} onClick={() => setConfirmingGatewayDelete(true)}><Trash2 size={14} />移除网关</button>}<button type="button" className="button" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}>取消</button><button type="submit" className="button button-primary" disabled={gatewaySaving || gatewayDeleting}>{gatewaySaving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}保存网关</button></footer>
         </form>
       </div>}
     </main>

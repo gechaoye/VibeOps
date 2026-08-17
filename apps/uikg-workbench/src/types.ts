@@ -331,6 +331,7 @@ export interface ModelGatewaySettings {
   id: string;
   label: string;
   baseUrl: string;
+  kind: 'default' | 'custom';
   apiKeyConfigured: boolean;
   apiKeyHint: string | null;
 }

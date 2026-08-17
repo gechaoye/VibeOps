@@ -60,6 +60,25 @@ test('设置响应只返回 SQLite 网关密钥掩码', async () => {
   }
 });
 
+test('网关目录中 ZTO New API 与 CFZ 互换展示位置', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    store.saveGateway({ id: 'cfz', label: 'CFZ', baseUrl: 'https://cfz.nodemapz.com/v1', apiKey: 'cfz-secret' });
+    store.saveGateway({ id: 'dashscope', label: 'DashScope', baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1', apiKey: 'dashscope-secret' });
+    store.saveGateway({ id: 'zto-newapi', label: 'ZTO New API', baseUrl: 'https://znew-api.dev.ztosys.com/v1', apiKey: 'zto-secret' });
+
+    assert.deepEqual(store.listGateways().map((gateway) => gateway.id), ['zto-newapi', 'dashscope', 'cfz']);
+    assert.deepEqual(loadModelGateways(store).map((gateway) => [gateway.id, gateway.kind]), [
+      ['zto-newapi', 'default'],
+      ['dashscope', 'custom'],
+      ['cfz', 'custom'],
+    ]);
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test('按数据库网关聚合模型，过滤图片与 Realtime，并隔离单网关错误', async () => {
   const { root, store } = await temporaryStore();
   try {
@@ -145,6 +164,24 @@ test('仅允许删除未被运行目标使用的网关', async () => {
     assert.deepEqual(deleteModelGateway(store, 'unused'), { deleted: true, gatewayId: 'unused' });
     assert.equal(store.getGateway('unused'), null);
     assert.throws(() => deleteModelGateway(store, 'unused'), (error) => error.status === 404);
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('默认 ZTO 网关不允许删除', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    store.saveGateway({ id: 'zto-newapi', label: 'ZTO New API', baseUrl: 'https://znew-api.dev.ztosys.com/v1', apiKey: 'zto-secret' });
+
+    assert.throws(() => deleteModelGateway(store, 'zto-newapi'), (error) => {
+      assert.equal(error.status, 409);
+      assert.equal(error.message, '默认网关不允许删除');
+      assert.deepEqual(error.details, { gatewayId: 'zto-newapi' });
+      return true;
+    });
+    assert.ok(store.getGateway('zto-newapi'));
   } finally {
     store.close();
     await rm(root, { recursive: true, force: true });
