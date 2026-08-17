@@ -25,6 +25,22 @@ function safeAppKey(value) {
   return appKey;
 }
 
+function safeFrameRef(value) {
+  const frameRef = String(value || '').trim();
+  if (!/^[a-zA-Z0-9:_-]+$/.test(frameRef)) {
+    const error = new Error('无效的 Frame Ref');
+    error.status = 400;
+    throw error;
+  }
+  return frameRef;
+}
+
+export function canonicalFullPageAssetPath({ graphRoot, appKey: requestedAppKey, frameRef: requestedFrameRef }) {
+  const appKey = safeAppKey(requestedAppKey);
+  const frameRef = safeFrameRef(requestedFrameRef);
+  return path.join(graphRoot, 'obsidian', appKey, 'assets', 'full-pages', `${frameRef}.png`);
+}
+
 function unique(values) {
   return [...new Set(values.filter(Boolean))];
 }
@@ -45,6 +61,53 @@ function contractSourceRefs(contract, elementsById) {
   if (contract.sourceSelector?.kind === 'exact_page') return [contract.sourceSelector.ref];
   if (contract.sourceSelector?.kind !== 'shared_availability') return [];
   return elementsById.get(contract.sourceSelector.ref)?.availableOnPageRefs || [];
+}
+
+function previewUrl(appKey, frameRef) {
+  return `/workbench/api/knowledge-graph/assets/${encodeURIComponent(appKey)}/full-pages/${encodeURIComponent(frameRef)}`;
+}
+
+function observationPreview(appKey, observation, availableFrames) {
+  const frameRef = observation?.frameRef;
+  const viewport = observation?.viewport;
+  if (!frameRef || !availableFrames.has(frameRef) || !viewport?.width || !viewport?.height) return null;
+  return {
+    frameRef,
+    imageUrl: previewUrl(appKey, frameRef),
+    viewport: { width: viewport.width, height: viewport.height },
+  };
+}
+
+function pagePreview(appKey, page, availableFrames) {
+  const observations = page.observations || [];
+  for (let index = observations.length - 1; index >= 0; index -= 1) {
+    const preview = observationPreview(appKey, observations[index], availableFrames);
+    if (preview) return preview;
+  }
+  return null;
+}
+
+function edgePreview(appKey, edge, trigger, elementsById, availableFrames) {
+  if (!trigger) return null;
+  const pageId = owningPageId(trigger, elementsById) || edge.source;
+  const observations = trigger.observations || [];
+  const preferred = observations.find((observation) => observation.frameRef === edge.beforeFrameRef && observation.locator?.rect);
+  const fallback = [...observations].reverse().find((observation) => observation.locator?.rect && availableFrames.has(observation.frameRef));
+  const observation = preferred && availableFrames.has(preferred.frameRef) ? preferred : fallback;
+  const preview = observationPreview(appKey, observation, availableFrames);
+  if (!preview) return null;
+  const rect = observation.locator.rect;
+  return {
+    ...preview,
+    pageId,
+    element: {
+      id: trigger.id,
+      key: trigger.key,
+      label: trigger.label,
+      controlType: trigger.controlType,
+      rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+    },
+  };
 }
 
 export async function loadCanonicalGraph({ graphRoot, yaml, appKey: requestedAppKey }) {
@@ -76,6 +139,14 @@ export async function loadCanonicalGraph({ graphRoot, yaml, appKey: requestedApp
   const contracts = records.filter((record) => record.entityType === 'AuthorityContract');
   const pagesById = new Map(pages.map((page) => [page.id, page]));
   const elementsById = new Map(elements.map((element) => [element.id, element]));
+  let availableFrames = new Set();
+  try {
+    availableFrames = new Set((await readdir(path.join(graphRoot, 'obsidian', appKey, 'assets', 'full-pages')))
+      .filter((name) => name.endsWith('.png'))
+      .map((name) => name.slice(0, -4)));
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
   const ownedElementCounts = new Map();
   for (const element of elements) {
     const pageId = owningPageId(element, elementsById);
@@ -98,6 +169,7 @@ export async function loadCanonicalGraph({ graphRoot, yaml, appKey: requestedApp
       risk: transition.risk,
       status: transition.verificationStatus,
       planningEligible: true,
+      beforeFrameRef: transition.evidence?.beforeFrameRef || null,
     })),
     ...contracts.flatMap((contract) => contractSourceRefs(contract, elementsById).map((sourceRef) => ({
       id: `${contract.id}:${sourceRef}`,
@@ -115,14 +187,17 @@ export async function loadCanonicalGraph({ graphRoot, yaml, appKey: requestedApp
       risk: contract.risk,
       status: contract.runtimeEvidenceStatus,
       planningEligible: contract.planningEligible === true,
+      beforeFrameRef: null,
     }))),
   ].filter((edge) => pagesById.has(edge.source) && pagesById.has(edge.target));
 
   const edges = edgeRecords.map((edge) => {
     const trigger = elementsById.get(edge.triggerElementId);
+    const { beforeFrameRef: _beforeFrameRef, ...projection } = edge;
     return {
-      ...edge,
+      ...projection,
       trigger: trigger ? { id: trigger.id, key: trigger.key, label: trigger.label, controlType: trigger.controlType } : null,
+      preview: edgePreview(appKey, edge, trigger, elementsById, availableFrames),
     };
   });
 
@@ -143,6 +218,7 @@ export async function loadCanonicalGraph({ graphRoot, yaml, appKey: requestedApp
       sharedElementCount,
       inboundCount: inboundEdges.length,
       outboundCount: outboundEdges.length,
+      preview: pagePreview(appKey, page, availableFrames),
     };
   }).sort((left, right) => left.key.localeCompare(right.key));
 

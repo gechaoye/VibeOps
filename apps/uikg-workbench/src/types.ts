@@ -150,6 +150,24 @@ export interface CanonicalGraphPage {
   sharedElementCount: number;
   inboundCount: number;
   outboundCount: number;
+  preview: CanonicalGraphPreview | null;
+}
+
+export interface CanonicalGraphPreview {
+  frameRef: string;
+  imageUrl: string;
+  viewport: { width: number; height: number };
+}
+
+export interface CanonicalGraphElementPreview extends CanonicalGraphPreview {
+  pageId: string;
+  element: {
+    id: string;
+    key: string;
+    label: string;
+    controlType: string;
+    rect: { left: number; top: number; width: number; height: number };
+  };
 }
 
 export interface CanonicalGraphEdge {
@@ -165,6 +183,7 @@ export interface CanonicalGraphEdge {
   capability: string;
   triggerElementId: string;
   trigger: { id: string; key: string; label: string; controlType: string } | null;
+  preview: CanonicalGraphElementPreview | null;
   reversible: boolean | null;
   risk: 'safe' | 'low' | 'medium' | 'high' | 'critical' | string;
   status: string;

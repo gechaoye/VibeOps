@@ -21,7 +21,7 @@ import { getModelRuntime, setModelRuntime } from './model-runtime.mjs';
 import { recoverWorkerCheckpointFromStream, runResumableWorker, WORKER_ERROR_RETRY_LIMIT } from './resumable-worker.mjs';
 import { runWorkerModel } from './worker-client.mjs';
 import { buildWorkerContinuationPrompt, buildWorkerPrompt } from './worker-prompt.mjs';
-import { loadCanonicalGraph } from './canonical-graph.mjs';
+import { canonicalFullPageAssetPath, loadCanonicalGraph } from './canonical-graph.mjs';
 
 const MAX_PAGE_UPLOAD_BATCH = 20;
 const MAX_PAGE_IMAGE_BYTES = 25 * 1024 * 1024;
@@ -135,6 +135,19 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         yaml: graphWorkflow.yaml,
         appKey: req.query.appKey || 'zto.connect',
       }));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/knowledge-graph/assets/:appKey/full-pages/:frameRef', async (req, res, next) => {
+    try {
+      const imagePath = canonicalFullPageAssetPath({
+        graphRoot: graphWorkflow.graphRoot,
+        appKey: req.params.appKey,
+        frameRef: req.params.frameRef,
+      });
+      res.type('png').sendFile(imagePath);
     } catch (error) {
       next(error);
     }
