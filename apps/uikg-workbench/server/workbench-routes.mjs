@@ -3,7 +3,6 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
-import dotenv from 'dotenv';
 import express from 'express';
 import { imageSize } from 'image-size';
 import {
@@ -16,7 +15,9 @@ import {
   validateDraft,
   validateWorkerConsistency,
 } from './draft-model.mjs';
-import { fetchWorkerAvailableModels, loadWorkerAModelSettings, loadWorkerBModelSettings, saveWorkerAModelSettings, saveWorkerBModelSettings } from './model-settings.mjs';
+import { deleteModelGateway, fetchAvailableModelsByGateway, loadModelGateways, loadTargetModelSettings, MODEL_TARGETS, resolveTargetModelConfig, saveModelGateway, saveTargetModelSettings } from './model-settings.mjs';
+import { reasoningBudgetForModel } from './model-compatibility.mjs';
+import { getModelRuntime, setModelRuntime } from './model-runtime.mjs';
 import { recoverWorkerCheckpointFromStream, runResumableWorker, WORKER_ERROR_RETRY_LIMIT } from './resumable-worker.mjs';
 import { runWorkerModel } from './worker-client.mjs';
 import { buildWorkerContinuationPrompt, buildWorkerPrompt } from './worker-prompt.mjs';
@@ -73,7 +74,7 @@ async function freezeAndCapture(agent) {
   };
 }
 
-export async function registerWorkbenchRoutes({ server, store, graphWorkflow, workbenchRoot, modelEnvPath, spec }) {
+export async function registerWorkbenchRoutes({ server, store, modelStore, graphWorkflow, workbenchRoot, spec }) {
   const router = express.Router();
   router.use(express.json({ limit: '50mb' }));
   const schema = JSON.parse(await readFile(path.join(workbenchRoot, 'server', 'worker-output.schema.json'), 'utf8'));
@@ -88,45 +89,43 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
   let resumableWorkerB = null;
   let frozenAgent = null;
   let frozenFrameId = null;
-  let loadedModelEnvHash = null;
+  let loadedModelRuntimeSignature = null;
   let uploadDraftQueue = Promise.resolve();
   const activePageUploadControllers = new Map();
   const deletedPageUploadIds = new Set();
-  const workerADefaultModelKeys = [
-    'BASE_URL',
-    'API_KEY',
-    'NAME',
-    'FAMILY',
-    'TIMEOUT',
-    'TEMPERATURE',
-  ];
-
   const syncModelRuntime = async () => {
-    if (!modelEnvPath) return false;
-    let content;
-    try {
-      content = await readFile(modelEnvPath, 'utf8');
-    } catch (error) {
-      if (error?.code === 'ENOENT') return false;
-      throw error;
+    if (!modelStore) return false;
+    const configs = Object.fromEntries(MODEL_TARGETS.map((target) => [target, resolveTargetModelConfig(modelStore, target)]));
+    const signature = JSON.stringify(configs);
+    if (signature === loadedModelRuntimeSignature) return false;
+    for (const target of MODEL_TARGETS) {
+      if (configs[target]) setModelRuntime(target, configs[target]);
     }
-    const contentHash = createHash('sha256').update(content).digest('hex');
-    if (contentHash === loadedModelEnvHash) return false;
-    const values = dotenv.parse(content);
-    Object.assign(process.env, values);
-    for (const suffix of workerADefaultModelKeys) {
-      const workerKey = `MIDSCENE_WORKER_A_MODEL_${suffix}`;
-      const defaultKey = `MIDSCENE_MODEL_${suffix}`;
-      if (values[workerKey] !== undefined) process.env[defaultKey] = values[workerKey];
+    const midscene = configs.midscene;
+    if (midscene) {
+      const mappings = {
+        MIDSCENE_MODEL_BASE_URL: midscene.baseUrl,
+        MIDSCENE_MODEL_API_KEY: midscene.apiKey,
+        MIDSCENE_MODEL_NAME: midscene.modelName,
+        MIDSCENE_MODEL_FAMILY: midscene.modelFamily,
+        MIDSCENE_MODEL_TIMEOUT: String(midscene.timeout),
+        MIDSCENE_MODEL_TEMPERATURE: String(midscene.temperature),
+        MIDSCENE_MODEL_REASONING_EFFORT: midscene.reasoningEffort,
+        MIDSCENE_MODEL_REASONING_ENABLED: 'true',
+        MIDSCENE_MODEL_REASONING_BUDGET: String(reasoningBudgetForModel(midscene.modelName, midscene.reasoningEffort) || ''),
+      };
+      Object.assign(process.env, mappings);
     }
     server.agent?.modelConfigManager?.clearModelConfigMap();
-    loadedModelEnvHash = contentHash;
+    loadedModelRuntimeSignature = signature;
     return true;
   };
 
-  const loadCombinedModelSettings = async () => ({
-    workerA: await loadWorkerAModelSettings(modelEnvPath),
-    workerB: await loadWorkerBModelSettings(modelEnvPath),
+  const loadCombinedModelSettings = () => ({
+    workerA: loadTargetModelSettings(modelStore, 'worker_a'),
+    workerB: loadTargetModelSettings(modelStore, 'worker_b'),
+    midscene: loadTargetModelSettings(modelStore, 'midscene'),
+    gateways: loadModelGateways(modelStore),
   });
 
   router.get('/knowledge-graph', async (req, res, next) => {
@@ -237,8 +236,9 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
 
   async function executeWorker({ worker, frameId, pageId = null, pageContext = '', mergeIntoDraft = false, signal, onProgress = () => {}, resumeSession = null }) {
     const label = worker === 'worker_a' ? 'Worker A' : 'Worker B';
-    const envPrefix = worker === 'worker_a' ? 'MIDSCENE_WORKER_A_MODEL' : 'MIDSCENE_WORKER_B_MODEL';
-    const model = process.env[`${envPrefix}_NAME`] || null;
+    await syncModelRuntime();
+    const runtime = getModelRuntime(worker);
+    const model = runtime?.modelName || null;
     const setResumable = (value) => {
       if (worker === 'worker_a') resumableWorkerA = value;
       else resumableWorkerB = value;
@@ -273,11 +273,10 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         reasoningContent,
         outputContent,
       });
-      await syncModelRuntime();
       emitProgress({ type: 'stage', phase: 'validate', message: '正在校验冻结帧' });
       if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
       if (!model) {
-        throw workbenchError(503, `未配置 ${label} 模型，请设置 ${envPrefix}_*`);
+        throw workbenchError(503, `未配置 ${label} 模型，请在模型配置页面完成指派`);
       }
       if (!frameId) throw workbenchError(400, '缺少 frameId');
       const frozenFrame = await store.loadFrame(frameId);
@@ -306,9 +305,7 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
               emitProgress({
                 type: 'chunk',
                 content: chunk.content || '',
-                reasoningContent: process.env[`${envPrefix}_REASONING_ENABLED`] === 'true'
-                  ? chunk.reasoning_content || ''
-                  : '',
+                reasoningContent: chunk.reasoning_content || '',
               });
             };
             const workerRunner = typeof server.runWorkerModel === 'function' ? server.runWorkerModel : runWorkerModel;
@@ -542,10 +539,10 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
         ok: true,
         agentConnected: Boolean(server.agent),
         workersRunning: workerAInProgress || workerBInProgress,
-        workerAConfigured: Boolean(process.env.MIDSCENE_WORKER_A_MODEL_NAME),
-        workerAModel: process.env.MIDSCENE_WORKER_A_MODEL_NAME || null,
-        workerBConfigured: Boolean(process.env.MIDSCENE_WORKER_B_MODEL_NAME),
-        workerBModel: process.env.MIDSCENE_WORKER_B_MODEL_NAME || null,
+        workerAConfigured: Boolean(getModelRuntime('worker_a')?.modelName),
+        workerAModel: getModelRuntime('worker_a')?.modelName || null,
+        workerBConfigured: Boolean(getModelRuntime('worker_b')?.modelName),
+        workerBModel: getModelRuntime('worker_b')?.modelName || null,
         workerASession: publicWorkerSession(resumableWorkerA),
         workerBSession: publicWorkerSession(resumableWorkerB),
         spec,
@@ -582,11 +579,10 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     }
   });
 
-  router.get('/model-settings/models', async (req, res, next) => {
+  router.get('/model-settings/models', async (_req, res, next) => {
     try {
       await syncModelRuntime();
-      const worker = req.query.worker === 'worker_b' ? 'worker_b' : 'worker_a';
-      res.json(await fetchWorkerAvailableModels(modelEnvPath, worker));
+      res.json(await fetchAvailableModelsByGateway(modelStore));
     } catch (error) {
       next(error);
     }
@@ -595,16 +591,35 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
   router.put('/model-settings', async (req, res, next) => {
     try {
       if (workerAInProgress || workerBInProgress) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
-      const worker = req.body?.worker === 'worker_b' ? 'worker_b' : 'worker_a';
-      if (worker === 'worker_b') await saveWorkerBModelSettings(modelEnvPath, req.body);
-      else await saveWorkerAModelSettings(modelEnvPath, req.body);
+      saveTargetModelSettings(modelStore, req.body);
       let runtimeReloaded = true;
       try {
-        server.agent?.modelConfigManager?.clearModelConfigMap();
+        await syncModelRuntime();
       } catch {
         runtimeReloaded = false;
       }
       res.json({ ...await loadCombinedModelSettings(), runtimeReloaded });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.put('/model-settings/gateways/:gatewayId', async (req, res, next) => {
+    try {
+      if (workerAInProgress || workerBInProgress) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能修改模型网关' });
+      saveModelGateway(modelStore, { ...req.body, id: req.params.gatewayId });
+      await syncModelRuntime();
+      res.json(loadCombinedModelSettings());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.delete('/model-settings/gateways/:gatewayId', async (req, res, next) => {
+    try {
+      if (workerAInProgress || workerBInProgress) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能移除模型网关' });
+      const deleted = deleteModelGateway(modelStore, req.params.gatewayId);
+      res.json({ ...loadCombinedModelSettings(), ...deleted });
     } catch (error) {
       next(error);
     }

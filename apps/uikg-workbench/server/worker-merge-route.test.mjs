@@ -8,17 +8,11 @@ import test from 'node:test';
 import express from 'express';
 import { createEmptyDraft, mergeWorkerIntoDraft } from './draft-model.mjs';
 import { registerWorkbenchRoutes } from './workbench-routes.mjs';
+import { clearModelRuntime, setModelRuntime } from './model-runtime.mjs';
 
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
 
 test('双 Worker 合并路由按字段选择两份答卷', async () => {
-  const previousEnv = {
-    baseUrl: process.env.MIDSCENE_WORKER_B_MODEL_BASE_URL,
-    apiKey: process.env.MIDSCENE_WORKER_B_MODEL_API_KEY,
-    model: process.env.MIDSCENE_WORKER_B_MODEL_NAME,
-    family: process.env.MIDSCENE_WORKER_B_MODEL_FAMILY,
-    reasoning: process.env.MIDSCENE_WORKER_B_MODEL_REASONING_ENABLED,
-  };
   const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'vibeops-worker-merge-route-'));
   const imagePath = path.join(tempRoot, 'frame.png');
   await writeFile(imagePath, Buffer.from(PNG_1X1, 'base64'));
@@ -41,11 +35,10 @@ test('双 Worker 合并路由按字段选择两份答卷', async () => {
   });
   modelServer.listen(0, '127.0.0.1');
   await once(modelServer, 'listening');
-  process.env.MIDSCENE_WORKER_B_MODEL_BASE_URL = `http://127.0.0.1:${modelServer.address().port}/v1`;
-  process.env.MIDSCENE_WORKER_B_MODEL_API_KEY = 'test-key';
-  process.env.MIDSCENE_WORKER_B_MODEL_NAME = 'test-worker-b';
-  process.env.MIDSCENE_WORKER_B_MODEL_FAMILY = 'gpt-5';
-  process.env.MIDSCENE_WORKER_B_MODEL_REASONING_ENABLED = 'true';
+  setModelRuntime('worker_b', {
+    baseUrl: `http://127.0.0.1:${modelServer.address().port}/v1`, apiKey: 'test-key', modelName: 'test-worker-b',
+    modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'medium',
+  });
   const app = express();
   let draft = createEmptyDraft();
   const agent = {
@@ -93,7 +86,7 @@ test('双 Worker 合并路由按字段选择两份答卷', async () => {
       const data = JSON.parse(block.match(/^data:\s*(.+)$/m)?.[1] || '{}');
       return { event, data };
     });
-    assert.equal(events.find((event) => event.event === 'chunk' && event.data.reasoningContent)?.data.reasoningContent, '重新查看截图');
+    assert.equal(events.find((event) => event.event === 'chunk' && event.data.reasoningContent)?.data.reasoningContent, '重新查看截图', streamBody);
     const result = events.find((event) => event.event === 'result')?.data;
     assert.ok(result, 'Worker B 流应返回最终结果');
     assert.equal(draft.elements.length, 1, 'Worker B 不应直接覆盖 Worker A 草稿');
@@ -151,15 +144,6 @@ test('双 Worker 合并路由按字段选择两份答卷', async () => {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     modelServer.close();
     await rm(tempRoot, { recursive: true, force: true });
-    for (const [name, value] of Object.entries({
-      MIDSCENE_WORKER_B_MODEL_BASE_URL: previousEnv.baseUrl,
-      MIDSCENE_WORKER_B_MODEL_API_KEY: previousEnv.apiKey,
-      MIDSCENE_WORKER_B_MODEL_NAME: previousEnv.model,
-      MIDSCENE_WORKER_B_MODEL_FAMILY: previousEnv.family,
-      MIDSCENE_WORKER_B_MODEL_REASONING_ENABLED: previousEnv.reasoning,
-    })) {
-      if (value === undefined) delete process.env[name];
-      else process.env[name] = value;
-    }
+    clearModelRuntime('worker_b');
   }
 });

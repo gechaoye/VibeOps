@@ -4,7 +4,7 @@
 
 ## 启动
 
-环境要求：Node.js 20+、pnpm，以及可通过 ADB 访问的 Android 设备。模型配置位于平台根目录 `.env`，Worker A 使用独立的 `MIDSCENE_WORKER_A_MODEL_*` 配置。
+环境要求：Node.js 20+、pnpm，以及可通过 ADB 访问的 Android 设备。模型网关与 Worker 模型指派位于平台根目录 `.env`。
 
 ```bash
 pnpm install
@@ -14,24 +14,16 @@ pnpm start
 
 开发时运行 `pnpm dev` 会同时启动前端和 Android/Workbench 服务，打开 `http://127.0.0.1:5173`。生产构建后运行 `pnpm start`，打开 `http://127.0.0.1:5800`。
 
-## Worker A 模型设置
+## 模型配置
 
-Workbench 的“模型”页读取并更新平台根目录 `.env` 中的 `MIDSCENE_WORKER_A_MODEL_*` 配置。保存后会刷新当前进程的 Worker A 模型配置；API Key 仅在服务端读取，页面只显示脱敏末四位。
+Workbench 的“模型配置”页从本地 SQLite 数据库 `.data/model-settings.sqlite` 读取网关与模型指派。Worker A、Worker B 和 Midscene 是三个独立目标，可以从同一网关目录分别选择模型。API Key 仅在服务端读取，页面只显示脱敏末四位。
 
-推荐的低成本配置如下：
+数据库包含两张核心表：
 
-```bash
-MIDSCENE_WORKER_A_MODEL_BASE_URL="https://dashscope.aliyuncs.com/compatible-mode/v1"
-MIDSCENE_WORKER_A_MODEL_API_KEY="..."
-MIDSCENE_WORKER_A_MODEL_NAME="qwen3.7-flash"
-MIDSCENE_WORKER_A_MODEL_FAMILY="qwen3"
-MIDSCENE_WORKER_A_MODEL_TIMEOUT="120000"
-MIDSCENE_WORKER_A_MODEL_TEMPERATURE="0"
-MIDSCENE_WORKER_A_MODEL_REASONING_EFFORT="none"
-MIDSCENE_WORKER_A_MODEL_REASONING_ENABLED="false"
-```
+- `model_gateways`：网关名称、Base URL 和 API Key。
+- `model_assignments`：`worker_a`、`worker_b`、`midscene` 的模型、Family、超时、Temperature 和推理强度。
 
-Realtime 模型使用独立实时接口，不能通过当前 Worker A 的 OpenAI 兼容 HTTP 链路调用。
+首次启动时会把旧 `.env` 模型配置一次性迁移到数据库，后续页面读写不再修改 `.env`。只有 Midscene 标签选中的模型会在运行时转换成 Midscene SDK 所需配置。Realtime 模型使用独立实时接口，不会出现在当前 OpenAI 兼容 HTTP 模型目录中。
 
 ## 数据边界
 

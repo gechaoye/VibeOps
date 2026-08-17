@@ -1,4 +1,4 @@
-import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, PageUploadTask, ReasoningEffort, WorkerAvailableModels, WorkerElementMergeSelection, WorkerModelSettings, WorkerResult, WorkerResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelTarget, PageUploadTask, ReasoningEffort, WorkerAvailableModels, WorkerElementMergeSelection, WorkerModelSettings, WorkerResult, WorkerResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -111,17 +111,18 @@ export const workbenchApi = {
   status: () => request<WorkbenchStatus>('/status'),
   knowledgeGraph: (appKey: string) => request<CanonicalGraph>(`/knowledge-graph?appKey=${encodeURIComponent(appKey)}`),
   modelSettings: () => request<WorkerModelSettings>('/model-settings'),
-  availableModels: (worker: 'worker_a' | 'worker_b') => request<WorkerAvailableModels>(`/model-settings/models?worker=${worker}`),
+  availableModels: () => request<WorkerAvailableModels>('/model-settings/models'),
   saveModelSettings: (config: {
-    worker: 'worker_a' | 'worker_b';
-    baseUrl: string;
+    target: ModelTarget;
+    gatewayId: string;
     modelName: string;
     modelFamily: string;
     timeout: number;
     temperature: number;
     reasoningEffort: ReasoningEffort;
-    apiKey: string;
   }) => request<WorkerModelSettings>('/model-settings', { method: 'PUT', body: JSON.stringify(config) }),
+  saveModelGateway: (gateway: { id: string; label: string; baseUrl: string; apiKey: string }) => request<WorkerModelSettings>(`/model-settings/gateways/${encodeURIComponent(gateway.id)}`, { method: 'PUT', body: JSON.stringify(gateway) }),
+  deleteModelGateway: (gatewayId: string) => request<WorkerModelSettings & { deleted: true; gatewayId: string }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}`, { method: 'DELETE' }),
   sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),
   draft: () => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft'),
   saveDraft: (draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft', { method: 'PUT', body: JSON.stringify(draft) }),

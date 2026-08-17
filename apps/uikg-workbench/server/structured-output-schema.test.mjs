@@ -6,6 +6,8 @@ test('GPT-5 和两个 Qwen3.7 模型启用结构化输出', () => {
   assert.equal(supportsStructuredOutput('gpt-5.6-sol', 'gpt-5'), true);
   assert.equal(supportsStructuredOutput('qwen3.7-flash', 'qwen3'), true);
   assert.equal(supportsStructuredOutput('qwen3.7-plus', 'qwen3'), true);
+  assert.equal(supportsStructuredOutput('qwen3.7-max', 'qwen3'), false);
+  assert.equal(supportsStructuredOutput('MiniMax-M3', 'gpt-5'), false);
   assert.equal(supportsStructuredOutput('qwen3-vl-plus', 'qwen3-vl'), false);
 });
 

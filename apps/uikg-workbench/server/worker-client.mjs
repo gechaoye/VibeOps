@@ -1,28 +1,31 @@
 import { readFile } from 'node:fs/promises';
 import { jsonrepair } from 'jsonrepair';
+import { chatCompletionCompatibility } from './model-compatibility.mjs';
 import { openAIStructuredOutputSchema, supportsStructuredOutput } from './structured-output-schema.mjs';
+import { getModelRuntime } from './model-runtime.mjs';
 
 const CHINESE_SYSTEM_PROMPT = '你必须始终使用简体中文进行思考和回答。所有可见的思考过程、推理内容、说明和最终输出中的自然语言都必须是简体中文；JSON 的键名和约定枚举值保持 Schema 要求。';
 
 const WORKERS = {
-  worker_a: { label: 'Worker A', envPrefix: 'MIDSCENE_WORKER_A_MODEL' },
-  worker_b: { label: 'Worker B', envPrefix: 'MIDSCENE_WORKER_B_MODEL' },
+  worker_a: { label: 'Worker A' },
+  worker_b: { label: 'Worker B' },
 };
 
 function workerConfig(worker) {
   const definition = WORKERS[worker];
   if (!definition) throw new Error(`未知 Worker：${worker}`);
-  const value = (suffix) => process.env[`${definition.envPrefix}_${suffix}`];
-  const reasoningEffort = String(value('REASONING_EFFORT') || (value('REASONING_ENABLED') === 'true' ? 'medium' : 'none')).toLowerCase();
+  const runtime = getModelRuntime(worker);
+  if (!runtime) throw new Error(`${definition.label} 模型运行时尚未加载`);
+  const reasoningEffort = runtime.reasoningEffort;
   return {
     ...definition,
-    model: value('NAME'),
-    apiKey: value('API_KEY'),
-    baseUrl: value('BASE_URL'),
-    modelFamily: String(value('FAMILY') || '').toLowerCase(),
-    temperature: Number(value('TEMPERATURE') || 0),
+    model: runtime.modelName,
+    apiKey: runtime.apiKey,
+    baseUrl: runtime.baseUrl,
+    modelFamily: String(runtime.modelFamily || '').toLowerCase(),
+    temperature: Number(runtime.temperature || 0),
     reasoningEffort,
-    reasoningEnabled: reasoningEffort !== 'none',
+    reasoningEnabled: true,
   };
 }
 
@@ -77,8 +80,8 @@ export async function runWorkerModel({
   onChunk = () => {},
 }) {
   const config = workerConfig(worker);
-  if (!config.model) throw new Error(`未配置 ${config.envPrefix}_NAME`);
-  if (!config.apiKey) throw new Error(`未配置 ${config.envPrefix}_API_KEY`);
+  if (!config.model) throw new Error(`未配置 ${config.label} 模型`);
+  if (!config.apiKey) throw new Error(`未配置 ${config.label} 模型网关凭据`);
 
   const bytes = imageBuffer ? Buffer.from(imageBuffer) : await readFile(imagePath);
   const image = bytes.toString('base64');
@@ -94,11 +97,11 @@ export async function runWorkerModel({
       ],
     }],
   };
-  if (config.modelFamily.startsWith('qwen') || String(config.model).toLowerCase().startsWith('qwen')) {
-    requestBody.enable_thinking = config.reasoningEnabled;
-  } else if (config.reasoningEnabled) {
-    requestBody.reasoning_effort = config.reasoningEffort;
-  }
+  Object.assign(requestBody, chatCompletionCompatibility({
+    modelName: config.model,
+    reasoningEffort: config.reasoningEffort,
+    reasoningEnabled: config.reasoningEnabled,
+  }));
   if (responseSchema && supportsStructuredOutput(config.model, config.modelFamily)) {
     requestBody.response_format = {
       type: 'json_schema',

@@ -5,14 +5,12 @@ import test from 'node:test';
 import express from 'express';
 import { createEmptyDraft } from './draft-model.mjs';
 import { registerWorkbenchRoutes } from './workbench-routes.mjs';
+import { clearModelRuntime, setModelRuntime } from './model-runtime.mjs';
 
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
 
 test('Worker A 手动中断后保留断点并从断点继续', async () => {
-  const previousWorkerModel = process.env.MIDSCENE_WORKER_A_MODEL_NAME;
-  const previousWorkerReasoning = process.env.MIDSCENE_WORKER_A_MODEL_REASONING_ENABLED;
-  process.env.MIDSCENE_WORKER_A_MODEL_NAME = 'test-worker-a-model';
-  process.env.MIDSCENE_WORKER_A_MODEL_REASONING_ENABLED = 'true';
+  setModelRuntime('worker_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
   const app = express();
   let draft = createEmptyDraft();
   let modelAborted = false;
@@ -125,9 +123,6 @@ test('Worker A 手动中断后保留断点并从断点继续', async () => {
     assert.equal(draftSaveCount, 2, '恢复完成后才合并并保存草稿');
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
-    if (previousWorkerModel === undefined) delete process.env.MIDSCENE_WORKER_A_MODEL_NAME;
-    else process.env.MIDSCENE_WORKER_A_MODEL_NAME = previousWorkerModel;
-    if (previousWorkerReasoning === undefined) delete process.env.MIDSCENE_WORKER_A_MODEL_REASONING_ENABLED;
-    else process.env.MIDSCENE_WORKER_A_MODEL_REASONING_ENABLED = previousWorkerReasoning;
+    clearModelRuntime('worker_a');
   }
 });

@@ -325,23 +325,41 @@ export interface WorkerModelPreset {
 }
 
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
+export type ModelTarget = 'worker_a' | 'worker_b' | 'midscene';
 
-export interface WorkerAvailableModels {
-  worker: 'worker_a' | 'worker_b';
+export interface ModelGatewaySettings {
+  id: string;
+  label: string;
+  baseUrl: string;
+  apiKeyConfigured: boolean;
+  apiKeyHint: string | null;
+}
+
+export interface ModelGatewayCatalog extends ModelGatewaySettings {
   sourceUrl: string;
   models: string[];
+  modelFamilies: Record<string, string>;
+  error?: string;
+}
+
+export interface WorkerAvailableModels {
+  gateways: ModelGatewayCatalog[];
+  totalModels: number;
 }
 
 export interface WorkerModelSettings {
   workerA: WorkerSlotSettings;
   workerB: WorkerSlotSettings;
+  midscene: WorkerSlotSettings;
+  gateways: ModelGatewaySettings[];
   runtimeReloaded?: boolean;
 }
 
 export interface WorkerSlotSettings {
-  envPath: string;
-  worker: 'worker_a' | 'worker_b';
+  storagePath: string;
+  target: ModelTarget;
   config: {
+    gatewayId: string;
     baseUrl: string;
     modelName: string;
     modelFamily: string;

@@ -6,6 +6,7 @@ import path from 'node:path';
 import { once } from 'node:events';
 import test from 'node:test';
 import { runWorkerModel } from './worker-client.mjs';
+import { clearModelRuntime, setModelRuntime } from './model-runtime.mjs';
 
 const responseSchema = {
   $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -31,7 +32,8 @@ test('Worker A client sends a frozen image and repairs streamed JSON', async () 
     request.on('end', () => {
       const payload = JSON.parse(body);
       assert.equal(payload.model, 'qwen3.7-flash');
-      assert.equal(payload.enable_thinking, false);
+      assert.equal(payload.enable_thinking, true);
+      assert.equal(payload.thinking_budget, 2048);
       assert.equal(payload.response_format.type, 'json_schema');
       assert.equal(payload.response_format.json_schema.strict, true);
       assert.equal(payload.response_format.json_schema.schema.properties.elements.uniqueItems, undefined);
@@ -47,14 +49,10 @@ test('Worker A client sends a frozen image and repairs streamed JSON', async () 
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
-  const previous = {
-    baseUrl: process.env.MIDSCENE_WORKER_A_MODEL_BASE_URL,
-    apiKey: process.env.MIDSCENE_WORKER_A_MODEL_API_KEY,
-    model: process.env.MIDSCENE_WORKER_A_MODEL_NAME,
-  };
-  process.env.MIDSCENE_WORKER_A_MODEL_BASE_URL = `http://127.0.0.1:${address.port}/v1`;
-  process.env.MIDSCENE_WORKER_A_MODEL_API_KEY = 'test-key';
-  process.env.MIDSCENE_WORKER_A_MODEL_NAME = 'qwen3.7-flash';
+  setModelRuntime('worker_a', {
+    baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'qwen3.7-flash',
+    modelFamily: 'qwen3', temperature: 0, reasoningEffort: 'low',
+  });
   const chunks = [];
 
   try {
@@ -68,12 +66,7 @@ test('Worker A client sends a frozen image and repairs streamed JSON', async () 
     assert.deepEqual(result, { frameId: 'f', elements: [] });
     assert.deepEqual(chunks, ['{"frameId":"f",', '"elements":[]}']);
   } finally {
-    if (previous.baseUrl === undefined) delete process.env.MIDSCENE_WORKER_A_MODEL_BASE_URL;
-    else process.env.MIDSCENE_WORKER_A_MODEL_BASE_URL = previous.baseUrl;
-    if (previous.apiKey === undefined) delete process.env.MIDSCENE_WORKER_A_MODEL_API_KEY;
-    else process.env.MIDSCENE_WORKER_A_MODEL_API_KEY = previous.apiKey;
-    if (previous.model === undefined) delete process.env.MIDSCENE_WORKER_A_MODEL_NAME;
-    else process.env.MIDSCENE_WORKER_A_MODEL_NAME = previous.model;
+    clearModelRuntime('worker_a');
     server.close();
     await rm(tempRoot, { recursive: true, force: true });
   }
@@ -95,13 +88,10 @@ test('Worker B client sends the configured reasoning effort', async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
-  const keys = ['BASE_URL', 'API_KEY', 'NAME', 'FAMILY', 'REASONING_EFFORT'];
-  const previous = Object.fromEntries(keys.map((key) => [key, process.env[`MIDSCENE_WORKER_B_MODEL_${key}`]]));
-  process.env.MIDSCENE_WORKER_B_MODEL_BASE_URL = `http://127.0.0.1:${address.port}/v1`;
-  process.env.MIDSCENE_WORKER_B_MODEL_API_KEY = 'test-key';
-  process.env.MIDSCENE_WORKER_B_MODEL_NAME = 'gpt-5.6-sol';
-  process.env.MIDSCENE_WORKER_B_MODEL_FAMILY = 'gpt-5';
-  process.env.MIDSCENE_WORKER_B_MODEL_REASONING_EFFORT = 'high';
+  setModelRuntime('worker_b', {
+    baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'gpt-5.6-sol',
+    modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'high',
+  });
 
   try {
     const result = await runWorkerModel({
@@ -111,11 +101,51 @@ test('Worker B client sends the configured reasoning effort', async () => {
     });
     assert.deepEqual(result, { ok: true });
   } finally {
-    for (const key of keys) {
-      const name = `MIDSCENE_WORKER_B_MODEL_${key}`;
-      if (previous[key] === undefined) delete process.env[name];
-      else process.env[name] = previous[key];
+    clearModelRuntime('worker_b');
+    server.close();
+  }
+});
+
+test('Worker 为 Qwen、Doubao 和 MiniMax 构造兼容请求', async () => {
+  const received = [];
+  const server = createServer((request, response) => {
+    let body = '';
+    request.on('data', (chunk) => { body += chunk; });
+    request.on('end', () => {
+      received.push(JSON.parse(body));
+      response.writeHead(200, { 'content-type': 'text/event-stream' });
+      response.write('data: {"choices":[{"delta":{"content":"{\\"ok\\":true}"}}]}\n\n');
+      response.end('data: [DONE]\n\n');
+    });
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  const models = [
+    { modelName: 'qwen3.8-max', modelFamily: 'qwen3', reasoningEffort: 'high' },
+    { modelName: 'doubao-seed-2.1-pro', modelFamily: 'doubao-seed', reasoningEffort: 'medium' },
+    { modelName: 'MiniMax-M3', modelFamily: 'gpt-5', reasoningEffort: 'low' },
+  ];
+
+  try {
+    for (const model of models) {
+      setModelRuntime('worker_a', {
+        baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', temperature: 0, ...model,
+      });
+      await runWorkerModel({
+        worker: 'worker_a', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
+      });
     }
+    assert.equal(received[0].enable_thinking, true);
+    assert.equal(received[0].thinking_budget, 16384);
+    assert.equal(received[0].response_format, undefined);
+    assert.deepEqual(received[1].thinking, { type: 'enabled' });
+    assert.equal(received[1].reasoning_effort, 'medium');
+    assert.equal(received[1].response_format, undefined);
+    assert.equal(received[2].reasoning_effort, 'low');
+    assert.equal(received[2].response_format, undefined);
+  } finally {
+    clearModelRuntime('worker_a');
     server.close();
   }
 });

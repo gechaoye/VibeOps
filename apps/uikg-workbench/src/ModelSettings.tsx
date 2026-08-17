@@ -5,13 +5,18 @@ import {
   FileText,
   KeyRound,
   LoaderCircle,
+  Pencil,
+  Plus,
   RefreshCw,
   Save,
+  Search,
   ServerCog,
+  Trash2,
+  X,
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { workbenchApi } from './api';
-import type { ReasoningEffort, WorkerAvailableModels, WorkerModelPreset, WorkerSlotSettings, WorkerModelSettings } from './types';
+import type { ModelGatewayCatalog, ModelTarget, ReasoningEffort, WorkerAvailableModels, WorkerModelSettings, WorkerSlotSettings } from './types';
 
 interface ModelSettingsProps {
   onSaved: (settings: WorkerModelSettings) => void;
@@ -19,7 +24,7 @@ interface ModelSettingsProps {
 }
 
 interface ModelForm {
-  baseUrl: string;
+  gatewayId: string;
   modelName: string;
   modelFamily: string;
   timeout: number;
@@ -27,53 +32,73 @@ interface ModelForm {
   reasoningEffort: ReasoningEffort;
 }
 
-function gatewayPreset(modelName: string): WorkerModelPreset {
-  const reviewOnly = modelName.includes('review');
-  const lightweight = modelName.includes('mini');
-  return {
-    id: `gateway:${modelName}`,
-    name: modelName,
-    modelName,
-    modelFamily: 'gpt-5',
-    badge: reviewOnly ? '审查' : lightweight ? '轻量' : '推理',
-    summary: '当前 API Key 可用模型',
-    inputPrice: null,
-    outputPrice: null,
-  };
+interface GatewayForm {
+  id: string;
+  label: string;
+  baseUrl: string;
+  apiKey: string;
+}
+
+function familyForModel(modelName: string) {
+  const name = modelName.toLowerCase();
+  if (name.includes('qwen2.5-vl')) return 'qwen2.5-vl';
+  if (name.includes('qwen3-vl')) return 'qwen3-vl';
+  if (name.includes('qwen3.6')) return 'qwen3.6';
+  if (name.includes('qwen3.5')) return 'qwen3.5';
+  if (name.includes('qwen3')) return 'qwen3';
+  if (name.includes('doubao')) return 'doubao-seed';
+  if (name.includes('gemini')) return 'gemini';
+  if (name.includes('kimi-k3') || name.includes('kimi3')) return 'kimi3';
+  if (name.includes('kimi')) return 'kimi';
+  if (name.includes('xiaomi') || name.includes('mimo')) return 'xiaomi-mimo';
+  if (name.includes('minimax')) return 'gpt-5';
+  return 'gpt-5';
 }
 
 function formFromSettings(settings: Pick<WorkerSlotSettings, 'config'>): ModelForm {
   return {
-    baseUrl: settings.config.baseUrl,
+    gatewayId: settings.config.gatewayId,
     modelName: settings.config.modelName,
     modelFamily: settings.config.modelFamily,
     timeout: settings.config.timeout,
     temperature: settings.config.temperature,
-    reasoningEffort: settings.config.reasoningEffort,
+    reasoningEffort: settings.config.reasoningEffort === 'none' ? 'low' : settings.config.reasoningEffort,
   };
 }
 
-function normalizedBaseUrl(value: string) {
-  return value.trim().replace(/\/+$/, '').toLowerCase();
+function settingsForTarget(settings: WorkerModelSettings, target: ModelTarget) {
+  if (target === 'worker_b') return settings.workerB;
+  if (target === 'midscene') return settings.midscene;
+  return settings.workerA;
+}
+
+function targetLabel(target: ModelTarget) {
+  if (target === 'worker_b') return 'Worker B';
+  if (target === 'midscene') return 'Midscene';
+  return 'Worker A';
 }
 
 export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
-  const [activeWorker, setActiveWorker] = useState<'worker_a' | 'worker_b'>('worker_a');
+  const [activeTarget, setActiveTarget] = useState<ModelTarget>('worker_a');
   const [settings, setSettings] = useState<WorkerModelSettings | null>(null);
   const [form, setForm] = useState<ModelForm | null>(null);
+  const [catalog, setCatalog] = useState<WorkerAvailableModels | null>(null);
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [modelsLoading, setModelsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [availableModels, setAvailableModels] = useState<WorkerAvailableModels | null>(null);
-  const [modelsLoading, setModelsLoading] = useState(false);
-  const [modelsError, setModelsError] = useState('');
-  const modelsRequestId = useRef(0);
+  const [gatewayForm, setGatewayForm] = useState<GatewayForm | null>(null);
+  const [editingGatewayId, setEditingGatewayId] = useState<string | null>(null);
+  const [gatewaySaving, setGatewaySaving] = useState(false);
+  const [gatewayDeleting, setGatewayDeleting] = useState(false);
+  const [confirmingGatewayDelete, setConfirmingGatewayDelete] = useState(false);
 
-  const load = async () => {
+  const loadSettings = async () => {
     setLoading(true);
     try {
       const result = await workbenchApi.modelSettings();
       setSettings(result);
-      setForm(formFromSettings(activeWorker === 'worker_a' ? result.workerA : result.workerB));
+      setForm(formFromSettings(settingsForTarget(result, activeTarget)));
     } catch (error) {
       onNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
@@ -81,75 +106,71 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     }
   };
 
-  useEffect(() => {
-    void load();
-  }, []);
-
-  const workerSettings = settings ? (activeWorker === 'worker_a' ? settings.workerA : settings.workerB) : null;
-  const gatewayWorker = settings
-    ? ([settings.workerA, settings.workerB].find((slot) => slot.config.baseUrl.includes('cfz.nodemapz.com'))?.worker || 'worker_b')
-    : null;
-
-  const loadAvailableModels = async (worker: 'worker_a' | 'worker_b') => {
-    const requestId = ++modelsRequestId.current;
+  const loadModels = async () => {
     setModelsLoading(true);
-    setModelsError('');
     try {
-      const result = await workbenchApi.availableModels(worker);
-      if (requestId === modelsRequestId.current) setAvailableModels(result);
+      setCatalog(await workbenchApi.availableModels());
     } catch (error) {
-      if (requestId === modelsRequestId.current) {
-        setAvailableModels(null);
-        setModelsError(error instanceof Error ? error.message : String(error));
-      }
+      onNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
-      if (requestId === modelsRequestId.current) setModelsLoading(false);
+      setModelsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (workerSettings) setForm(formFromSettings(workerSettings));
-  }, [activeWorker]);
+    void loadSettings();
+    void loadModels();
+  }, []);
 
+  const targetSettings = settings ? settingsForTarget(settings, activeTarget) : null;
   useEffect(() => {
-    if (!settings || !gatewayWorker) return;
-    void loadAvailableModels(gatewayWorker);
-  }, [gatewayWorker, settings?.workerA.config.baseUrl, settings?.workerA.config.apiKeyHint, settings?.workerB.config.baseUrl, settings?.workerB.config.apiKeyHint]);
+    if (targetSettings) setForm(formFromSettings(targetSettings));
+  }, [activeTarget]);
 
-  const gatewayPresets = useMemo(() => (
-    availableModels
-      ? availableModels.models.filter((modelName) => !modelName.startsWith('gpt-image')).map(gatewayPreset)
-      : []
-  ), [availableModels]);
-  const gatewayModelNames = useMemo(() => new Set(gatewayPresets.map((preset) => preset.modelName)), [gatewayPresets]);
-  const displayedPresets = useMemo(() => [
-    ...gatewayPresets,
-    ...(workerSettings?.presets || []).filter((preset) => !gatewayModelNames.has(preset.modelName)),
-  ], [gatewayModelNames, gatewayPresets, workerSettings?.presets]);
-  const activePreset = useMemo(() => displayedPresets.find((preset) => (
-    preset.modelName === form?.modelName && preset.modelFamily === form?.modelFamily
-  )) || null, [displayedPresets, form?.modelFamily, form?.modelName]);
+  const filteredGateways = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return (catalog?.gateways || []).map((gateway) => ({
+      ...gateway,
+      models: needle ? gateway.models.filter((model) => model.toLowerCase().includes(needle)) : gateway.models,
+    })).filter((gateway) => gateway.models.length > 0 || gateway.error || !needle);
+  }, [catalog, query]);
+
+  const selectedGateway = useMemo(() => {
+    if (!form) return null;
+    return settings?.gateways.find((gateway) => gateway.id === form.gatewayId)
+      || catalog?.gateways.find((gateway) => gateway.id === form.gatewayId)
+      || null;
+  }, [catalog, form, settings]);
 
   const dirty = useMemo(() => {
-    if (!workerSettings || !form) return false;
-    return form.baseUrl !== workerSettings.config.baseUrl
-      || form.modelName !== workerSettings.config.modelName
-      || form.modelFamily !== workerSettings.config.modelFamily
-      || form.timeout !== workerSettings.config.timeout
-      || form.temperature !== workerSettings.config.temperature
-      || form.reasoningEffort !== workerSettings.config.reasoningEffort;
-  }, [form, workerSettings]);
+    if (!targetSettings || !form) return false;
+    return form.gatewayId !== targetSettings.config.gatewayId
+      || form.modelName !== targetSettings.config.modelName
+      || form.modelFamily !== targetSettings.config.modelFamily
+      || form.timeout !== targetSettings.config.timeout
+      || form.temperature !== targetSettings.config.temperature
+      || form.reasoningEffort !== targetSettings.config.reasoningEffort;
+  }, [form, targetSettings]);
+
+  const selectModel = (gateway: ModelGatewayCatalog, modelName: string) => {
+    setForm((current) => current ? {
+      ...current,
+      gatewayId: gateway.id,
+      modelName,
+      modelFamily: gateway.modelFamilies[modelName] || familyForModel(modelName),
+    } : current);
+  };
 
   const save = async () => {
     if (!form) return;
     setSaving(true);
     try {
-      const result = await workbenchApi.saveModelSettings({ ...form, worker: activeWorker, apiKey: '' });
+      const result = await workbenchApi.saveModelSettings({ ...form, target: activeTarget });
       setSettings(result);
-      const savedWorker = activeWorker === 'worker_a' ? result.workerA : result.workerB;
-      if (savedWorker) setForm(formFromSettings(savedWorker));
+      const savedTarget = settingsForTarget(result, activeTarget);
+      setForm(formFromSettings(savedTarget));
       onSaved(result);
-      onNotice('success', result.runtimeReloaded === false ? '模型配置已保存，重新连接设备后生效' : `${activeWorker === 'worker_a' ? 'Worker A' : 'Worker B'} 已切换为 ${savedWorker?.config.modelName || form.modelName}`);
+      onNotice('success', `${targetLabel(activeTarget)} 已切换为 ${savedTarget.config.modelName}`);
     } catch (error) {
       onNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
@@ -157,97 +178,162 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     }
   };
 
+  const openGatewayDialog = (gateway?: ModelGatewayCatalog) => {
+    setConfirmingGatewayDelete(false);
+    setEditingGatewayId(gateway?.id || null);
+    setGatewayForm({
+      id: gateway?.id || '',
+      label: gateway?.label || '',
+      baseUrl: gateway?.baseUrl || '',
+      apiKey: '',
+    });
+  };
+
+  const editingGatewayUsage = useMemo(() => {
+    if (!settings || !editingGatewayId) return [];
+    return (['worker_a', 'worker_b', 'midscene'] as ModelTarget[])
+      .filter((target) => settingsForTarget(settings, target).config.gatewayId === editingGatewayId)
+      .map(targetLabel);
+  }, [editingGatewayId, settings]);
+
+  const deleteGateway = async () => {
+    if (!editingGatewayId || !gatewayForm) return;
+    setGatewayDeleting(true);
+    try {
+      const result = await workbenchApi.deleteModelGateway(editingGatewayId);
+      setSettings(result);
+      setForm(formFromSettings(settingsForTarget(result, activeTarget)));
+      setGatewayForm(null);
+      setEditingGatewayId(null);
+      setConfirmingGatewayDelete(false);
+      await loadModels();
+      onSaved(result);
+      onNotice('success', `${gatewayForm.label} 网关已移除`);
+    } catch (error) {
+      onNotice('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setGatewayDeleting(false);
+    }
+  };
+
+  const saveGateway = async () => {
+    if (!gatewayForm) return;
+    setGatewaySaving(true);
+    try {
+      const result = await workbenchApi.saveModelGateway(gatewayForm);
+      setSettings(result);
+      setForm(formFromSettings(settingsForTarget(result, activeTarget)));
+      setGatewayForm(null);
+      setEditingGatewayId(null);
+      await loadModels();
+      onSaved(result);
+      onNotice('success', `${gatewayForm.label} 网关已保存`);
+    } catch (error) {
+      onNotice('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setGatewaySaving(false);
+    }
+  };
+
   if (loading && !settings) {
     return <main className="model-settings-workspace"><div className="settings-loading"><LoaderCircle className="spin" size={22} /><span>正在读取模型配置</span></div></main>;
   }
 
-  if (!settings || !workerSettings || !form) {
-    return <main className="model-settings-workspace"><div className="settings-loading"><CircleAlert size={22} /><span>模型配置读取失败</span><button type="button" className="button" onClick={() => void load()}><RefreshCw size={14} />重试</button></div></main>;
+  if (!settings || !targetSettings || !form) {
+    return <main className="model-settings-workspace"><div className="settings-loading"><CircleAlert size={22} /><span>模型配置读取失败</span><button type="button" className="button" onClick={() => void loadSettings()}><RefreshCw size={14} />重试</button></div></main>;
   }
-
-  const selectedProvider = [settings.workerA, settings.workerB].find((slot) => (
-    normalizedBaseUrl(slot.config.baseUrl) === normalizedBaseUrl(form.baseUrl)
-  ));
-  const selectedApiKeyHint = selectedProvider?.config.apiKeyHint || null;
 
   return (
     <main className="model-settings-workspace">
       <header className="model-settings-header">
         <div>
           <ServerCog size={21} />
-          <span><strong>{activeWorker === 'worker_a' ? 'Worker A 模型' : 'Worker B 模型'}</strong><small>独立识别画面并生成结构化答卷</small></span>
+          <span><strong>模型网关配置</strong><small>统一网关目录与运行目标指派</small></span>
         </div>
-        <div className="model-worker-switch" role="tablist" aria-label="Worker 选择">
-          <button type="button" className={activeWorker === 'worker_a' ? 'active' : ''} onClick={() => setActiveWorker('worker_a')}>Worker A</button>
-          <button type="button" className={activeWorker === 'worker_b' ? 'active' : ''} onClick={() => setActiveWorker('worker_b')}>Worker B</button>
+        <div className="model-worker-switch" role="tablist" aria-label="模型配置目标">
+          <button type="button" className={activeTarget === 'worker_a' ? 'active' : ''} onClick={() => setActiveTarget('worker_a')}>Worker A</button>
+          <button type="button" className={activeTarget === 'worker_b' ? 'active' : ''} onClick={() => setActiveTarget('worker_b')}>Worker B</button>
+          <button type="button" className={activeTarget === 'midscene' ? 'active' : ''} onClick={() => setActiveTarget('midscene')}>Midscene</button>
         </div>
         <div className="settings-runtime">
-          <i className={workerSettings.runtimeSynced ? 'synced' : ''} />
-          <span><small>当前运行时</small><strong>{workerSettings.runtimeModel || '未配置'}</strong></span>
-          <span className={workerSettings.runtimeSynced ? 'runtime-badge synced' : 'runtime-badge'}>{workerSettings.runtimeSynced ? '已同步' : '待刷新'}</span>
+          <i className={targetSettings.runtimeSynced ? 'synced' : ''} />
+          <span><small>当前运行时</small><strong>{targetSettings.runtimeModel || '未配置'}</strong></span>
+          <span className={targetSettings.runtimeSynced ? 'runtime-badge synced' : 'runtime-badge'}>{targetSettings.runtimeSynced ? '已同步' : '待刷新'}</span>
         </div>
       </header>
 
       <div className="model-settings-body">
         <section className="model-preset-section">
           <div className="settings-section-title">
-            <span><Cpu size={16} /><strong>可用模型</strong></span>
+            <span><Cpu size={16} /><strong>网关模型目录</strong></span>
             <span className="model-list-meta">
-              <small>{modelsLoading && !gatewayPresets.length ? '读取中' : `${displayedPresets.length} 个`}</small>
-              <button type="button" className="icon-button" title="刷新模型列表" disabled={modelsLoading || !gatewayWorker} onClick={() => gatewayWorker && void loadAvailableModels(gatewayWorker)}><RefreshCw className={modelsLoading ? 'spin' : ''} size={13} /></button>
+              <small>{modelsLoading ? '读取中' : `${catalog?.totalModels || 0} 个`}</small>
+              <button type="button" className="icon-button" aria-label="新增网关" title="新增网关" disabled={gatewaySaving} onClick={() => openGatewayDialog()}><Plus size={14} /></button>
+              <button type="button" className="icon-button" aria-label="刷新模型列表" title="刷新模型列表" disabled={modelsLoading} onClick={() => void loadModels()}><RefreshCw className={modelsLoading ? 'spin' : ''} size={13} /></button>
             </span>
           </div>
-          {modelsError && <div className="model-list-error"><CircleAlert size={14} /><span title={modelsError}>模型列表读取失败</span></div>}
-          <div className="model-preset-list" role="radiogroup" aria-label={`${activeWorker === 'worker_a' ? 'Worker A' : 'Worker B'} 模型预设`}>
-            {displayedPresets.map((preset) => {
-              const selected = activePreset?.id === preset.id;
-              const gatewayModel = gatewayModelNames.has(preset.modelName);
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  className={`model-preset ${selected ? 'selected' : ''}`}
-                  onClick={() => setForm((current) => current ? {
-                    ...current,
-                    baseUrl: gatewayModel && availableModels ? availableModels.sourceUrl.replace(/\/models\/?$/, '') : preset.modelFamily.startsWith('qwen') ? 'https://dashscope.aliyuncs.com/compatible-mode/v1' : current.baseUrl,
-                    modelName: preset.modelName,
-                    modelFamily: preset.modelFamily,
-                    reasoningEffort: preset.modelFamily.startsWith('qwen') && current.reasoningEffort !== 'none' ? 'medium' : current.reasoningEffort,
-                  } : current)}
-                >
-                  <i className="preset-radio">{selected && <Check size={11} />}</i>
-                  <span className="preset-copy"><span><strong>{preset.name}</strong><em>{preset.badge}</em></span><small>{preset.summary}</small></span>
-                  <span className="preset-price">{gatewayModel ? <small>已授权</small> : preset.inputPrice && preset.outputPrice ? <><small>输入 {preset.inputPrice}</small><small>输出 {preset.outputPrice}</small></> : <small>按量计费</small>}</span>
-                </button>
-              );
-            })}
+          <label className="model-search"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索模型" /></label>
+          <div className="model-gateway-list">
+            {filteredGateways.map((gateway) => (
+              <section className="model-gateway-group" key={gateway.id}>
+                <header>
+                  <span><strong>{gateway.label}</strong><code title={gateway.baseUrl}>{gateway.baseUrl}</code></span>
+                  <div className="gateway-header-actions"><small>{gateway.error ? '不可用' : `${gateway.models.length} 个`}</small><button type="button" className="icon-button" aria-label={`编辑 ${gateway.label}`} title="编辑网关" onClick={() => openGatewayDialog(gateway)}><Pencil size={12} /></button></div>
+                </header>
+                {gateway.error ? <div className="model-list-error"><CircleAlert size={14} /><span title={gateway.error}>{gateway.error}</span></div> : (
+                  <div className="model-gateway-models" role="radiogroup" aria-label={`${gateway.label} 模型`}>
+                    {gateway.models.map((modelName) => {
+                      const family = familyForModel(modelName);
+                      const selected = form.gatewayId === gateway.id && form.modelName === modelName;
+                      return <button key={modelName} type="button" role="radio" aria-checked={selected} className={`gateway-model-row ${selected ? 'selected' : ''}`} onClick={() => selectModel(gateway, modelName)}><i>{selected && <Check size={10} />}</i><strong title={modelName}>{modelName}</strong><code>{family}</code></button>;
+                    })}
+                  </div>
+                )}
+              </section>
+            ))}
+            {!modelsLoading && filteredGateways.length === 0 && <div className="model-list-empty">没有匹配的模型</div>}
           </div>
-          <div className="realtime-compatibility"><CircleAlert size={15} /><span><strong>Realtime 模型</strong><small>使用独立实时接口，当前 Worker HTTP 链路不支持。</small></span></div>
         </section>
 
         <form className="model-config-section" autoComplete="off" onSubmit={(event) => { event.preventDefault(); if (dirty && !saving) void save(); }}>
-          <div className="settings-section-title"><span><FileText size={16} /><strong>连接配置</strong></span><button type="button" className="icon-button" title="重新读取 .env" disabled={loading || saving} onClick={() => void load()}><RefreshCw className={loading ? 'spin' : ''} size={14} /></button></div>
-          <div className="env-path"><span>配置文件</span><code title={workerSettings.envPath}>{workerSettings.envPath}</code></div>
+          <div className="settings-section-title"><span><FileText size={16} /><strong>{targetLabel(activeTarget)} 连接配置</strong></span><button type="button" className="icon-button" title="重新读取数据库" disabled={loading || saving} onClick={() => void loadSettings()}><RefreshCw className={loading ? 'spin' : ''} size={14} /></button></div>
+          <div className="env-path"><span>配置存储</span><code title={targetSettings.storagePath}>{targetSettings.storagePath}</code></div>
 
           <div className="settings-form">
-            <div className="settings-field settings-field-wide"><span>Base URL</span><output className="settings-readonly"><code>{form.baseUrl}</code></output></div>
-            <div className="settings-field settings-field-wide"><span>API Key</span><output className="settings-readonly"><KeyRound size={14} /><code>{selectedApiKeyHint ? `已配置 ${selectedApiKeyHint}` : '尚未配置'}</code></output></div>
+            <div className="settings-field settings-field-wide"><span>Base URL</span><output className="settings-readonly"><code>{selectedGateway?.baseUrl || form.gatewayId || '未选择网关'}</code></output></div>
+            <div className="settings-field settings-field-wide"><span>API Key</span><output className="settings-readonly"><KeyRound size={14} /><code>{selectedGateway?.apiKeyConfigured ? `已配置 ${selectedGateway.apiKeyHint || ''}` : '尚未配置'}</code></output></div>
             <div className="settings-field"><span>模型名称</span><output className="settings-readonly"><code>{form.modelName}</code></output></div>
             <div className="settings-field"><span>Model Family</span><output className="settings-readonly"><code>{form.modelFamily}</code></output></div>
             <label className="settings-field"><span>超时时间</span><span className="number-suffix"><input type="number" min={10000} max={600000} step={10000} value={form.timeout} onChange={(event) => setForm({ ...form, timeout: Number(event.target.value) })} /><small>ms</small></span></label>
             <label className="settings-field"><span>Temperature</span><input type="number" min={0} max={2} step={0.1} value={form.temperature} onChange={(event) => setForm({ ...form, temperature: Number(event.target.value) })} /></label>
-            <label className="settings-field"><span>{form.modelFamily.startsWith('qwen') ? '模型思考' : '推理强度'}</span><select value={form.reasoningEffort} onChange={(event) => setForm({ ...form, reasoningEffort: event.target.value as ReasoningEffort })}>{form.modelFamily.startsWith('qwen') ? <><option value="none">关闭</option><option value="medium">开启</option></> : <><option value="low">低</option><option value="medium">中</option><option value="high">高</option></>}</select></label>
+            <label className="settings-field"><span>推理强度</span><select value={form.reasoningEffort} onChange={(event) => setForm({ ...form, reasoningEffort: event.target.value as ReasoningEffort })}><option value="low">低</option><option value="medium">中</option><option value="high">高</option></select></label>
           </div>
 
           <footer className="settings-actions">
-            <span>{activePreset ? `${activePreset.name} · ${activePreset.modelFamily}` : '自定义非实时视觉模型'}</span>
-            <button type="button" className="button" disabled={!dirty || saving} onClick={() => setForm(formFromSettings(workerSettings))}><RefreshCw size={14} />还原</button>
+            <span>{selectedGateway ? `${selectedGateway.label} · ${form.modelFamily}` : '尚未选择模型网关'}</span>
+            <button type="button" className="button" disabled={!dirty || saving} onClick={() => setForm(formFromSettings(targetSettings))}><RefreshCw size={14} />还原</button>
             <button type="submit" className="button button-primary" disabled={!dirty || saving}>{saving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}保存并应用</button>
           </footer>
         </form>
       </div>
+
+      {gatewayForm && <div className="gateway-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !gatewaySaving && !gatewayDeleting) setGatewayForm(null); }}>
+        <form className="gateway-dialog" role="dialog" aria-modal="true" aria-labelledby="gateway-dialog-title" autoComplete="off" onSubmit={(event) => { event.preventDefault(); if (!gatewaySaving && !gatewayDeleting) void saveGateway(); }} onMouseDown={(event) => event.stopPropagation()}>
+          <header>
+            <div><strong id="gateway-dialog-title">{editingGatewayId ? '编辑模型网关' : '新增模型网关'}</strong><span>网关配置全局生效，Worker A、Worker B 和 Midscene 共用。</span></div>
+            <button type="button" className="icon-button" aria-label="关闭" title="关闭" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}><X size={16} /></button>
+          </header>
+          <div className="gateway-dialog-fields">
+            <label className="settings-field"><span>网关 ID</span><input required pattern="[a-z0-9][a-z0-9-]*" value={gatewayForm.id} disabled={Boolean(editingGatewayId)} placeholder="例如 zto-newapi" onChange={(event) => setGatewayForm({ ...gatewayForm, id: event.target.value.toLowerCase() })} /></label>
+            <label className="settings-field"><span>显示名称</span><input required value={gatewayForm.label} placeholder="例如 ZTO New API" onChange={(event) => setGatewayForm({ ...gatewayForm, label: event.target.value })} /></label>
+            <label className="settings-field settings-field-wide"><span>Base URL</span><input required type="url" value={gatewayForm.baseUrl} placeholder="https://gateway.example.com/v1" onChange={(event) => setGatewayForm({ ...gatewayForm, baseUrl: event.target.value })} /></label>
+            <label className="settings-field settings-field-wide"><span>API Key</span><span className="secret-input"><KeyRound size={14} /><input type="password" autoComplete="new-password" value={gatewayForm.apiKey} placeholder={editingGatewayId ? '留空即保留现有凭据' : '请输入 API Key'} onChange={(event) => setGatewayForm({ ...gatewayForm, apiKey: event.target.value })} /></span><small>{editingGatewayId ? '仅在需要更换凭据时填写。现有密钥不会返回到浏览器。' : '新增网关必须配置凭据。'}</small></label>
+          </div>
+          {editingGatewayUsage.length > 0 && <div className="gateway-usage-note"><CircleAlert size={14} /><span>当前被 {editingGatewayUsage.join('、')} 使用，请先为这些运行目标指派其他网关后再移除。</span></div>}
+          {confirmingGatewayDelete && <div className="gateway-delete-confirm" role="alertdialog" aria-label="确认移除模型网关"><span><strong>移除 {gatewayForm.label}？</strong><small>网关地址和 API Key 将从数据库删除，此操作不可撤销。</small></span><div><button type="button" className="button" disabled={gatewayDeleting} onClick={() => setConfirmingGatewayDelete(false)}>取消</button><button type="button" className="button danger-button" disabled={gatewayDeleting} onClick={() => void deleteGateway()}>{gatewayDeleting ? <LoaderCircle className="spin" size={14} /> : <Trash2 size={14} />}确认移除</button></div></div>}
+          <footer>{editingGatewayId && <button type="button" className="button danger-button gateway-delete-button" title={editingGatewayUsage.length ? `请先为 ${editingGatewayUsage.join('、')} 指派其他网关` : '移除网关'} disabled={gatewaySaving || gatewayDeleting || editingGatewayUsage.length > 0} onClick={() => setConfirmingGatewayDelete(true)}><Trash2 size={14} />移除网关</button>}<button type="button" className="button" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}>取消</button><button type="submit" className="button button-primary" disabled={gatewaySaving || gatewayDeleting}>{gatewaySaving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}保存网关</button></footer>
+        </form>
+      </div>}
     </main>
   );
 }

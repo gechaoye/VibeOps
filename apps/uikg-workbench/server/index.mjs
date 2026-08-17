@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { DraftStore } from './draft-store.mjs';
 import { GraphWorkflow } from './graph-workflow.mjs';
+import { ModelSettingsStore } from './model-settings-store.mjs';
 import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 
 const serverRoot = path.dirname(fileURLToPath(import.meta.url));
@@ -53,7 +54,11 @@ async function main() {
     import('@midscene/playground'),
   ]);
   const store = new DraftStore(dataRoot);
-  await store.initialize();
+  const modelStore = new ModelSettingsStore(path.join(dataRoot, 'model-settings.sqlite'));
+  await Promise.all([
+    store.initialize(),
+    modelStore.initialize({ legacyEnvPath: modelEnvPath }),
+  ]);
   const spec = await normativeSpecContract();
   const graphWorkflow = new GraphWorkflow({ graphRoot, workbenchRoot, dataRoot, spec });
   await graphWorkflow.initialize();
@@ -111,9 +116,9 @@ async function main() {
       await registerWorkbenchRoutes({
         server,
         store,
+        modelStore,
         graphWorkflow,
         workbenchRoot,
-        modelEnvPath,
         spec,
       });
     },
@@ -129,6 +134,7 @@ async function main() {
   const shutdown = async () => {
     if (closing) return;
     closing = true;
+    modelStore.close();
     await result.close();
     process.exit(0);
   };

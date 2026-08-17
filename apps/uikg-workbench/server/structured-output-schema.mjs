@@ -2,8 +2,9 @@ export function supportsStructuredOutput(model, family = '') {
   const modelName = String(model || '').trim().toLowerCase();
   const modelFamily = String(family || '').trim().toLowerCase();
   return modelName.startsWith('gpt-5')
-    || modelFamily.startsWith('gpt-5')
-    || modelName.startsWith('qwen3.7-');
+    || (!modelName && modelFamily.startsWith('gpt-5'))
+    || modelName === 'qwen3.7-flash'
+    || modelName === 'qwen3.7-plus';
 }
 
 export function openAIStructuredOutputSchema(source, { continuation = false } = {}) {
