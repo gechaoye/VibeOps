@@ -15,6 +15,7 @@ import {
   LoaderCircle,
   MonitorSmartphone,
   MousePointer2,
+  Network,
   BoxSelect,
   PanelsTopLeft,
   PanelRight,
@@ -37,6 +38,7 @@ import { DeviceClient } from './device-client';
 import { EditHistoryPanel } from './EditHistoryPanel';
 import { ElementTree } from './ElementTree';
 import { Inspector } from './Inspector';
+import { KnowledgeGraph } from './KnowledgeGraph';
 import { LiveDevicePreview } from './LiveDevicePreview';
 import { ModelSettings } from './ModelSettings';
 import { createHumanElement, elementAvailableOnPage, pageWorkflowStatus, pageWorkflowStatusLabels, reviewStatusLabels, validateDraftClient } from './model';
@@ -49,7 +51,7 @@ import './styles.css';
 
 type ViewMode = 'live' | 'review';
 type SideTab = 'elements' | 'validation' | 'history';
-type WorkspaceMode = 'annotation' | 'graph' | 'staging' | 'settings';
+type WorkspaceMode = 'annotation' | 'graph' | 'knowledge' | 'staging' | 'settings';
 type ExplorationMode = 'ultra' | 'manual';
 
 function aggregateUltraWorkerStatus(workerAStatus?: WorkerActivity['status'], workerBStatus?: WorkerActivity['status']): WorkerActivity['status'] {
@@ -1429,12 +1431,8 @@ function AppContent() {
             <button type="button" className="icon-button" title="断开设备" disabled={busy === 'disconnect'} onClick={() => void disconnectDevice()}><Unplug size={16} /></button>
           )}
         </div>
-        <div className="mode-segment" aria-label="探索模式">
-          <button type="button" className={explorationMode === 'ultra' ? 'active' : ''} title="Worker A 与 Worker B 并发识别，再按元素和字段选择合并" onClick={() => setExplorationMode('ultra')}>Ultra</button>
-          <button type="button" className={explorationMode === 'manual' ? 'active' : ''} title="使用 Worker A 单 Worker 识别后直接人工审核" onClick={() => setExplorationMode('manual')}>Manual</button>
-        </div>
         <div className="header-actions">
-          <span className={`validation-summary ${errorCount ? 'has-error' : ''}`} title="当前草稿校验结果"><CircleAlert size={15} />{errorCount} / {warningCount}</span>
+          <button type="button" className={`button global-model-button ${workspaceMode === 'settings' ? 'active' : ''}`} onClick={() => setWorkspaceMode('settings')}><Settings2 size={15} />模型配置</button>
           {workspaceMode === 'annotation' && viewMode === 'review' && <button type="button" className="button button-primary" disabled={!reviewReady || busy === 'review-complete' || autoSaveState === 'saving'} onClick={() => void completeReview()}>{busy === 'review-complete' ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />}审核通过</button>}
         </div>
       </header>
@@ -1444,11 +1442,18 @@ function AppContent() {
         <label><span>构建</span><input value={draft?.buildRef || ''} placeholder="android-package:..." onBlur={endHistoryGroup} onChange={(event) => updateDraft((current) => ({ ...current, buildRef: event.target.value }), 'draft:buildRef')} /></label>
         <label className="page-switcher"><span>页面</span><select value={draft?.currentPageId || ''} disabled={!draft?.pages.length} onChange={(event) => openPage(event.target.value)}>{draft?.pages.map((page) => { const pageStatus = pageWorkflowStatus(draft, page); return <option key={page.id} value={page.id}>{page.name} · {pageWorkflowStatusLabels[pageStatus]}</option>; })}</select></label>
         <label className="page-name-field"><span>名称</span><input value={draft?.page.name || ''} onBlur={endHistoryGroup} onChange={(event) => draft && updatePage(draft.currentPageId, { name: event.target.value }, 'page:name')} /></label>
+        <div className="context-workflow-controls">
+          <div className="mode-segment" aria-label="探索模式">
+            <button type="button" className={explorationMode === 'ultra' ? 'active' : ''} title="Worker A 与 Worker B 并发识别，再按元素和字段选择合并" onClick={() => setExplorationMode('ultra')}>Ultra</button>
+            <button type="button" className={explorationMode === 'manual' ? 'active' : ''} title="使用 Worker A 单 Worker 识别后直接人工审核" onClick={() => setExplorationMode('manual')}>Manual</button>
+          </div>
+          <span className={`validation-summary ${errorCount ? 'has-error' : ''}`} title="当前草稿校验结果"><CircleAlert size={15} />{errorCount} / {warningCount}</span>
+        </div>
         <div className="workspace-tabs" aria-label="工作区">
           <button type="button" className={workspaceMode === 'annotation' ? 'active' : ''} onClick={() => setWorkspaceMode('annotation')}><MousePointer2 size={14} />标注</button>
           <button type="button" className={workspaceMode === 'graph' ? 'active' : ''} onClick={() => setWorkspaceMode('graph')}><PanelsTopLeft size={14} />页面图</button>
           <button type="button" className={workspaceMode === 'staging' ? 'active' : ''} onClick={() => setWorkspaceMode('staging')}><FileDiff size={14} />Staging</button>
-          <button type="button" className={workspaceMode === 'settings' ? 'active' : ''} onClick={() => setWorkspaceMode('settings')}><Settings2 size={14} />模型</button>
+          <button type="button" className={workspaceMode === 'knowledge' ? 'active' : ''} onClick={() => setWorkspaceMode('knowledge')}><Network size={14} />知识图谱</button>
         </div>
         <span className="spec-hash" title={status?.spec.contentHash}>Schema {status?.spec.schemaVersion || '3.0.0'}</span>
       </div>
@@ -1570,6 +1575,8 @@ function AppContent() {
         </section>
       </main> : workspaceMode === 'graph' && draft ? (
         <PageGraph draft={draft} draftDirty={dirty} onOpenPage={openPage} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={updatePage} onDeletePage={deletePage} onChangeEnd={endHistoryGroup} />
+      ) : workspaceMode === 'knowledge' ? (
+        <KnowledgeGraph appKey={draft?.appKey || 'zto.connect'} />
       ) : workspaceMode === 'staging' ? (
         <StagingPanel versions={stagingVersions} staging={staging} busy={busy} dirty={dirty} onPrepare={() => void prepareStaging()} onSelect={setStaging} onMerge={(stageIds) => void mergeStaging(stageIds)} onPublish={(stageId) => void publishStaging(stageId)} onDelete={(stageId) => void deleteStaging(stageId)} onRollback={(stageId) => void rollbackStaging(stageId)} onArchive={(stageId) => void archiveStaging(stageId)} />
       ) : (

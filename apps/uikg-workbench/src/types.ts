@@ -137,6 +137,57 @@ export interface Draft {
   updatedAt: string;
 }
 
+export interface CanonicalGraphPage {
+  id: string;
+  key: string;
+  label: string;
+  featurePath: string[];
+  surfaceType: string;
+  status: string;
+  summary: string;
+  states: Array<{ key: string; summary: string }>;
+  elementCount: number;
+  sharedElementCount: number;
+  inboundCount: number;
+  outboundCount: number;
+}
+
+export interface CanonicalGraphEdge {
+  id: string;
+  canonicalId?: string;
+  key: string;
+  kind: 'transition' | 'authority_contract';
+  source: string;
+  target: string;
+  sourceStateKey: string | null;
+  targetStateKey: string | null;
+  action: string;
+  capability: string;
+  triggerElementId: string;
+  trigger: { id: string; key: string; label: string; controlType: string } | null;
+  reversible: boolean | null;
+  risk: 'safe' | 'low' | 'medium' | 'high' | 'critical' | string;
+  status: string;
+  planningEligible: boolean;
+}
+
+export interface CanonicalGraph {
+  appKey: string;
+  application: { id: string; key: string; label: string; platform: string } | null;
+  revision: string | null;
+  status: string;
+  generatedAt: string | null;
+  stats: {
+    pages: number;
+    elements: number;
+    transitions: number;
+    authorityContracts: number;
+  };
+  featureDomains: string[];
+  pages: CanonicalGraphPage[];
+  edges: CanonicalGraphEdge[];
+}
+
 export interface ValidationIssue {
   level: 'error' | 'warning';
   code: string;
@@ -273,6 +324,14 @@ export interface WorkerModelPreset {
   outputPrice: string | null;
 }
 
+export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
+
+export interface WorkerAvailableModels {
+  worker: 'worker_a' | 'worker_b';
+  sourceUrl: string;
+  models: string[];
+}
+
 export interface WorkerModelSettings {
   workerA: WorkerSlotSettings;
   workerB: WorkerSlotSettings;
@@ -288,6 +347,7 @@ export interface WorkerSlotSettings {
     modelFamily: string;
     timeout: number;
     temperature: number;
+    reasoningEffort: ReasoningEffort;
     reasoningEnabled: boolean;
     apiKeyConfigured: boolean;
     apiKeyHint: string | null;

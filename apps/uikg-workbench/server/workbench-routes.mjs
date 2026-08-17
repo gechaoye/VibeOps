@@ -16,10 +16,11 @@ import {
   validateDraft,
   validateWorkerConsistency,
 } from './draft-model.mjs';
-import { loadWorkerAModelSettings, loadWorkerBModelSettings, saveWorkerAModelSettings, saveWorkerBModelSettings } from './model-settings.mjs';
+import { fetchWorkerAvailableModels, loadWorkerAModelSettings, loadWorkerBModelSettings, saveWorkerAModelSettings, saveWorkerBModelSettings } from './model-settings.mjs';
 import { recoverWorkerCheckpointFromStream, runResumableWorker, WORKER_ERROR_RETRY_LIMIT } from './resumable-worker.mjs';
 import { runWorkerModel } from './worker-client.mjs';
 import { buildWorkerContinuationPrompt, buildWorkerPrompt } from './worker-prompt.mjs';
+import { loadCanonicalGraph } from './canonical-graph.mjs';
 
 const MAX_PAGE_UPLOAD_BATCH = 20;
 const MAX_PAGE_IMAGE_BYTES = 25 * 1024 * 1024;
@@ -126,6 +127,18 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
   const loadCombinedModelSettings = async () => ({
     workerA: await loadWorkerAModelSettings(modelEnvPath),
     workerB: await loadWorkerBModelSettings(modelEnvPath),
+  });
+
+  router.get('/knowledge-graph', async (req, res, next) => {
+    try {
+      res.json(await loadCanonicalGraph({
+        graphRoot: graphWorkflow.graphRoot,
+        yaml: graphWorkflow.yaml,
+        appKey: req.query.appKey || 'zto.connect',
+      }));
+    } catch (error) {
+      next(error);
+    }
   });
 
   const queueUploadDraftMutation = (operation) => {
@@ -564,6 +577,16 @@ export async function registerWorkbenchRoutes({ server, store, graphWorkflow, wo
     try {
       await syncModelRuntime();
       res.json(await loadCombinedModelSettings());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/model-settings/models', async (req, res, next) => {
+    try {
+      await syncModelRuntime();
+      const worker = req.query.worker === 'worker_b' ? 'worker_b' : 'worker_a';
+      res.json(await fetchWorkerAvailableModels(modelEnvPath, worker));
     } catch (error) {
       next(error);
     }

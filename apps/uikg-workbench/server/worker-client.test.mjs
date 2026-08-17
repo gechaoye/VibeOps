@@ -78,3 +78,44 @@ test('Worker A client sends a frozen image and repairs streamed JSON', async () 
     await rm(tempRoot, { recursive: true, force: true });
   }
 });
+
+test('Worker B client sends the configured reasoning effort', async () => {
+  const server = createServer((request, response) => {
+    let body = '';
+    request.on('data', (chunk) => { body += chunk; });
+    request.on('end', () => {
+      const payload = JSON.parse(body);
+      assert.equal(payload.model, 'gpt-5.6-sol');
+      assert.equal(payload.reasoning_effort, 'high');
+      response.writeHead(200, { 'content-type': 'text/event-stream' });
+      response.write('data: {"choices":[{"delta":{"content":"{\\"ok\\":true}"}}]}\n\n');
+      response.end('data: [DONE]\n\n');
+    });
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  const keys = ['BASE_URL', 'API_KEY', 'NAME', 'FAMILY', 'REASONING_EFFORT'];
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[`MIDSCENE_WORKER_B_MODEL_${key}`]]));
+  process.env.MIDSCENE_WORKER_B_MODEL_BASE_URL = `http://127.0.0.1:${address.port}/v1`;
+  process.env.MIDSCENE_WORKER_B_MODEL_API_KEY = 'test-key';
+  process.env.MIDSCENE_WORKER_B_MODEL_NAME = 'gpt-5.6-sol';
+  process.env.MIDSCENE_WORKER_B_MODEL_FAMILY = 'gpt-5';
+  process.env.MIDSCENE_WORKER_B_MODEL_REASONING_EFFORT = 'high';
+
+  try {
+    const result = await runWorkerModel({
+      worker: 'worker_b',
+      prompt: 'review this frame',
+      imageBuffer: Buffer.from([137, 80, 78, 71]),
+    });
+    assert.deepEqual(result, { ok: true });
+  } finally {
+    for (const key of keys) {
+      const name = `MIDSCENE_WORKER_B_MODEL_${key}`;
+      if (previous[key] === undefined) delete process.env[name];
+      else process.env[name] = previous[key];
+    }
+    server.close();
+  }
+});

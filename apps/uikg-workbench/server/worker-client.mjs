@@ -13,6 +13,7 @@ function workerConfig(worker) {
   const definition = WORKERS[worker];
   if (!definition) throw new Error(`未知 Worker：${worker}`);
   const value = (suffix) => process.env[`${definition.envPrefix}_${suffix}`];
+  const reasoningEffort = String(value('REASONING_EFFORT') || (value('REASONING_ENABLED') === 'true' ? 'medium' : 'none')).toLowerCase();
   return {
     ...definition,
     model: value('NAME'),
@@ -20,7 +21,8 @@ function workerConfig(worker) {
     baseUrl: value('BASE_URL'),
     modelFamily: String(value('FAMILY') || '').toLowerCase(),
     temperature: Number(value('TEMPERATURE') || 0),
-    reasoningEnabled: value('REASONING_ENABLED') === 'true',
+    reasoningEffort,
+    reasoningEnabled: reasoningEffort !== 'none',
   };
 }
 
@@ -95,7 +97,7 @@ export async function runWorkerModel({
   if (config.modelFamily.startsWith('qwen') || String(config.model).toLowerCase().startsWith('qwen')) {
     requestBody.enable_thinking = config.reasoningEnabled;
   } else if (config.reasoningEnabled) {
-    requestBody.reasoning_effort = 'medium';
+    requestBody.reasoning_effort = config.reasoningEffort;
   }
   if (responseSchema && supportsStructuredOutput(config.model, config.modelFamily)) {
     requestBody.response_format = {

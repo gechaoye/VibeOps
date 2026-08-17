@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server/dev.mjs",
+    "dev:stop": "node server/dev.mjs --stop",
     "dev:frontend": "vite --host 127.0.0.1",
     "dev:server": "node --watch server/index.mjs",
     "build": "tsc -b && vite build",
@@ -13,9 +14,11 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^3.1.1",
     "@midscene/android-playground": "^1.10.6",
     "@midscene/playground": "^1.10.6",
     "@midscene/shared": "^1.10.6",
+    "@xyflow/react": "^12.11.3",
     "@yume-chan/scrcpy": "2.3.0",
     "@yume-chan/scrcpy-decoder-webcodecs": "2.5.0",
     "ajv": "^8.17.1",

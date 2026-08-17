@@ -16,6 +16,8 @@ pnpm dev
 
 Open `http://127.0.0.1:5173`. The development command starts both the frontend and the Android/workbench service. Use `pnpm dev:server` only when running the backend separately.
 
+Stop development services started by this project with `pnpm dev:stop`.
+
 ## Knowledge Graph
 
 `knowledge_graph/` is the platform knowledge base. It contains the UIKG specification, canonical application graph, evidence, projections, exploration records, and deterministic graph tools.

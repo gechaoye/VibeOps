@@ -1,4 +1,4 @@
-import type { AnalysisSession, Draft, FrameMetadata, PageUploadTask, WorkerElementMergeSelection, WorkerModelSettings, WorkerResult, WorkerResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, PageUploadTask, ReasoningEffort, WorkerAvailableModels, WorkerElementMergeSelection, WorkerModelSettings, WorkerResult, WorkerResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -109,7 +109,9 @@ async function consumeWorkerStream(
 
 export const workbenchApi = {
   status: () => request<WorkbenchStatus>('/status'),
+  knowledgeGraph: (appKey: string) => request<CanonicalGraph>(`/knowledge-graph?appKey=${encodeURIComponent(appKey)}`),
   modelSettings: () => request<WorkerModelSettings>('/model-settings'),
+  availableModels: (worker: 'worker_a' | 'worker_b') => request<WorkerAvailableModels>(`/model-settings/models?worker=${worker}`),
   saveModelSettings: (config: {
     worker: 'worker_a' | 'worker_b';
     baseUrl: string;
@@ -117,7 +119,7 @@ export const workbenchApi = {
     modelFamily: string;
     timeout: number;
     temperature: number;
-    reasoningEnabled: boolean;
+    reasoningEffort: ReasoningEffort;
     apiKey: string;
   }) => request<WorkerModelSettings>('/model-settings', { method: 'PUT', body: JSON.stringify(config) }),
   sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),
