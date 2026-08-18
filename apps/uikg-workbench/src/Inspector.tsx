@@ -83,7 +83,7 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
           <button type="button" className="icon-button danger-button" title="删除元素，可通过撤销恢复" onClick={onDelete}><Trash2 size={16} /></button>
           <button type="button" className="button" title="恢复该元素的初始信息" disabled={!canRestoreCurrent} onClick={onRestoreCurrent}><RotateCcw size={15} />恢复</button>
           <button type="button" className="button" onClick={onReject}>{rejected ? <Eye size={15} /> : <EyeOff size={15} />}{rejected ? '取消忽略' : '忽略元素'}</button>
-          <button type="button" className={`button ${accepted ? '' : 'button-primary'}`} onClick={onAccept}>{accepted ? <X size={15} /> : <Check size={15} />}{accepted ? '取消确认' : '确认元素'}</button>
+          <button type="button" className={`button ${accepted ? '' : 'button-primary'}`} onClick={onAccept}>{accepted ? <X size={15} /> : <Check size={15} />}{accepted ? '取消审核通过' : '审核通过'}</button>
         </div>
       </div>
 
@@ -137,7 +137,7 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
       <div className="evidence-summary">
         <div><span>识别可信度</span><strong>{Math.round(element.confidence * 100)}%</strong></div>
         <div><span>信息来源</span><strong title={element.workerModel || undefined}>{element.source === 'ai_worker' ? `AI Worker · ${element.workerModel || '模型未知'}` : element.source === 'human' ? '人工新增' : `AI Worker · ${element.workerModel || '模型未知'} + 人工`}</strong></div>
-        <div><span>人工审核</span><strong>{element.reviewStatus === 'pending' ? '待人工确认' : element.reviewStatus === 'accepted' ? '已确认' : element.reviewStatus === 'edited' ? '人工修订' : '已忽略'}</strong></div>
+        <div><span>人工审核</span><strong>{element.reviewStatus === 'pending' ? '待人工确认' : element.reviewStatus === 'accepted' ? '已审核通过' : element.reviewStatus === 'edited' ? '人工修订' : '已忽略'}</strong></div>
       </div>
 
       <details className="meaning-evidence" open>

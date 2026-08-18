@@ -1,4 +1,4 @@
-import { ExternalLink, ImageUp, PanelsTopLeft, Trash2 } from 'lucide-react';
+import { Check, ImageUp, PanelsTopLeft, PanelTopOpen, Plus, Smartphone, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { absoluteAssetUrl } from './api';
 import { elementAvailableOnPage, pageWorkflowStatus, pageWorkflowStatusLabels } from './model';
@@ -9,6 +9,7 @@ interface PageGraphProps {
   draft: Draft;
   draftDirty: boolean;
   onOpenPage: (pageId: string) => void;
+  onCreateFromDevice: () => void;
   onUploadDraftChange: (draft: Draft) => void;
   onUpdatePage: (pageId: string, patch: Partial<DraftPage>, historyKey?: string) => void;
   onDeletePage: (pageId: string) => void;
@@ -65,8 +66,7 @@ function PageDetailImage({ frameId, page, elements, showElementBboxes }: { frame
   </div>;
 }
 
-function PageEditor({ page, status, onUpdate, onDelete, onChangeEnd }: { page: DraftPage; status: ReturnType<typeof pageWorkflowStatus>; onUpdate: (patch: Partial<DraftPage>, historyKey?: string) => void; onDelete: () => void; onChangeEnd: () => void }) {
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
+function PageEditor({ page, status, onUpdate, onChangeEnd }: { page: DraftPage; status: ReturnType<typeof pageWorkflowStatus>; onUpdate: (patch: Partial<DraftPage>, historyKey?: string) => void; onChangeEnd: () => void }) {
   const pendingRecognition = status === 'pending-recognition';
   const displayPage = pendingRecognition ? {
     ...page,
@@ -81,8 +81,7 @@ function PageEditor({ page, status, onUpdate, onDelete, onChangeEnd }: { page: D
 
   return (
     <div className={`graph-editor-form ${pendingRecognition ? 'page-editor-pending' : ''}`}>
-      <div className="graph-editor-title"><div><strong>Page 属性</strong><span className={`page-status page-status-${status}`}>{pageWorkflowStatusLabels[status]}</span><code>{page.key}</code></div><button type="button" className={`icon-button danger-button ${confirmingDelete ? 'active' : ''}`} title="删除 Page" aria-label="删除 Page" onClick={() => setConfirmingDelete((value) => !value)}><Trash2 size={15} /></button></div>
-      {confirmingDelete && <div className="inline-delete-confirm" role="alert"><span>确定删除此 Page 及其私有元素？</span><div><button type="button" className="button danger-button" onClick={() => { setConfirmingDelete(false); onDelete(); }}>确认删除</button><button type="button" className="button" onClick={() => setConfirmingDelete(false)}>取消</button></div></div>}
+      <div className="graph-editor-title"><div><strong>Page 属性</strong><span className={`page-status page-status-${status}`}>{pageWorkflowStatusLabels[status]}</span><code>{page.key}</code></div></div>
       <label className="field"><span>Page ID</span><input value={page.id} readOnly /></label>
       <label className="field"><span>页面名称</span><input value={displayPage.name} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ name: event.target.value }, 'page:name')} /></label>
       <label className="field"><span>稳定键</span><input value={page.key} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ key: event.target.value }, 'page:key')} /></label>
@@ -98,15 +97,18 @@ function PageEditor({ page, status, onUpdate, onDelete, onChangeEnd }: { page: D
   );
 }
 
-export function PageGraph({ draft, draftDirty, onOpenPage, onUploadDraftChange, onUpdatePage, onDeletePage, onChangeEnd }: PageGraphProps) {
+export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, onUploadDraftChange, onUpdatePage, onDeletePage, onChangeEnd }: PageGraphProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [selectedPageId, setSelectedPageId] = useState<string | null>(draft.currentPageId || null);
+  const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
+  const [deleteConfirmPageId, setDeleteConfirmPageId] = useState<string | null>(null);
   const [showElementBboxes, setShowElementBboxes] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(showPageBboxesStorageKey) === 'true';
   });
-  const columns = Math.min(3, Math.max(1, draft.pages.length));
-  const rows = Math.max(1, Math.ceil(draft.pages.length / columns));
+  const nodeCount = draft.pages.length + 1;
+  const columns = Math.min(3, Math.max(1, nodeCount));
+  const rows = Math.max(1, Math.ceil(nodeCount / columns));
   const width = columns * nodeWidth + (columns - 1) * columnGap + 48;
   const height = rows * nodeHeight + (rows - 1) * rowGap + 48;
   const selectedPage = selectedPageId ? draft.pages.find((page) => page.id === selectedPageId) : undefined;
@@ -120,8 +122,14 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onUploadDraftChange, 
   useEffect(() => {
     if (!selectedPageId) return;
     if (draft.pages.some((page) => page.id === selectedPageId)) return;
-    setSelectedPageId(draft.pages.find((page) => page.id === draft.currentPageId)?.id || draft.pages[0]?.id || null);
-  }, [draft.currentPageId, draft.pages, selectedPageId]);
+    setSelectedPageId(null);
+  }, [draft.pages, selectedPageId]);
+
+  useEffect(() => {
+    if (!deleteConfirmPageId) return;
+    if (draft.pages.some((page) => page.id === deleteConfirmPageId)) return;
+    setDeleteConfirmPageId(null);
+  }, [deleteConfirmPageId, draft.pages]);
 
   const selectPage = (pageId: string) => {
     setSelectedPageId(pageId);
@@ -130,19 +138,28 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onUploadDraftChange, 
   return (
     <main className="graph-workspace">
       <section className="graph-main">
-        <div className="graph-toolbar"><div><PanelsTopLeft size={16} /><strong>Page 对象图</strong><span>{draft.pages.length} 个 Page</span></div><div><button type="button" className="button" onClick={() => setUploadOpen(true)}><ImageUp size={15} />新增 Page</button></div></div>
-        <div className="graph-board-scroll" onClick={(event) => { if (event.target === event.currentTarget) setSelectedPageId(null); }}>
-          <div className="graph-board" style={{ width, height }} onClick={(event) => { if (event.target === event.currentTarget) setSelectedPageId(null); }}>
+        <div className="graph-toolbar"><div><PanelsTopLeft size={16} /><strong>Page 对象图</strong><span>{draft.pages.length} 个 Page</span></div></div>
+        <div className="graph-board-scroll" onClick={(event) => { if (event.target === event.currentTarget) { setSelectedPageId(null); setCreateMenuOpen(false); } }}>
+          <div className="graph-board" style={{ width, height }} onClick={(event) => { if (event.target === event.currentTarget) { setSelectedPageId(null); setCreateMenuOpen(false); } }}>
+            <div className={`page-node page-node-create ${createMenuOpen ? 'create-menu-open' : ''}`} style={{ left: pagePosition(0, columns).x, top: pagePosition(0, columns).y }}>
+              <button type="button" className="page-node-create-action" aria-label="创建页面对象" title="创建页面对象" onClick={() => setCreateMenuOpen((value) => !value)}><Plus size={28} /><span>创建页面对象</span></button>
+              {createMenuOpen && <div className="page-node-create-menu" role="menu" aria-label="创建页面对象方式">
+                <button type="button" title="上传图片" aria-label="上传图片" onClick={() => { setCreateMenuOpen(false); setUploadOpen(true); }}><ImageUp size={16} /></button>
+                <button type="button" title="使用设备画面" aria-label="使用设备画面" onClick={() => { setCreateMenuOpen(false); onCreateFromDevice(); }}><Smartphone size={16} /></button>
+              </div>}
+            </div>
             {draft.pages.map((page, index) => {
-              const position = pagePosition(index, columns);
+              const position = pagePosition(index + 1, columns);
               const status = pageWorkflowStatus(draft, page);
               const latestFrameId = page.frameIds.at(-1);
+              const deleting = deleteConfirmPageId === page.id;
               return <div key={page.id} className={`page-node ${page.id === selectedPageId ? 'active' : ''}`} style={{ left: position.x, top: position.y }}>
                 <button type="button" className="page-node-select-target" aria-label={`选择 Page：${page.name}`} onClick={() => selectPage(page.id)} />
                 <span className={`page-status page-status-${status}`}>{pageWorkflowStatusLabels[status]}</span>
                 <span className="page-node-preview">{latestFrameId ? <img src={absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(latestFrameId)}/image`)} alt={`${page.name || '待识别页面'}截图`} loading="lazy" /> : <span>暂无截图</span>}</span>
                 <span className="page-node-content"><strong>{page.name}</strong><span className="page-node-meta">{page.surfaceType} · {page.frameIds.length} 帧 · {page.elementIds.length} 个标注</span><code>{page.key}</code></span>
-                <button type="button" className="page-node-action page-node-open-action" disabled={!latestFrameId} title={latestFrameId ? '进入标注页面' : '暂无截图，无法标注'} aria-label={`进入 ${page.name} 标注页面`} onClick={(event) => { event.stopPropagation(); onOpenPage(page.id); }}><ExternalLink size={15} /></button>
+                <button type="button" className={`page-node-action page-node-delete-action ${deleting ? 'confirming' : ''}`} title={deleting ? '再次点击确认删除页面及其元素' : '删除页面'} aria-label={deleting ? `确认删除 ${page.name}` : `删除 ${page.name}`} onClick={(event) => { event.stopPropagation(); if (deleting) { setDeleteConfirmPageId(null); onDeletePage(page.id); } else setDeleteConfirmPageId(page.id); }}>{deleting ? <Check size={15} /> : <Trash2 size={15} />}</button>
+                <button type="button" className="page-node-action page-node-open-action" disabled={!latestFrameId} title={latestFrameId ? '在新标签页标注' : '暂无截图，无法标注'} aria-label={`在新标签页标注 ${page.name}`} onClick={(event) => { event.stopPropagation(); onOpenPage(page.id); }}><PanelTopOpen size={15} /></button>
               </div>;
             })}
           </div>
@@ -156,7 +173,7 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onUploadDraftChange, 
         </section>
       </section>
       <aside className="graph-editor">
-        {selectedPage ? <PageEditor page={selectedPage} status={pageWorkflowStatus(draft, selectedPage)} onUpdate={(patch, key) => onUpdatePage(selectedPage.id, patch, key)} onDelete={() => onDeletePage(selectedPage.id)} onChangeEnd={onChangeEnd} /> : <div className="empty-state">请选择一个页面卡片</div>}
+        {selectedPage ? <PageEditor page={selectedPage} status={pageWorkflowStatus(draft, selectedPage)} onUpdate={(patch, key) => onUpdatePage(selectedPage.id, patch, key)} onChangeEnd={onChangeEnd} /> : <div className="empty-state">请选择一个页面卡片</div>}
       </aside>
       <PageUploadDialog open={uploadOpen} draftDirty={draftDirty} onClose={() => setUploadOpen(false)} onDraftChange={onUploadDraftChange} />
     </main>

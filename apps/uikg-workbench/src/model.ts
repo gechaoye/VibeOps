@@ -104,7 +104,7 @@ export const capabilityLabel = (value: string) =>
 
 export const reviewStatusLabels = {
   pending: '待审核',
-  accepted: '已确认',
+  accepted: '已审核通过',
   edited: '人工修订',
   rejected: '已忽略',
 } as const;
@@ -304,15 +304,11 @@ export function elementAvailableOnPage(element: DraftElement, pageId: string, el
 export function validateDraftClient(draft: Draft): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const byId = new Map(draft.elements.map((element) => [element.id, element]));
-  const keys = new Set<string>();
   for (const element of draft.elements) {
     if (!element.label.trim() && element.reviewStatus !== 'rejected') {
       issues.push({ level: 'error', code: 'label_required', elementId: element.id, message: '元素名称不能为空' });
     }
-    if (keys.has(element.candidateKey)) {
-      issues.push({ level: 'error', code: 'candidate_key_duplicate', elementId: element.id, message: `候选键重复：${element.candidateKey}` });
-    }
-    keys.add(element.candidateKey);
+    if (!element.candidateKey.trim()) issues.push({ level: 'error', code: 'candidate_key_required', elementId: element.id, message: '候选键不能为空' });
     const b = element.bbox;
     if (b.x < 0 || b.y < 0 || b.width <= 0 || b.height <= 0 || b.x + b.width > 1 || b.y + b.height > 1) {
       issues.push({ level: 'error', code: 'bbox_invalid', elementId: element.id, message: '元素边框必须位于截图范围内' });
@@ -346,6 +342,55 @@ export function validateDraftClient(draft: Draft): ValidationIssue[] {
   for (const transition of draft.transitions) {
     for (const message of transitionEvidenceIssues(transition, draft)) {
       issues.push({ level: 'error', code: 'transition_evidence_incomplete', message: `${transition.key}：${message}` });
+    }
+  }
+
+  const candidateKeyGroups = new Map<string, DraftElement[]>();
+  for (const element of draft.elements) {
+    const candidateKey = element.candidateKey.trim();
+    if (!candidateKey) continue;
+    const group = candidateKeyGroups.get(candidateKey) || [];
+    group.push(element);
+    candidateKeyGroups.set(candidateKey, group);
+  }
+  const pageIdsByElement = new Map(draft.elements.map((element) => [
+    element.id,
+    draft.pages.filter((page) => elementAvailableOnPage(element, page.id, draft.elements)).map((page) => page.id),
+  ]));
+  const pageName = (pageId: string) => draft.pages.find((page) => page.id === pageId)?.name || pageId;
+  for (const [candidateKey, elements] of candidateKeyGroups) {
+    if (elements.length < 2) continue;
+    for (const element of elements) {
+      const ownPageIds = pageIdsByElement.get(element.id) || [];
+      const samePageElements = elements.filter((candidate) => candidate.id !== element.id && (pageIdsByElement.get(candidate.id) || []).some((pageId) => ownPageIds.includes(pageId)));
+      if (samePageElements.length > 0) {
+        const commonPageIds = [...new Set(samePageElements.flatMap((candidate) => (pageIdsByElement.get(candidate.id) || []).filter((pageId) => ownPageIds.includes(pageId))))];
+        const pageLabel = commonPageIds.includes(draft.currentPageId)
+          ? `本页面“${pageName(draft.currentPageId)}”`
+          : `页面“${commonPageIds.map(pageName).join('、')}”`;
+        issues.push({
+          level: 'error',
+          code: 'candidate_key_duplicate_current_page',
+          elementId: element.id,
+          candidateKey,
+          relatedElementIds: [element.id, ...samePageElements.map((candidate) => candidate.id)],
+          pageIds: commonPageIds,
+          message: `${pageLabel}内有 ${samePageElements.length + 1} 个元素使用候选键：${candidateKey}`,
+        });
+      }
+      const otherPageElements = elements.filter((candidate) => candidate.id !== element.id && !(pageIdsByElement.get(candidate.id) || []).some((pageId) => ownPageIds.includes(pageId)));
+      if (otherPageElements.length > 0) {
+        const otherPageIds = [...new Set(otherPageElements.flatMap((candidate) => pageIdsByElement.get(candidate.id) || []))];
+        issues.push({
+          level: 'error',
+          code: 'candidate_key_duplicate_other_page',
+          elementId: element.id,
+          candidateKey,
+          relatedElementIds: [element.id, ...otherPageElements.map((candidate) => candidate.id)],
+          pageIds: [...new Set([...ownPageIds, ...otherPageIds])],
+          message: `候选键 ${candidateKey} 与其他页面“${otherPageIds.map(pageName).join('、')}”的元素重复`,
+        });
+      }
     }
   }
   return issues;

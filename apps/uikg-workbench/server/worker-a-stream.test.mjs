@@ -3,11 +3,80 @@ import { createServer } from 'node:http';
 import path from 'node:path';
 import test from 'node:test';
 import express from 'express';
-import { createEmptyDraft } from './draft-model.mjs';
+import { beginFrameCapture, createEmptyDraft } from './draft-model.mjs';
 import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 import { clearModelRuntime, setModelRuntime } from './model-runtime.mjs';
 
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
+
+test('未连接设备时 Worker A 直接识别页面卡片的持久化截图', async () => {
+  setModelRuntime('worker_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
+  const app = express();
+  const frameId = 'sha256:persisted-page-card';
+  const imagePath = '/persisted/page-card.png';
+  let draft = beginFrameCapture(createEmptyDraft(), frameId);
+  let modelInput = null;
+  let savedResult = null;
+  const server = {
+    app,
+    agent: null,
+    getSessionState: () => null,
+    async runWorkerModel(input) {
+      modelInput = input;
+      return {
+        frameId,
+        page: { name: '离线页面', surfaceType: 'page', stateSummary: '来自页面卡片', scrollableRegions: [] },
+        elements: [],
+        relationships: [],
+        actionCandidates: [],
+        comparison: { basisFrameId: null, status: 'not-requested', changes: [] },
+        uncertainties: [],
+      };
+    },
+  };
+  const store = {
+    async loadFrame(requestedFrameId) {
+      assert.equal(requestedFrameId, frameId);
+      return { frameId, imagePath, mimeType: 'image/png' };
+    },
+    async loadDraft() { return structuredClone(draft); },
+    async saveDraft(value) { draft = structuredClone(value); },
+    async saveModelResult(id, value) {
+      savedResult = structuredClone(value);
+      return path.join(process.cwd(), '.data', 'evidence', 'model-results', `${id}.json`);
+    },
+  };
+  await registerWorkbenchRoutes({
+    server,
+    store,
+    graphWorkflow: {},
+    workbenchRoot: process.cwd(),
+    spec: { version: 'test', schemaVersion: 'test', contentHash: 'test', index: 'test' },
+  });
+
+  const httpServer = createServer(app);
+  await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
+  const address = httpServer.address();
+  const baseUrl = `http://127.0.0.1:${address.port}`;
+  try {
+    const response = await fetch(`${baseUrl}/workbench/api/workers/a/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ frameId, pageId: draft.currentPageId, pageContext: '待识别页面', mergeIntoDraft: true }),
+    });
+    const streamText = await response.text();
+    assert.equal(response.status, 200);
+    assert.match(streamText, /event: result/);
+    assert.doesNotMatch(streamText, /请先连接 Android 设备|冻结上下文/);
+    assert.equal(modelInput.imagePath, imagePath);
+    assert.equal(modelInput.mimeType, 'image/png');
+    assert.equal(savedResult.frameIntegrity, true);
+    assert.equal(draft.page.name, '离线页面');
+  } finally {
+    await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
+    clearModelRuntime('worker_a');
+  }
+});
 
 test('Worker A 手动中断后保留断点并从断点继续', async () => {
   setModelRuntime('worker_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });

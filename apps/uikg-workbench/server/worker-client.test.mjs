@@ -72,6 +72,39 @@ test('Worker A client sends a frozen image and repairs streamed JSON', async () 
   }
 });
 
+test('Worker client separates MiniMax think tags from streamed model output', async () => {
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { 'content-type': 'text/event-stream' });
+    response.write('data: {"choices":[{"delta":{"content":"<thi"}}]}\n\n');
+    response.write('data: {"choices":[{"delta":{"content":"nk>检查页面"}}]}\n\n');
+    response.write('data: {"choices":[{"delta":{"content":"结构</th"}}]}\n\n');
+    response.write('data: {"choices":[{"delta":{"content":"ink>{\\"frameId\\":\\"f\\","}}]}\n\n');
+    response.write('data: {"choices":[{"delta":{"content":"\\"elements\\":[]}"}}]}\n\n');
+    response.end('data: [DONE]\n\n');
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  setModelRuntime('worker_a', {
+    baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'MiniMax-M3',
+    modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'low',
+  });
+  const chunks = [];
+
+  try {
+    const result = await runWorkerModel({
+      worker: 'worker_a', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
+      onChunk: (chunk) => chunks.push(chunk),
+    });
+    assert.deepEqual(result, { frameId: 'f', elements: [] });
+    assert.equal(chunks.map((chunk) => chunk.reasoning_content).join(''), '检查页面结构');
+    assert.equal(chunks.map((chunk) => chunk.content).join(''), '{"frameId":"f","elements":[]}');
+  } finally {
+    clearModelRuntime('worker_a');
+    server.close();
+  }
+});
+
 test('Worker B client sends the configured reasoning effort', async () => {
   const server = createServer((request, response) => {
     let body = '';

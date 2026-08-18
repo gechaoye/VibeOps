@@ -80,6 +80,33 @@ test('草稿校验发现 owner 循环和越界 bbox', () => {
   assert.ok(issues.some((issue) => issue.code === 'bbox_invalid'));
 });
 
+test('草稿校验区分同页和跨页候选键重复，并标记全部冲突元素', () => {
+  const samePageDraft = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'same-page.json');
+  samePageDraft.elements[1].candidateKey = samePageDraft.elements[0].candidateKey;
+  const samePageIssues = validateDraft(samePageDraft).filter((issue) => issue.code === 'candidate_key_duplicate_current_page');
+  assert.equal(samePageIssues.length, 2);
+  assert.deepEqual(new Set(samePageIssues.map((issue) => issue.elementId)), new Set(samePageDraft.elements.map((element) => element.id)));
+  assert.ok(samePageIssues.every((issue) => issue.candidateKey === 'settings.row'));
+  assert.ok(samePageIssues.every((issue) => issue.relatedElementIds.length === 2));
+  assert.ok(samePageIssues.every((issue) => issue.message.includes('本页面')));
+
+  const firstPageDraft = mergeWorkerIntoDraft(createEmptyDraft(), sampleWorker(), 'first-page.json');
+  const otherPageWorker = sampleWorker();
+  otherPageWorker.frameId = 'sha256:other-page';
+  otherPageWorker.page.name = '提醒详情';
+  otherPageWorker.elements[0].candidateKey = 'detail.row';
+  otherPageWorker.elements[1].candidateKey = 'detail.toggle';
+  otherPageWorker.relationships = [{ fromCandidateKey: 'detail.row', type: 'contains', toCandidateKey: 'detail.toggle' }];
+  otherPageWorker.actionCandidates = [{ ...otherPageWorker.actionCandidates[0], triggerCandidateKey: 'detail.toggle' }];
+  const crossPageDraft = mergeWorkerIntoDraft(firstPageDraft, otherPageWorker, 'other-page.json');
+  crossPageDraft.elements.find((element) => element.candidateKey === 'detail.row').candidateKey = 'settings.row';
+  const crossPageIssues = validateDraft(crossPageDraft).filter((issue) => issue.code === 'candidate_key_duplicate_other_page');
+  assert.equal(crossPageIssues.length, 2);
+  assert.deepEqual(new Set(crossPageIssues.map((issue) => issue.elementId)), new Set(crossPageDraft.elements.filter((element) => element.candidateKey === 'settings.row').map((element) => element.id)));
+  assert.ok(crossPageIssues.every((issue) => issue.pageIds.length === 2));
+  assert.ok(crossPageIssues.every((issue) => issue.message.includes('其他页面')));
+});
+
 test('可修正的 Worker A 几何和动作矛盾进入待审核草稿', () => {
   const workerResult = sampleWorker();
   workerResult.elements[1].interactive = false;
@@ -182,7 +209,19 @@ test('未识别前重复冻结复用当前空白 Page', () => {
   assert.deepEqual(secondCapture.pages.find((page) => page.id === secondCapture.currentPageId).frameIds, ['sha256:ghi']);
 });
 
-test('连续截图为每个冻结帧创建独立待识别 Page', () => {
+test('按指定 Page 替换未标注画面时不受当前 Page 影响', () => {
+  const firstCapture = beginFrameCapture(createEmptyDraft(), 'sha256:first', { forceNewPage: true });
+  const secondCapture = beginFrameCapture(firstCapture, 'sha256:second', { forceNewPage: true });
+  const firstPageId = firstCapture.currentPageId;
+  const replaced = beginFrameCapture(secondCapture, 'sha256:first-replaced', { replacePageId: firstPageId });
+
+  assert.equal(replaced.currentPageId, firstPageId);
+  assert.equal(replaced.pages.length, secondCapture.pages.length);
+  assert.deepEqual(replaced.pages.find((page) => page.id === firstPageId).frameIds, ['sha256:first-replaced']);
+  assert.deepEqual(replaced.pages.find((page) => page.id === secondCapture.currentPageId).frameIds, ['sha256:second']);
+});
+
+test('强制新建时为每个冻结帧创建独立待识别 Page', () => {
   const firstCapture = beginFrameCapture(createEmptyDraft(), 'sha256:first', { forceNewPage: true });
   const secondCapture = beginFrameCapture(firstCapture, 'sha256:second', { forceNewPage: true });
 

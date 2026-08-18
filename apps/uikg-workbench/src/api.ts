@@ -108,7 +108,7 @@ async function consumeWorkerStream(
 }
 
 export const workbenchApi = {
-  status: () => request<WorkbenchStatus>('/status'),
+  status: (workspaceSessionId?: string) => request<WorkbenchStatus>(`/status${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
   knowledgeGraph: (appKey: string) => request<CanonicalGraph>(`/knowledge-graph?appKey=${encodeURIComponent(appKey)}`),
   modelSettings: () => request<WorkerModelSettings>('/model-settings'),
   availableModels: () => request<WorkerAvailableModels>('/model-settings/models'),
@@ -126,6 +126,7 @@ export const workbenchApi = {
   sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),
   draft: () => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft'),
   saveDraft: (draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft', { method: 'PUT', body: JSON.stringify(draft) }),
+  savePageDraft: (pageId: string, draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>(`/draft/pages/${encodeURIComponent(pageId)}`, { method: 'PUT', body: JSON.stringify(draft) }),
   pageUploads: () => request<{ tasks: PageUploadTask[] }>('/page-uploads'),
   createPageUploads: (items: Array<{ sourceType: 'file' | 'url'; name: string; mimeType?: string; size?: number; url?: string }>) => request<{ tasks: PageUploadTask[] }>('/page-uploads', { method: 'POST', body: JSON.stringify({ items }) }),
   uploadPageChunk: (taskId: string, chunk: Blob, offset: number, signal?: AbortSignal) => binaryRequest<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/chunk`, {
@@ -143,23 +144,26 @@ export const workbenchApi = {
     mergeIntoDraft: boolean,
     onEvent: (event: { type: string; [key: string]: unknown }) => void,
     pageId?: string,
-  ) => consumeWorkerStream('/workers/a/stream', { frameId, pageId, pageContext, mergeIntoDraft }, onEvent),
+    workspaceSessionId?: string,
+  ) => consumeWorkerStream('/workers/a/stream', { frameId, pageId, pageContext, mergeIntoDraft, workspaceSessionId }, onEvent),
   workerBStream: (
     frameId: string,
     pageContext: string,
     onEvent: (event: { type: string; [key: string]: unknown }) => void,
     pageId?: string,
-  ) => consumeWorkerStream('/workers/b/stream', { frameId, pageId, pageContext }, onEvent),
-  workerASession: () => request<{ session: WorkerResumeSession | null }>('/workers/a/session'),
-  workerBSession: () => request<{ session: WorkerResumeSession | null }>('/workers/b/session'),
-  resumeWorkerAStream: (sessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
-    consumeWorkerStream('/workers/a/resume/stream', { sessionId }, onEvent),
-  resumeWorkerBStream: (sessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
-    consumeWorkerStream('/workers/b/resume/stream', { sessionId }, onEvent),
-  cancelWorkerA: () => request<{ cancelled: boolean }>('/workers/a/cancel', { method: 'POST', body: '{}' }),
-  cancelWorkerB: () => request<{ cancelled: boolean }>('/workers/b/cancel', { method: 'POST', body: '{}' }),
+    workspaceSessionId?: string,
+  ) => consumeWorkerStream('/workers/b/stream', { frameId, pageId, pageContext, workspaceSessionId }, onEvent),
+  workerASession: (workspaceSessionId?: string) => request<{ session: WorkerResumeSession | null }>(`/workers/a/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
+  workerBSession: (workspaceSessionId?: string) => request<{ session: WorkerResumeSession | null }>(`/workers/b/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
+  resumeWorkerAStream: (sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+    consumeWorkerStream('/workers/a/resume/stream', { sessionId, workspaceSessionId }, onEvent),
+  resumeWorkerBStream: (sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+    consumeWorkerStream('/workers/b/resume/stream', { sessionId, workspaceSessionId }, onEvent),
+  cancelWorkerA: (workspaceSessionId?: string) => request<{ cancelled: boolean }>('/workers/a/cancel', { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
+  cancelWorkerB: (workspaceSessionId?: string) => request<{ cancelled: boolean }>('/workers/b/cancel', { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
   mergeWorkerResults: (payload: {
     frameId: string;
+    pageId?: string;
     workerAResult: WorkerResult;
     workerBResult: WorkerResult;
     selections: WorkerElementMergeSelection[];

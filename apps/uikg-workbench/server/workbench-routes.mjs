@@ -81,18 +81,86 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   const ajv = new Ajv2020({ allErrors: true, strict: false });
   addFormats(ajv);
   const validateWorkerSchema = ajv.compile(schema);
-  let workerAInProgress = false;
-  let workerBInProgress = false;
-  let activeWorkerA = null;
-  let activeWorkerB = null;
-  let resumableWorkerA = null;
-  let resumableWorkerB = null;
-  let frozenAgent = null;
-  let frozenFrameId = null;
+  const activeWorkerA = new Map();
+  const activeWorkerB = new Map();
+  const resumableWorkerA = new Map();
+  const resumableWorkerB = new Map();
   let loadedModelRuntimeSignature = null;
   let uploadDraftQueue = Promise.resolve();
+  let annotationDraftQueue = Promise.resolve();
   const activePageUploadControllers = new Map();
   const deletedPageUploadIds = new Set();
+  const workspaceSessionKey = (value) => String(value || 'default').trim().slice(0, 160) || 'default';
+  const workersInProgress = () => activeWorkerA.size > 0 || activeWorkerB.size > 0;
+  const queueAnnotationDraftMutation = (operation) => {
+    const run = annotationDraftQueue.then(operation, operation);
+    annotationDraftQueue = run.catch(() => {});
+    return run;
+  };
+
+  const selectDraftPage = (draft, pageId, frameId) => {
+    const page = draft.pages.find((candidate) => candidate.id === pageId);
+    if (!page) return null;
+    const selectedFrameId = frameId === null
+      ? null
+      : frameId && page.frameIds.includes(frameId) ? frameId : page.frameIds.at(-1) || null;
+    return {
+      ...draft,
+      currentPageId: page.id,
+      currentFrameId: selectedFrameId,
+      page: {
+        id: page.id,
+        key: page.key,
+        name: page.name,
+        surfaceType: page.surfaceType,
+        stateSummary: page.stateSummary,
+        scrollableRegions: page.scrollableRegions,
+      },
+    };
+  };
+
+  const mergeAnnotationPage = (current, incoming, pageId) => {
+    const incomingPage = incoming.pages?.find((page) => page.id === pageId);
+    if (!incomingPage) throw workbenchError(400, '标注草稿中缺少目标 Page');
+    if (!current.pages.some((page) => page.id === pageId)) throw workbenchError(404, '目标 Page 不存在或已被删除');
+
+    const incomingElements = (incoming.elements || []).filter((element) => element.pageId === pageId || element.availableOnPageIds?.includes(pageId));
+    const incomingById = new Map(incomingElements.map((element) => [element.id, element]));
+    const mergedElements = current.elements
+      .filter((element) => element.pageId !== pageId)
+      .map((element) => incomingById.get(element.id) || element);
+    const retainedIds = new Set(mergedElements.map((element) => element.id));
+    for (const element of incomingElements) if (!retainedIds.has(element.id)) mergedElements.push(element);
+
+    const affectedElementIds = new Set([
+      ...current.elements.filter((element) => element.pageId === pageId).map((element) => element.id),
+      ...incomingElements.map((element) => element.id),
+    ]);
+    const incomingTransitions = (incoming.transitions || []).filter((transition) => transition.sourcePageId === pageId || transition.targetPageId === pageId);
+    const incomingRecords = (incoming.elementEditRecords || []).filter((record) => affectedElementIds.has(record.elementId));
+    const pages = current.pages.map((page) => page.id === pageId ? incomingPage : page);
+    const currentPage = pages.find((page) => page.id === current.currentPageId) || incomingPage;
+    return normalizeDraftForSave({
+      ...current,
+      revision: current.revision + 1,
+      pages,
+      elements: mergedElements,
+      transitions: [
+        ...current.transitions.filter((transition) => transition.sourcePageId !== pageId && transition.targetPageId !== pageId),
+        ...incomingTransitions,
+      ],
+      elementEditRecords: [
+        ...current.elementEditRecords.filter((record) => !affectedElementIds.has(record.elementId)),
+        ...incomingRecords,
+      ],
+      rawModelResultRef: incoming.rawModelResultRef,
+      lastWorkerModel: incoming.lastWorkerModel,
+      currentPageId: currentPage.id,
+      currentFrameId: currentPage.frameIds.includes(current.currentFrameId) ? current.currentFrameId : currentPage.frameIds.at(-1) || null,
+      page: currentPage,
+      updatedAt: new Date().toISOString(),
+    });
+  };
   const syncModelRuntime = async () => {
     if (!modelStore) return false;
     const configs = Object.fromEntries(MODEL_TARGETS.map((target) => [target, resolveTargetModelConfig(modelStore, target)]));
@@ -247,14 +315,15 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     } : {}),
   } : null;
 
-  async function executeWorker({ worker, frameId, pageId = null, pageContext = '', mergeIntoDraft = false, signal, onProgress = () => {}, resumeSession = null }) {
+  async function executeWorker({ worker, frameId, pageId = null, pageContext = '', mergeIntoDraft = false, signal, onProgress = () => {}, resumeSession = null, workspaceSessionId = 'default' }) {
     const label = worker === 'worker_a' ? 'Worker A' : 'Worker B';
     await syncModelRuntime();
     const runtime = getModelRuntime(worker);
     const model = runtime?.modelName || null;
     const setResumable = (value) => {
-      if (worker === 'worker_a') resumableWorkerA = value;
-      else resumableWorkerB = value;
+      const sessions = worker === 'worker_a' ? resumableWorkerA : resumableWorkerB;
+      if (value) sessions.set(workspaceSessionId, value);
+      else sessions.delete(workspaceSessionId);
     };
     const modelResultId = `${worker}-${Date.now()}-${randomUUID().slice(0, 8)}`;
     const sessionStartedAt = resumeSession?.createdAt || new Date().toISOString();
@@ -286,16 +355,12 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         reasoningContent,
         outputContent,
       });
-      emitProgress({ type: 'stage', phase: 'validate', message: '正在校验冻结帧' });
-      if (!server.agent) throw workbenchError(409, '请先连接 Android 设备');
+      emitProgress({ type: 'stage', phase: 'validate', message: '正在校验页面截图' });
       if (!model) {
         throw workbenchError(503, `未配置 ${label} 模型，请在模型配置页面完成指派`);
       }
       if (!frameId) throw workbenchError(400, '缺少 frameId');
       const frozenFrame = await store.loadFrame(frameId);
-      if (frozenAgent !== server.agent || frozenFrameId !== frameId) {
-        throw workbenchError(409, '当前进程没有该 frameId 的冻结上下文，请重新冻结画面后再分析');
-      }
       signal?.throwIfAborted();
 
       const startedAt = sessionStartedAt;
@@ -369,7 +434,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         completedAt: new Date().toISOString(),
         worker,
         model,
-        frameIntegrity: frozenAgent === server.agent && frozenFrameId === frameId,
+        frameIntegrity: frozenFrame.frameId === frameId,
         schemaValid,
         schemaErrors,
         normalizationIssues,
@@ -387,6 +452,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       if (run.lastError) {
         const resumableSession = {
           id: modelResultId,
+          workspaceSessionId,
           frameId,
           pageId,
           pageContext,
@@ -428,11 +494,15 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       let issues;
       if (mergeIntoDraft) {
         emitProgress({ type: 'stage', phase: 'merge', message: '正在合并候选元素到草稿' });
-        const currentDraft = await store.loadDraft();
-        draft = mergeWorkerIntoDraft(currentDraft, prepareWorkerForDraft(normalizedResult), modelResultRef, model);
+        draft = await queueAnnotationDraftMutation(async () => {
+          const currentDraft = await store.loadDraft();
+          const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) || currentDraft : currentDraft;
+          const merged = mergeWorkerIntoDraft(pageDraft, prepareWorkerForDraft(normalizedResult), modelResultRef, model);
+          await store.saveDraft(merged);
+          return merged;
+        });
         issues = validateDraft(draft);
         signal?.throwIfAborted();
-        await store.saveDraft(draft);
       }
       emitProgress({ type: 'stage', phase: 'complete', message: `${label} 分析完成` });
       sessionStatus = 'completed';
@@ -448,6 +518,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         const rawResultForResume = rawCheckpoint || { frameId, elements: [] };
         const resumableSession = {
           id: modelResultId,
+          workspaceSessionId,
           frameId,
           pageId,
           pageContext,
@@ -509,55 +580,51 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   }
 
-  function beginWorkerASession() {
-    if (activeWorkerA) throw workbenchError(409, '已有 Worker A 分析正在运行');
-    const session = { id: randomUUID(), controller: new AbortController() };
-    activeWorkerA = session;
-    workerAInProgress = true;
+  function beginWorkerASession(workspaceSessionId = 'default') {
+    if (activeWorkerA.has(workspaceSessionId)) throw workbenchError(409, '当前标签页已有 Worker A 分析正在运行');
+    const session = { id: randomUUID(), workspaceSessionId, controller: new AbortController() };
+    activeWorkerA.set(workspaceSessionId, session);
     return session;
   }
 
   function endWorkerASession(session) {
-    if (activeWorkerA?.id !== session.id) return;
-    activeWorkerA = null;
-    workerAInProgress = false;
+    if (activeWorkerA.get(session.workspaceSessionId)?.id !== session.id) return;
+    activeWorkerA.delete(session.workspaceSessionId);
   }
 
-  function beginWorkerBSession() {
-    if (activeWorkerB) throw workbenchError(409, '已有 Worker B 分析正在运行');
-    const session = { id: randomUUID(), controller: new AbortController() };
-    activeWorkerB = session;
-    workerBInProgress = true;
+  function beginWorkerBSession(workspaceSessionId = 'default') {
+    if (activeWorkerB.has(workspaceSessionId)) throw workbenchError(409, '当前标签页已有 Worker B 分析正在运行');
+    const session = { id: randomUUID(), workspaceSessionId, controller: new AbortController() };
+    activeWorkerB.set(workspaceSessionId, session);
     return session;
   }
 
   function endWorkerBSession(session) {
-    if (activeWorkerB?.id !== session.id) return;
-    activeWorkerB = null;
-    workerBInProgress = false;
+    if (activeWorkerB.get(session.workspaceSessionId)?.id !== session.id) return;
+    activeWorkerB.delete(session.workspaceSessionId);
   }
 
   server.app.use((req, res, next) => {
-    if ((workerAInProgress || workerBInProgress) && req.path === '/interact') {
+    if (workersInProgress() && req.path === '/interact') {
       return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
     }
     next();
   });
 
-  router.get('/status', async (_req, res, next) => {
+  router.get('/status', async (req, res, next) => {
     try {
       await syncModelRuntime();
       const session = server.getSessionState?.() || null;
       res.json({
         ok: true,
         agentConnected: Boolean(server.agent),
-        workersRunning: workerAInProgress || workerBInProgress,
+        workersRunning: workersInProgress(),
         workerAConfigured: Boolean(getModelRuntime('worker_a')?.modelName),
         workerAModel: getModelRuntime('worker_a')?.modelName || null,
         workerBConfigured: Boolean(getModelRuntime('worker_b')?.modelName),
         workerBModel: getModelRuntime('worker_b')?.modelName || null,
-        workerASession: publicWorkerSession(resumableWorkerA),
-        workerBSession: publicWorkerSession(resumableWorkerB),
+        workerASession: publicWorkerSession(resumableWorkerA.get(workspaceSessionKey(req.query.workspaceSessionId))),
+        workerBSession: publicWorkerSession(resumableWorkerB.get(workspaceSessionKey(req.query.workspaceSessionId))),
         spec,
         session,
       });
@@ -566,12 +633,12 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   });
 
-  router.get('/workers/a/session', (_req, res) => {
-    res.json({ session: publicWorkerSession(resumableWorkerA, true) });
+  router.get('/workers/a/session', (req, res) => {
+    res.json({ session: publicWorkerSession(resumableWorkerA.get(workspaceSessionKey(req.query.workspaceSessionId)), true) });
   });
 
-  router.get('/workers/b/session', (_req, res) => {
-    res.json({ session: publicWorkerSession(resumableWorkerB, true) });
+  router.get('/workers/b/session', (req, res) => {
+    res.json({ session: publicWorkerSession(resumableWorkerB.get(workspaceSessionKey(req.query.workspaceSessionId)), true) });
   });
 
   router.get('/sessions', async (_req, res, next) => {
@@ -603,7 +670,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.put('/model-settings', async (req, res, next) => {
     try {
-      if (workerAInProgress || workerBInProgress) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
+      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
       saveTargetModelSettings(modelStore, req.body);
       let runtimeReloaded = true;
       try {
@@ -619,7 +686,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.put('/model-settings/gateways/:gatewayId', async (req, res, next) => {
     try {
-      if (workerAInProgress || workerBInProgress) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能修改模型网关' });
+      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能修改模型网关' });
       saveModelGateway(modelStore, { ...req.body, id: req.params.gatewayId });
       await syncModelRuntime();
       res.json(loadCombinedModelSettings());
@@ -630,7 +697,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.delete('/model-settings/gateways/:gatewayId', async (req, res, next) => {
     try {
-      if (workerAInProgress || workerBInProgress) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能移除模型网关' });
+      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能移除模型网关' });
       const deleted = deleteModelGateway(modelStore, req.params.gatewayId);
       res.json({ ...loadCombinedModelSettings(), ...deleted });
     } catch (error) {
@@ -640,7 +707,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.post('/device/tap', async (req, res, next) => {
     try {
-      if (workerAInProgress || workerBInProgress) return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
+      if (workersInProgress()) return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
       if (!server.agent) return res.status(409).json({ error: '请先连接 Android 设备' });
       const x = Number(req.body?.x);
       const y = Number(req.body?.y);
@@ -686,6 +753,22 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       const issues = validateDraft(nextDraft);
       await store.saveDraft(nextDraft);
       res.json({ draft: nextDraft, issues });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.put('/draft/pages/:pageId', async (req, res, next) => {
+    try {
+      const pageId = String(req.params.pageId || '');
+      const nextDraft = await queueAnnotationDraftMutation(async () => {
+        const current = await store.loadDraft();
+        const merged = mergeAnnotationPage(current, req.body || {}, pageId);
+        await store.saveDraft(merged);
+        return merged;
+      });
+      const responseDraft = selectDraftPage(nextDraft, pageId, req.body?.currentFrameId);
+      res.json({ draft: responseDraft || nextDraft, issues: validateDraft(nextDraft) });
     } catch (error) {
       next(error);
     }
@@ -868,12 +951,14 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     try {
       if (!server.agent) return res.status(409).json({ error: '请先连接 Android 设备' });
       await syncModelRuntime();
-      const frame = await freezeAndCapture(server.agent);
-      frozenAgent = server.agent;
-      frozenFrameId = frame.frameId;
-      const metadata = await store.saveFrame(frame);
       const draft = await store.loadDraft();
-      const nextDraft = beginFrameCapture(draft, frame.frameId, { forceNewPage: req.body?.forceNewPage === true });
+      const replacePageId = typeof req.body?.replacePageId === 'string' ? req.body.replacePageId : null;
+      if (replacePageId && !draft.pages.some((page) => page.id === replacePageId)) {
+        return res.status(404).json({ error: '需要重新冻结的页面不存在' });
+      }
+      const frame = await freezeAndCapture(server.agent);
+      const metadata = await store.saveFrame(frame);
+      const nextDraft = beginFrameCapture(draft, frame.frameId, { forceNewPage: req.body?.forceNewPage === true, replacePageId });
       await store.saveDraft(nextDraft);
       res.json({
         frame: {
@@ -900,7 +985,8 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   router.post('/workers/a', async (req, res, next) => {
     let session;
     try {
-      session = beginWorkerASession();
+      const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
+      session = beginWorkerASession(workspaceSessionId);
       res.json(await executeWorker({
         worker: 'worker_a',
         frameId: req.body?.frameId,
@@ -908,6 +994,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         pageContext: req.body?.pageContext || '',
         mergeIntoDraft: Boolean(req.body?.mergeIntoDraft),
         signal: session.controller.signal,
+        workspaceSessionId,
       }));
     } catch (error) {
       next(error);
@@ -918,8 +1005,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   async function streamWorkerA(req, res, resumeSession = null) {
     let session;
+    const workspaceSessionId = workspaceSessionKey(resumeSession?.workspaceSessionId || req.body?.workspaceSessionId);
     try {
-      session = beginWorkerASession();
+      session = beginWorkerASession(workspaceSessionId);
     } catch (error) {
       return res.status(error?.status || 500).json({ error: error instanceof Error ? error.message : String(error), ...(error?.details || {}) });
     }
@@ -938,7 +1026,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
     res.on('close', () => {
-      if (!responseComplete && activeWorkerA?.id === session.id) session.controller.abort('Worker A 流连接已关闭');
+      if (!responseComplete && activeWorkerA.get(workspaceSessionId)?.id === session.id) session.controller.abort('Worker A 流连接已关闭');
     });
 
     try {
@@ -951,6 +1039,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         signal: session.controller.signal,
         onProgress: (event) => send(event.type, event),
         resumeSession,
+        workspaceSessionId,
       });
       send('result', result);
     } catch (error) {
@@ -974,22 +1063,26 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   });
 
   router.post('/workers/a/resume/stream', async (req, res) => {
-    if (!resumableWorkerA || resumableWorkerA.id !== req.body?.sessionId) {
+    const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
+    const resumeSession = resumableWorkerA.get(workspaceSessionId);
+    if (!resumeSession || resumeSession.id !== req.body?.sessionId) {
       return res.status(404).json({ error: '没有可从断点继续的 Worker A 会话' });
     }
-    await streamWorkerA(req, res, resumableWorkerA);
+    await streamWorkerA(req, res, resumeSession);
   });
 
-  router.post('/workers/a/cancel', (_req, res) => {
-    if (!activeWorkerA) return res.json({ cancelled: false });
-    activeWorkerA.controller.abort('用户中断 Worker A');
+  router.post('/workers/a/cancel', (req, res) => {
+    const session = activeWorkerA.get(workspaceSessionKey(req.body?.workspaceSessionId));
+    if (!session) return res.json({ cancelled: false });
+    session.controller.abort('用户中断 Worker A');
     res.json({ cancelled: true });
   });
 
   async function streamWorkerB(req, res, resumeSession = null) {
     let session;
+    const workspaceSessionId = workspaceSessionKey(resumeSession?.workspaceSessionId || req.body?.workspaceSessionId);
     try {
-      session = beginWorkerBSession();
+      session = beginWorkerBSession(workspaceSessionId);
       await syncModelRuntime();
     } catch (error) {
       if (session) endWorkerBSession(session);
@@ -1007,7 +1100,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
     res.on('close', () => {
-      if (!responseComplete && activeWorkerB?.id === session.id) session.controller.abort('Worker B 流连接已关闭');
+      if (!responseComplete && activeWorkerB.get(workspaceSessionId)?.id === session.id) session.controller.abort('Worker B 流连接已关闭');
     });
     try {
       const result = await executeWorker({
@@ -1019,6 +1112,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         signal: session.controller.signal,
         onProgress: (event) => send(event.type, event),
         resumeSession,
+        workspaceSessionId,
       });
       send('result', result);
     } catch (error) {
@@ -1038,22 +1132,26 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   });
 
   router.post('/workers/b/resume/stream', async (req, res) => {
-    if (!resumableWorkerB || resumableWorkerB.id !== req.body?.sessionId) {
+    const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
+    const resumeSession = resumableWorkerB.get(workspaceSessionId);
+    if (!resumeSession || resumeSession.id !== req.body?.sessionId) {
       return res.status(404).json({ error: '没有可从断点继续的 Worker B 会话' });
     }
-    await streamWorkerB(req, res, resumableWorkerB);
+    await streamWorkerB(req, res, resumeSession);
   });
 
-  router.post('/workers/b/cancel', (_req, res) => {
-    if (!activeWorkerB) return res.json({ cancelled: false });
-    activeWorkerB.controller.abort('用户中断 Worker B');
+  router.post('/workers/b/cancel', (req, res) => {
+    const session = activeWorkerB.get(workspaceSessionKey(req.body?.workspaceSessionId));
+    if (!session) return res.json({ cancelled: false });
+    session.controller.abort('用户中断 Worker B');
     res.json({ cancelled: true });
   });
 
   router.post('/workers/b', async (req, res, next) => {
     let session;
     try {
-      session = beginWorkerBSession();
+      const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
+      session = beginWorkerBSession(workspaceSessionId);
       await syncModelRuntime();
       const result = await executeWorker({
         worker: 'worker_b',
@@ -1061,6 +1159,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         pageId: req.body?.pageId,
         pageContext: req.body?.pageContext || '',
         signal: session.controller.signal,
+        workspaceSessionId,
       });
       res.json(result);
     } catch (error) {
@@ -1073,8 +1172,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   router.post('/workers/merge', async (req, res, next) => {
     try {
       const frameId = String(req.body?.frameId || '');
+      const pageId = String(req.body?.pageId || '');
       const currentDraft = await store.loadDraft();
-      if (!frameId || currentDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
+      const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : currentDraft;
+      if (!frameId || !pageDraft || pageDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
       const selections = Array.isArray(req.body?.selections) ? req.body.selections.filter((selection) => selection && typeof selection === 'object') : [];
       const { workerResult: workerAResult } = normalizeWorkerOutput(req.body?.workerAResult || {});
       const { workerResult: workerBResult } = normalizeWorkerOutput(req.body?.workerBResult || {});
@@ -1132,7 +1233,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         relationships: [...remapRelationships(workerAResult.relationships, workerAKeyToMergedKey), ...remapRelationships(workerBResult.relationships, workerBKeyToMergedKey)],
         actionCandidates: [...workerBActions, ...workerAActions],
       };
-      const draft = mergeWorkerIntoDraft(currentDraft, prepareWorkerForDraft(combinedResult), String(req.body?.modelResultRef || 'worker-merge'), null);
+      const draft = mergeWorkerIntoDraft(pageDraft, prepareWorkerForDraft(combinedResult), String(req.body?.modelResultRef || 'worker-merge'), null);
       await store.saveDraft(draft);
       res.json({ draft, issues: validateDraft(draft) });
     } catch (error) {

@@ -36,6 +36,15 @@ function resizedBox(initial: BBox, handle: string, dx: number, dy: number): BBox
   return clampBox({ x, y, width, height });
 }
 
+function elementAtPoint(elements: DraftElement[], selectedId: string | null, x: number, y: number) {
+  const hits = elements
+    .filter((element) => x >= element.bbox.x && x <= element.bbox.x + element.bbox.width && y >= element.bbox.y && y <= element.bbox.y + element.bbox.height)
+    .sort((left, right) => left.bbox.width * left.bbox.height - right.bbox.width * right.bbox.height);
+  if (hits.length === 0) return null;
+  const selectedIndex = hits.findIndex((element) => element.id === selectedId);
+  return hits[(selectedIndex + 1) % hits.length];
+}
+
 export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, showRejected, onSelect, onAdd, onBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
@@ -112,6 +121,8 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
         height: Math.abs(gesture.currentY - gesture.startY),
       }
     : null;
+  const visibleElements = elements.filter((element) => showRejected || element.reviewStatus !== 'rejected');
+  const renderedElements = [...visibleElements].sort((left, right) => Number(left.id === selectedId) - Number(right.id === selectedId));
 
   return (
     <div
@@ -140,7 +151,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
         draggable={false}
         onLoad={(event) => setImageSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
       />
-      {elements.filter((element) => showRejected || element.reviewStatus !== 'rejected').map((element) => {
+      {renderedElements.map((element) => {
         const selected = element.id === selectedId;
         return (
           <div
@@ -152,9 +163,11 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
               event.stopPropagation();
               if (!stageRef.current) return;
               const start = point(event, stageRef.current);
+              const hit = elementAtPoint(visibleElements, selectedId, start.x, start.y);
+              if (!hit) return;
               event.currentTarget.setPointerCapture(event.pointerId);
-              onSelect(element.id);
-              setGesture({ type: 'move', id: element.id, startX: start.x, startY: start.y, initial: { ...element.bbox } });
+              onSelect(hit.id);
+              setGesture({ type: 'move', id: hit.id, startX: start.x, startY: start.y, initial: { ...hit.bbox } });
             }}
             title={`${element.label} · ${reviewStatusLabels[element.reviewStatus]}`}
           >

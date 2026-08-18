@@ -212,6 +212,9 @@ export interface ValidationIssue {
   code: string;
   elementId?: string;
   message: string;
+  candidateKey?: string;
+  relatedElementIds?: string[];
+  pageIds?: string[];
 }
 
 export interface FrameMetadata {

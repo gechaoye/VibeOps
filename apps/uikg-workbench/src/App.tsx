@@ -3,23 +3,28 @@ import {
   Boxes,
   Camera,
   ChevronDown,
+  ChevronRight,
   CircleAlert,
   CircleCheck,
   Check,
-  CheckCheck,
   CloudCog,
   Eye,
   EyeOff,
+  Feather,
   FileDiff,
   History,
+  ImageUp,
+  ListChecks,
+  ListFilter,
   LoaderCircle,
   MonitorSmartphone,
   MousePointer2,
   Network,
-  BoxSelect,
   PanelsTopLeft,
   PanelRight,
+  Pencil,
   Play,
+  Plus,
   Redo2,
   RefreshCw,
   RotateCcw,
@@ -33,6 +38,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnnotationCanvas } from './AnnotationCanvas';
+import { createAnnotationSessionId, draftForAnnotationTarget, type AnnotationTarget } from './annotation-tabs';
 import { absoluteAssetUrl, serverUrl, workbenchApi } from './api';
 import { DeviceClient } from './device-client';
 import { EditHistoryPanel } from './EditHistoryPanel';
@@ -41,18 +47,98 @@ import { Inspector } from './Inspector';
 import { KnowledgeGraph } from './KnowledgeGraph';
 import { LiveDevicePreview } from './LiveDevicePreview';
 import { ModelSettings } from './ModelSettings';
-import { createHumanElement, elementAvailableOnPage, pageWorkflowStatus, pageWorkflowStatusLabels, reviewStatusLabels, validateDraftClient } from './model';
+import { createHumanElement, elementAvailableOnPage, reviewStatusLabels, validateDraftClient } from './model';
 import { PageGraph } from './PageGraph';
+import { PageUploadDialog } from './PageUploadDialog';
 import { WorkerProgressPanel, type WorkerActivity } from './WorkerProgressPanel';
 import { WorkerComparisonPanel } from './WorkerComparisonPanel';
 import { StagingPanel } from './StagingPanel';
 import type { AnalysisSession, BBox, DeviceState, Draft, DraftElement, DraftPage, ElementActivityRecord, ElementEditRecord, FrameMetadata, WorkerResult, WorkerElementMergeSelection, WorkerResumeSession, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 import './styles.css';
 
-type ViewMode = 'live' | 'review';
+type ViewMode = 'live' | 'frozen' | 'review';
 type SideTab = 'elements' | 'validation' | 'history';
-type WorkspaceMode = 'annotation' | 'graph' | 'knowledge' | 'staging' | 'settings';
+type WorkspaceMode = 'annotation' | 'graph' | 'knowledge' | 'staging';
 type ExplorationMode = 'ultra' | 'manual';
+type InternalTabKind = 'knowledge' | 'workspace' | 'settings' | 'annotation';
+
+const MAX_PAGE_TABS = 10;
+
+interface InternalTab {
+  id: string;
+  title: string;
+  sessionId: string;
+  kind: InternalTabKind;
+  annotationTarget: AnnotationTarget | null;
+}
+
+const validationIssueTypeLabels: Record<string, string> = {
+  action_effect_missing: '动作效果不完整',
+  bbox_invalid: '元素边框异常',
+  candidate_key_duplicate_current_page: '同页候选键重复',
+  candidate_key_duplicate_other_page: '跨页候选键重复',
+  candidate_key_required: '缺少候选键',
+  capability_missing: '缺少元素动作',
+  capability_none_conflict: '元素动作冲突',
+  control_type_required: '缺少元素类型',
+  label_required: '缺少元素名称',
+  nested_owner_kind: '嵌套元素归属异常',
+  owner_cycle: '元素层级循环',
+  parent_missing: '父级元素不存在',
+  parent_self: '父级元素指向自身',
+  review_pending: '元素待审核',
+  root_owner_kind: '根元素归属异常',
+  transition_evidence_incomplete: '跳转证据不完整',
+  worker_action_inconsistent: '识别动作不一致',
+  worker_bbox_clamped: '识别边框已裁剪',
+};
+
+function validationGroupItems(group: { code: string; issues: ValidationIssue[] }): ValidationIssue[][] {
+  if (!group.code.startsWith('candidate_key_duplicate_')) return group.issues.map((issue) => [issue]);
+  const byCandidateKey = new Map<string, ValidationIssue[]>();
+  for (const issue of group.issues) {
+    const pageScope = group.code === 'candidate_key_duplicate_current_page' ? `:${[...(issue.pageIds || [])].sort().join(',')}` : '';
+    const key = `${issue.candidateKey || issue.elementId || issue.message}${pageScope}`;
+    const items = byCandidateKey.get(key) || [];
+    items.push(issue);
+    byCandidateKey.set(key, items);
+  }
+  return [...byCandidateKey.values()];
+}
+
+function removePageFromDraft(current: Draft, pageId: string): Draft {
+  const removedElementIds = new Set(current.elements.filter((element) => element.pageId === pageId).map((element) => element.id));
+  const elements = current.elements
+    .filter((element) => !removedElementIds.has(element.id))
+    .map((element) => element.ownerKind === 'application'
+      ? { ...element, availableOnPageIds: element.availableOnPageIds.filter((id) => id !== pageId) }
+      : element);
+  const pages = current.pages.filter((page) => page.id !== pageId).map((page) => ({
+    ...page,
+    elementIds: page.elementIds.filter((id) => !removedElementIds.has(id)),
+  }));
+  const nextPage = current.currentPageId === pageId ? pages[0] : pages.find((page) => page.id === current.currentPageId) || pages[0];
+  const emptyPage = {
+    id: 'draft-page-empty',
+    key: 'page.empty',
+    name: '',
+    surfaceType: 'unknown' as const,
+    stateSummary: '',
+    scrollableRegions: [],
+  };
+  return {
+    ...current,
+    currentPageId: nextPage?.id || emptyPage.id,
+    currentFrameId: nextPage?.frameIds.at(-1) || null,
+    page: nextPage
+      ? { id: nextPage.id, key: nextPage.key, name: nextPage.name, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions }
+      : emptyPage,
+    pages,
+    elements,
+    elementEditRecords: current.elementEditRecords.filter((record) => !removedElementIds.has(record.elementId)),
+    transitions: current.transitions.filter((transition) => transition.sourcePageId !== pageId && transition.targetPageId !== pageId && !removedElementIds.has(transition.triggerElementId)),
+  };
+}
 
 function aggregateUltraWorkerStatus(workerAStatus?: WorkerActivity['status'], workerBStatus?: WorkerActivity['status']): WorkerActivity['status'] {
   const statuses = [workerAStatus, workerBStatus].filter(Boolean) as WorkerActivity['status'][];
@@ -147,7 +233,110 @@ function pausedWorkerBActivity(session: WorkerResumeSession): WorkerActivity {
   };
 }
 
-function AppContent() {
+interface InternalTabBarProps {
+  tabs: InternalTab[];
+  activeTabId: string;
+  onSelectTab: (tabId: string) => void;
+  onCloseTab: (tabId: string) => void;
+  onUploadPage: () => void;
+  onCreateFromDevice: () => void;
+}
+
+function InternalTabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onUploadPage, onCreateFromDevice }: InternalTabBarProps) {
+  const navRef = useRef<HTMLElement>(null);
+  const fixedGroupRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+  const [visiblePageCount, setVisiblePageCount] = useState(MAX_PAGE_TABS);
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
+  const fixedTabs = tabs
+    .filter((tab) => tab.kind !== 'annotation')
+    .sort((left, right) => ['knowledge', 'workspace', 'settings'].indexOf(left.kind) - ['knowledge', 'workspace', 'settings'].indexOf(right.kind));
+  const pageTabs = tabs.filter((tab) => tab.kind === 'annotation');
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return undefined;
+    const updateVisibleCount = () => {
+      const fixedWidth = fixedGroupRef.current?.offsetWidth || 0;
+      const actionsWidth = actionsRef.current?.offsetWidth || 0;
+      const availableWidth = Math.max(0, nav.clientWidth - fixedWidth - actionsWidth - 30);
+      setVisiblePageCount(Math.min(MAX_PAGE_TABS, Math.max(0, Math.floor(availableWidth / 104))));
+    };
+    const observer = new ResizeObserver(updateVisibleCount);
+    observer.observe(nav);
+    if (fixedGroupRef.current) observer.observe(fixedGroupRef.current);
+    if (actionsRef.current) observer.observe(actionsRef.current);
+    updateVisibleCount();
+    return () => observer.disconnect();
+  }, [fixedTabs.length, pageTabs.length]);
+
+  let visiblePageTabs = pageTabs.slice(0, visiblePageCount);
+  const activePageTab = pageTabs.find((tab) => tab.id === activeTabId);
+  if (activePageTab && visiblePageCount > 0 && !visiblePageTabs.some((tab) => tab.id === activePageTab.id)) {
+    visiblePageTabs = [...visiblePageTabs.slice(0, -1), activePageTab];
+  }
+  const visiblePageIds = new Set(visiblePageTabs.map((tab) => tab.id));
+  const hiddenPageTabs = pageTabs.filter((tab) => !visiblePageIds.has(tab.id));
+
+  const tabIcon = (tab: InternalTab) => tab.kind === 'knowledge'
+    ? <Network size={14} />
+    : tab.kind === 'workspace'
+      ? <PanelsTopLeft size={14} />
+      : tab.kind === 'settings'
+        ? <Settings2 size={14} />
+        : <Camera size={14} />;
+  const renderTab = (tab: InternalTab, group: 'fixed' | 'page') => <div key={tab.id} className={`internal-tab internal-tab-${group} ${activeTabId === tab.id ? 'active' : ''}`} role="presentation">
+    <button type="button" role="tab" aria-selected={activeTabId === tab.id} className="internal-tab-select" onClick={() => { setOverflowOpen(false); setCreateMenuOpen(false); onSelectTab(tab.id); }}>
+      {tabIcon(tab)}
+      <span>{tab.title}</span>
+      {tab.annotationTarget && <code>{tab.annotationTarget.pageId.slice(-6)}</code>}
+    </button>
+    {(tab.kind === 'annotation' || tab.kind === 'settings') && <button type="button" className="icon-button internal-tab-close" aria-label={`关闭 ${tab.title} 标签页`} title="关闭标签页" onClick={() => onCloseTab(tab.id)}><X size={13} /></button>}
+  </div>;
+
+  return <nav ref={navRef} className="internal-tabs" aria-label="工作台标签页" role="tablist">
+    <div ref={fixedGroupRef} className="internal-tab-group internal-tab-group-fixed">{fixedTabs.map((tab) => renderTab(tab, 'fixed'))}</div>
+    <span className="internal-tab-group-divider" aria-hidden="true" />
+    <div className="internal-tab-group internal-tab-group-pages">{visiblePageTabs.map((tab) => renderTab(tab, 'page'))}</div>
+    <div ref={actionsRef} className="internal-tab-actions">
+      {hiddenPageTabs.length > 0 && <div className="internal-tab-menu-anchor">
+        <button type="button" className="icon-button internal-tab-overflow" aria-label="更多页面标签" title="更多页面标签" onClick={() => { setOverflowOpen((value) => !value); setCreateMenuOpen(false); }}><ChevronDown size={15} /></button>
+        {overflowOpen && <div className="internal-tab-popover internal-tab-overflow-menu" role="menu">
+          {hiddenPageTabs.map((tab) => <div key={tab.id} className={activeTabId === tab.id ? 'active' : ''}><button type="button" role="menuitem" onClick={() => { setOverflowOpen(false); onSelectTab(tab.id); }}><Camera size={14} /><span>{tab.title}</span></button><button type="button" className="icon-button" aria-label={`关闭 ${tab.title} 标签页`} onClick={() => onCloseTab(tab.id)}><X size={13} /></button></div>)}
+        </div>}
+      </div>}
+      <div className="internal-tab-menu-anchor">
+        <button type="button" className="icon-button internal-tab-create" aria-label="创建页面对象" title="创建页面对象" onClick={() => { setCreateMenuOpen((value) => !value); setOverflowOpen(false); }}><Plus size={17} /></button>
+        {createMenuOpen && <div className="internal-tab-popover internal-tab-create-menu" role="menu" aria-label="创建页面对象方式">
+          <button type="button" role="menuitem" onClick={() => { setCreateMenuOpen(false); onUploadPage(); }}><ImageUp size={15} /><span>上传图片</span></button>
+          <button type="button" role="menuitem" onClick={() => { setCreateMenuOpen(false); onCreateFromDevice(); }}><Smartphone size={15} /><span>使用设备画面</span></button>
+        </div>}
+      </div>
+    </div>
+  </nav>;
+}
+
+interface AppContentProps {
+  tabId: string;
+  tabKind: InternalTabKind;
+  annotationTarget: AnnotationTarget | null;
+  annotationSessionId: string;
+  pageNameOverrides: Record<string, string>;
+  active: boolean;
+  onOpenAnnotationTab: (pageId: string, frameId: string, title?: string) => void;
+  onOpenDeviceAnnotationTab: () => void;
+  onOpenSettingsTab: () => void;
+  onPromoteAnnotationTab: (tabId: string, pageId: string, frameId: string, title?: string) => void;
+  onRenameAnnotationTab: (tabId: string, title: string) => void;
+  onPageNameChange: (pageId: string, name: string | null) => void;
+  tabs: InternalTab[];
+  activeTabId: string;
+  onSelectTab: (tabId: string) => void;
+  onCloseTab: (tabId: string) => void;
+}
+
+function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pageNameOverrides, active, onOpenAnnotationTab, onOpenDeviceAnnotationTab, onOpenSettingsTab, onPromoteAnnotationTab, onRenameAnnotationTab, onPageNameChange, tabs, activeTabId, onSelectTab, onCloseTab }: AppContentProps) {
   const deviceClient = useMemo(() => new DeviceClient(serverUrl), []);
   const [status, setStatus] = useState<WorkbenchStatus | null>(null);
   const [device, setDevice] = useState<DeviceState>(emptyDevice);
@@ -156,9 +345,9 @@ function AppContent() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]);
   const [frame, setFrame] = useState<FrameMetadata | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('live');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => annotationTarget ? 'review' : 'live');
   const [sideTab, setSideTab] = useState<SideTab>('elements');
-  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>('annotation');
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(() => tabKind === 'workspace' ? 'graph' : tabKind === 'knowledge' ? 'knowledge' : 'annotation');
   const [explorationMode, setExplorationMode] = useState<ExplorationMode>(() => {
     const savedMode = window.localStorage.getItem('uikg-exploration-mode');
     return savedMode === 'manual' || savedMode === 'ai_assist' ? 'manual' : 'ultra';
@@ -168,11 +357,14 @@ function AppContent() {
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [drawing, setDrawing] = useState(false);
   const [showRejected, setShowRejected] = useState(false);
-  const [continuousCapture, setContinuousCapture] = useState(false);
+  const [duplicateCandidateKeyFilter, setDuplicateCandidateKeyFilter] = useState<string | null>(null);
+  const [pageNameEditing, setPageNameEditing] = useState(false);
+  const [pageNameDraft, setPageNameDraft] = useState('');
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [pageUploadOpen, setPageUploadOpen] = useState(false);
   const [workerControlBusy, setWorkerControlBusy] = useState<'worker-a' | 'worker-b' | null>(null);
   const [notice, setNotice] = useState<{ type: 'info' | 'error' | 'success'; text: string } | null>(null);
   const [workerActivity, setWorkerActivity] = useState<WorkerActivity | null>(null);
@@ -194,25 +386,57 @@ function AppContent() {
   const preAcceptStatusRef = useRef(new Map<string, DraftElement['reviewStatus']>());
   const preRejectStatusRef = useRef(new Map<string, DraftElement['reviewStatus']>());
   const connectionRefreshInFlightRef = useRef(false);
+  const activeRef = useRef(active);
   const autoSaveInFlightRef = useRef(false);
   const autoSaveQueuedRef = useRef(false);
+  const reviewCompletionRequestedRef = useRef(false);
+  const reviewCompletionInFlightRef = useRef(false);
   const annotationEntryDraftRef = useRef<Draft | null>(null);
+  const annotationEntryWorkspaceRef = useRef<WorkspaceMode>('annotation');
   const lastSavedDraftRef = useRef<Draft | null>(null);
   const workerAResultRef = useRef<WorkerResult | null>(null);
   const workerBResultRef = useRef<WorkerResult | null>(null);
 
   const issues = useMemo(() => draft ? validateDraftClient(draft) : serverIssues, [draft, serverIssues]);
+  const validationIssueGroups = useMemo(() => {
+    const grouped = new Map<string, { code: string; level: ValidationIssue['level']; issues: ValidationIssue[] }>();
+    for (const issue of issues) {
+      const key = `${issue.level}:${issue.code}`;
+      const group = grouped.get(key);
+      if (group) group.issues.push(issue);
+      else grouped.set(key, { code: issue.code, level: issue.level, issues: [issue] });
+    }
+    return [...grouped.values()].sort((left, right) => {
+      if (left.level !== right.level) return left.level === 'error' ? -1 : 1;
+      return right.issues.length - left.issues.length || left.code.localeCompare(right.code);
+    });
+  }, [issues]);
   const selectedElement = draft?.elements.find((element) => element.id === selectedId) || null;
   const initialSelectedElement = selectedId ? initialElementsRef.current.get(selectedId) || null : null;
   const canRestoreSelectedElement = Boolean(selectedElement && initialSelectedElement && JSON.stringify(selectedElement) !== JSON.stringify(initialSelectedElement));
   const canRestoreAllElements = Boolean(draft && JSON.stringify(draft.elements) !== JSON.stringify(initialAllElementsRef.current));
   const currentElements = useMemo(() => draft ? draft.elements.filter((element) => elementAvailableOnPage(element, draft.currentPageId, draft.elements)) : [], [draft]);
+  const treeElements = useMemo(() => duplicateCandidateKeyFilter
+    ? currentElements.filter((element) => element.candidateKey.trim() === duplicateCandidateKeyFilter)
+    : currentElements, [currentElements, duplicateCandidateKeyFilter]);
   const currentPageHasPrivateElements = Boolean(draft?.elements.some((element) => element.pageId === draft.currentPageId));
   const historyBlockedForPendingPage = Boolean(draft?.currentFrameId && !currentPageHasPrivateElements && draft.pages.find((page) => page.id === draft.currentPageId)?.frameIds.includes(draft.currentFrameId));
-  const allCurrentChecked = currentElements.length > 0 && currentElements.every((element) => checkedIds.has(element.id));
+  const allCurrentChecked = treeElements.length > 0 && treeElements.every((element) => checkedIds.has(element.id));
+  const checkedCurrentElements = treeElements.filter((element) => checkedIds.has(element.id));
+  const allCheckedAccepted = checkedCurrentElements.length > 0 && checkedCurrentElements.every((element) => element.reviewStatus === 'accepted');
   const frameUrl = draft?.currentFrameId
     ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(draft.currentFrameId)}/image`)
     : null;
+  const pageGraphDraft = useMemo(() => {
+    if (!draft || Object.keys(pageNameOverrides).length === 0) return draft;
+    const pages = draft.pages.map((page) => Object.prototype.hasOwnProperty.call(pageNameOverrides, page.id)
+      ? { ...page, name: pageNameOverrides[page.id] }
+      : page);
+    const currentPage = pages.find((page) => page.id === draft.currentPageId);
+    return currentPage
+      ? { ...draft, pages, page: { ...draft.page, name: currentPage.name } }
+      : { ...draft, pages };
+  }, [draft, pageNameOverrides]);
   const pageHistorySessions = useMemo(() => {
     if (!draft) return [];
     const currentPage = draft.pages.find((page) => page.id === draft.currentPageId);
@@ -377,21 +601,28 @@ function AppContent() {
       const online = await deviceClient.checkStatus();
       if (!online) throw new Error('设备服务未启动，请使用 pnpm dev 同时启动前端和设备服务');
       const [workbenchStatus, session, targets] = await Promise.all([
-        workbenchApi.status(),
+        workbenchApi.status(annotationSessionId),
         deviceClient.getSessionInfo(),
         deviceClient.listSessionTargets(forceTargetRefresh),
       ]);
-      const runtimeInfo = workbenchStatus.agentConnected ? await deviceClient.getRuntimeInfo() : null;
-      setStatus(workbenchStatus);
+      const sessionDeviceId = typeof session?.metadata?.deviceId === 'string' ? session.metadata.deviceId : null;
+      const currentDeviceAvailable = Boolean(
+        workbenchStatus.agentConnected
+        && session?.connected
+        && sessionDeviceId
+        && targets.some((target) => target.id === sessionDeviceId),
+      );
+      const runtimeInfo = currentDeviceAvailable ? await deviceClient.getRuntimeInfo() : null;
+      setStatus(currentDeviceAvailable ? workbenchStatus : { ...workbenchStatus, agentConnected: false });
       if (workbenchStatus.workerASession) {
         setWorkerActivity((current) => current || pausedWorkerAActivity(workbenchStatus.workerASession!));
       }
       if (workbenchStatus.workerBSession) {
         setWorkerActivity((current) => current || pausedWorkerBActivity(workbenchStatus.workerBSession!));
       }
-      setDevice({ online, session, runtimeInfo, targets });
+      setDevice({ online, session: currentDeviceAvailable ? session : null, runtimeInfo, targets });
       setDeviceDiscoveryError(null);
-      setSelectedDevice((current) => current || targets[0]?.id || '');
+      setSelectedDevice((current) => targets.some((target) => target.id === current) ? current : targets[0]?.id || '');
     } catch (error) {
       setDevice((current) => ({ ...current, online: false }));
       const message = error instanceof Error ? error.message : String(error);
@@ -400,26 +631,43 @@ function AppContent() {
     } finally {
       connectionRefreshInFlightRef.current = false;
     }
-  }, [deviceClient]);
+  }, [annotationSessionId, deviceClient]);
 
   useEffect(() => {
-    Promise.all([refreshConnection(), workbenchApi.draft(), workbenchApi.workerASession(), workbenchApi.workerBSession(), workbenchApi.sessions()])
+    activeRef.current = active;
+    if (active) void refreshConnection(true);
+  }, [active, refreshConnection]);
+
+  useEffect(() => {
+    Promise.all([refreshConnection(), workbenchApi.draft(), workbenchApi.workerASession(annotationSessionId), workbenchApi.workerBSession(annotationSessionId), workbenchApi.sessions()])
       .then(([, result, workerASessionResult, workerBSessionResult, sessionHistory]) => {
-        resetDraftState(result.draft);
+        const targetedDraft = annotationTarget ? draftForAnnotationTarget(result.draft, annotationTarget) : null;
+        resetDraftState(targetedDraft || result.draft);
+        if (targetedDraft) {
+          setWorkspaceMode('annotation');
+          setViewMode(targetedDraft.currentFrameId ? 'review' : 'live');
+        } else if (annotationTarget) {
+          showNotice('error', '链接中的标注页面不存在或已被删除');
+        }
         setServerIssues(result.issues);
-        if (result.draft.currentFrameId) setViewMode('review');
         if (workerBSessionResult.session) setWorkerActivity(pausedWorkerBActivity(workerBSessionResult.session));
         else if (workerASessionResult.session) setWorkerActivity(pausedWorkerAActivity(workerASessionResult.session));
         setAnalysisSessions(sessionHistory.sessions);
       })
       .catch((error) => showNotice('error', error instanceof Error ? error.message : String(error)));
-    const timer = window.setInterval(() => void refreshConnection(), 30_000);
+    const timer = window.setInterval(() => {
+      if (activeRef.current) void refreshConnection(true);
+    }, 5_000);
     return () => window.clearInterval(timer);
   }, [refreshConnection]);
 
   useEffect(() => {
     window.localStorage.setItem('uikg-exploration-mode', explorationMode);
   }, [explorationMode]);
+
+  useEffect(() => {
+    if (duplicateCandidateKeyFilter && treeElements.length < 2) setDuplicateCandidateKeyFilter(null);
+  }, [duplicateCandidateKeyFilter, treeElements.length]);
 
   useEffect(() => {
     if (workspaceMode !== 'staging') return;
@@ -430,6 +678,19 @@ function AppContent() {
       })
       .catch((error) => showNotice('error', error instanceof Error ? error.message : String(error)));
   }, [workspaceMode]);
+
+  const showInitialLiveView = () => {
+    endHistoryGroup();
+    setViewMode('live');
+    setSelectedId(null);
+    setCheckedIds(new Set());
+    setMultiSelect(false);
+    setDrawing(false);
+    setShowRejected(false);
+    setDuplicateCandidateKeyFilter(null);
+    setFrame(null);
+    setWorkerComparison(null);
+  };
 
   const connectDevice = async () => {
     if (!selectedDevice) return;
@@ -461,26 +722,72 @@ function AppContent() {
     }
   };
 
-  const freezeFrame = async () => {
+  const captureFrame = async () => {
     setBusy('freeze');
     try {
-      const keepLive = continuousCapture;
-      const result = await workbenchApi.freezeFrame(keepLive);
-      setFrame(result.frame);
+      const result = await workbenchApi.freezeFrame(true);
+
       resetDraftState(result.draft);
       workerAResultRef.current = null;
       workerBResultRef.current = null;
       setWorkerComparison(null);
       setSelectedId(null);
       setWorkspaceMode('annotation');
-      setViewMode(keepLive ? 'live' : 'review');
+      setViewMode('frozen');
       setDrawing(false);
-      showNotice('success', keepLive ? '截图已加入页面图，可继续操作设备' : '截图已加入页面图，请标注或识别页面');
+      setFrame(null);
+      showNotice('success', '画面已冻结，请确认后开始标注');
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
       setBusy(null);
     }
+  };
+
+  const discardFrozenCapture = async () => {
+    const beforeDiscard = draftRef.current;
+    const pageId = beforeDiscard?.currentPageId;
+    if (!beforeDiscard || !pageId || !beforeDiscard.currentFrameId) {
+      showInitialLiveView();
+      return;
+    }
+    setBusy('discard-freeze');
+    try {
+      const result = await workbenchApi.saveDraft(removePageFromDraft(beforeDiscard, pageId));
+      resetDraftState(result.draft, false, true);
+      setServerIssues(result.issues);
+      showInitialLiveView();
+      showNotice('success', '已丢弃当前截图，请重新冻结画面');
+    } catch (error) {
+      showNotice('error', `丢弃当前截图失败：${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const startAnnotation = () => {
+    if (!draft?.currentFrameId) return;
+    const page = draft.pages.find((candidate) => candidate.id === draft.currentPageId);
+    if (!annotationTarget && page) onPromoteAnnotationTab(tabId, page.id, draft.currentFrameId, page.name || '待识别页面');
+    setViewMode('review');
+  };
+
+  const startEditingPageName = () => {
+    if (!draft || !annotationTarget) return;
+    setPageNameDraft(draft.page.name || '');
+    setPageNameEditing(true);
+  };
+
+  const commitPageName = () => {
+    if (!draft || !annotationTarget) return;
+    const nextName = pageNameDraft.trim() || draft.page.name || '待识别页面';
+    if (nextName !== draft.page.name) {
+      updatePage(draft.currentPageId, { name: nextName }, 'page:name');
+      onRenameAnnotationTab(tabId, nextName);
+      onPageNameChange(draft.currentPageId, nextName);
+    }
+    endHistoryGroup();
+    setPageNameEditing(false);
   };
 
   const handleWorkerEvent = (event: { type: string; [key: string]: unknown }) => {
@@ -540,7 +847,7 @@ function AppContent() {
     setWorkerActivity((current) => current ? { ...current, status: 'running', workerBStatus: 'running', phase: 'worker_b', phaseMessage: 'Worker B 正在重新识别画面', reasoningContent: '', outputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined, workerBResumeSessionId: undefined } : current);
     try {
       const pageContext = [currentDraft.page.name, currentDraft.page.stateSummary].filter(Boolean).join('；');
-      const result = await workbenchApi.workerBStream(currentDraft.currentFrameId, pageContext, explorationMode === 'ultra' ? handleUltraWorkerBEvent : handleWorkerEvent, currentDraft.currentPageId);
+      const result = await workbenchApi.workerBStream(currentDraft.currentFrameId, pageContext, explorationMode === 'ultra' ? handleUltraWorkerBEvent : handleWorkerEvent, currentDraft.currentPageId, annotationSessionId);
       workerBResultRef.current = result.workerResult;
       if (workerAResultRef.current) setWorkerComparison({ workerAResult: workerAResultRef.current, workerBResult: result.workerResult, modelResultRef: result.modelResultRef });
       setStatus((current) => current ? { ...current, workerBSession: null } : current);
@@ -563,7 +870,7 @@ function AppContent() {
     setWorkerActivity((current) => current ? { ...current, status: 'running', workerAStatus: 'running', phase: 'worker_a', phaseMessage: 'Worker A 正在重新识别画面', workerAReasoningContent: '', workerAOutputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined, workerAResumeSessionId: undefined } : current);
     try {
       const pageContext = [currentDraft.page.name, currentDraft.page.stateSummary].filter(Boolean).join('；');
-      const result = await workbenchApi.workerAStream(currentDraft.currentFrameId, pageContext, false, handleUltraWorkerAEvent, currentDraft.currentPageId);
+      const result = await workbenchApi.workerAStream(currentDraft.currentFrameId, pageContext, false, handleUltraWorkerAEvent, currentDraft.currentPageId, annotationSessionId);
       workerAResultRef.current = result.workerResult;
       if (workerBResultRef.current) setWorkerComparison({ workerAResult: result.workerResult, workerBResult: workerBResultRef.current, modelResultRef: result.modelResultRef });
       setStatus((current) => current ? { ...current, workerASession: null } : current);
@@ -704,17 +1011,17 @@ function AppContent() {
     try {
       const pageContext = [draft.page.name, draft.page.stateSummary].filter(Boolean).join('；');
       if (!ultraMode) {
-        await finishManualWorkerA(await workbenchApi.workerAStream(draft.currentFrameId, pageContext, true, handleWorkerEvent, draft.currentPageId));
+        await finishManualWorkerA(await workbenchApi.workerAStream(draft.currentFrameId, pageContext, true, handleWorkerEvent, draft.currentPageId, annotationSessionId));
         return;
       }
-      const workerAPromise = workbenchApi.workerAStream(draft.currentFrameId, pageContext, false, handleUltraWorkerAEvent, draft.currentPageId).then((result) => {
+      const workerAPromise = workbenchApi.workerAStream(draft.currentFrameId, pageContext, false, handleUltraWorkerAEvent, draft.currentPageId, annotationSessionId).then((result) => {
         workerAResultRef.current = result.workerResult;
         if (workerBResultRef.current) setWorkerComparison({ workerAResult: result.workerResult, workerBResult: workerBResultRef.current, modelResultRef: result.modelResultRef });
         setStatus((current) => current ? { ...current, workerASession: null } : current);
         setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus('completed', current.workerBStatus), workerAStatus: 'completed', workerAResumeSessionId: undefined } : current);
         return result;
       }, (error) => { handleWorkerAFailure(error); throw error; });
-      const workerBPromise = workbenchApi.workerBStream(draft.currentFrameId, pageContext, handleUltraWorkerBEvent, draft.currentPageId).then((result) => {
+      const workerBPromise = workbenchApi.workerBStream(draft.currentFrameId, pageContext, handleUltraWorkerBEvent, draft.currentPageId, annotationSessionId).then((result) => {
         workerBResultRef.current = result.workerResult;
         if (workerAResultRef.current) setWorkerComparison({ workerAResult: workerAResultRef.current, workerBResult: result.workerResult, modelResultRef: result.modelResultRef });
         setStatus((current) => current ? { ...current, workerBSession: null } : current);
@@ -740,6 +1047,7 @@ function AppContent() {
     try {
       const result = await workbenchApi.mergeWorkerResults({
         frameId: draft.currentFrameId,
+        pageId: draft.currentPageId,
         workerAResult: workerComparison.workerAResult,
         workerBResult: workerComparison.workerBResult,
         selections,
@@ -772,7 +1080,7 @@ function AppContent() {
       errorMessage: undefined,
     } : current);
     try {
-      const result = await workbenchApi.resumeWorkerAStream(sessionId, explorationMode === 'ultra' ? handleUltraWorkerAEvent : handleWorkerEvent);
+      const result = await workbenchApi.resumeWorkerAStream(sessionId, annotationSessionId, explorationMode === 'ultra' ? handleUltraWorkerAEvent : handleWorkerEvent);
       if (explorationMode === 'ultra') {
         workerAResultRef.current = result.workerResult;
         if (workerBResultRef.current) setWorkerComparison({ workerAResult: result.workerResult, workerBResult: workerBResultRef.current, modelResultRef: result.modelResultRef });
@@ -801,7 +1109,7 @@ function AppContent() {
       errorMessage: undefined,
     } : current);
     try {
-      const result = await workbenchApi.resumeWorkerBStream(sessionId, explorationMode === 'ultra' ? handleUltraWorkerBEvent : handleWorkerEvent);
+      const result = await workbenchApi.resumeWorkerBStream(sessionId, annotationSessionId, explorationMode === 'ultra' ? handleUltraWorkerBEvent : handleWorkerEvent);
       workerBResultRef.current = result.workerResult;
       if (workerAResultRef.current) setWorkerComparison({ workerAResult: workerAResultRef.current, workerBResult: result.workerResult, modelResultRef: result.modelResultRef });
       setStatus((current) => current ? { ...current, workerBSession: null } : current);
@@ -824,7 +1132,7 @@ function AppContent() {
       phaseMessage: `${kind === 'worker_a' ? 'Worker A' : 'Worker B'} 正在中断`,
     } : current);
     try {
-      const result = kind === 'worker_a' ? await workbenchApi.cancelWorkerA() : await workbenchApi.cancelWorkerB();
+      const result = kind === 'worker_a' ? await workbenchApi.cancelWorkerA(annotationSessionId) : await workbenchApi.cancelWorkerB(annotationSessionId);
       if (!result.cancelled) showNotice('info', `${kind === 'worker_a' ? 'Worker A' : 'Worker B'} 已结束，无需中断`);
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
@@ -838,8 +1146,8 @@ function AppContent() {
     setWorkerActivity((current) => current ? { ...current, status: 'cancelling', phaseMessage: '正在中断模型请求' } : current);
     try {
       const results = explorationMode === 'ultra'
-        ? await Promise.all([workbenchApi.cancelWorkerA(), workbenchApi.cancelWorkerB()])
-        : [workerBActive ? await workbenchApi.cancelWorkerB() : await workbenchApi.cancelWorkerA()];
+        ? await Promise.all([workbenchApi.cancelWorkerA(annotationSessionId), workbenchApi.cancelWorkerB(annotationSessionId)])
+        : [workerBActive ? await workbenchApi.cancelWorkerB(annotationSessionId) : await workbenchApi.cancelWorkerA(annotationSessionId)];
       if (!results.some((result) => result.cancelled)) {
         setWorkerActivity((current) => current ? { ...current, phaseMessage: '模型已结束，正在接收最终结果' } : current);
       }
@@ -864,7 +1172,9 @@ function AppContent() {
   };
 
   const persistDraft = async (draftToSave: Draft) => {
-    const result = await workbenchApi.saveDraft(draftToSave);
+    const result = annotationTarget
+      ? await workbenchApi.savePageDraft(annotationTarget.pageId, draftToSave)
+      : await workbenchApi.saveDraft(draftToSave);
     lastSavedDraftRef.current = structuredClone(result.draft);
     // Autosave replaces the server-normalized draft without resetting the
     // undo/redo snapshots or the current review baseline.
@@ -914,7 +1224,8 @@ function AppContent() {
 
   const completeReview = async () => {
     const current = draftRef.current;
-    if (!current || !reviewReady || autoSaveInFlightRef.current) return;
+    if (!current || !reviewReady || autoSaveInFlightRef.current || reviewCompletionInFlightRef.current) return;
+    reviewCompletionInFlightRef.current = true;
     setBusy('review-complete');
     try {
       const emptyPage = createEmptyWorkingPage();
@@ -928,7 +1239,9 @@ function AppContent() {
       };
       // Persist the approved elements together with the cleared working page
       // so a reload starts from the same empty annotation state.
-      const result = await workbenchApi.saveDraft(clearedDraft);
+      const result = annotationTarget
+        ? await workbenchApi.savePageDraft(annotationTarget.pageId, clearedDraft)
+        : await workbenchApi.saveDraft(clearedDraft);
       setServerIssues(result.issues);
       // Approval is the only operation that clears undo/redo history and
       // returns the annotation workspace to its empty initial state.
@@ -945,29 +1258,40 @@ function AppContent() {
     } catch (error) {
       showNotice('error', `完成审核失败：${error instanceof Error ? error.message : String(error)}`);
     } finally {
+      reviewCompletionInFlightRef.current = false;
       setBusy(null);
     }
   };
+
+  useEffect(() => {
+    if (!reviewCompletionRequestedRef.current
+      || workspaceMode !== 'annotation'
+      || viewMode !== 'review'
+      || !draft?.currentFrameId
+      || !reviewReady
+      || busy
+      || autoSaveInFlightRef.current
+      || autoSaveState === 'saving') return;
+    reviewCompletionRequestedRef.current = false;
+    void completeReview();
+  }, [autoSaveState, busy, draft?.currentFrameId, reviewReady, viewMode, workspaceMode]);
 
   const requestCancelAnnotation = () => {
     if (!draftRef.current?.currentFrameId) return;
     setCancelDialogOpen(true);
   };
 
-  const restoreAnnotationState = async (source: 'entry' | 'saved') => {
-    const snapshot = source === 'entry' ? annotationEntryDraftRef.current : lastSavedDraftRef.current;
+  const restoreAnnotationEntry = async (action: 'frozen' | 'close') => {
+    const snapshot = annotationEntryDraftRef.current;
     if (!snapshot) return;
     setCancelDialogOpen(false);
     setBusy('cancel-annotation');
+    let closeAfterRestore = false;
     try {
-      // Keep the selected snapshot's page/element properties, but clear the
-      // active frame so the annotation surface returns to its initial state.
-      const restoredDraft: Draft = {
-        ...structuredClone(snapshot),
-        currentFrameId: null,
-        rawModelResultRef: null,
-      };
-      const result = await workbenchApi.saveDraft(restoredDraft);
+      const restoredDraft = structuredClone(snapshot);
+      const result = annotationTarget
+        ? await workbenchApi.savePageDraft(annotationTarget.pageId, restoredDraft)
+        : await workbenchApi.saveDraft(restoredDraft);
       lastSavedDraftRef.current = structuredClone(result.draft);
       setServerIssues(result.issues);
       resetDraftState(result.draft, false, true);
@@ -977,15 +1301,21 @@ function AppContent() {
       setShowRejected(false);
       setFrame(null);
       setWorkerComparison(null);
-      // The selected snapshot updates page data, while the annotation canvas
-      // returns to its default live/empty view instead of rendering that snapshot.
-      setViewMode('live');
       setAutoSaveState('idle');
-      showNotice('success', source === 'entry' ? '已恢复进入标注时的状态' : '已恢复最后一次保存的状态');
+      if (action === 'frozen') {
+        setViewMode('frozen');
+        showNotice('success', '已回退到冻结画面');
+      } else if (tabKind === 'annotation') {
+        closeAfterRestore = true;
+      } else {
+        setViewMode('live');
+        setWorkspaceMode(annotationEntryWorkspaceRef.current);
+      }
     } catch (error) {
-      showNotice('error', `恢复标注状态失败：${error instanceof Error ? error.message : String(error)}`);
+      showNotice('error', `放弃标注变更失败：${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setBusy(null);
+      if (closeAfterRestore) onCloseTab(tabId);
     }
   };
 
@@ -1073,8 +1403,11 @@ function AppContent() {
 
   const bulkAccept = () => {
     if (checkedIds.size === 0) return;
+    if (workspaceMode === 'annotation' && viewMode === 'review' && currentElements.length > 0 && currentElements.every((element) => checkedIds.has(element.id) || element.reviewStatus === 'accepted')) {
+      reviewCompletionRequestedRef.current = true;
+    }
     for (const element of draft?.elements || []) if (checkedIds.has(element.id) && element.reviewStatus !== 'accepted') preAcceptStatusRef.current.set(element.id, element.reviewStatus);
-    updateDraft((current) => ({ ...current, elements: current.elements.map((element) => checkedIds.has(element.id) ? { ...element, reviewStatus: 'accepted' } : element) }), undefined, '批量确认');
+    updateDraft((current) => ({ ...current, elements: current.elements.map((element) => checkedIds.has(element.id) ? { ...element, reviewStatus: 'accepted' } : element) }), undefined, '批量审核通过');
   };
 
   const bulkCancelAccept = () => {
@@ -1082,7 +1415,7 @@ function AppContent() {
     updateDraft((current) => ({ ...current, elements: current.elements.map((element) => {
       if (!checkedIds.has(element.id) || element.reviewStatus !== 'accepted') return element;
       return { ...element, reviewStatus: preAcceptStatusRef.current.get(element.id) || (element.source === 'ai_worker' ? 'pending' : 'edited') };
-    }) }), undefined, '取消批量确认');
+    }) }), undefined, '取消批量审核通过');
     for (const id of checkedIds) preAcceptStatusRef.current.delete(id);
   };
 
@@ -1138,19 +1471,69 @@ function AppContent() {
     setSelectedId(container.id);
     setMultiSelect(false);
     setCheckedIds(new Set());
+    setDuplicateCandidateKeyFilter(null);
     showNotice('success', `已用 ${selected.length} 个元素创建组合容器`);
+  };
+
+  const deleteCheckedElements = () => {
+    if (!draft || checkedIds.size === 0) return;
+    const deletedIds = new Set(checkedIds);
+    commitDraft((current) => {
+      const currentById = new Map(current.elements.map((element) => [element.id, element]));
+      const survivingParentId = (element: DraftElement) => {
+        let parentId = element.parentId;
+        const visited = new Set<string>();
+        while (parentId && deletedIds.has(parentId) && !visited.has(parentId)) {
+          visited.add(parentId);
+          parentId = currentById.get(parentId)?.parentId || null;
+        }
+        return parentId && !deletedIds.has(parentId) ? parentId : null;
+      };
+      const remaining = current.elements
+        .filter((element) => !deletedIds.has(element.id))
+        .map((element) => {
+          if (!element.parentId || !deletedIds.has(element.parentId)) return element;
+          const parentId = survivingParentId(element);
+          return {
+            ...element,
+            parentId,
+            ownerKind: parentId ? 'component' as const : 'page' as const,
+            ownerRef: parentId || current.currentPageId,
+          };
+        });
+      const elements = remaining.map((element) => ({
+        ...element,
+        childrenIds: remaining.filter((candidate) => candidate.parentId === element.id).map((candidate) => candidate.id),
+      }));
+      return {
+        ...current,
+        pages: current.pages.map((page) => ({ ...page, elementIds: page.elementIds.filter((id) => !deletedIds.has(id)) })),
+        elements,
+        elementEditRecords: current.elementEditRecords.filter((record) => !deletedIds.has(record.elementId)),
+        transitions: current.transitions.filter((transition) => !deletedIds.has(transition.triggerElementId)),
+      };
+    }, undefined, '批量删除元素');
+    for (const id of deletedIds) {
+      preAcceptStatusRef.current.delete(id);
+      preRejectStatusRef.current.delete(id);
+    }
+    if (selectedId && deletedIds.has(selectedId)) setSelectedId(null);
+    setCheckedIds(new Set());
   };
 
   const toggleAccept = (element: DraftElement) => {
     if (element.reviewStatus === 'accepted') {
       const previous = preAcceptStatusRef.current.get(element.id);
       const reviewStatus = previous || (element.source === 'ai_worker' ? 'pending' : 'edited');
-      updateElement(element.id, { reviewStatus }, undefined, false, '取消确认元素');
+      updateElement(element.id, { reviewStatus }, undefined, false, '取消审核通过元素');
       preAcceptStatusRef.current.delete(element.id);
       return;
     }
+    if (workspaceMode === 'annotation' && viewMode === 'review' && currentElements.length > 0 && currentElements.every((candidate) => candidate.id === element.id || candidate.reviewStatus === 'accepted')) {
+      reviewCompletionRequestedRef.current = true;
+    }
     preAcceptStatusRef.current.set(element.id, element.reviewStatus);
-    updateElement(element.id, { reviewStatus: 'accepted' }, undefined, false, '确认元素');
+    updateElement(element.id, { reviewStatus: 'accepted' }, undefined, false, '审核通过元素');
   };
 
   const toggleReject = (element: DraftElement) => {
@@ -1249,10 +1632,40 @@ function AppContent() {
   const openPage = (pageId: string) => {
     const page = draft?.pages.find((item) => item.id === pageId);
     if (!page) return;
+    annotationEntryWorkspaceRef.current = workspaceMode;
     selectPage(pageId);
     if (draftRef.current) annotationEntryDraftRef.current = structuredClone(draftRef.current);
     setWorkspaceMode('annotation');
     setViewMode(page.frameIds.length > 0 ? 'review' : 'live');
+  };
+
+  const openPageInNewTab = (pageId: string) => {
+    const page = draft?.pages.find((item) => item.id === pageId);
+    const frameId = page?.frameIds.at(-1);
+    if (!page || !frameId) return;
+    onOpenAnnotationTab(page.id, frameId, page.name || '待识别页面');
+  };
+
+  const showDuplicateCandidateKey = (candidateKey: string, pageIds: string[]) => {
+    if (!draft) return;
+    const targetPageId = pageIds.includes(draft.currentPageId) ? draft.currentPageId : pageIds[0];
+    if (targetPageId && targetPageId !== draft.currentPageId) openPage(targetPageId);
+    setDuplicateCandidateKeyFilter(candidateKey);
+    setSelectedId(null);
+    setCheckedIds(new Set());
+    setMultiSelect(false);
+    setSideTab('elements');
+  };
+
+  const showValidationElement = (issue: ValidationIssue) => {
+    if (!draft || !issue.elementId) return;
+    const element = draft.elements.find((candidate) => candidate.id === issue.elementId);
+    const targetPageId = element?.pageId
+      || (element && elementAvailableOnPage(element, draft.currentPageId, draft.elements) ? draft.currentPageId : issue.pageIds?.[0]);
+    if (targetPageId && targetPageId !== draft.currentPageId) openPage(targetPageId);
+    setDuplicateCandidateKeyFilter(null);
+    setSelectedId(issue.elementId);
+    setSideTab('elements');
   };
 
   const updatePage = (pageId: string, patch: Partial<DraftPage>, historyKey?: string) => {
@@ -1267,39 +1680,7 @@ function AppContent() {
     const beforeDelete = draftRef.current;
     const wasDirty = dirty;
     if (!beforeDelete || !beforeDelete.pages.some((page) => page.id === pageId)) return;
-    commitDraft((current) => {
-      const removedElementIds = new Set(current.elements.filter((element) => element.pageId === pageId).map((element) => element.id));
-      const elements = current.elements
-        .filter((element) => !removedElementIds.has(element.id))
-        .map((element) => element.ownerKind === 'application'
-          ? { ...element, availableOnPageIds: element.availableOnPageIds.filter((id) => id !== pageId) }
-          : element);
-      const pages = current.pages.filter((page) => page.id !== pageId).map((page) => ({
-        ...page,
-        elementIds: page.elementIds.filter((id) => !removedElementIds.has(id)),
-      }));
-      const nextPage = current.currentPageId === pageId ? pages[0] : pages.find((page) => page.id === current.currentPageId) || pages[0];
-      const emptyPage = {
-        id: 'draft-page-empty',
-        key: 'page.empty',
-        name: '',
-        surfaceType: 'unknown',
-        stateSummary: '',
-        scrollableRegions: [],
-      };
-      return {
-        ...current,
-        currentPageId: nextPage?.id || emptyPage.id,
-        currentFrameId: nextPage?.frameIds.at(-1) || null,
-        page: nextPage
-          ? { id: nextPage.id, key: nextPage.key, name: nextPage.name, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions }
-          : emptyPage,
-        pages,
-        elements,
-        elementEditRecords: current.elementEditRecords.filter((record) => !removedElementIds.has(record.elementId)),
-        transitions: current.transitions.filter((transition) => transition.sourcePageId !== pageId && transition.targetPageId !== pageId && !removedElementIds.has(transition.triggerElementId)),
-      };
-    });
+    commitDraft((current) => removePageFromDraft(current, pageId));
     setSelectedId(null);
     setCheckedIds(new Set());
     setBusy('delete-page');
@@ -1410,14 +1791,13 @@ function AppContent() {
     }
   };
 
-  const errorCount = issues.filter((issue) => issue.level === 'error').length;
-  const warningCount = issues.filter((issue) => issue.level === 'warning').length;
   const connected = Boolean(device.runtimeInfo && status?.agentConnected);
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell app-shell-${tabKind} ${active ? '' : 'app-shell-hidden'}`} aria-hidden={!active}>
       <header className="topbar">
         <div className="brand"><Boxes size={20} /><div><strong>UIKG Workbench</strong><span>{status?.spec.version || 'UIKG'}</span></div></div>
+        <label className="topbar-app-field"><span>应用</span><input value={draft?.appKey || ''} onBlur={endHistoryGroup} onChange={(event) => updateDraft((current) => ({ ...current, appKey: event.target.value }), 'draft:appKey')} /></label>
         <div className="device-controls">
           <div className={`connection-dot ${connected ? 'connected' : deviceDiscoveryError ? 'error' : ''}`} title={deviceDiscoveryError || (connected ? '设备已连接' : '设备未连接')} />
           <select value={selectedDevice} disabled={connected || busy === 'connect'} onChange={(event) => setSelectedDevice(event.target.value)} aria-label="Android 设备">
@@ -1432,54 +1812,81 @@ function AppContent() {
           )}
         </div>
         <div className="header-actions">
-          <button type="button" className={`button global-model-button ${workspaceMode === 'settings' ? 'active' : ''}`} onClick={() => setWorkspaceMode('settings')}><Settings2 size={15} />模型配置</button>
-          {workspaceMode === 'annotation' && viewMode === 'review' && <button type="button" className="button button-primary" disabled={!reviewReady || busy === 'review-complete' || autoSaveState === 'saving'} onClick={() => void completeReview()}>{busy === 'review-complete' ? <LoaderCircle className="spin" size={16} /> : <Check size={16} />}审核通过</button>}
+          <button type="button" className={`button global-model-button ${tabKind === 'settings' ? 'active' : ''}`} onClick={onOpenSettingsTab}><Settings2 size={15} />模型配置</button>
         </div>
       </header>
 
-      <div className="contextbar">
-        <label><span>应用</span><input value={draft?.appKey || ''} onBlur={endHistoryGroup} onChange={(event) => updateDraft((current) => ({ ...current, appKey: event.target.value }), 'draft:appKey')} /></label>
-        <label><span>构建</span><input value={draft?.buildRef || ''} placeholder="android-package:..." onBlur={endHistoryGroup} onChange={(event) => updateDraft((current) => ({ ...current, buildRef: event.target.value }), 'draft:buildRef')} /></label>
-        <label className="page-switcher"><span>页面</span><select value={draft?.currentPageId || ''} disabled={!draft?.pages.length} onChange={(event) => openPage(event.target.value)}>{draft?.pages.map((page) => { const pageStatus = pageWorkflowStatus(draft, page); return <option key={page.id} value={page.id}>{page.name} · {pageWorkflowStatusLabels[pageStatus]}</option>; })}</select></label>
-        <label className="page-name-field"><span>名称</span><input value={draft?.page.name || ''} onBlur={endHistoryGroup} onChange={(event) => draft && updatePage(draft.currentPageId, { name: event.target.value }, 'page:name')} /></label>
-        <div className="context-workflow-controls">
-          <div className="mode-segment" aria-label="探索模式">
-            <button type="button" className={explorationMode === 'ultra' ? 'active' : ''} title="Worker A 与 Worker B 并发识别，再按元素和字段选择合并" onClick={() => setExplorationMode('ultra')}>Ultra</button>
-            <button type="button" className={explorationMode === 'manual' ? 'active' : ''} title="使用 Worker A 单 Worker 识别后直接人工审核" onClick={() => setExplorationMode('manual')}>Manual</button>
-          </div>
-          <span className={`validation-summary ${errorCount ? 'has-error' : ''}`} title="当前草稿校验结果"><CircleAlert size={15} />{errorCount} / {warningCount}</span>
-        </div>
-        <div className="workspace-tabs" aria-label="工作区">
-          <button type="button" className={workspaceMode === 'annotation' ? 'active' : ''} onClick={() => setWorkspaceMode('annotation')}><MousePointer2 size={14} />标注</button>
-          <button type="button" className={workspaceMode === 'graph' ? 'active' : ''} onClick={() => setWorkspaceMode('graph')}><PanelsTopLeft size={14} />页面图</button>
-          <button type="button" className={workspaceMode === 'staging' ? 'active' : ''} onClick={() => setWorkspaceMode('staging')}><FileDiff size={14} />Staging</button>
-          <button type="button" className={workspaceMode === 'knowledge' ? 'active' : ''} onClick={() => setWorkspaceMode('knowledge')}><Network size={14} />知识图谱</button>
-        </div>
-        <span className="spec-hash" title={status?.spec.contentHash}>Schema {status?.spec.schemaVersion || '3.0.0'}</span>
-      </div>
+      <InternalTabBar tabs={tabs} activeTabId={activeTabId} onSelectTab={onSelectTab} onCloseTab={onCloseTab} onUploadPage={() => setPageUploadOpen(true)} onCreateFromDevice={onOpenDeviceAnnotationTab} />
 
-      {workspaceMode === 'annotation' ? <main className="workspace">
+      {tabKind !== 'knowledge' && tabKind !== 'settings' && <div className={`contextbar contextbar-${tabKind}`}>
+        {tabKind === 'annotation' && annotationTarget && <div className={`page-name-control ${pageNameEditing ? 'editing' : ''}`}>
+          <span>页面名称：</span>
+          {pageNameEditing ? (
+            <input
+              autoFocus
+              aria-label="页面名称"
+              value={pageNameDraft}
+              onChange={(event) => setPageNameDraft(event.target.value)}
+              onBlur={commitPageName}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') event.currentTarget.blur();
+                if (event.key === 'Escape') {
+                  setPageNameDraft(draft?.page.name || '');
+                  setPageNameEditing(false);
+                }
+              }}
+            />
+          ) : <strong>{draft?.page.name || '待识别页面'}</strong>}
+          <button type="button" className="icon-button" aria-label={pageNameEditing ? '保存页面名称' : '编辑页面名称'} title={pageNameEditing ? '保存页面名称' : '编辑页面名称'} onMouseDown={(event) => event.preventDefault()} onClick={pageNameEditing ? commitPageName : startEditingPageName}>{pageNameEditing ? <Check size={14} /> : <Pencil size={14} />}</button>
+        </div>}
+        {tabKind === 'workspace' && <div className="workspace-tabs" aria-label="工作区">
+          {tabKind === 'workspace' && <button type="button" className={workspaceMode === 'graph' ? 'active' : ''} onClick={() => setWorkspaceMode('graph')}><PanelsTopLeft size={14} />页面图</button>}
+          {tabKind === 'workspace' && <button type="button" className={workspaceMode === 'staging' ? 'active' : ''} onClick={() => setWorkspaceMode('staging')}><FileDiff size={14} />Staging</button>}
+        </div>}
+        <span className="spec-hash" title={status?.spec.contentHash}>Schema {status?.spec.schemaVersion || '3.0.0'}</span>
+      </div>}
+
+      {tabKind === 'settings' ? (
+        <ModelSettings
+          onNotice={showNotice}
+          onSaved={(settings) => setStatus((current) => current ? { ...current, workerAConfigured: Boolean(settings.workerA.config.modelName), workerAModel: settings.workerA.config.modelName, workerBConfigured: Boolean(settings.workerB.config.modelName), workerBModel: settings.workerB.config.modelName || null } : current)}
+        />
+      ) : tabKind === 'knowledge' ? (
+        active ? <KnowledgeGraph appKey={draft?.appKey || 'zto.connect'} onGoToWorkbench={() => onSelectTab('workspace')} /> : null
+      ) : workspaceMode === 'annotation' ? <main className="workspace">
         <section className="device-panel">
           <div className="panel-toolbar">
             <div className="view-tabs">
-              <button type="button" className={viewMode === 'live' ? 'active' : ''} onClick={() => setViewMode('live')}><Play size={14} />实时操作</button>
-              <button type="button" className={viewMode === 'review' ? 'active' : ''} disabled={!draft?.currentFrameId} onClick={() => setViewMode('review')}><Camera size={14} />标注页面</button>
+              <button type="button" className={viewMode === 'live' ? 'active' : ''} title="实时操作" disabled><Play size={14} /><span>实时操作</span></button>
+              <button type="button" className={viewMode === 'frozen' ? 'active' : ''} title="冻结画面" disabled><Camera size={14} /><span>冻结画面</span></button>
+              <button type="button" className={viewMode === 'review' ? 'active' : ''} title="页面标注" disabled><SquareDashed size={14} /><span>页面标注</span></button>
             </div>
+            {viewMode === 'review' && <div className="toolbar-mode-model">
+              <div className="mode-segment" aria-label="探索模式">
+                <button type="button" className={explorationMode === 'ultra' ? 'active' : ''} title="Worker A 与 Worker B 并发识别，再按元素和字段选择合并" onClick={() => setExplorationMode('ultra')}>Ultra</button>
+                <button type="button" className={explorationMode === 'manual' ? 'active' : ''} title="使用 Worker A 单 Worker 识别后直接人工审核" onClick={() => setExplorationMode('manual')}>Manual</button>
+              </div>
+              <span className="worker-model" title={explorationMode === 'ultra' ? `Worker A：${status?.workerAModel || '未配置'}；Worker B：${status?.workerBModel || '未配置'}` : `Worker A：${status?.workerAModel || '未配置'}`}>
+                {explorationMode === 'ultra' ? `${status?.workerAModel || '未配置'} + ${status?.workerBModel || '未配置'}` : status?.workerAModel || '未配置'}
+              </span>
+            </div>}
             <div className="toolbar-actions">
               {viewMode === 'live' ? (
                 <>
-                  <label className="continuous-capture"><input type="checkbox" checked={continuousCapture} onChange={(event) => setContinuousCapture(event.target.checked)} /><span>连续截图</span></label>
-                  <button type="button" className="button" disabled={!connected || busy === 'freeze'} onClick={() => void freezeFrame()}>{busy === 'freeze' ? <LoaderCircle className="spin" size={15} /> : <Camera size={15} />}冻结画面</button>
+                  <button type="button" className="button" disabled={!connected || busy === 'freeze'} onClick={() => void captureFrame()}>{busy === 'freeze' ? <LoaderCircle className="spin" size={15} /> : <Camera size={15} />}冻结画面</button>
+                </>
+              ) : viewMode === 'frozen' ? (
+                <>
+                  <button type="button" className="button" disabled={busy === 'discard-freeze'} onClick={() => void discardFrozenCapture()}>{busy === 'discard-freeze' ? <LoaderCircle className="spin" size={15} /> : <RefreshCw size={15} />}重新冻结</button>
+                  <button type="button" className="button button-primary" disabled={!frameUrl || busy === 'discard-freeze'} onClick={startAnnotation}><SquareDashed size={15} />开始标注</button>
                 </>
               ) : (
                 <>
-                  <button type="button" className="button danger-button" disabled={busy === 'cancel-annotation' || busy === 'review-complete'} onClick={requestCancelAnnotation}><X size={15} />取消标注</button>
-                  <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><SquareDashed size={16} /></button>
-                  <button type="button" className="icon-button" title={showRejected ? '隐藏已忽略元素' : '显示已忽略元素'} onClick={() => setShowRejected((value) => !value)}>{showRejected ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-                  <span className="worker-model" title={explorationMode === 'ultra' ? `Worker A：${status?.workerAModel || '未配置'}；Worker B：${status?.workerBModel || '未配置'}` : `Worker A：${status?.workerAModel || '未配置'}`}>{explorationMode === 'ultra' ? '双 Worker 并发' : `Worker A：${status?.workerAModel || '未配置'}`}</span>
-                  {workerActivity?.status === 'paused' && <button type="button" className="button worker-resume-button" onClick={() => setWorkerDialogOpen(true)}><RefreshCw size={15} />继续 Worker · {workerActivity.completedCandidates || 0}</button>}
+                  <button type="button" className="icon-button danger-button" title="取消标注" aria-label="取消标注" disabled={busy === 'cancel-annotation' || busy === 'review-complete'} onClick={requestCancelAnnotation}><X size={16} /></button>
+                  <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><span className="drawing-tool-icon" aria-hidden="true"><SquareDashed /><Feather /></span></button>
+                  {workerActivity?.status === 'paused' && <button type="button" className="icon-button worker-resume-button" title={`继续 Worker，已完成 ${workerActivity.completedCandidates || 0} 个候选`} aria-label="继续 Worker" onClick={() => setWorkerDialogOpen(true)}><RefreshCw size={15} /></button>}
                   <button type="button" className="icon-button" title="页面识别历史" disabled={pageHistorySessions.length === 0} onClick={openWorkerHistory}><History size={15} /></button>
-                  <button type="button" className="button" disabled={!draft?.currentFrameId || busy === 'workers' || busy === 'worker-a' || busy === 'worker-b' || workerActivity?.status === 'paused' || (explorationMode === 'ultra' && !status?.workerBConfigured)} onClick={() => void runWorkers()}>{busy === 'workers' || busy === 'worker-a' || busy === 'worker-b' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}{hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'}</button>
+                  <button type="button" className="icon-button recognition-button" title={hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'} aria-label={hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'} disabled={!draft?.currentFrameId || busy === 'workers' || busy === 'worker-a' || busy === 'worker-b' || workerActivity?.status === 'paused' || (explorationMode === 'ultra' && !status?.workerBConfigured)} onClick={() => void runWorkers()}>{busy === 'workers' || busy === 'worker-a' || busy === 'worker-b' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}</button>
                 </>
               )}
             </div>
@@ -1498,6 +1905,8 @@ function AppContent() {
               ) : (
                 <div className="device-empty"><MonitorSmartphone size={42} /><strong>暂无实时设备画面</strong><span>未检测到 Android 设备，连接设备后可开始实时操作</span></div>
               )
+            ) : viewMode === 'frozen' && frameUrl ? (
+              <img className="frozen-frame" src={frameUrl} alt="冻结设备画面" />
             ) : frameUrl ? (
               explorationMode === 'ultra' && workerComparison ? (
                 <WorkerComparisonPanel imageUrl={frameUrl} workerAResult={workerComparison.workerAResult} workerBResult={workerComparison.workerBResult} applying={busy === 'worker-merge'} candidatePortalTarget={workerCandidatePortal} onApply={(selections) => void applyWorkerComparison(selections)} />
@@ -1509,7 +1918,7 @@ function AppContent() {
             )}
           </div>
           <div className="frame-status">
-            <span>{viewMode === 'live' ? connected ? 'LIVE' : 'OFFLINE' : draft?.currentFrameId ? 'FROZEN' : 'EMPTY'}</span>
+            <span>{viewMode === 'live' ? connected ? 'LIVE' : 'OFFLINE' : viewMode === 'frozen' ? 'FROZEN' : draft?.currentFrameId ? 'ANNOTATING' : 'EMPTY'}</span>
             <code>{draft?.currentFrameId ? `${draft.currentFrameId.slice(0, 22)}...` : '暂无 frameId'}</code>
             {frame && <small>{frame.width} × {frame.height}</small>}
           </div>
@@ -1517,25 +1926,20 @@ function AppContent() {
 
         <section className="tree-panel">
           <div className="panel-title">
-            <div><MousePointer2 size={16} /><strong>页面元素</strong><span>{workerComparison && explorationMode === 'ultra' ? '候选' : currentElements.length}</span></div>
+            <div className="panel-title-heading">
+              <MousePointer2 size={16} /><strong>页面元素</strong><span>{workerComparison && explorationMode === 'ultra' ? '候选' : currentElements.length}</span>
+              {!(workerComparison && explorationMode === 'ultra') && <div className="element-history-actions" aria-label="元素历史操作">
+                <button type="button" className="icon-button" title="撤销上一步" disabled={pastRef.current.length === 0 || historyBlockedForPendingPage} onClick={undo}><Undo2 size={15} /></button>
+                <button type="button" className="icon-button" title="取消撤销" disabled={futureRef.current.length === 0 || historyBlockedForPendingPage} onClick={redo}><Redo2 size={15} /></button>
+                <button type="button" className="icon-button" title="恢复全部" disabled={!canRestoreAllElements} onClick={restoreAllElements}><RotateCcw size={15} /></button>
+                <button type="button" className={`icon-button ${showRejected ? 'active' : ''}`} title={showRejected ? '隐藏已忽略元素' : '显示已忽略元素'} aria-pressed={showRejected} onClick={() => setShowRejected((value) => !value)}>{showRejected ? <Eye size={15} /> : <EyeOff size={15} />}</button>
+              </div>}
+            </div>
             {!(workerComparison && explorationMode === 'ultra') && <div className="element-toolbar" aria-label="元素全局操作">
-              <button type="button" className="icon-button" title="撤销上一步" disabled={pastRef.current.length === 0 || historyBlockedForPendingPage} onClick={undo}><Undo2 size={15} /></button>
-              <button type="button" className="icon-button" title="取消撤销" disabled={futureRef.current.length === 0 || historyBlockedForPendingPage} onClick={redo}><Redo2 size={15} /></button>
-              <button type="button" className="icon-button" title="恢复全部元素" disabled={!canRestoreAllElements} onClick={restoreAllElements}><RotateCcw size={15} /></button>
-              {!multiSelect ? (
-                <button type="button" className="icon-button" title="进入多选" disabled={currentElements.length === 0} onClick={() => setMultiSelect(true)}><BoxSelect size={15} /></button>
-              ) : (
-                <>
-                  <button type="button" className="icon-button" title={allCurrentChecked ? '取消全选' : '全选'} onClick={() => setCheckedIds(allCurrentChecked ? new Set() : new Set(currentElements.map((element) => element.id)))}><CheckCheck size={15} /></button>
-                  <button type="button" className="icon-button" title={`用 ${checkedIds.size} 个所选元素创建容器`} disabled={checkedIds.size === 0} onClick={createContainerFromSelection}><BoxSelect size={15} /></button>
-                  <button type="button" className="icon-button" title={`确认所选元素（${checkedIds.size}）`} disabled={checkedIds.size === 0} onClick={bulkAccept}><Check size={15} /></button>
-                  <button type="button" className="icon-button" title={`取消确认所选元素（${checkedIds.size}）`} disabled={checkedIds.size === 0} onClick={bulkCancelAccept}><X size={15} /></button>
-                  <button type="button" className="icon-button" title="退出多选" onClick={() => { setMultiSelect(false); setCheckedIds(new Set()); }}><X size={15} /></button>
-                </>
-              )}
+              <button type="button" className={`icon-button ${multiSelect ? 'active' : ''}`} title="多选" aria-pressed={multiSelect} disabled={currentElements.length === 0} onClick={() => { setMultiSelect((value) => !value); if (multiSelect) setCheckedIds(new Set()); }}><ListChecks size={15} /></button>
             </div>}
           </div>
-          {workerComparison && explorationMode === 'ultra' ? <div className="worker-candidate-portal" ref={setWorkerCandidatePortal} /> : <ElementTree elements={currentElements} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} onSelect={setSelectedId} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} />}
+          {workerComparison && explorationMode === 'ultra' ? <div className="worker-candidate-portal" ref={setWorkerCandidatePortal} /> : <ElementTree elements={treeElements} filterCandidateKey={duplicateCandidateKeyFilter} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} allChecked={allCurrentChecked} allCheckedAccepted={allCheckedAccepted} onToggleAll={() => setCheckedIds(allCurrentChecked ? new Set() : new Set(treeElements.map((element) => element.id)))} onCreateContainer={createContainerFromSelection} onToggleAccept={allCheckedAccepted ? bulkCancelAccept : bulkAccept} onDeleteChecked={deleteCheckedElements} onSelect={setSelectedId} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} onClearFilter={() => setDuplicateCandidateKeyFilter(null)} />}
           <div className={`tree-legend ${workerComparison && explorationMode === 'ultra' ? 'worker-source-legend' : ''}`}>
             {workerComparison && explorationMode === 'ultra' ? <><span><i className="legend-worker-a" />Worker A</span><span><i className="legend-worker-b" />Worker B</span></> :
               (Object.entries(reviewStatusLabels) as [keyof typeof reviewStatusLabels, string][]).map(([statusKey, label]) => <span key={statusKey}><i className={`legend-${statusKey}`} />{label}</span>)}
@@ -1565,8 +1969,35 @@ function AppContent() {
             />
           ) : sideTab === 'validation' ? (
             <div className="validation-list">
-              {issues.length === 0 ? <div className="validation-empty"><CircleCheck size={30} /><strong>当前草稿检查通过</strong></div> : issues.map((issue, index) => (
-                <button key={`${issue.code}-${issue.elementId}-${index}`} type="button" className={`validation-item validation-${issue.level}`} onClick={() => { if (issue.elementId) { setSelectedId(issue.elementId); setSideTab('elements'); } }}><CircleAlert size={16} /><span><strong>{issue.level === 'error' ? '错误' : '待完善'}</strong>{issue.message}</span><ChevronDown size={14} /></button>
+              {validationIssueGroups.length === 0 ? <div className="validation-empty"><CircleCheck size={30} /><strong>当前草稿检查通过</strong></div> : validationIssueGroups.map((group) => (
+                <section key={`${group.level}:${group.code}`} className={`validation-group validation-${group.level}`}>
+                  <header><CircleAlert size={15} /><div><strong>{validationIssueTypeLabels[group.code] || group.issues[0].message}</strong><code>{group.code}</code></div><span>{validationGroupItems(group).length}</span></header>
+                  <div>
+                    {validationGroupItems(group).map((itemIssues, index) => {
+                      const issue = itemIssues[0];
+                      const duplicateIssue = group.code.startsWith('candidate_key_duplicate_');
+                      const samePageDuplicate = group.code === 'candidate_key_duplicate_current_page';
+                      const relatedElementIds = [...new Set(itemIssues.flatMap((item) => item.relatedElementIds || (item.elementId ? [item.elementId] : [])))];
+                      const relatedElements = relatedElementIds.flatMap((id) => {
+                        const element = draft?.elements.find((candidate) => candidate.id === id);
+                        return element ? [element] : [];
+                      });
+                      const relatedPageIds = [...new Set(itemIssues.flatMap((item) => item.pageIds || []))];
+                      const relatedPages = relatedPageIds.map((id) => draft?.pages.find((page) => page.id === id)).filter((page): page is DraftPage => Boolean(page));
+                      const relatedPageNames = relatedPages.map((page) => relatedPages.filter((candidate) => candidate.name === page.name).length > 1 ? `${page.name}（${page.id.slice(-8)}）` : page.name);
+                      const element = issue.elementId ? draft?.elements.find((candidate) => candidate.id === issue.elementId) : null;
+                      const detail = samePageDuplicate
+                        ? `${relatedPageNames.join('、')} · ${relatedElements.map((candidate) => candidate.label).join('、')}`
+                        : duplicateIssue
+                          ? `涉及页面：${relatedPageNames.join('、')}`
+                          : issue.message;
+                      return <button key={`${issue.code}-${issue.candidateKey || issue.elementId || 'draft'}-${index}`} type="button" disabled={!issue.elementId} onClick={() => {
+                        if (samePageDuplicate && issue.candidateKey) showDuplicateCandidateKey(issue.candidateKey, relatedPageIds);
+                        else showValidationElement(issue);
+                      }}><span><strong>{duplicateIssue ? issue.candidateKey : element?.label || '当前草稿'}</strong><small>{detail}</small></span>{samePageDuplicate ? <ListFilter size={14} /> : issue.elementId && <ChevronRight size={14} />}</button>;
+                    })}
+                  </div>
+                </section>
               ))}
             </div>
           ) : (
@@ -1574,28 +2005,24 @@ function AppContent() {
           )}
         </section>
       </main> : workspaceMode === 'graph' && draft ? (
-        <PageGraph draft={draft} draftDirty={dirty} onOpenPage={openPage} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={updatePage} onDeletePage={deletePage} onChangeEnd={endHistoryGroup} />
-      ) : workspaceMode === 'knowledge' ? (
-        <KnowledgeGraph appKey={draft?.appKey || 'zto.connect'} />
+        <PageGraph draft={pageGraphDraft || draft} draftDirty={dirty} onOpenPage={openPageInNewTab} onCreateFromDevice={onOpenDeviceAnnotationTab} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={(pageId, patch, historyKey) => { updatePage(pageId, patch, historyKey); if (patch.name !== undefined) onPageNameChange(pageId, patch.name); }} onDeletePage={(pageId) => { onPageNameChange(pageId, null); void deletePage(pageId); }} onChangeEnd={endHistoryGroup} />
       ) : workspaceMode === 'staging' ? (
         <StagingPanel versions={stagingVersions} staging={staging} busy={busy} dirty={dirty} onPrepare={() => void prepareStaging()} onSelect={setStaging} onMerge={(stageIds) => void mergeStaging(stageIds)} onPublish={(stageId) => void publishStaging(stageId)} onDelete={(stageId) => void deleteStaging(stageId)} onRollback={(stageId) => void rollbackStaging(stageId)} onArchive={(stageId) => void archiveStaging(stageId)} />
       ) : (
-        <ModelSettings
-          onNotice={showNotice}
-          onSaved={(settings) => setStatus((current) => current ? { ...current, workerAConfigured: Boolean(settings.workerA.config.modelName), workerAModel: settings.workerA.config.modelName, workerBConfigured: Boolean(settings.workerB.config.modelName), workerBModel: settings.workerB.config.modelName || null } : current)}
-        />
+        <div />
       )}
 
       {cancelDialogOpen && <div className="annotation-cancel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCancelDialogOpen(false); }}>
         <section className="annotation-cancel-dialog" role="dialog" aria-modal="true" aria-labelledby="annotation-cancel-title" onMouseDown={(event) => event.stopPropagation()}>
-          <header><div><strong id="annotation-cancel-title">取消标注</strong><span>请选择要恢复的状态，页面和元素信息不会被清空。</span></div><button type="button" className="icon-button" aria-label="关闭" title="关闭" onClick={() => setCancelDialogOpen(false)}><X size={16} /></button></header>
+          <header><div><strong id="annotation-cancel-title">取消标注</strong><span>请选择返回冻结画面继续处理，或放弃本次变更并关闭页面。</span></div><button type="button" className="icon-button" aria-label="关闭" title="关闭" onClick={() => setCancelDialogOpen(false)}><X size={16} /></button></header>
           <div className="annotation-cancel-options">
-            <button type="button" className="annotation-cancel-option" disabled={!annotationEntryDraftRef.current || busy === 'cancel-annotation'} onClick={() => void restoreAnnotationState('entry')}><strong>恢复进入标注时状态</strong><span>撤销进入标注后产生的识别、编辑和选择变化。</span></button>
-            <button type="button" className="annotation-cancel-option" disabled={!lastSavedDraftRef.current || busy === 'cancel-annotation'} onClick={() => void restoreAnnotationState('saved')}><strong>恢复最后一次保存状态</strong><span>保留最近一次自动保存或服务端保存的内容。</span></button>
+            <button type="button" className="annotation-cancel-option" disabled={!annotationEntryDraftRef.current || busy === 'cancel-annotation'} onClick={() => void restoreAnnotationEntry('frozen')}><strong>回退到冻结画面节点</strong><span>放弃进入标注后产生的识别、编辑和选择变化，保留当前截图。</span></button>
+            <button type="button" className="annotation-cancel-option danger" disabled={!annotationEntryDraftRef.current || busy === 'cancel-annotation'} onClick={() => void restoreAnnotationEntry('close')}><strong>放弃变更并关闭页面</strong><span>恢复进入标注前的页面数据，并关闭当前内部标签页。</span></button>
           </div>
           <footer><button type="button" className="button" onClick={() => setCancelDialogOpen(false)}>继续标注</button></footer>
         </section>
       </div>}
+      <PageUploadDialog open={pageUploadOpen} draftDirty={dirty} onClose={() => setPageUploadOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
       {workerDialogOpen && workerActivity && frameUrl && <WorkerProgressPanel activity={workerActivity} modelName={status?.workerAModel || null} workerBModel={status?.workerBModel || null} ultraMode={explorationMode === 'ultra'} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} workerControlBusy={workerControlBusy || (busy === 'worker-a' || busy === 'worker-b' ? busy : null)} onCancel={() => void cancelWorkers()} onCancelWorker={(kind) => void cancelWorker(kind)} onRetryWorker={(kind) => kind === 'worker_a' ? void retryWorkerA() : void retryWorkerB()} onResumeWorker={(kind) => kind === 'worker_a' ? void resumeWorkerA() : void resumeWorkerB()} onRetry={() => workerActivity.resumeKind === 'worker_b' ? void resumeWorkerB() : workerActivity.resumeKind === 'worker_a' ? void resumeWorkerA() : workerActivity.phase === 'worker-b-error' ? void retryWorkerB() : void runWorkers()} onClose={() => { setWorkerDialogOpen(false); if (workerActivity.status !== 'paused') setWorkerActivity(null); }} />}
     </div>
@@ -1603,9 +2030,131 @@ function AppContent() {
 }
 
 export default function App() {
+  const [tabs, setTabs] = useState<InternalTab[]>(() => [
+    { id: 'knowledge', title: '知识图谱', sessionId: createAnnotationSessionId(), kind: 'knowledge', annotationTarget: null },
+    { id: 'workspace', title: '工作台', sessionId: createAnnotationSessionId(), kind: 'workspace', annotationTarget: null },
+  ]);
+  const [activeTabId, setActiveTabId] = useState('knowledge');
+  const [pageNameOverrides, setPageNameOverrides] = useState<Record<string, string>>({});
+  const [tabNotice, setTabNotice] = useState<string | null>(null);
+
+  const showPageTabLimit = () => {
+    const text = `页面标签页最多可打开 ${MAX_PAGE_TABS} 个，请先关闭不需要的页面`;
+    setTabNotice(text);
+    window.setTimeout(() => setTabNotice((current) => current === text ? null : current), 4200);
+  };
+
+  const openAnnotationTab = (pageId: string, frameId: string, title = '待识别页面') => {
+    if (tabs.filter((tab) => tab.kind === 'annotation').length >= MAX_PAGE_TABS) {
+      showPageTabLimit();
+      return;
+    }
+    const sessionId = createAnnotationSessionId();
+    setTabs((current) => [...current, {
+      id: sessionId,
+      title,
+      sessionId,
+      kind: 'annotation',
+      annotationTarget: { pageId, frameId, sessionId },
+    }]);
+    setActiveTabId(sessionId);
+  };
+
+  const openDeviceAnnotationTab = () => {
+    if (tabs.filter((tab) => tab.kind === 'annotation').length >= MAX_PAGE_TABS) {
+      showPageTabLimit();
+      return;
+    }
+    const sessionId = createAnnotationSessionId();
+    setTabs((current) => [...current, {
+      id: sessionId,
+      title: '新建页面',
+      sessionId,
+      kind: 'annotation',
+      annotationTarget: null,
+    }]);
+    setActiveTabId(sessionId);
+  };
+
+  const openSettingsTab = () => {
+    const existing = tabs.find((tab) => tab.kind === 'settings');
+    if (existing) {
+      setActiveTabId(existing.id);
+      return;
+    }
+    const settingsTab: InternalTab = { id: 'settings', title: '模型配置', sessionId: createAnnotationSessionId(), kind: 'settings', annotationTarget: null };
+    setTabs((current) => {
+      const fixed = current.filter((tab) => tab.kind !== 'annotation');
+      const pages = current.filter((tab) => tab.kind === 'annotation');
+      return [...fixed, settingsTab, ...pages];
+    });
+    setActiveTabId(settingsTab.id);
+  };
+
+  const promoteAnnotationTab = (tabId: string, pageId: string, frameId: string, title = '待识别页面') => {
+    setTabs((current) => current.map((tab) => tab.id === tabId ? {
+      ...tab,
+      title,
+      annotationTarget: { pageId, frameId, sessionId: tab.sessionId },
+    } : tab));
+  };
+
+  const renameAnnotationTab = (tabId: string, title: string) => {
+    setTabs((current) => current.map((tab) => tab.id === tabId ? { ...tab, title } : tab));
+  };
+
+  const handlePageNameChange = (pageId: string, name: string | null) => {
+    setPageNameOverrides((current) => {
+      if (name === null) {
+        if (!Object.prototype.hasOwnProperty.call(current, pageId)) return current;
+        const next = { ...current };
+        delete next[pageId];
+        return next;
+      }
+      return { ...current, [pageId]: name };
+    });
+  };
+
+  const closeTab = (tabId: string) => {
+    setTabs((current) => {
+      const closingTab = current.find((tab) => tab.id === tabId);
+      if (!closingTab || (closingTab.kind !== 'annotation' && closingTab.kind !== 'settings')) return current;
+      const index = current.findIndex((tab) => tab.id === tabId);
+      const next = current.filter((tab) => tab.id !== tabId);
+      if (activeTabId === tabId) {
+        const fallback = closingTab.kind === 'settings' ? 'workspace' : next[Math.max(0, index - 1)]?.id || 'workspace';
+        setActiveTabId(fallback);
+      }
+      return next;
+    });
+  };
+
   return (
     <ConfigProvider theme={{ token: { colorPrimary: '#087f5b', borderRadius: 6, fontFamily: 'Inter, "PingFang SC", "Microsoft YaHei", sans-serif' } }}>
-      <AntdApp><AppContent /></AntdApp>
+      <AntdApp>
+        <div className="internal-workbench">
+          {tabs.map((tab) => <AppContent
+            key={tab.id}
+            tabId={tab.id}
+            tabKind={tab.kind}
+            annotationTarget={tab.annotationTarget}
+            annotationSessionId={tab.sessionId}
+            pageNameOverrides={pageNameOverrides}
+            active={activeTabId === tab.id}
+            onOpenAnnotationTab={openAnnotationTab}
+            onOpenDeviceAnnotationTab={openDeviceAnnotationTab}
+            onOpenSettingsTab={openSettingsTab}
+            onPromoteAnnotationTab={promoteAnnotationTab}
+            onRenameAnnotationTab={renameAnnotationTab}
+            onPageNameChange={handlePageNameChange}
+            tabs={tabs}
+            activeTabId={activeTabId}
+            onSelectTab={setActiveTabId}
+            onCloseTab={closeTab}
+          />)}
+          {tabNotice && <div className="notice notice-info global-tab-notice"><CircleAlert size={16} />{tabNotice}</div>}
+        </div>
+      </AntdApp>
     </ConfigProvider>
   );
 }

@@ -6,7 +6,10 @@ import { ForceKnowledgeGraph } from './ForceKnowledgeGraph';
 import { buildKnowledgeGraphView, type KnowledgeGraphNodeType, type KnowledgeGraphViewEdge, type KnowledgeGraphViewNode } from './knowledge-graph-view';
 import type { CanonicalGraph, CanonicalGraphElementPreview, CanonicalGraphPage, CanonicalGraphPreview } from './types';
 
-interface KnowledgeGraphProps { appKey: string; }
+interface KnowledgeGraphProps {
+  appKey: string;
+  onGoToWorkbench: () => void;
+}
 
 const nodeTypeMeta: Record<KnowledgeGraphNodeType, { label: string; className: string }> = {
   nav: { label: '系统导航页', className: 'nav' },
@@ -50,7 +53,7 @@ function ViewRelationRow({ edge, nodesById, active, onClick }: { edge: Knowledge
   </button>;
 }
 
-export function KnowledgeGraph({ appKey }: KnowledgeGraphProps) {
+export function KnowledgeGraph({ appKey, onGoToWorkbench }: KnowledgeGraphProps) {
   const [graph, setGraph] = useState<CanonicalGraph | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +103,12 @@ export function KnowledgeGraph({ appKey }: KnowledgeGraphProps) {
 
   if (loading) return <main className="kg-state"><LoaderCircle className="spin" size={22} /><strong>正在加载 Canonical 图谱</strong></main>;
   if (error || !graph) return <main className="kg-state kg-state-error"><CircleAlert size={22} /><strong>{error || '图谱加载失败'}</strong><button type="button" className="button" onClick={() => void loadGraph()}><RefreshCw size={15} />重新加载</button></main>;
+  if (graph.pages.length === 0) return <main className="kg-state kg-state-empty">
+    <Network size={34} />
+    <strong>还没有知识图谱</strong>
+    <p>前往工作台创建页面对象，上传页面图片或使用设备画面开始构建知识图谱。</p>
+    <button type="button" className="button button-primary" onClick={onGoToWorkbench}>前往工作台<ArrowRight size={15} /></button>
+  </main>;
 
   return <main className="kg-workspace">
     <aside className="kg-filter-panel">

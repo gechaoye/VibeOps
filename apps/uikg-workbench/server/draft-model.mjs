@@ -328,11 +328,11 @@ function makeDraftPage(page, frameId = null, featurePath = []) {
   };
 }
 
-export function beginFrameCapture(currentDraft, frameId, { forceNewPage = false } = {}) {
+export function beginFrameCapture(currentDraft, frameId, { forceNewPage = false, replacePageId = null } = {}) {
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
-  const existingPage = previous.pages.find((page) => page.id === previous.currentPageId);
-  const currentPageHasElements = previous.elements.some((element) => element.pageId === previous.currentPageId);
-  const page = existingPage && !currentPageHasElements && !forceNewPage
+  const existingPage = previous.pages.find((page) => page.id === (replacePageId || previous.currentPageId));
+  const existingPageHasElements = Boolean(existingPage && previous.elements.some((element) => element.pageId === existingPage.id));
+  const page = existingPage && !existingPageHasElements && !forceNewPage
     ? { ...existingPage, frameIds: [frameId], elementIds: [], publishedAt: null }
     : makeDraftPage({
         id: draftPageId(),
@@ -754,7 +754,6 @@ export function validateDraft(draft) {
   const issues = [];
   const elements = Array.isArray(draft?.elements) ? draft.elements : [];
   const byId = new Map(elements.map((item) => [item.id, item]));
-  const candidateKeys = new Set();
 
   for (const element of elements) {
     if (!element.label?.trim() && element.reviewStatus !== 'rejected') {
@@ -762,10 +761,7 @@ export function validateDraft(draft) {
     }
     if (!element.candidateKey?.trim()) {
       issues.push({ level: 'error', code: 'candidate_key_required', elementId: element.id, message: '候选键不能为空' });
-    } else if (candidateKeys.has(element.candidateKey)) {
-      issues.push({ level: 'error', code: 'candidate_key_duplicate', elementId: element.id, message: `候选键重复：${element.candidateKey}` });
     }
-    candidateKeys.add(element.candidateKey);
 
     if (!ELEMENT_TYPES.includes(element.controlType)) {
       issues.push({ level: 'error', code: 'control_type_required', elementId: element.id, message: '元素类型未识别，请由 Worker B 或人工补齐' });
@@ -797,6 +793,56 @@ export function validateDraft(draft) {
     }
     if (element.riskSignals?.includes('model-action-inconsistent')) {
       issues.push({ level: 'warning', code: 'worker_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
+    }
+  }
+
+  const pageIds = Array.isArray(draft?.pages) ? draft.pages.map((page) => page.id) : [];
+  const pageName = (pageId) => draft.pages?.find((page) => page.id === pageId)?.name || pageId;
+  const availableOnPage = (element, pageId) => {
+    if (element.pageId === pageId) return true;
+    let cursor = element;
+    const visited = new Set();
+    while (cursor && !visited.has(cursor.id)) {
+      visited.add(cursor.id);
+      if (cursor.ownerKind === 'application' && cursor.availableOnPageIds?.includes(pageId)) return true;
+      cursor = cursor.parentId ? byId.get(cursor.parentId) : undefined;
+    }
+    return false;
+  };
+  const pageIdsByElement = new Map(elements.map((element) => [element.id, pageIds.filter((pageId) => availableOnPage(element, pageId))]));
+  const candidateKeyGroups = new Map();
+  for (const element of elements) {
+    const candidateKey = element.candidateKey?.trim();
+    if (!candidateKey) continue;
+    const group = candidateKeyGroups.get(candidateKey) || [];
+    group.push(element);
+    candidateKeyGroups.set(candidateKey, group);
+  }
+  for (const [candidateKey, duplicateElements] of candidateKeyGroups) {
+    if (duplicateElements.length < 2) continue;
+    for (const element of duplicateElements) {
+      const ownPageIds = pageIdsByElement.get(element.id) || [];
+      const samePageElements = duplicateElements.filter((candidate) => candidate.id !== element.id && (pageIdsByElement.get(candidate.id) || []).some((pageId) => ownPageIds.includes(pageId)));
+      if (samePageElements.length > 0) {
+        const commonPageIds = [...new Set(samePageElements.flatMap((candidate) => (pageIdsByElement.get(candidate.id) || []).filter((pageId) => ownPageIds.includes(pageId))))];
+        const pageLabel = commonPageIds.includes(draft.currentPageId)
+          ? `本页面“${pageName(draft.currentPageId)}”`
+          : `页面“${commonPageIds.map(pageName).join('、')}”`;
+        issues.push({
+          level: 'error', code: 'candidate_key_duplicate_current_page', elementId: element.id, candidateKey,
+          relatedElementIds: [element.id, ...samePageElements.map((candidate) => candidate.id)], pageIds: commonPageIds,
+          message: `${pageLabel}内有 ${samePageElements.length + 1} 个元素使用候选键：${candidateKey}`,
+        });
+      }
+      const otherPageElements = duplicateElements.filter((candidate) => candidate.id !== element.id && !(pageIdsByElement.get(candidate.id) || []).some((pageId) => ownPageIds.includes(pageId)));
+      if (otherPageElements.length > 0) {
+        const otherPageIds = [...new Set(otherPageElements.flatMap((candidate) => pageIdsByElement.get(candidate.id) || []))];
+        issues.push({
+          level: 'error', code: 'candidate_key_duplicate_other_page', elementId: element.id, candidateKey,
+          relatedElementIds: [element.id, ...otherPageElements.map((candidate) => candidate.id)], pageIds: [...new Set([...ownPageIds, ...otherPageIds])],
+          message: `候选键 ${candidateKey} 与其他页面“${otherPageIds.map(pageName).join('、')}”的元素重复`,
+        });
+      }
     }
   }
 

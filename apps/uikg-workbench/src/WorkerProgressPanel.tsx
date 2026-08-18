@@ -244,13 +244,13 @@ export function WorkerProgressPanel({ activity, modelName, workerBModel, ultraMo
           {activity.errorMessage && <div className="worker-progress-error"><CircleAlert size={15} /><span>{displayModelError(activity.errorMessage)}</span></div>}
         </div>
         <footer className="worker-progress-footer">
-          <span>{activity.status === 'completed' ? '识别完成，可关闭窗口或重新识别' : activity.status === 'cancelled' ? '半截结果未写入草稿' : activity.status === 'paused' ? activity.resumeKind === 'worker_b' ? '已保存 Worker B 输出断点' : `已保留 ${activity.completedCandidates || 0} 个候选的断点` : workerBActive ? 'Worker A 结果已保留' : ''}</span>
+          <span>{activity.status === 'completed' ? '识别完成，可确认结果或重新识别' : activity.status === 'cancelled' ? '半截结果未写入草稿' : activity.status === 'paused' ? activity.resumeKind === 'worker_b' ? '已保存 Worker B 输出断点' : `已保留 ${activity.completedCandidates || 0} 个候选的断点` : workerBActive ? 'Worker A 结果已保留' : ''}</span>
           <div className="worker-progress-actions">
             {active ? <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} fill="currentColor" />{activity.status === 'cancelling' ? '正在中断' : ultraMode ? '中断双 Worker' : workerBActive ? '中断 Worker B' : '中断 Worker A'}</button> : <>
               {activity.status === 'paused' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />从断点重试</button>}
-              {activity.phase === 'worker-b-error' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
+              {activity.status === 'error' && <button type="button" className="button button-primary retry-button" autoFocus onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
               {activity.status === 'completed' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
-              <button type="button" className="button" onClick={onClose}>关闭</button>
+              <button type="button" className={`button ${activity.status === 'completed' ? 'button-primary' : ''}`} autoFocus={activity.status === 'completed'} onClick={onClose}>{activity.status === 'completed' ? '确定' : '关闭'}</button>
             </>}
           </div>
         </footer>

@@ -57,6 +57,51 @@ function extractDelta(payload) {
   };
 }
 
+function createThinkingContentSplitter() {
+  let pending = '';
+  let thinking = false;
+
+  const split = (chunk, flush = false) => {
+    let source = pending + String(chunk || '');
+    let content = '';
+    let reasoningContent = '';
+    pending = '';
+    while (source) {
+      const marker = thinking ? '</think>' : '<think>';
+      const markerIndex = source.indexOf(marker);
+      if (markerIndex >= 0) {
+        const text = source.slice(0, markerIndex);
+        if (thinking) reasoningContent += text;
+        else content += text;
+        source = source.slice(markerIndex + marker.length);
+        thinking = !thinking;
+        continue;
+      }
+      let retainedLength = 0;
+      if (!flush) {
+        const limit = Math.min(marker.length - 1, source.length);
+        for (let length = limit; length > 0; length -= 1) {
+          if (marker.startsWith(source.slice(-length))) {
+            retainedLength = length;
+            break;
+          }
+        }
+      }
+      const text = retainedLength ? source.slice(0, -retainedLength) : source;
+      if (thinking) reasoningContent += text;
+      else content += text;
+      pending = retainedLength ? source.slice(-retainedLength) : '';
+      break;
+    }
+    return { content, reasoningContent };
+  };
+
+  return {
+    push: (chunk) => split(chunk),
+    flush: () => split('', true),
+  };
+}
+
 function providerError(config, status, detail) {
   let message = '';
   try {
@@ -133,6 +178,13 @@ export async function runWorkerModel({
   let buffer = '';
   let accumulated = '';
   let done = false;
+  const thinkingContent = createThinkingContentSplitter();
+  const emitDelta = (content, reasoningContent) => {
+    if (content) accumulated += content;
+    if (content || reasoningContent) {
+      onChunk({ content, reasoning_content: reasoningContent, accumulated });
+    }
+  };
   const consumeLine = (line) => {
     const value = line.trim();
     if (!value || !value.startsWith('data:')) return;
@@ -143,10 +195,8 @@ export async function runWorkerModel({
     }
     try {
       const delta = extractDelta(JSON.parse(payload));
-      if (delta.content) accumulated += delta.content;
-      if (delta.content || delta.reasoningContent) {
-        onChunk({ content: delta.content, reasoning_content: delta.reasoningContent, accumulated });
-      }
+      const separated = thinkingContent.push(delta.content);
+      emitDelta(separated.content, delta.reasoningContent + separated.reasoningContent);
     } catch {
       // Providers occasionally emit non-JSON keepalive chunks.
     }
@@ -161,5 +211,7 @@ export async function runWorkerModel({
     if (streamDone) break;
   }
   if (buffer) consumeLine(buffer);
+  const trailing = thinkingContent.flush();
+  emitDelta(trailing.content, trailing.reasoningContent);
   return parseObject(accumulated, config.label);
 }
