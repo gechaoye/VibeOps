@@ -1,6 +1,5 @@
 import { App as AntdApp, ConfigProvider } from 'antd';
 import {
-  Boxes,
   Camera,
   ChevronDown,
   ChevronRight,
@@ -19,7 +18,6 @@ import {
   LoaderCircle,
   MonitorSmartphone,
   MousePointer2,
-  Network,
   PanelsTopLeft,
   PanelRight,
   Pencil,
@@ -271,6 +269,18 @@ function InternalTabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onUploadPa
     return () => observer.disconnect();
   }, [fixedTabs.length, pageTabs.length]);
 
+  useEffect(() => {
+    const closePopoversOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      const menuAnchor = target instanceof Element ? target.closest('.internal-tab-menu-anchor') : null;
+      if (menuAnchor && navRef.current?.contains(menuAnchor)) return;
+      setOverflowOpen(false);
+      setCreateMenuOpen(false);
+    };
+    document.addEventListener('pointerdown', closePopoversOnOutsidePointer);
+    return () => document.removeEventListener('pointerdown', closePopoversOnOutsidePointer);
+  }, []);
+
   let visiblePageTabs = pageTabs.slice(0, visiblePageCount);
   const activePageTab = pageTabs.find((tab) => tab.id === activeTabId);
   if (activePageTab && visiblePageCount > 0 && !visiblePageTabs.some((tab) => tab.id === activePageTab.id)) {
@@ -280,7 +290,7 @@ function InternalTabBar({ tabs, activeTabId, onSelectTab, onCloseTab, onUploadPa
   const hiddenPageTabs = pageTabs.filter((tab) => !visiblePageIds.has(tab.id));
 
   const tabIcon = (tab: InternalTab) => tab.kind === 'knowledge'
-    ? <Network size={14} />
+    ? <img className="internal-tab-icon internal-tab-icon-knowledge" src="/graphrag-line-icon.svg?v=4" alt="" />
     : tab.kind === 'workspace'
       ? <PanelsTopLeft size={14} />
       : tab.kind === 'settings'
@@ -365,6 +375,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
   const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [pageUploadOpen, setPageUploadOpen] = useState(false);
+  const [transferCenterOpen, setTransferCenterOpen] = useState(false);
   const [workerControlBusy, setWorkerControlBusy] = useState<'worker-a' | 'worker-b' | null>(null);
   const [notice, setNotice] = useState<{ type: 'info' | 'error' | 'success'; text: string } | null>(null);
   const [workerActivity, setWorkerActivity] = useState<WorkerActivity | null>(null);
@@ -1819,7 +1830,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
   return (
     <div className={`app-shell app-shell-${tabKind} ${active ? '' : 'app-shell-hidden'}`} aria-hidden={!active}>
       <header className="topbar">
-        <div className="brand"><Boxes size={20} /><div><strong>UIKG Workbench</strong><span>{status?.spec.version || 'UIKG'}</span></div></div>
+        <div className="brand"><img className="brand-icon" src="/graphrag-icon.svg?v=3" alt="" /><div><strong>UIKG Workbench</strong><span>{status?.spec.version || 'UIKG'}</span></div></div>
         <label className="topbar-app-field"><span>应用</span><input value={draft?.appKey || ''} onBlur={endHistoryGroup} onChange={(event) => updateDraft((current) => ({ ...current, appKey: event.target.value }), 'draft:appKey')} /></label>
         <div className="device-controls">
           <div className={`connection-dot ${connected ? 'connected' : deviceDiscoveryError ? 'error' : ''}`} title={deviceDiscoveryError || (connected ? '设备已连接' : '设备未连接')} />
@@ -1866,7 +1877,10 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
           {tabKind === 'workspace' && <button type="button" className={workspaceMode === 'graph' ? 'active' : ''} onClick={() => setWorkspaceMode('graph')}><PanelsTopLeft size={14} />页面图</button>}
           {tabKind === 'workspace' && <button type="button" className={workspaceMode === 'staging' ? 'active' : ''} onClick={() => setWorkspaceMode('staging')}><FileDiff size={14} />Staging</button>}
         </div>}
-        <span className="spec-hash" title={status?.spec.contentHash}>Schema {status?.spec.schemaVersion || '3.0.0'}</span>
+        <div className="contextbar-actions">
+          {tabKind === 'workspace' && workspaceMode === 'graph' && <button type="button" className="button contextbar-transfer-button" onClick={() => setTransferCenterOpen(true)}><svg className="contextbar-transfer-mark" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false"><g transform="rotate(-90 512 512)"><path d="M856.2 442.7H167.1c-22.1 0-40-17.9-40-40s17.9-40 40-40h689.1c22.1 0 40 17.9 40 40s-17.9 40-40 40z" /><path d="M856.9 442.6c-10.6 0-21.1-4.2-29-12.4L674.4 268.9c-15.2-16-14.6-41.3 1.4-56.6 16-15.2 41.3-14.6 56.6 1.4L885.9 375c15.2 16 14.6 41.3-1.4 56.6-7.8 7.4-17.7 11-27.6 11z" /><path d="M856.9 661.3H167.8c-22.1 0-40-17.9-40-40s17.9-40 40-40h689.1c22.1 0 40 17.9 40 40s-17.9 40-40 40z" /><path d="M320.6 822.7c-10.6 0-21.1-4.2-29-12.4L138.1 649c-15.2-16-14.6-41.3 1.4-56.6 16-15.2 41.3-14.6 56.6 1.4l153.5 161.3c15.2 16 14.6 41.3-1.4 56.6-7.7 7.4-17.7 11-27.6 11z" /></g></svg>传输中心</button>}
+          <span className="spec-hash" title={status?.spec.contentHash}>Schema {status?.spec.schemaVersion || '3.0.0'}</span>
+        </div>
       </div>}
 
       {tabKind === 'settings' ? (
@@ -2050,6 +2064,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
         </section>
       </div>}
       <PageUploadDialog open={pageUploadOpen} draftDirty={dirty} onClose={() => setPageUploadOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
+      <PageUploadDialog open={transferCenterOpen} purpose="history" draftDirty={dirty} onClose={() => setTransferCenterOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
       {workerDialogOpen && workerActivity && frameUrl && <WorkerProgressPanel activity={workerActivity} modelName={status?.workerAModel || null} workerBModel={status?.workerBModel || null} ultraMode={explorationMode === 'ultra'} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} workerControlBusy={workerControlBusy || (busy === 'worker-a' || busy === 'worker-b' ? busy : null)} onCancel={() => void cancelWorkers()} onCancelWorker={(kind) => void cancelWorker(kind)} onRetryWorker={(kind) => kind === 'worker_a' ? void retryWorkerA() : void retryWorkerB()} onResumeWorker={(kind) => kind === 'worker_a' ? void resumeWorkerA() : void resumeWorkerB()} onRetry={() => workerActivity.resumeKind === 'worker_b' ? void resumeWorkerB() : workerActivity.resumeKind === 'worker_a' ? void resumeWorkerA() : workerActivity.phase === 'worker-b-error' ? void retryWorkerB() : void runWorkers()} onClose={() => { setWorkerDialogOpen(false); if (workerActivity.status !== 'paused') setWorkerActivity(null); }} />}
     </div>

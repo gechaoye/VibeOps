@@ -1,5 +1,5 @@
 import { Check, ImageUp, PanelsTopLeft, PanelTopOpen, Plus, Smartphone, Trash2 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { absoluteAssetUrl } from './api';
 import { elementAvailableOnPage, pageWorkflowStatus, pageWorkflowStatusLabels } from './model';
 import { PageUploadDialog } from './PageUploadDialog';
@@ -135,8 +135,17 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
     setSelectedPageId(pageId);
   };
 
+  const handleWorkspaceClickCapture = (event: ReactMouseEvent<HTMLElement>) => {
+    if (!deleteConfirmPageId) return;
+    const target = event.target;
+    const deleteAction = target instanceof Element ? target.closest<HTMLElement>('.page-node-delete-action') : null;
+    const pageNode = deleteAction?.closest<HTMLElement>('.page-node');
+    if (pageNode?.dataset.pageId === deleteConfirmPageId) return;
+    setDeleteConfirmPageId(null);
+  };
+
   return (
-    <main className="graph-workspace">
+    <main className="graph-workspace" onClickCapture={handleWorkspaceClickCapture}>
       <section className="graph-main">
         <div className="graph-toolbar"><div><PanelsTopLeft size={16} /><strong>Page 对象图</strong><span>{draft.pages.length} 个 Page</span></div></div>
         <div className="graph-board-scroll" onClick={(event) => { if (event.target === event.currentTarget) { setSelectedPageId(null); setCreateMenuOpen(false); } }}>
@@ -153,7 +162,7 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
               const status = pageWorkflowStatus(draft, page);
               const latestFrameId = page.frameIds.at(-1);
               const deleting = deleteConfirmPageId === page.id;
-              return <div key={page.id} className={`page-node ${page.id === selectedPageId ? 'active' : ''}`} style={{ left: position.x, top: position.y }}>
+              return <div key={page.id} data-page-id={page.id} className={`page-node ${page.id === selectedPageId ? 'active' : ''}`} style={{ left: position.x, top: position.y }}>
                 <button type="button" className="page-node-select-target" aria-label={`选择 Page：${page.name}`} onClick={() => selectPage(page.id)} />
                 <span className={`page-status page-status-${status}`}>{pageWorkflowStatusLabels[status]}</span>
                 <span className="page-node-preview">{latestFrameId ? <img src={absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(latestFrameId)}/image`)} alt={`${page.name || '待识别页面'}截图`} loading="lazy" /> : <span>暂无截图</span>}</span>
