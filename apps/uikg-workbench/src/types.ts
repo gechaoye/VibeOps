@@ -347,7 +347,8 @@ export interface WorkerModelPreset {
 }
 
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
-export type ModelTarget = 'worker_a' | 'worker_b' | 'midscene';
+export type ModelTarget = 'model_a' | 'model_b' | 'midscene';
+export type WorkbenchMode = 'manual' | 'ultra' | 'auto';
 
 export interface ModelGatewaySettings {
   id: string;
@@ -356,6 +357,7 @@ export interface ModelGatewaySettings {
   kind: 'default' | 'custom';
   apiKeyConfigured: boolean;
   apiKeyHint: string | null;
+  defaultValueAvailable?: boolean;
 }
 
 export interface ModelGatewayCatalog extends ModelGatewaySettings {
@@ -365,20 +367,23 @@ export interface ModelGatewayCatalog extends ModelGatewaySettings {
   error?: string;
 }
 
-export interface WorkerAvailableModels {
+export interface AvailableModels {
   gateways: ModelGatewayCatalog[];
   totalModels: number;
 }
 
-export interface WorkerModelSettings {
-  workerA: WorkerSlotSettings;
-  workerB: WorkerSlotSettings;
-  midscene: WorkerSlotSettings;
+export interface ModelSettingsData {
+  settingsSchemaVersion?: number;
+  sections?: Array<{ id: string; label: string; order: number }>;
+  modelA: ModelSlotSettings;
+  modelB: ModelSlotSettings;
+  midscene: ModelSlotSettings;
   gateways: ModelGatewaySettings[];
   runtimeReloaded?: boolean;
+  modeConfiguration: { mode: WorkbenchMode };
 }
 
-export interface WorkerSlotSettings {
+export interface ModelSlotSettings {
   storagePath: string;
   target: ModelTarget;
   config: {

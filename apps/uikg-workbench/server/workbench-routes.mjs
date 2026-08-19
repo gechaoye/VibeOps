@@ -15,9 +15,9 @@ import {
   validateDraft,
   validateWorkerConsistency,
 } from './draft-model.mjs';
-import { deleteModelGateway, fetchAvailableModelsByGateway, loadModelGateways, loadTargetModelSettings, MODEL_TARGETS, resolveTargetModelConfig, saveModelGateway, saveTargetModelSettings } from './model-settings.mjs';
+import { deleteModelGateway, fetchAvailableModelsByGateway, loadModelGateways, loadTargetModelSettings, loadWorkbenchPreferences, MODEL_TARGETS, resolveTargetModelConfig, resetDefaultModelGateway, saveModelGateway, saveTargetModelSettings, saveWorkbenchMode, testModelGateway } from './model-settings.mjs';
 import { reasoningBudgetForModel } from './model-compatibility.mjs';
-import { getModelRuntime, setModelRuntime } from './model-runtime.mjs';
+import { clearModelRuntime, getModelRuntime, setModelRuntime } from './model-runtime.mjs';
 import { recoverWorkerCheckpointFromStream, runResumableWorker, WORKER_ERROR_RETRY_LIMIT } from './resumable-worker.mjs';
 import { runWorkerModel } from './worker-client.mjs';
 import { buildWorkerContinuationPrompt, buildWorkerPrompt } from './worker-prompt.mjs';
@@ -168,6 +168,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     if (signature === loadedModelRuntimeSignature) return false;
     for (const target of MODEL_TARGETS) {
       if (configs[target]) setModelRuntime(target, configs[target]);
+      else clearModelRuntime(target);
     }
     const midscene = configs.midscene;
     if (midscene) {
@@ -183,6 +184,8 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         MIDSCENE_MODEL_REASONING_BUDGET: String(reasoningBudgetForModel(midscene.modelName, midscene.reasoningEffort) || ''),
       };
       Object.assign(process.env, mappings);
+    } else {
+      for (const key of ['MIDSCENE_MODEL_BASE_URL', 'MIDSCENE_MODEL_API_KEY', 'MIDSCENE_MODEL_NAME', 'MIDSCENE_MODEL_FAMILY', 'MIDSCENE_MODEL_TIMEOUT', 'MIDSCENE_MODEL_TEMPERATURE', 'MIDSCENE_MODEL_REASONING_EFFORT', 'MIDSCENE_MODEL_REASONING_ENABLED', 'MIDSCENE_MODEL_REASONING_BUDGET']) delete process.env[key];
     }
     server.agent?.modelConfigManager?.clearModelConfigMap();
     loadedModelRuntimeSignature = signature;
@@ -190,10 +193,16 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   };
 
   const loadCombinedModelSettings = () => ({
-    workerA: loadTargetModelSettings(modelStore, 'worker_a'),
-    workerB: loadTargetModelSettings(modelStore, 'worker_b'),
+    settingsSchemaVersion: 1,
+    sections: [
+      { id: 'model-gateways', label: '模型网关', order: 10 },
+      { id: 'mode-configuration', label: '模式配置', order: 20 },
+    ],
+    modelA: loadTargetModelSettings(modelStore, 'model_a'),
+    modelB: loadTargetModelSettings(modelStore, 'model_b'),
     midscene: loadTargetModelSettings(modelStore, 'midscene'),
     gateways: loadModelGateways(modelStore),
+    modeConfiguration: loadWorkbenchPreferences(modelStore),
   });
 
   router.get('/knowledge-graph', async (req, res, next) => {
@@ -316,9 +325,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   } : null;
 
   async function executeWorker({ worker, frameId, pageId = null, pageContext = '', mergeIntoDraft = false, signal, onProgress = () => {}, resumeSession = null, workspaceSessionId = 'default' }) {
-    const label = worker === 'worker_a' ? 'Worker A' : 'Worker B';
+    const label = worker === 'worker_a' ? 'Model A' : 'Model B';
     await syncModelRuntime();
-    const runtime = getModelRuntime(worker);
+    const runtime = getModelRuntime(worker === 'worker_a' ? 'model_a' : 'model_b');
     const model = runtime?.modelName || null;
     const setResumable = (value) => {
       const sessions = worker === 'worker_a' ? resumableWorkerA : resumableWorkerB;
@@ -357,7 +366,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       });
       emitProgress({ type: 'stage', phase: 'validate', message: '正在校验页面截图' });
       if (!model) {
-        throw workbenchError(503, `未配置 ${label} 模型，请在模型配置页面完成指派`);
+        throw workbenchError(503, `未配置 ${label} 模型，请在设置页面完成指派`);
       }
       if (!frameId) throw workbenchError(400, '缺少 frameId');
       const frozenFrame = await store.loadFrame(frameId);
@@ -581,7 +590,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   }
 
   function beginWorkerASession(workspaceSessionId = 'default') {
-    if (activeWorkerA.has(workspaceSessionId)) throw workbenchError(409, '当前标签页已有 Worker A 分析正在运行');
+    if (activeWorkerA.has(workspaceSessionId)) throw workbenchError(409, '当前标签页已有 Model A 分析正在运行');
     const session = { id: randomUUID(), workspaceSessionId, controller: new AbortController() };
     activeWorkerA.set(workspaceSessionId, session);
     return session;
@@ -593,7 +602,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   }
 
   function beginWorkerBSession(workspaceSessionId = 'default') {
-    if (activeWorkerB.has(workspaceSessionId)) throw workbenchError(409, '当前标签页已有 Worker B 分析正在运行');
+    if (activeWorkerB.has(workspaceSessionId)) throw workbenchError(409, '当前标签页已有 Model B 分析正在运行');
     const session = { id: randomUUID(), workspaceSessionId, controller: new AbortController() };
     activeWorkerB.set(workspaceSessionId, session);
     return session;
@@ -619,10 +628,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         ok: true,
         agentConnected: Boolean(server.agent),
         workersRunning: workersInProgress(),
-        workerAConfigured: Boolean(getModelRuntime('worker_a')?.modelName),
-        workerAModel: getModelRuntime('worker_a')?.modelName || null,
-        workerBConfigured: Boolean(getModelRuntime('worker_b')?.modelName),
-        workerBModel: getModelRuntime('worker_b')?.modelName || null,
+        workerAConfigured: Boolean(getModelRuntime('model_a')?.modelName),
+        workerAModel: getModelRuntime('model_a')?.modelName || null,
+        workerBConfigured: Boolean(getModelRuntime('model_b')?.modelName),
+        workerBModel: getModelRuntime('model_b')?.modelName || null,
         workerASession: publicWorkerSession(resumableWorkerA.get(workspaceSessionKey(req.query.workspaceSessionId))),
         workerBSession: publicWorkerSession(resumableWorkerB.get(workspaceSessionKey(req.query.workspaceSessionId))),
         spec,
@@ -689,6 +698,46 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能修改模型网关' });
       saveModelGateway(modelStore, { ...req.body, id: req.params.gatewayId });
       await syncModelRuntime();
+      res.json(loadCombinedModelSettings());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/model-settings/gateways', async (req, res, next) => {
+    try {
+      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能新增模型网关' });
+      saveModelGateway(modelStore, req.body);
+      await syncModelRuntime();
+      res.json(loadCombinedModelSettings());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/model-settings/gateways/:gatewayId/test', async (req, res, next) => {
+    try {
+      res.json(await testModelGateway(modelStore, req.params.gatewayId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/model-settings/gateways/:gatewayId/reset', async (req, res, next) => {
+    try {
+      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能重置模型网关' });
+      resetDefaultModelGateway(modelStore);
+      await syncModelRuntime();
+      res.json(loadCombinedModelSettings());
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.put('/model-settings/mode', async (req, res, next) => {
+    try {
+      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模式' });
+      saveWorkbenchMode(modelStore, req.body?.mode);
       res.json(loadCombinedModelSettings());
     } catch (error) {
       next(error);
@@ -1026,7 +1075,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
     res.on('close', () => {
-      if (!responseComplete && activeWorkerA.get(workspaceSessionId)?.id === session.id) session.controller.abort('Worker A 流连接已关闭');
+      if (!responseComplete && activeWorkerA.get(workspaceSessionId)?.id === session.id) session.controller.abort('Model A 流连接已关闭');
     });
 
     try {
@@ -1044,7 +1093,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       send('result', result);
     } catch (error) {
       if (session.controller.signal.aborted) {
-        send('cancelled', { message: 'Worker A 已中断', ...(error?.details || {}) });
+        send('cancelled', { message: 'Model A 已中断', ...(error?.details || {}) });
       } else {
         send('error', {
           message: error instanceof Error ? error.message : String(error),
@@ -1066,7 +1115,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
     const resumeSession = resumableWorkerA.get(workspaceSessionId);
     if (!resumeSession || resumeSession.id !== req.body?.sessionId) {
-      return res.status(404).json({ error: '没有可从断点继续的 Worker A 会话' });
+      return res.status(404).json({ error: '没有可从断点继续的 Model A 会话' });
     }
     await streamWorkerA(req, res, resumeSession);
   });
@@ -1074,7 +1123,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   router.post('/workers/a/cancel', (req, res) => {
     const session = activeWorkerA.get(workspaceSessionKey(req.body?.workspaceSessionId));
     if (!session) return res.json({ cancelled: false });
-    session.controller.abort('用户中断 Worker A');
+    session.controller.abort('用户中断 Model A');
     res.json({ cancelled: true });
   });
 
@@ -1100,7 +1149,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
     res.on('close', () => {
-      if (!responseComplete && activeWorkerB.get(workspaceSessionId)?.id === session.id) session.controller.abort('Worker B 流连接已关闭');
+      if (!responseComplete && activeWorkerB.get(workspaceSessionId)?.id === session.id) session.controller.abort('Model B 流连接已关闭');
     });
     try {
       const result = await executeWorker({
@@ -1117,7 +1166,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       send('result', result);
     } catch (error) {
       send(session.controller.signal.aborted ? 'cancelled' : 'error', {
-        message: session.controller.signal.aborted ? 'Worker B 已中断' : error instanceof Error ? error.message : String(error),
+        message: session.controller.signal.aborted ? 'Model B 已中断' : error instanceof Error ? error.message : String(error),
         ...(error?.details || {}),
       });
     } finally {
@@ -1135,7 +1184,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
     const resumeSession = resumableWorkerB.get(workspaceSessionId);
     if (!resumeSession || resumeSession.id !== req.body?.sessionId) {
-      return res.status(404).json({ error: '没有可从断点继续的 Worker B 会话' });
+      return res.status(404).json({ error: '没有可从断点继续的 Model B 会话' });
     }
     await streamWorkerB(req, res, resumeSession);
   });
@@ -1143,7 +1192,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   router.post('/workers/b/cancel', (req, res) => {
     const session = activeWorkerB.get(workspaceSessionKey(req.body?.workspaceSessionId));
     if (!session) return res.json({ cancelled: false });
-    session.controller.abort('用户中断 Worker B');
+    session.controller.abort('用户中断 Model B');
     res.json({ cancelled: true });
   });
 

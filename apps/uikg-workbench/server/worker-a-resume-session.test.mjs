@@ -40,7 +40,7 @@ function eventPayload(streamText, eventName) {
 }
 
 test('模型错误重试从已收到的断点继续并最终合并草稿', async () => {
-  setModelRuntime('worker_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
+  setModelRuntime('model_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
   const app = express();
   let draft = createEmptyDraft();
   let frozenFrameId = null;
@@ -110,6 +110,6 @@ test('模型错误重试从已收到的断点继续并最终合并草稿', async
     assert.match(prompts[1], /header\.title/);
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
-    clearModelRuntime('worker_a');
+    clearModelRuntime('model_a');
   }
 });

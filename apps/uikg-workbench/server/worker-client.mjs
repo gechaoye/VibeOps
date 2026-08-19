@@ -7,14 +7,14 @@ import { getModelRuntime } from './model-runtime.mjs';
 const CHINESE_SYSTEM_PROMPT = '你必须始终使用简体中文进行思考和回答。所有可见的思考过程、推理内容、说明和最终输出中的自然语言都必须是简体中文；JSON 的键名和约定枚举值保持 Schema 要求。';
 
 const WORKERS = {
-  worker_a: { label: 'Worker A' },
-  worker_b: { label: 'Worker B' },
+  worker_a: { label: 'Model A', modelTarget: 'model_a' },
+  worker_b: { label: 'Model B', modelTarget: 'model_b' },
 };
 
 function workerConfig(worker) {
   const definition = WORKERS[worker];
   if (!definition) throw new Error(`未知 Worker：${worker}`);
-  const runtime = getModelRuntime(worker);
+  const runtime = getModelRuntime(definition.modelTarget);
   if (!runtime) throw new Error(`${definition.label} 模型运行时尚未加载`);
   const reasoningEffort = runtime.reasoningEffort;
   return {

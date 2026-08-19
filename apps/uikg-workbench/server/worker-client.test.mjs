@@ -49,7 +49,7 @@ test('Worker A client sends a frozen image and repairs streamed JSON', async () 
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
-  setModelRuntime('worker_a', {
+  setModelRuntime('model_a', {
     baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'qwen3.7-flash',
     modelFamily: 'qwen3', temperature: 0, reasoningEffort: 'low',
   });
@@ -66,7 +66,7 @@ test('Worker A client sends a frozen image and repairs streamed JSON', async () 
     assert.deepEqual(result, { frameId: 'f', elements: [] });
     assert.deepEqual(chunks, ['{"frameId":"f",', '"elements":[]}']);
   } finally {
-    clearModelRuntime('worker_a');
+    clearModelRuntime('model_a');
     server.close();
     await rm(tempRoot, { recursive: true, force: true });
   }
@@ -85,7 +85,7 @@ test('Worker client separates MiniMax think tags from streamed model output', as
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
-  setModelRuntime('worker_a', {
+  setModelRuntime('model_a', {
     baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'MiniMax-M3',
     modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'low',
   });
@@ -100,7 +100,7 @@ test('Worker client separates MiniMax think tags from streamed model output', as
     assert.equal(chunks.map((chunk) => chunk.reasoning_content).join(''), '检查页面结构');
     assert.equal(chunks.map((chunk) => chunk.content).join(''), '{"frameId":"f","elements":[]}');
   } finally {
-    clearModelRuntime('worker_a');
+    clearModelRuntime('model_a');
     server.close();
   }
 });
@@ -121,7 +121,7 @@ test('Worker B client sends the configured reasoning effort', async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
-  setModelRuntime('worker_b', {
+  setModelRuntime('model_b', {
     baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'gpt-5.6-sol',
     modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'high',
   });
@@ -134,7 +134,7 @@ test('Worker B client sends the configured reasoning effort', async () => {
     });
     assert.deepEqual(result, { ok: true });
   } finally {
-    clearModelRuntime('worker_b');
+    clearModelRuntime('model_b');
     server.close();
   }
 });
@@ -162,7 +162,7 @@ test('Worker 为 Qwen、Doubao 和 MiniMax 构造兼容请求', async () => {
 
   try {
     for (const model of models) {
-      setModelRuntime('worker_a', {
+      setModelRuntime('model_a', {
         baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', temperature: 0, ...model,
       });
       await runWorkerModel({
@@ -178,7 +178,7 @@ test('Worker 为 Qwen、Doubao 和 MiniMax 构造兼容请求', async () => {
     assert.equal(received[2].reasoning_effort, 'low');
     assert.equal(received[2].response_format, undefined);
   } finally {
-    clearModelRuntime('worker_a');
+    clearModelRuntime('model_a');
     server.close();
   }
 });

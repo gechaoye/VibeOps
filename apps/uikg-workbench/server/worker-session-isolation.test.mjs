@@ -8,7 +8,7 @@ import { clearModelRuntime, setModelRuntime } from './model-runtime.mjs';
 import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 
 test('不同标签页的 Worker 会话可并发运行并独立取消与查询断点', async () => {
-  setModelRuntime('worker_a', {
+  setModelRuntime('model_a', {
     modelName: 'test-worker-a', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1',
     apiKey: 'test', temperature: 0, reasoningEffort: 'medium',
   });
@@ -80,7 +80,7 @@ test('不同标签页的 Worker 会话可并发运行并独立取消与查询断
     assert.equal(unknownSession.session, null);
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
-    clearModelRuntime('worker_a');
+    clearModelRuntime('model_a');
   }
 });
 

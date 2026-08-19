@@ -10,7 +10,7 @@ import { clearModelRuntime, setModelRuntime } from './model-runtime.mjs';
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
 
 test('未连接设备时 Worker A 直接识别页面卡片的持久化截图', async () => {
-  setModelRuntime('worker_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
+  setModelRuntime('model_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
   const app = express();
   const frameId = 'sha256:persisted-page-card';
   const imagePath = '/persisted/page-card.png';
@@ -74,12 +74,12 @@ test('未连接设备时 Worker A 直接识别页面卡片的持久化截图', a
     assert.equal(draft.page.name, '离线页面');
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
-    clearModelRuntime('worker_a');
+    clearModelRuntime('model_a');
   }
 });
 
 test('Worker A 手动中断后保留断点并从断点继续', async () => {
-  setModelRuntime('worker_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
+  setModelRuntime('model_a', { modelName: 'test-worker-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
   const app = express();
   let draft = createEmptyDraft();
   let modelAborted = false;
@@ -192,6 +192,6 @@ test('Worker A 手动中断后保留断点并从断点继续', async () => {
     assert.equal(draftSaveCount, 2, '恢复完成后才合并并保存草稿');
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
-    clearModelRuntime('worker_a');
+    clearModelRuntime('model_a');
   }
 });

@@ -202,11 +202,11 @@ function editableElementValuesEqual(current: DraftElement, initial: DraftElement
 }
 
 function pausedWorkerAActivity(session: WorkerResumeSession): WorkerActivity {
-  const manuallyInterrupted = session.errorMessage === '用户中断 Worker A';
+  const manuallyInterrupted = session.errorMessage === '用户中断 Model A';
   return {
     status: 'paused',
     phase: 'paused',
-    phaseMessage: manuallyInterrupted ? 'Worker A 已中断，可从断点继续' : '自动续写 5 次仍未完成，可从断点继续',
+    phaseMessage: manuallyInterrupted ? 'Model A 已中断，可从断点继续' : '自动续写 5 次仍未完成，可从断点继续',
     reasoningContent: session.reasoningContent || '',
     outputContent: session.outputContent || '',
     errorMessage: manuallyInterrupted ? undefined : session.errorMessage,
@@ -222,7 +222,7 @@ function pausedWorkerBActivity(session: WorkerResumeSession): WorkerActivity {
   return {
     status: 'paused',
     phase: 'worker-b-paused',
-    phaseMessage: 'Worker B 已中断，可从断点继续',
+    phaseMessage: 'Model B 已中断，可从断点继续',
     reasoningContent: session.reasoningContent || '',
     outputContent: session.outputContent || '',
     errorMessage: undefined,
@@ -463,6 +463,18 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
     window.setTimeout(() => setNotice((current) => current?.text === text ? null : current), 4200);
   };
 
+  const changeExplorationMode = async (nextMode: ExplorationMode) => {
+    const previousMode = explorationMode;
+    setExplorationMode(nextMode);
+    try {
+      await workbenchApi.saveModelMode(nextMode);
+      window.dispatchEvent(new CustomEvent('uikg-mode-change', { detail: nextMode }));
+    } catch (error) {
+      setExplorationMode(previousMode);
+      showNotice('error', error instanceof Error ? error.message : String(error));
+    }
+  };
+
   const cloneDraft = (value: Draft) => structuredClone(value);
 
   const resetDraftState = (nextDraft: Draft, markDirty = false, preserveActivities = false) => {
@@ -639,8 +651,8 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
   }, [active, refreshConnection]);
 
   useEffect(() => {
-    Promise.all([refreshConnection(), workbenchApi.draft(), workbenchApi.workerASession(annotationSessionId), workbenchApi.workerBSession(annotationSessionId), workbenchApi.sessions()])
-      .then(([, result, workerASessionResult, workerBSessionResult, sessionHistory]) => {
+    Promise.all([refreshConnection(), workbenchApi.draft(), workbenchApi.workerASession(annotationSessionId), workbenchApi.workerBSession(annotationSessionId), workbenchApi.sessions(), workbenchApi.modelSettings()])
+      .then(([, result, workerASessionResult, workerBSessionResult, sessionHistory, modelSettings]) => {
         const targetedDraft = annotationTarget ? draftForAnnotationTarget(result.draft, annotationTarget) : null;
         resetDraftState(targetedDraft || result.draft);
         if (targetedDraft) {
@@ -653,6 +665,8 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
         if (workerBSessionResult.session) setWorkerActivity(pausedWorkerBActivity(workerBSessionResult.session));
         else if (workerASessionResult.session) setWorkerActivity(pausedWorkerAActivity(workerASessionResult.session));
         setAnalysisSessions(sessionHistory.sessions);
+        const configuredMode = modelSettings.modeConfiguration?.mode;
+        if (configuredMode === 'manual' || configuredMode === 'ultra') setExplorationMode(configuredMode);
       })
       .catch((error) => showNotice('error', error instanceof Error ? error.message : String(error)));
     const timer = window.setInterval(() => {
@@ -664,6 +678,15 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
   useEffect(() => {
     window.localStorage.setItem('uikg-exploration-mode', explorationMode);
   }, [explorationMode]);
+
+  useEffect(() => {
+    const syncConfiguredMode = (event: Event) => {
+      const configuredMode = (event as CustomEvent<ExplorationMode>).detail;
+      if (configuredMode === 'manual' || configuredMode === 'ultra') setExplorationMode(configuredMode);
+    };
+    window.addEventListener('uikg-mode-change', syncConfiguredMode);
+    return () => window.removeEventListener('uikg-mode-change', syncConfiguredMode);
+  }, []);
 
   useEffect(() => {
     if (duplicateCandidateKeyFilter && treeElements.length < 2) setDuplicateCandidateKeyFilter(null);
@@ -828,13 +851,13 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
   };
 
   const finishManualWorkerA = async (result: Awaited<ReturnType<typeof workbenchApi.workerAStream>>) => {
-    if (!result.draft || !result.issues) throw new Error('Worker A 已完成，但没有返回草稿');
+    if (!result.draft || !result.issues) throw new Error('Model A 已完成，但没有返回草稿');
     resetDraftState(result.draft);
     setServerIssues(result.issues);
     setSelectedId(result.draft.elements[0]?.id || null);
     setStatus((current) => current ? { ...current, workerASession: null } : current);
-    setWorkerActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: 'Worker A 分析完成', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
-    showNotice('success', `Worker A 已识别 ${result.draft.elements.length} 个候选元素`);
+    setWorkerActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: 'Model A 分析完成', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
+    showNotice('success', `Model A 已识别 ${result.draft.elements.length} 个候选元素`);
     await refreshAnalysisSessions();
   };
 
@@ -844,17 +867,17 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
     setWorkerControlBusy('worker-b');
     setWorkerDialogOpen(true);
     setWorkerComparison(null);
-    setWorkerActivity((current) => current ? { ...current, status: 'running', workerBStatus: 'running', phase: 'worker_b', phaseMessage: 'Worker B 正在重新识别画面', reasoningContent: '', outputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined, workerBResumeSessionId: undefined } : current);
+    setWorkerActivity((current) => current ? { ...current, status: 'running', workerBStatus: 'running', phase: 'worker_b', phaseMessage: 'Model B 正在重新识别画面', reasoningContent: '', outputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined, workerBResumeSessionId: undefined } : current);
     try {
       const pageContext = [currentDraft.page.name, currentDraft.page.stateSummary].filter(Boolean).join('；');
       const result = await workbenchApi.workerBStream(currentDraft.currentFrameId, pageContext, explorationMode === 'ultra' ? handleUltraWorkerBEvent : handleWorkerEvent, currentDraft.currentPageId, annotationSessionId);
       workerBResultRef.current = result.workerResult;
       if (workerAResultRef.current) setWorkerComparison({ workerAResult: workerAResultRef.current, workerBResult: result.workerResult, modelResultRef: result.modelResultRef });
       setStatus((current) => current ? { ...current, workerBSession: null } : current);
-      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus(current.workerAStatus, 'completed'), workerBStatus: 'completed', phase: workerAResultRef.current ? 'compare' : 'complete', phaseMessage: 'Worker B 识别完成', errorMessage: undefined } : current);
-      showNotice('success', 'Worker B 已完成独立识别，可在冻结区域选择元素');
+      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus(current.workerAStatus, 'completed'), workerBStatus: 'completed', phase: workerAResultRef.current ? 'compare' : 'complete', phaseMessage: 'Model B 识别完成', errorMessage: undefined } : current);
+      showNotice('success', 'Model B 已完成独立识别，可在冻结区域选择元素');
     } catch (error) {
-      handleWorkerBFailure(error, 'Worker B 重新识别失败');
+      handleWorkerBFailure(error, 'Model B 重新识别失败');
     } finally {
       setWorkerControlBusy(null);
       await refreshAnalysisSessions();
@@ -867,15 +890,15 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
     setWorkerControlBusy('worker-a');
     setWorkerDialogOpen(true);
     setWorkerComparison(null);
-    setWorkerActivity((current) => current ? { ...current, status: 'running', workerAStatus: 'running', phase: 'worker_a', phaseMessage: 'Worker A 正在重新识别画面', workerAReasoningContent: '', workerAOutputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined, workerAResumeSessionId: undefined } : current);
+    setWorkerActivity((current) => current ? { ...current, status: 'running', workerAStatus: 'running', phase: 'worker_a', phaseMessage: 'Model A 正在重新识别画面', workerAReasoningContent: '', workerAOutputContent: '', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined, workerAResumeSessionId: undefined } : current);
     try {
       const pageContext = [currentDraft.page.name, currentDraft.page.stateSummary].filter(Boolean).join('；');
       const result = await workbenchApi.workerAStream(currentDraft.currentFrameId, pageContext, false, handleUltraWorkerAEvent, currentDraft.currentPageId, annotationSessionId);
       workerAResultRef.current = result.workerResult;
       if (workerBResultRef.current) setWorkerComparison({ workerAResult: result.workerResult, workerBResult: workerBResultRef.current, modelResultRef: result.modelResultRef });
       setStatus((current) => current ? { ...current, workerASession: null } : current);
-      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus('completed', current.workerBStatus), workerAStatus: 'completed', phase: workerBResultRef.current ? 'compare' : 'complete', phaseMessage: 'Worker A 识别完成', errorMessage: undefined } : current);
-      showNotice('success', 'Worker A 已完成重新识别');
+      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus('completed', current.workerBStatus), workerAStatus: 'completed', phase: workerBResultRef.current ? 'compare' : 'complete', phaseMessage: 'Model A 识别完成', errorMessage: undefined } : current);
+      showNotice('success', 'Model A 已完成重新识别');
     } catch (error) {
       handleWorkerAFailure(error);
     } finally {
@@ -896,28 +919,28 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
           workerAStatus: 'paused',
           workerAResumeSessionId: resumeSession.id,
           phase: 'worker-a-paused',
-          phaseMessage: cancelled ? 'Worker A 已中断，可从断点继续' : 'Worker A 已暂停，可从断点继续',
+          phaseMessage: cancelled ? 'Model A 已中断，可从断点继续' : 'Model A 已暂停，可从断点继续',
           errorMessage: cancelled ? undefined : resumeSession.errorMessage,
           resumeSessionId: resumeSession.id,
           resumeKind: 'worker_a',
           completedCandidates: resumeSession.completedCandidates,
         } : current);
         setStatus((current) => current ? { ...current, workerASession: resumeSession } : current);
-        showNotice('info', `Worker A 已保留 ${resumeSession.completedCandidates} 个候选的断点`);
+        showNotice('info', `Model A 已保留 ${resumeSession.completedCandidates} 个候选的断点`);
         return;
       }
       setWorkerActivity((current) => ({
         ...(current || pausedWorkerAActivity(resumeSession)),
         status: 'paused',
         phase: 'paused',
-        phaseMessage: cancelled ? 'Worker A 已中断，可从断点继续' : '自动续写 5 次仍未完成，可从断点继续',
+        phaseMessage: cancelled ? 'Model A 已中断，可从断点继续' : '自动续写 5 次仍未完成，可从断点继续',
         errorMessage: cancelled ? undefined : resumeSession.errorMessage,
         resumeSessionId: resumeSession.id,
         resumeKind: 'worker_a',
         completedCandidates: resumeSession.completedCandidates,
       }));
       setStatus((current) => current ? { ...current, workerASession: resumeSession } : current);
-      showNotice('info', `Worker A 已保留 ${resumeSession.completedCandidates} 个候选的断点`);
+      showNotice('info', `Model A 已保留 ${resumeSession.completedCandidates} 个候选的断点`);
       return;
     }
     if (explorationMode === 'ultra') {
@@ -926,20 +949,20 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
         status: aggregateUltraWorkerStatus(cancelled ? 'cancelled' : 'error', current.workerBStatus),
         workerAStatus: cancelled ? 'cancelled' : 'error',
         phase: cancelled ? 'worker-a-cancelled' : 'worker-a-error',
-        phaseMessage: cancelled ? 'Worker A 已中断' : 'Worker A 分析失败',
+        phaseMessage: cancelled ? 'Model A 已中断' : 'Model A 分析失败',
         errorMessage: cancelled ? undefined : error instanceof Error ? error.message : String(error),
       } : current);
-      showNotice(cancelled ? 'info' : 'error', cancelled ? 'Worker A 已中断' : error instanceof Error ? error.message : String(error));
+      showNotice(cancelled ? 'info' : 'error', cancelled ? 'Model A 已中断' : error instanceof Error ? error.message : String(error));
       return;
     }
     setWorkerActivity((current) => current ? {
       ...current,
       status: cancelled ? 'cancelled' : 'error',
       phase: cancelled ? 'cancelled' : 'error',
-      phaseMessage: cancelled ? 'Worker A 已中断' : 'Worker A 分析失败',
+      phaseMessage: cancelled ? 'Model A 已中断' : 'Model A 分析失败',
       errorMessage: cancelled ? undefined : error instanceof Error ? error.message : String(error),
     } : current);
-    showNotice(cancelled ? 'info' : 'error', cancelled ? 'Worker A 已中断，草稿未更新' : error instanceof Error ? error.message : String(error));
+    showNotice(cancelled ? 'info' : 'error', cancelled ? 'Model A 已中断，草稿未更新' : error instanceof Error ? error.message : String(error));
   };
 
   const handleWorkerBFailure = (error: unknown, fallbackMessage: string) => {
@@ -955,26 +978,26 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
           workerBStatus: 'paused',
           workerBResumeSessionId: resumeSession.id,
           phase: 'worker-b-paused',
-          phaseMessage: 'Worker B 已暂停，可从断点继续',
+          phaseMessage: 'Model B 已暂停，可从断点继续',
           errorMessage: undefined,
           resumeSessionId: resumeSession.id,
           resumeKind: 'worker_b',
         } : current);
         setStatus((current) => current ? { ...current, workerBSession: resumeSession } : current);
-        showNotice('info', 'Worker B 已中断并保存当前输出断点');
+        showNotice('info', 'Model B 已中断并保存当前输出断点');
         return;
       }
       setWorkerActivity((current) => ({
         ...(current || pausedWorkerBActivity(resumeSession)),
         status: 'paused',
         phase: 'worker-b-paused',
-        phaseMessage: 'Worker B 已中断，可从断点继续',
+        phaseMessage: 'Model B 已中断，可从断点继续',
         errorMessage: undefined,
         resumeSessionId: resumeSession.id,
         resumeKind: 'worker_b',
       }));
       setStatus((current) => current ? { ...current, workerBSession: resumeSession } : current);
-      showNotice('info', 'Worker B 已中断并保存当前输出断点');
+      showNotice('info', 'Model B 已中断并保存当前输出断点');
       return;
     }
     if (explorationMode === 'ultra') {
@@ -983,20 +1006,20 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
         status: aggregateUltraWorkerStatus(current.workerAStatus, cancelled ? 'cancelled' : 'error'),
         workerBStatus: cancelled ? 'cancelled' : 'error',
         phase: cancelled ? 'worker-b-cancelled' : 'worker-b-error',
-        phaseMessage: cancelled ? 'Worker B 已中断' : fallbackMessage,
+        phaseMessage: cancelled ? 'Model B 已中断' : fallbackMessage,
         errorMessage: cancelled ? undefined : message,
       } : current);
-      showNotice(cancelled ? 'info' : 'error', cancelled ? 'Worker B 已中断' : message);
+      showNotice(cancelled ? 'info' : 'error', cancelled ? 'Model B 已中断' : message);
       return;
     }
     setWorkerActivity((current) => current ? {
       ...current,
       status: cancelled ? 'cancelled' : 'error',
       phase: cancelled ? 'worker-b-cancelled' : 'worker-b-error',
-      phaseMessage: cancelled ? 'Worker B 已中断' : fallbackMessage,
+      phaseMessage: cancelled ? 'Model B 已中断' : fallbackMessage,
       errorMessage: cancelled ? undefined : message,
     } : current);
-    showNotice(cancelled ? 'info' : 'error', cancelled ? 'Worker B 已中断' : message);
+    showNotice(cancelled ? 'info' : 'error', cancelled ? 'Model B 已中断' : message);
   };
 
   const runWorkers = async () => {
@@ -1007,7 +1030,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
     workerAResultRef.current = null;
     workerBResultRef.current = null;
     const ultraMode = explorationMode === 'ultra';
-    setWorkerActivity({ status: 'running', phase: ultraMode ? 'ultra-running' : 'starting', phaseMessage: ultraMode ? 'Worker A 与 Worker B 正在并发识别画面' : '正在启动 Worker A', reasoningContent: '', outputContent: '', workerAReasoningContent: '', workerAOutputContent: '', workerAStatus: ultraMode ? 'running' : undefined, workerBStatus: ultraMode ? 'running' : undefined });
+    setWorkerActivity({ status: 'running', phase: ultraMode ? 'ultra-running' : 'starting', phaseMessage: ultraMode ? 'Model A 与 Model B 正在并发识别画面' : '正在启动 Model A', reasoningContent: '', outputContent: '', workerAReasoningContent: '', workerAOutputContent: '', workerAStatus: ultraMode ? 'running' : undefined, workerBStatus: ultraMode ? 'running' : undefined });
     try {
       const pageContext = [draft.page.name, draft.page.stateSummary].filter(Boolean).join('；');
       if (!ultraMode) {
@@ -1027,10 +1050,10 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
         setStatus((current) => current ? { ...current, workerBSession: null } : current);
         setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus(current.workerAStatus, 'completed'), workerBStatus: 'completed', workerBResumeSessionId: undefined } : current);
         return result;
-      }, (error) => { handleWorkerBFailure(error, 'Worker B 识别失败'); throw error; });
+      }, (error) => { handleWorkerBFailure(error, 'Model B 识别失败'); throw error; });
       const [workerAOutcome, workerBOutcome] = await Promise.allSettled([workerAPromise, workerBPromise]);
       if (workerAOutcome.status === 'fulfilled' && workerBOutcome.status === 'fulfilled') {
-        setWorkerActivity((current) => current ? { ...current, status: 'completed', workerAStatus: 'completed', workerBStatus: 'completed', phase: 'compare', phaseMessage: '双 Worker 并发识别完成', errorMessage: undefined } : current);
+        setWorkerActivity((current) => current ? { ...current, status: 'completed', workerAStatus: 'completed', workerBStatus: 'completed', phase: 'compare', phaseMessage: '双模型 并发识别完成', errorMessage: undefined } : current);
         showNotice('success', '两份独立识别答卷已完成，可在双画面或页面元素区域选择');
       }
     } catch (error) {
@@ -1076,7 +1099,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
       status: 'running',
       workerAStatus: 'running',
       phase: 'resume',
-      phaseMessage: '正在从已保存断点继续 Worker A',
+      phaseMessage: '正在从已保存断点继续 Model A',
       errorMessage: undefined,
     } : current);
     try {
@@ -1084,7 +1107,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
       if (explorationMode === 'ultra') {
         workerAResultRef.current = result.workerResult;
         if (workerBResultRef.current) setWorkerComparison({ workerAResult: result.workerResult, workerBResult: workerBResultRef.current, modelResultRef: result.modelResultRef });
-        setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus('completed', current.workerBStatus), workerAStatus: 'completed', workerAResumeSessionId: undefined, phase: workerBResultRef.current ? 'compare' : 'complete', phaseMessage: 'Worker A 已从断点完成', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
+        setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus('completed', current.workerBStatus), workerAStatus: 'completed', workerAResumeSessionId: undefined, phase: workerBResultRef.current ? 'compare' : 'complete', phaseMessage: 'Model A 已从断点完成', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
       } else {
         await finishManualWorkerA(result);
       }
@@ -1105,7 +1128,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
       status: 'running',
       workerBStatus: 'running',
       phase: 'worker_b-resume',
-      phaseMessage: '正在从已保存断点继续 Worker B',
+      phaseMessage: '正在从已保存断点继续 Model B',
       errorMessage: undefined,
     } : current);
     try {
@@ -1113,10 +1136,10 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
       workerBResultRef.current = result.workerResult;
       if (workerAResultRef.current) setWorkerComparison({ workerAResult: workerAResultRef.current, workerBResult: result.workerResult, modelResultRef: result.modelResultRef });
       setStatus((current) => current ? { ...current, workerBSession: null } : current);
-      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus(current.workerAStatus, 'completed'), workerBStatus: 'completed', workerBResumeSessionId: undefined, phase: workerAResultRef.current ? 'compare' : 'complete', phaseMessage: 'Worker B 已从断点完成识别', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
-      showNotice('success', 'Worker B 已从断点完成识别');
+      setWorkerActivity((current) => current ? { ...current, status: aggregateUltraWorkerStatus(current.workerAStatus, 'completed'), workerBStatus: 'completed', workerBResumeSessionId: undefined, phase: workerAResultRef.current ? 'compare' : 'complete', phaseMessage: 'Model B 已从断点完成识别', errorMessage: undefined, resumeSessionId: undefined, resumeKind: undefined } : current);
+      showNotice('success', 'Model B 已从断点完成识别');
     } catch (error) {
-      handleWorkerBFailure(error, 'Worker B 断点续写失败');
+      handleWorkerBFailure(error, 'Model B 断点续写失败');
     } finally {
       setWorkerControlBusy(null);
       await refreshAnalysisSessions();
@@ -1129,11 +1152,11 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
     setWorkerActivity((current) => current ? {
       ...current,
       [`${kind === 'worker_a' ? 'workerA' : 'workerB'}Status`]: 'cancelling',
-      phaseMessage: `${kind === 'worker_a' ? 'Worker A' : 'Worker B'} 正在中断`,
+      phaseMessage: `${kind === 'worker_a' ? 'Model A' : 'Model B'} 正在中断`,
     } : current);
     try {
       const result = kind === 'worker_a' ? await workbenchApi.cancelWorkerA(annotationSessionId) : await workbenchApi.cancelWorkerB(annotationSessionId);
-      if (!result.cancelled) showNotice('info', `${kind === 'worker_a' ? 'Worker A' : 'Worker B'} 已结束，无需中断`);
+      if (!result.cancelled) showNotice('info', `${kind === 'worker_a' ? 'Model A' : 'Model B'} 已结束，无需中断`);
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
@@ -1163,7 +1186,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
     setWorkerActivity({
       status: latest.status === 'completed' ? 'completed' : latest.status === 'cancelled' ? 'cancelled' : latest.status === 'running' ? 'running' : 'error',
       phase: 'history',
-      phaseMessage: latest.kind === 'worker_a' ? 'Worker A 识别会话' : 'Worker B 识别会话',
+      phaseMessage: latest.kind === 'worker_a' ? 'Model A 识别会话' : 'Model B 识别会话',
       reasoningContent: latest.reasoningContent || '',
       outputContent: latest.outputContent || '',
       errorMessage: latest.errorMessage || undefined,
@@ -1812,7 +1835,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
           )}
         </div>
         <div className="header-actions">
-          <button type="button" className={`button global-model-button ${tabKind === 'settings' ? 'active' : ''}`} onClick={onOpenSettingsTab}><Settings2 size={15} />模型配置</button>
+          <button type="button" className={`button global-model-button ${tabKind === 'settings' ? 'active' : ''}`} onClick={onOpenSettingsTab}><Settings2 size={15} />设置</button>
         </div>
       </header>
 
@@ -1849,7 +1872,11 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
       {tabKind === 'settings' ? (
         <ModelSettings
           onNotice={showNotice}
-          onSaved={(settings) => setStatus((current) => current ? { ...current, workerAConfigured: Boolean(settings.workerA.config.modelName), workerAModel: settings.workerA.config.modelName, workerBConfigured: Boolean(settings.workerB.config.modelName), workerBModel: settings.workerB.config.modelName || null } : current)}
+          onSaved={(settings) => {
+            setStatus((current) => current ? { ...current, workerAConfigured: Boolean(settings.modelA.config.modelName), workerAModel: settings.modelA.config.modelName, workerBConfigured: Boolean(settings.modelB.config.modelName), workerBModel: settings.modelB.config.modelName || null } : current);
+            const configuredMode = settings.modeConfiguration?.mode;
+            if (configuredMode === 'manual' || configuredMode === 'ultra') window.dispatchEvent(new CustomEvent('uikg-mode-change', { detail: configuredMode }));
+          }}
         />
       ) : tabKind === 'knowledge' ? (
         active ? <KnowledgeGraph appKey={draft?.appKey || 'zto.connect'} onGoToWorkbench={() => onSelectTab('workspace')} /> : null
@@ -1863,10 +1890,10 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
             </div>
             {viewMode === 'review' && <div className="toolbar-mode-model">
               <div className="mode-segment" aria-label="探索模式">
-                <button type="button" className={explorationMode === 'ultra' ? 'active' : ''} title="Worker A 与 Worker B 并发识别，再按元素和字段选择合并" onClick={() => setExplorationMode('ultra')}>Ultra</button>
-                <button type="button" className={explorationMode === 'manual' ? 'active' : ''} title="使用 Worker A 单 Worker 识别后直接人工审核" onClick={() => setExplorationMode('manual')}>Manual</button>
+                <button type="button" className={explorationMode === 'ultra' ? 'active' : ''} title="Model A 与 Model B 并发识别，再按元素和字段选择合并" onClick={() => void changeExplorationMode('ultra')}>Ultra</button>
+                <button type="button" className={explorationMode === 'manual' ? 'active' : ''} title="使用 Model A 单模型识别后直接人工审核" onClick={() => void changeExplorationMode('manual')}>Manual</button>
               </div>
-              <span className="worker-model" title={explorationMode === 'ultra' ? `Worker A：${status?.workerAModel || '未配置'}；Worker B：${status?.workerBModel || '未配置'}` : `Worker A：${status?.workerAModel || '未配置'}`}>
+              <span className="worker-model" title={explorationMode === 'ultra' ? `Model A：${status?.workerAModel || '未配置'}；Model B：${status?.workerBModel || '未配置'}` : `Model A：${status?.workerAModel || '未配置'}`}>
                 {explorationMode === 'ultra' ? `${status?.workerAModel || '未配置'} + ${status?.workerBModel || '未配置'}` : status?.workerAModel || '未配置'}
               </span>
             </div>}
@@ -1941,7 +1968,7 @@ function AppContent({ tabId, tabKind, annotationTarget, annotationSessionId, pag
           </div>
           {workerComparison && explorationMode === 'ultra' ? <div className="worker-candidate-portal" ref={setWorkerCandidatePortal} /> : <ElementTree elements={treeElements} filterCandidateKey={duplicateCandidateKeyFilter} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} allChecked={allCurrentChecked} allCheckedAccepted={allCheckedAccepted} onToggleAll={() => setCheckedIds(allCurrentChecked ? new Set() : new Set(treeElements.map((element) => element.id)))} onCreateContainer={createContainerFromSelection} onToggleAccept={allCheckedAccepted ? bulkCancelAccept : bulkAccept} onDeleteChecked={deleteCheckedElements} onSelect={setSelectedId} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} onClearFilter={() => setDuplicateCandidateKeyFilter(null)} />}
           <div className={`tree-legend ${workerComparison && explorationMode === 'ultra' ? 'worker-source-legend' : ''}`}>
-            {workerComparison && explorationMode === 'ultra' ? <><span><i className="legend-worker-a" />Worker A</span><span><i className="legend-worker-b" />Worker B</span></> :
+            {workerComparison && explorationMode === 'ultra' ? <><span><i className="legend-worker-a" />Model A</span><span><i className="legend-worker-b" />Model B</span></> :
               (Object.entries(reviewStatusLabels) as [keyof typeof reviewStatusLabels, string][]).map(([statusKey, label]) => <span key={statusKey}><i className={`legend-${statusKey}`} />{label}</span>)}
           </div>
         </section>
@@ -2082,7 +2109,7 @@ export default function App() {
       setActiveTabId(existing.id);
       return;
     }
-    const settingsTab: InternalTab = { id: 'settings', title: '模型配置', sessionId: createAnnotationSessionId(), kind: 'settings', annotationTarget: null };
+    const settingsTab: InternalTab = { id: 'settings', title: '设置', sessionId: createAnnotationSessionId(), kind: 'settings', annotationTarget: null };
     setTabs((current) => {
       const fixed = current.filter((tab) => tab.kind !== 'annotation');
       const pages = current.filter((tab) => tab.kind === 'annotation');

@@ -48,8 +48,8 @@ const mergeFields: Array<{ key: MergeField; label: string }> = [
 const statusLabels: Record<DiffStatus, string> = {
   same: '一致',
   changed: '有差异',
-  'worker-a-only': '仅 Worker A',
-  'worker-b-only': '仅 Worker B',
+  'worker-a-only': '仅 Model A',
+  'worker-b-only': '仅 Model B',
 };
 
 function stableValue(value: unknown) {
@@ -122,7 +122,7 @@ function ResultCanvas({ source, imageUrl, rows, selectedKey, includedKeys, scrol
   onSelectAll: () => void;
   onClearAll: () => void;
 }) {
-  const title = source === 'workerA' ? 'Worker A' : 'Worker B';
+  const title = source === 'workerA' ? 'Model A' : 'Model B';
   const stageRef = useRef<HTMLDivElement>(null);
   const [selectionBox, setSelectionBox] = useState<BBox | null>(null);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -221,7 +221,7 @@ function CandidateGroup({ source, rows, selectedKey, includedKeys, onSelect, onT
   onSelectAll: () => void;
   onClearAll: () => void;
 }) {
-  const title = source === 'workerA' ? 'Worker A' : 'Worker B';
+  const title = source === 'workerA' ? 'Model A' : 'Model B';
   const candidates = rows.flatMap((row) => row[source] ? [{ row, candidate: row[source] }] : []);
   return <section className={`comparison-candidate-group comparison-candidate-group-${source}`}>
     <header>
@@ -295,16 +295,16 @@ export function WorkerComparisonPanel({ imageUrl, workerAResult, workerBResult, 
   };
 
   return (
-    <section className="worker-comparison" aria-label="双 Worker 识别结果">
+    <section className="worker-comparison" aria-label="双模型 识别结果">
       <header>
-        <span><strong>双 Worker 识别画面</strong><small>A {workerCounts.workerA} · B {workerCounts.workerB}</small></span>
+        <span><strong>双模型 识别画面</strong><small>A {workerCounts.workerA} · B {workerCounts.workerB}</small></span>
       </header>
 
       <div className="comparison-diff-summary" aria-label="差异汇总">
         <span className="same">一致 {statusCounts.same}</span>
         <span className="changed">变更 {statusCounts.changed}</span>
-        <span className="worker-a-only">仅 Worker A {statusCounts['worker-a-only']}</span>
-        <span className="worker-b-only">仅 Worker B {statusCounts['worker-b-only']}</span>
+        <span className="worker-a-only">仅 Model A {statusCounts['worker-a-only']}</span>
+        <span className="worker-b-only">仅 Model B {statusCounts['worker-b-only']}</span>
       </div>
 
       <div className="comparison-visual-results">

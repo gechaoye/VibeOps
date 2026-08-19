@@ -22,8 +22,8 @@ test('数据库配置热加载 Worker，并只把 Midscene 标签配置同步给
   await modelStore.initialize();
   modelStore.saveGateway({ id: 'workers', label: 'Workers', baseUrl: 'https://workers.example/v1', apiKey: 'worker-secret' });
   modelStore.saveGateway({ id: 'midscene', label: 'Midscene', baseUrl: 'https://midscene.example/v1', apiKey: 'midscene-secret' });
-  modelStore.saveAssignment(assignment('worker_a', 'workers', 'worker-a-v1', 'qwen3-vl'));
-  modelStore.saveAssignment(assignment('worker_b', 'workers', 'worker-b-v1', 'gpt-5'));
+  modelStore.saveAssignment(assignment('model_a', 'workers', 'worker-a-v1', 'qwen3-vl'));
+  modelStore.saveAssignment(assignment('model_b', 'workers', 'worker-b-v1', 'gpt-5'));
   modelStore.saveAssignment(assignment('midscene', 'midscene', 'midscene-v1', 'gpt-5'));
 
   const app = express();
@@ -36,8 +36,8 @@ test('数据库配置热加载 Worker，并只把 Midscene 标签配置同步给
     modelConfigManager: { clearModelConfigMap() { clearCount += 1; } },
     async unfreezePageContext() {},
     async freezePageContext() {
-      assert.equal(getModelRuntime('worker_b').modelName, expectedWorkerB);
-      assert.equal(getModelRuntime('worker_a').modelName, 'worker-a-v1');
+      assert.equal(getModelRuntime('model_b').modelName, expectedWorkerB);
+      assert.equal(getModelRuntime('model_a').modelName, 'worker-a-v1');
       assert.equal(process.env.MIDSCENE_MODEL_NAME, expectedMidscene.modelName);
       assert.equal(process.env.MIDSCENE_MODEL_BASE_URL, 'https://midscene.example/v1');
       assert.equal(process.env.MIDSCENE_MODEL_API_KEY, 'midscene-secret');
@@ -68,7 +68,7 @@ test('数据库配置热加载 Worker，并只把 Midscene 标签配置同步给
     assert.equal(clearCount, 1, '数据库配置未变化时不应清理模型缓存');
 
     expectedWorkerB = 'worker-b-v2';
-    modelStore.saveAssignment(assignment('worker_b', 'workers', expectedWorkerB, 'gpt-5'));
+    modelStore.saveAssignment(assignment('model_b', 'workers', expectedWorkerB, 'gpt-5'));
     assert.equal((await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' })).status, 200);
     assert.equal(clearCount, 2);
     assert.equal(process.env.MIDSCENE_MODEL_NAME, 'midscene-v1', 'Worker 变化不应改变 Midscene 指派');

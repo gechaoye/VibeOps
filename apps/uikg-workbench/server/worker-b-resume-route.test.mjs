@@ -65,7 +65,7 @@ test('Worker B 手动中断后从输出断点继续', async () => {
   });
   modelServer.listen(0, '127.0.0.1');
   await once(modelServer, 'listening');
-  setModelRuntime('worker_b', {
+  setModelRuntime('model_b', {
     baseUrl: `http://127.0.0.1:${modelServer.address().port}/v1`, apiKey: 'test-key', modelName: 'test-worker-b',
     modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'medium',
   });
@@ -146,6 +146,6 @@ test('Worker B 手动中断后从输出断点继续', async () => {
     modelServer.closeAllConnections();
     await new Promise((resolve) => modelServer.close(resolve));
     await rm(tempRoot, { recursive: true, force: true });
-    clearModelRuntime('worker_b');
+    clearModelRuntime('model_b');
   }
 });

@@ -3,8 +3,10 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 import dotenv from 'dotenv';
 
-const TARGETS = ['worker_a', 'worker_b', 'midscene'];
+const TARGETS = ['model_a', 'model_b', 'midscene'];
 const MIGRATION_KEY = 'legacy_env_model_settings_v1';
+const DEFAULT_GATEWAY_SNAPSHOT_KEY = 'default_gateway_snapshot_v1';
+const WORKBENCH_PREFERENCES_KEY = 'workbench_preferences_v1';
 
 function normalizedBaseUrl(value) {
   return String(value || '').trim().replace(/\/+$/, '').toLowerCase();
@@ -67,7 +69,7 @@ function legacyGateways(values) {
 }
 
 function legacyAssignment(values, target, gateways) {
-  const worker = target === 'worker_b' ? 'B' : 'A';
+  const worker = target === 'model_b' ? 'B' : 'A';
   const prefix = `MIDSCENE_WORKER_${worker}_MODEL`;
   const configuredGateway = String(values[`${prefix}_GATEWAY`] || '');
   const baseUrl = normalizedBaseUrl(values[`${prefix}_BASE_URL`]);
@@ -107,7 +109,7 @@ export class ModelSettingsStore {
         updated_at TEXT NOT NULL
       );
       CREATE TABLE IF NOT EXISTS model_assignments (
-        target TEXT PRIMARY KEY CHECK (target IN ('worker_a', 'worker_b', 'midscene')),
+        target TEXT PRIMARY KEY CHECK (target IN ('model_a', 'model_b', 'midscene')),
         gateway_id TEXT NOT NULL REFERENCES model_gateways(id) ON UPDATE CASCADE ON DELETE RESTRICT,
         model_name TEXT NOT NULL,
         model_family TEXT NOT NULL,
@@ -121,13 +123,87 @@ export class ModelSettingsStore {
         value TEXT NOT NULL
       );
     `);
+    this.migrateModelAssignmentTargets();
     await chmod(this.databasePath, 0o600);
     if (legacyEnvPath) await this.migrateLegacyEnvironment(legacyEnvPath);
+    this.ensureDefaultGatewaySnapshot();
   }
 
   ensureDatabase() {
     if (!this.database) throw new Error('模型配置数据库尚未初始化');
     return this.database;
+  }
+
+  migrateModelAssignmentTargets() {
+    const database = this.ensureDatabase();
+    const table = database.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'model_assignments'").get();
+    if (!table?.sql?.includes("'worker_a'")) return false;
+    database.transaction(() => {
+      database.exec(`
+        ALTER TABLE model_assignments RENAME TO model_assignments_legacy_targets;
+        CREATE TABLE model_assignments (
+          target TEXT PRIMARY KEY CHECK (target IN ('model_a', 'model_b', 'midscene')),
+          gateway_id TEXT NOT NULL REFERENCES model_gateways(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+          model_name TEXT NOT NULL,
+          model_family TEXT NOT NULL,
+          timeout INTEGER NOT NULL,
+          temperature REAL NOT NULL,
+          reasoning_effort TEXT NOT NULL CHECK (reasoning_effort IN ('low', 'medium', 'high')),
+          updated_at TEXT NOT NULL
+        );
+        INSERT INTO model_assignments (target, gateway_id, model_name, model_family, timeout, temperature, reasoning_effort, updated_at)
+        SELECT CASE target WHEN 'worker_a' THEN 'model_a' WHEN 'worker_b' THEN 'model_b' ELSE target END,
+          gateway_id, model_name, model_family, timeout, temperature, reasoning_effort, updated_at
+        FROM model_assignments_legacy_targets;
+        DROP TABLE model_assignments_legacy_targets;
+      `);
+    })();
+    return true;
+  }
+
+  getMeta(key) {
+    const row = this.ensureDatabase().prepare('SELECT value FROM model_settings_meta WHERE key = ?').get(key);
+    return row?.value || null;
+  }
+
+  setMeta(key, value) {
+    this.ensureDatabase().prepare('INSERT OR REPLACE INTO model_settings_meta (key, value) VALUES (?, ?)').run(key, String(value));
+  }
+
+  ensureDefaultGatewaySnapshot() {
+    if (this.getMeta(DEFAULT_GATEWAY_SNAPSHOT_KEY)) return false;
+    const gateway = this.getGateway('zto-newapi', { includeApiKey: true });
+    if (!gateway) return false;
+    this.setMeta(DEFAULT_GATEWAY_SNAPSHOT_KEY, JSON.stringify(gateway));
+    return true;
+  }
+
+  getDefaultGatewaySnapshot() {
+    const value = this.getMeta(DEFAULT_GATEWAY_SNAPSHOT_KEY);
+    if (!value) return null;
+    try { return JSON.parse(value); } catch { return null; }
+  }
+
+  resetGatewayToDefault(id) {
+    if (id !== 'zto-newapi') return null;
+    const snapshot = this.getDefaultGatewaySnapshot();
+    if (!snapshot) return null;
+    return this.saveGateway(snapshot);
+  }
+
+  getWorkbenchPreferences() {
+    const value = this.getMeta(WORKBENCH_PREFERENCES_KEY);
+    if (!value) return { mode: 'ultra' };
+    try {
+      const parsed = JSON.parse(value);
+      return { mode: ['manual', 'ultra', 'auto'].includes(parsed?.mode) ? parsed.mode : 'ultra' };
+    } catch { return { mode: 'ultra' }; }
+  }
+
+  saveWorkbenchPreferences(preferences) {
+    const next = { ...this.getWorkbenchPreferences(), ...preferences };
+    this.setMeta(WORKBENCH_PREFERENCES_KEY, JSON.stringify(next));
+    return next;
   }
 
   async migrateLegacyEnvironment(envPath) {
@@ -138,9 +214,9 @@ export class ModelSettingsStore {
       if (error?.code !== 'ENOENT') throw error;
     }
     const gateways = legacyGateways(values);
-    const workerA = legacyAssignment(values, 'worker_a', gateways);
-    const workerB = legacyAssignment(values, 'worker_b', gateways);
-    const assignments = [workerA, workerB, workerA ? { ...workerA, target: 'midscene' } : null].filter(Boolean);
+    const modelA = legacyAssignment(values, 'model_a', gateways);
+    const modelB = legacyAssignment(values, 'model_b', gateways);
+    const assignments = [modelA, modelB, modelA ? { ...modelA, target: 'midscene' } : null].filter(Boolean);
     const migrate = database.transaction(() => {
       for (const gateway of gateways) this.saveGateway(gateway);
       for (const assignment of assignments) this.saveAssignment(assignment);
@@ -187,11 +263,19 @@ export class ModelSettingsStore {
         api_key = CASE WHEN excluded.api_key = '' THEN model_gateways.api_key ELSE excluded.api_key END,
         updated_at = excluded.updated_at
     `).run({ ...gateway, apiKey: gateway.apiKey || '', now });
+    if (gateway.id === 'zto-newapi' && !this.getMeta(DEFAULT_GATEWAY_SNAPSHOT_KEY)) {
+      const saved = this.getGateway(gateway.id, { includeApiKey: true });
+      if (saved) this.setMeta(DEFAULT_GATEWAY_SNAPSHOT_KEY, JSON.stringify(saved));
+    }
     return this.getGateway(gateway.id, { includeApiKey: true });
   }
 
   deleteGateway(id) {
-    return this.ensureDatabase().prepare('DELETE FROM model_gateways WHERE id = ?').run(id).changes > 0;
+    const database = this.ensureDatabase();
+    return database.transaction(() => {
+      database.prepare('DELETE FROM model_assignments WHERE gateway_id = ?').run(id);
+      return database.prepare('DELETE FROM model_gateways WHERE id = ?').run(id).changes > 0;
+    })();
   }
 
   listAssignments() {

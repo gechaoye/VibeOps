@@ -109,7 +109,7 @@ function useStreamFollow(content: string, enabled: boolean) {
 function displayModelError(message?: string) {
   if (!message) return '';
   if (message.includes('524 status code') || message.includes('Error 524')) {
-    return 'Worker B 模型响应超时（524）：上游服务在代理时限内没有开始返回内容，请重新识别';
+    return 'Model B 模型响应超时（524）：上游服务在代理时限内没有开始返回内容，请重新识别';
   }
   return message;
 }
@@ -167,7 +167,7 @@ export function WorkerProgressPanel({ activity, modelName, workerBModel, ultraMo
         <header className="worker-progress-header" onPointerDown={startDragging} onPointerMove={dragWindow} onPointerUp={stopDragging} onPointerCancel={stopDragging}>
           <div>
             <strong>{ultraMode ? 'Ultra 模式' : 'Manual 模式'}</strong>
-            <span className={`analysis-status ${activity.status}`}>{statusLabels[activity.status]} · {ultraMode ? `${modelName || 'Worker A 未配置'} + ${workerBModel || 'Worker B 未配置'}` : workerBActive ? workerBModel || 'Worker B 未配置' : modelName || 'Worker A 未配置'}</span>
+            <span className={`analysis-status ${activity.status}`}>{statusLabels[activity.status]} · {ultraMode ? `${modelName || 'Model A 未配置'} + ${workerBModel || 'Model B 未配置'}` : workerBActive ? workerBModel || 'Model B 未配置' : modelName || 'Model A 未配置'}</span>
           </div>
           <div className="analysis-header-actions">
             <button type="button" className={showHistory ? 'icon-button active' : 'icon-button'} title="页面识别历史" onClick={() => setShowHistory((visible) => !visible)}><History size={16} /><span>{sessions.length}</span></button>
@@ -177,8 +177,8 @@ export function WorkerProgressPanel({ activity, modelName, workerBModel, ultraMo
 
         {ultraMode && <div className="worker-pipeline" aria-label="Ultra 并行识别流程">
           <div className="worker-pipeline-track">
-            <span className={`pipeline-step ${workerAStepState}`}><i><ScanSearch size={16} /></i><span><small>并发识别</small><strong>Worker A</strong><em>{modelName || '未配置'}</em></span></span>
-            <span className={`pipeline-step ${workerBStepState}`}><i><Bot size={16} /></i><span><small>并发识别</small><strong>Worker B</strong><em>{workerBModel || '未配置'}</em></span></span>
+            <span className={`pipeline-step ${workerAStepState}`}><i><ScanSearch size={16} /></i><span><small>并发识别</small><strong>Model A</strong><em>{modelName || '未配置'}</em></span></span>
+            <span className={`pipeline-step ${workerBStepState}`}><i><Bot size={16} /></i><span><small>并发识别</small><strong>Model B</strong><em>{workerBModel || '未配置'}</em></span></span>
           </div>
         </div>}
 
@@ -193,25 +193,25 @@ export function WorkerProgressPanel({ activity, modelName, workerBModel, ultraMo
             {sortedSessions.length === 0 ? <p>暂无页面识别历史</p> : <>
               <div className="history-worker-columns">
                 {(ultraMode ? (['worker_a', 'worker_b'] as const) : [historySession?.kind || 'worker_a']).map((kind) => <section key={kind} className="history-worker-column">
-                  <header><strong>{kind === 'worker_a' ? 'Worker A' : 'Worker B'}</strong><span>{sortedSessions.filter((session) => session.kind === kind).length} 条</span></header>
+                  <header><strong>{kind === 'worker_a' ? 'Model A' : 'Model B'}</strong><span>{sortedSessions.filter((session) => session.kind === kind).length} 条</span></header>
                   <div>{sortedSessions.filter((session) => session.kind === kind).map((session) => <button type="button" key={session.id} className={`history-session-item ${session.id === selectedHistoryId ? 'selected' : ''}`} onClick={() => setSelectedHistoryId(session.id)}><i className={session.status} /><span><strong>{new Date(session.startedAt).toLocaleString('zh-CN')}</strong><small>{session.model || '未配置模型'} · {session.status === 'completed' ? '成功' : session.status === 'failed' ? '失败' : session.status === 'cancelled' ? '已中断' : '运行中'}</small></span>{acceptedSessionId === session.id && <Check className="history-accepted" size={15} aria-label="最终采用" />}</button>)}</div>
                 </section>)}
               </div>
-              {historySession && <article className="history-session-output"><header><strong>{historySession.kind === 'worker_a' ? 'Worker A' : 'Worker B'} 输出</strong>{acceptedSessionId === historySession.id && <span><Check size={13} />最终采用</span>}</header><div className="model-markdown-scroll"><ModelMarkdown content={historySession.outputContent || '没有可展示的模型输出'} label="页面识别历史模型输出" /></div></article>}
+              {historySession && <article className="history-session-output"><header><strong>{historySession.kind === 'worker_a' ? 'Model A' : 'Model B'} 输出</strong>{acceptedSessionId === historySession.id && <span><Check size={13} />最终采用</span>}</header><div className="model-markdown-scroll"><ModelMarkdown content={historySession.outputContent || '没有可展示的模型输出'} label="页面识别历史模型输出" /></div></article>}
             </>}
           </section>}
 
           {!showHistory && ultraMode ? <div className="worker-progress-streams ultra-output-layout">
             <article className="worker-output-stream expanded">
-              <div className="worker-stream-toggle"><strong>Worker A 输出</strong><span>{activity.workerAOutputContent ? '流式更新' : '等待输出'}</span></div>
-              <div className="worker-stream-scroll"><div ref={workerAOutputStream.elementRef} className="model-markdown-scroll" onScroll={workerAOutputStream.trackScroll}><ModelMarkdown content={activity.workerAOutputContent || (workerAStatus === 'running' || workerAStatus === 'cancelling' ? '等待 Worker A 输出…' : '没有可展示的 Worker A 输出')} label="Worker A 输出流" /></div>{!workerAOutputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={workerAOutputStream.scrollToBottom}><ArrowDown size={14} /></button>}</div>
+              <div className="worker-stream-toggle"><strong>Model A 输出</strong><span>{activity.workerAOutputContent ? '流式更新' : '等待输出'}</span></div>
+              <div className="worker-stream-scroll"><div ref={workerAOutputStream.elementRef} className="model-markdown-scroll" onScroll={workerAOutputStream.trackScroll}><ModelMarkdown content={activity.workerAOutputContent || (workerAStatus === 'running' || workerAStatus === 'cancelling' ? '等待 Model A 输出…' : '没有可展示的 Model A 输出')} label="Model A 输出流" /></div>{!workerAOutputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={workerAOutputStream.scrollToBottom}><ArrowDown size={14} /></button>}</div>
               <div className="worker-card-actions">
                 {workerAStatus === 'running' || workerAStatus === 'cancelling' ? <button type="button" className="button danger-button" disabled={workerAStatus === 'cancelling' || workerControlBusy === 'worker-a'} onClick={() => onCancelWorker?.('worker_a')}><Square size={12} fill="currentColor" />{workerAStatus === 'cancelling' ? '中断中' : '中断'}</button> : workerAStatus === 'paused' && activity.workerAResumeSessionId ? <button type="button" className="button retry-button" disabled={workerControlBusy === 'worker-a'} onClick={() => onResumeWorker?.('worker_a')}><RefreshCw size={12} />从断点重试</button> : <button type="button" className="button retry-button" disabled={workerControlBusy === 'worker-a'} onClick={() => onRetryWorker?.('worker_a')}><RefreshCw size={12} />重新识别</button>}
               </div>
             </article>
             <article className="worker-output-stream expanded">
-              <div className="worker-stream-toggle"><strong>Worker B 输出</strong><span>{activity.outputContent ? '流式更新' : '等待输出'}</span></div>
-              <div className="worker-stream-scroll"><div ref={outputStream.elementRef} className="model-markdown-scroll" onScroll={outputStream.trackScroll}><ModelMarkdown content={activity.outputContent || (workerBStatus === 'running' || workerBStatus === 'cancelling' ? '等待 Worker B 输出…' : '没有可展示的 Worker B 输出')} label="Worker B 输出流" /></div>{!outputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={outputStream.scrollToBottom}><ArrowDown size={14} /></button>}</div>
+              <div className="worker-stream-toggle"><strong>Model B 输出</strong><span>{activity.outputContent ? '流式更新' : '等待输出'}</span></div>
+              <div className="worker-stream-scroll"><div ref={outputStream.elementRef} className="model-markdown-scroll" onScroll={outputStream.trackScroll}><ModelMarkdown content={activity.outputContent || (workerBStatus === 'running' || workerBStatus === 'cancelling' ? '等待 Model B 输出…' : '没有可展示的 Model B 输出')} label="Model B 输出流" /></div>{!outputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={outputStream.scrollToBottom}><ArrowDown size={14} /></button>}</div>
               <div className="worker-card-actions">
                 {workerBStatus === 'running' || workerBStatus === 'cancelling' ? <button type="button" className="button danger-button" disabled={workerBStatus === 'cancelling' || workerControlBusy === 'worker-b'} onClick={() => onCancelWorker?.('worker_b')}><Square size={12} fill="currentColor" />{workerBStatus === 'cancelling' ? '中断中' : '中断'}</button> : workerBStatus === 'paused' && activity.workerBResumeSessionId ? <button type="button" className="button retry-button" disabled={workerControlBusy === 'worker-b'} onClick={() => onResumeWorker?.('worker_b')}><RefreshCw size={12} />从断点重试</button> : <button type="button" className="button retry-button" disabled={workerControlBusy === 'worker-b'} onClick={() => onRetryWorker?.('worker_b')}><RefreshCw size={12} />重新识别</button>}
               </div>
@@ -220,7 +220,7 @@ export function WorkerProgressPanel({ activity, modelName, workerBModel, ultraMo
             {hasReasoning && <article className={`worker-reasoning-stream ${reasoningExpanded ? 'expanded' : 'collapsed'}`}>
               <button type="button" className="worker-stream-toggle" aria-expanded={reasoningExpanded} onClick={() => setReasoningExpanded((expanded) => !expanded)}>
                 {reasoningExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                <strong>{ultraMode ? 'Worker B 思考' : '模型思考'}</strong>
+                <strong>{ultraMode ? 'Model B 思考' : '模型思考'}</strong>
                 <span>{reasoningExpanded ? '点击收起' : '点击展开'}</span>
               </button>
               {reasoningExpanded && <div className="worker-stream-scroll">
@@ -231,7 +231,7 @@ export function WorkerProgressPanel({ activity, modelName, workerBModel, ultraMo
             <article className={`worker-output-stream ${outputExpanded ? 'expanded' : 'collapsed'}`}>
               <button type="button" className="worker-stream-toggle" aria-expanded={outputExpanded} onClick={() => setOutputExpanded((expanded) => !expanded)}>
                 {outputExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                <strong>{ultraMode ? 'Worker B 输出' : '模型输出'}</strong>
+                <strong>{ultraMode ? 'Model B 输出' : '模型输出'}</strong>
                 <span>{outputExpanded ? '点击收起' : '点击展开'}</span>
               </button>
               {outputExpanded && <div className="worker-stream-scroll">
@@ -244,9 +244,9 @@ export function WorkerProgressPanel({ activity, modelName, workerBModel, ultraMo
           {activity.errorMessage && <div className="worker-progress-error"><CircleAlert size={15} /><span>{displayModelError(activity.errorMessage)}</span></div>}
         </div>
         <footer className="worker-progress-footer">
-          <span>{activity.status === 'completed' ? '识别完成，可确认结果或重新识别' : activity.status === 'cancelled' ? '半截结果未写入草稿' : activity.status === 'paused' ? activity.resumeKind === 'worker_b' ? '已保存 Worker B 输出断点' : `已保留 ${activity.completedCandidates || 0} 个候选的断点` : workerBActive ? 'Worker A 结果已保留' : ''}</span>
+          <span>{activity.status === 'completed' ? '识别完成，可确认结果或重新识别' : activity.status === 'cancelled' ? '半截结果未写入草稿' : activity.status === 'paused' ? activity.resumeKind === 'worker_b' ? '已保存 Model B 输出断点' : `已保留 ${activity.completedCandidates || 0} 个候选的断点` : workerBActive ? 'Model A 结果已保留' : ''}</span>
           <div className="worker-progress-actions">
-            {active ? <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} fill="currentColor" />{activity.status === 'cancelling' ? '正在中断' : ultraMode ? '中断双 Worker' : workerBActive ? '中断 Worker B' : '中断 Worker A'}</button> : <>
+            {active ? <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} fill="currentColor" />{activity.status === 'cancelling' ? '正在中断' : ultraMode ? '中断双模型' : workerBActive ? '中断 Model B' : '中断 Model A'}</button> : <>
               {activity.status === 'paused' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />从断点重试</button>}
               {activity.status === 'error' && <button type="button" className="button button-primary retry-button" autoFocus onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
               {activity.status === 'completed' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />重新识别</button>}

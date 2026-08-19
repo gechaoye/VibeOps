@@ -764,7 +764,7 @@ export function validateDraft(draft) {
     }
 
     if (!ELEMENT_TYPES.includes(element.controlType)) {
-      issues.push({ level: 'error', code: 'control_type_required', elementId: element.id, message: '元素类型未识别，请由 Worker B 或人工补齐' });
+      issues.push({ level: 'error', code: 'control_type_required', elementId: element.id, message: '元素类型未识别，请由 Model B 或人工补齐' });
     }
 
     const box = element.bbox;

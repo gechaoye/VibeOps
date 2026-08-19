@@ -1,4 +1,4 @@
-import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelTarget, PageUploadTask, ReasoningEffort, WorkerAvailableModels, WorkerElementMergeSelection, WorkerModelSettings, WorkerResult, WorkerResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelTarget, PageUploadTask, ReasoningEffort, WorkbenchMode, AvailableModels, WorkerElementMergeSelection, ModelSettingsData, WorkerResult, WorkerResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -110,8 +110,8 @@ async function consumeWorkerStream(
 export const workbenchApi = {
   status: (workspaceSessionId?: string) => request<WorkbenchStatus>(`/status${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
   knowledgeGraph: (appKey: string) => request<CanonicalGraph>(`/knowledge-graph?appKey=${encodeURIComponent(appKey)}`),
-  modelSettings: () => request<WorkerModelSettings>('/model-settings'),
-  availableModels: () => request<WorkerAvailableModels>('/model-settings/models'),
+  modelSettings: () => request<ModelSettingsData>('/model-settings'),
+  availableModels: () => request<AvailableModels>('/model-settings/models'),
   saveModelSettings: (config: {
     target: ModelTarget;
     gatewayId: string;
@@ -120,9 +120,13 @@ export const workbenchApi = {
     timeout: number;
     temperature: number;
     reasoningEffort: ReasoningEffort;
-  }) => request<WorkerModelSettings>('/model-settings', { method: 'PUT', body: JSON.stringify(config) }),
-  saveModelGateway: (gateway: { id: string; label: string; baseUrl: string; apiKey: string }) => request<WorkerModelSettings>(`/model-settings/gateways/${encodeURIComponent(gateway.id)}`, { method: 'PUT', body: JSON.stringify(gateway) }),
-  deleteModelGateway: (gatewayId: string) => request<WorkerModelSettings & { deleted: true; gatewayId: string }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}`, { method: 'DELETE' }),
+  }) => request<ModelSettingsData>('/model-settings', { method: 'PUT', body: JSON.stringify(config) }),
+  createModelGateway: (gateway: { label: string; baseUrl: string; apiKey: string }) => request<ModelSettingsData>('/model-settings/gateways', { method: 'POST', body: JSON.stringify(gateway) }),
+  saveModelGateway: (gatewayId: string, gateway: { label: string; baseUrl: string; apiKey: string }) => request<ModelSettingsData>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}`, { method: 'PUT', body: JSON.stringify(gateway) }),
+  resetDefaultModelGateway: () => request<ModelSettingsData>('/model-settings/gateways/zto-newapi/reset', { method: 'POST' }),
+  testModelGateway: (gatewayId: string) => request<{ gatewayId: string; ok: boolean; latencyMs: number; modelCount: number }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}/test`, { method: 'POST' }),
+  saveModelMode: (mode: WorkbenchMode) => request<ModelSettingsData>('/model-settings/mode', { method: 'PUT', body: JSON.stringify({ mode }) }),
+  deleteModelGateway: (gatewayId: string) => request<ModelSettingsData & { deleted: true; gatewayId: string; clearedTargets: ModelTarget[] }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}`, { method: 'DELETE' }),
   sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),
   draft: () => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft'),
   saveDraft: (draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft', { method: 'PUT', body: JSON.stringify(draft) }),

@@ -1,7 +1,8 @@
+import { randomUUID } from 'node:crypto';
 import { getModelRuntime } from './model-runtime.mjs';
 import { modelFamilyForName, ZTO_NEWAPI_VISIBLE_MODELS } from './model-compatibility.mjs';
 
-export const MODEL_TARGETS = ['worker_a', 'worker_b', 'midscene'];
+export const MODEL_TARGETS = ['model_a', 'model_b', 'midscene'];
 export const DEFAULT_MODEL_GATEWAY_ID = 'zto-newapi';
 export const MODEL_FAMILIES = [
   'gpt-5',
@@ -19,6 +20,7 @@ export const MODEL_FAMILIES = [
   'xiaomi-mimo',
 ];
 export const REASONING_EFFORTS = ['low', 'medium', 'high'];
+export const WORKBENCH_MODES = ['manual', 'ultra', 'auto'];
 
 const DASHSCOPE_VISIBLE_MODELS = new Set([
   'qwen3.7-flash',
@@ -46,6 +48,7 @@ function publicGateway(gateway) {
     kind: gateway.id === DEFAULT_MODEL_GATEWAY_ID ? 'default' : 'custom',
     apiKeyConfigured: Boolean(apiKey),
     apiKeyHint: apiKeyHint(apiKey),
+    defaultValueAvailable: gateway.id === DEFAULT_MODEL_GATEWAY_ID,
   };
 }
 
@@ -64,6 +67,18 @@ export function resolveTargetModelConfig(modelStore, target) {
 
 export function loadModelGateways(modelStore) {
   return modelStore.listGateways({ includeApiKey: true }).map(publicGateway);
+}
+
+export function loadWorkbenchPreferences(modelStore) {
+  return {
+    mode: modelStore.getWorkbenchPreferences?.().mode || 'ultra',
+  };
+}
+
+export function saveWorkbenchMode(modelStore, mode) {
+  const value = String(mode || '').trim().toLowerCase();
+  if (!WORKBENCH_MODES.includes(value)) throw settingsError('请选择受支持的工作模式');
+  return modelStore.saveWorkbenchPreferences({ mode: value });
 }
 
 export function loadTargetModelSettings(modelStore, target) {
@@ -165,6 +180,15 @@ export async function fetchAvailableModelsByGateway(modelStore, request = fetch)
   };
 }
 
+export async function testModelGateway(modelStore, gatewayId, request = fetch) {
+  const id = String(gatewayId || '').trim().toLowerCase();
+  const gateway = modelStore.getGateway(id, { includeApiKey: true });
+  if (!gateway) throw settingsError('模型网关不存在', 404);
+  const startedAt = Date.now();
+  const models = await fetchGatewayModels(gateway, request);
+  return { gatewayId: id, ok: true, latencyMs: Math.max(0, Date.now() - startedAt), modelCount: models.length };
+}
+
 function normalizePayload(payload) {
   const target = String(payload?.target || '').trim();
   const gatewayId = String(payload?.gatewayId || '').trim();
@@ -194,11 +218,12 @@ export function saveTargetModelSettings(modelStore, payload) {
 }
 
 export function saveModelGateway(modelStore, payload) {
-  const id = String(payload?.id || '').trim().toLowerCase();
+  const requestedId = String(payload?.id || '').trim().toLowerCase();
+  const id = requestedId || `gateway-${randomUUID()}`;
   const label = String(payload?.label || '').trim();
   const baseUrl = String(payload?.baseUrl || '').trim().replace(/\/+$/, '');
   const apiKey = String(payload?.apiKey || '').trim();
-  if (!id || !/^[a-z0-9][a-z0-9-]*$/.test(id)) throw settingsError('网关 ID 仅支持小写字母、数字和连字符');
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(id)) throw settingsError('网关 ID 无效');
   if (!label) throw settingsError('请输入网关名称');
   let parsedUrl;
   try { parsedUrl = new URL(baseUrl); } catch { throw settingsError('网关 Base URL 不是有效 URL'); }
@@ -206,7 +231,17 @@ export function saveModelGateway(modelStore, payload) {
   if (apiKey && /[\r\n]/.test(apiKey)) throw settingsError('API Key 格式无效');
   const existing = modelStore.getGateway(id, { includeApiKey: true });
   if (!existing && !apiKey) throw settingsError('新增网关时必须填写 API Key');
+  if (!existing) {
+    const customCount = modelStore.listGateways().filter((gateway) => gateway.id !== DEFAULT_MODEL_GATEWAY_ID).length;
+    if (customCount >= 5) throw settingsError('最多只能添加 5 个自定义网关', 409, { limit: 5 });
+  }
   return publicGateway(modelStore.saveGateway({ id, label, baseUrl, apiKey }));
+}
+
+export function resetDefaultModelGateway(modelStore) {
+  const restored = modelStore.resetGatewayToDefault?.(DEFAULT_MODEL_GATEWAY_ID);
+  if (!restored) throw settingsError('默认网关尚未保存可恢复的默认值', 409);
+  return publicGateway(restored);
 }
 
 export function deleteModelGateway(modelStore, gatewayId) {
@@ -214,14 +249,9 @@ export function deleteModelGateway(modelStore, gatewayId) {
   if (!id || !/^[a-z0-9][a-z0-9-]*$/.test(id)) throw settingsError('模型网关 ID 无效');
   const gateway = modelStore.getGateway(id);
   if (!gateway) throw settingsError('模型网关不存在', 404);
-  if (id === DEFAULT_MODEL_GATEWAY_ID) throw settingsError('默认网关不允许删除', 409, { gatewayId: id });
   const targets = modelStore.listAssignments()
     .filter((assignment) => assignment.gatewayId === id)
     .map((assignment) => assignment.target);
-  if (targets.length > 0) {
-    const labels = { worker_a: 'Worker A', worker_b: 'Worker B', midscene: 'Midscene' };
-    throw settingsError(`请先为 ${targets.map((target) => labels[target] || target).join('、')} 指派其他网关`, 409, { targets });
-  }
   modelStore.deleteGateway(id);
-  return { deleted: true, gatewayId: id };
+  return { deleted: true, gatewayId: id, clearedTargets: targets };
 }
