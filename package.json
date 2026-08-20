@@ -11,6 +11,7 @@
     "typecheck": "pnpm --filter uikg-workbench typecheck",
     "test": "pnpm --filter uikg-workbench test",
     "graph:validate": "python knowledge_graph/tools/validate_normalized_zto_graph.py --root knowledge_graph",
+    "graph:vibeops:validate": "python knowledge_graph/tools/validate_vibeops_project_graph.py --root knowledge_graph",
     "graph:query": "node knowledge_graph/tools/query_navigation_paths.mjs"
   }
 }

@@ -303,8 +303,8 @@ export class GraphWorkflow {
   async updateElementCard(obsidianRoot, element) {
     const existing = await this.findCardById(obsidianRoot, element.id, '元素');
     const relative = existing || path.join('元素', ...element.featurePath.map(safeSegment), `${safeSegment(element.label)}.md`);
-    const observations = element.observations.map((observation) => `### \`${observation.frameRef}\`\n\n![[${observation.redboxRef}|640]]\n\n- rect: \`${JSON.stringify(observation.locator.rect)}\`\n- 几何状态：\`${observation.locator.status}\``).join('\n\n');
-    const body = `---\ntype: element\nid: ${element.id}\nkey: ${element.key}\napplication: [[中通宝盒-知识图谱首页]]\nfeature_path: ${JSON.stringify(element.featurePath)}\nstatus: ${element.status}\n---\n\n# ${element.label}\n\n${element.summary}\n\n[[中通宝盒-知识图谱首页|返回知识图谱首页]]\n\n## 归属\n\n- owner: \`${element.owner.kind}:${element.owner.ref}\`\n- parent: \`${element.parentElementRef || '无'}\`\n- children: ${element.childElementRefs?.length || 0}\n\n## 动作与边界\n\n- 元素类型：\`${element.controlType}\`\n- 元素动作：${element.capabilities.join('、')}\n- 动作效果：${element.actionEffects.map((item) => `${item.action}=${item.effect}`).join('；')}\n- 可操作：${element.interactionBoundary.actionable ? '是' : '否'}\n\n## 信息来源\n\n- Model A 模型：\`${element.provenance.model || 'unknown'}\`\n- 原始证据：\`${element.observations.at(-1).rawEvidenceRef || '无'}\`\n\n## 元素实例\n\n${observations}\n`;
+    const observations = element.observations.map((observation) => `### \`${observation.frameRef}\`\n\n![[${observation.redboxRef}|640]]\n\n- rect: \`${JSON.stringify(observation.locator.rect)}\`\n- 宫格定位：\`${observation.locator.gridRegion.columns} × ${observation.locator.gridRegion.rows} / 区域 ${observation.locator.gridRegion.index}\`\n- 几何状态：\`${observation.locator.status}\``).join('\n\n');
+    const body = `---\ntype: element\nid: ${element.id}\nkey: ${element.key}\napplication: [[中通宝盒-知识图谱首页]]\nfeature_path: ${JSON.stringify(element.featurePath)}\nstatus: ${element.status}\n---\n\n# ${element.label}\n\n${element.summary}\n\n[[中通宝盒-知识图谱首页|返回知识图谱首页]]\n\n## 归属\n\n- owner: \`${element.owner.kind}:${element.owner.ref}\`\n- parent: \`${element.parentElementRef || '无'}\`\n- children: ${element.childElementRefs?.length || 0}\n\n## 展示条件\n\n${element.displayCondition || '无特殊展示条件'}\n\n## 动作与边界\n\n- 元素类型：\`${element.elementType}\`\n- 元素动作：${element.capabilities.join('、')}\n- 动作效果：${element.actionEffects.map((item) => `${item.action}=${item.effect}`).join('；')}\n- 可操作：${element.interactionBoundary.actionable ? '是' : '否'}\n\n## 信息来源\n\n- AI 页面识别模型：\`${element.provenance.model || 'unknown'}\`\n- 原始证据：\`${element.observations.at(-1).rawEvidenceRef || '无'}\`\n\n## 元素实例\n\n${observations}\n`;
     await mkdir(path.dirname(path.join(obsidianRoot, relative)), { recursive: true });
     await writeFile(path.join(obsidianRoot, relative), body, 'utf8');
     return normalizePath(relative);
@@ -359,7 +359,7 @@ export class GraphWorkflow {
         stateProperties: { summary: draftPage.stateSummary },
         screenshotRef: frameAsset.explorationRef,
         rawEvidenceRef: normalizePath(path.join('explorations', evidence.explorationId)),
-        evidenceStatus: 'worker_human_reviewed',
+        evidenceStatus: 'ai_human_confirmed',
       };
       const page = {
         ...(existing?.value || {}),
@@ -369,6 +369,8 @@ export class GraphWorkflow {
         key,
         label: draftPage.name,
         applicationRef: application.id,
+        functionRef: draftPage.functionRef || null,
+        implementationType: draftPage.implementationType || 'unknown',
         featurePath: draftPage.featurePath.slice(0, 3),
         surfaceType: draftPage.surfaceType || 'page',
         status: 'workbench_reviewed_incomplete',
@@ -390,12 +392,12 @@ export class GraphWorkflow {
         outboundAuthorityContractRefs: [...(existing?.value.outboundAuthorityContractRefs || [])],
         observations: [...(existing?.value.observations || []).filter((item) => item.frameRef !== lastFrameId), observation],
         provenance: {
-          sourceType: 'workbench_human_reviewed_worker',
+          sourceType: 'workbench_ai_human_confirmed',
           materializationSpec: normalizePath(path.join('explorations', evidence.explorationId, 'scope.yaml')),
           recordedAt: new Date().toISOString(),
           reviewedBy: 'workbench_user',
           limitations: ['Recursive exploration completion is not asserted by Workbench staging.'],
-          model: draft.lastWorkerModel || null,
+          model: draft.lastAiModel || null,
         },
       };
       pageRecords.set(draftPage.id, page);
@@ -441,6 +443,11 @@ export class GraphWorkflow {
         locator: {
           rect,
           center: [rect.left + rect.width / 2, rect.top + rect.height / 2],
+          gridRegion: {
+            columns: draftElement.gridColumns,
+            rows: draftElement.gridRows,
+            index: draftElement.gridRegion,
+          },
           dpr: 1,
           status: draftElement.interactionBoundary === 'candidate_bbox' ? 'candidate_pending_boundary_acceptance' : 'human_reviewed_boundary',
           evidenceRef: normalizePath(path.join('explorations', evidence.explorationId)),
@@ -452,7 +459,7 @@ export class GraphWorkflow {
         redboxRef: redboxRelative,
         actionTraceRef: null,
         rawEvidenceRef: evidence.rawModelResultRef,
-        evidenceStatus: 'worker_human_reviewed',
+        evidenceStatus: 'ai_human_confirmed',
       };
       const element = {
         ...(existing?.value || {}),
@@ -465,7 +472,11 @@ export class GraphWorkflow {
         featurePath,
         owner: { kind: ownerKind, ref: ownerRef },
         parentElementRef: parentId,
-        controlType: draftElement.controlType,
+        elementType: draftElement.elementType,
+        displayCondition: draftElement.displayCondition,
+        gridColumns: draftElement.gridColumns,
+        gridRows: draftElement.gridRows,
+        gridRegion: draftElement.gridRegion,
         role: draftElement.role,
         capabilities: [...draftElement.capabilities],
         actionEffects: [...draftElement.actionEffects],
@@ -485,12 +496,12 @@ export class GraphWorkflow {
           function: draftElement.interactionBoundary,
         },
         provenance: {
-          sourceType: 'workbench_human_reviewed_worker',
+          sourceType: 'workbench_ai_human_confirmed',
           materializationSpec: normalizePath(path.join('explorations', evidence.explorationId, 'scope.yaml')),
           recordedAt: new Date().toISOString(),
           reviewedBy: 'workbench_user',
-          limitations: draftElement.interactionBoundary === 'candidate_bbox' ? ['Model A bbox boundary acceptance is pending.'] : [],
-          model: draftElement.workerModel || draft.lastWorkerModel || null,
+          limitations: draftElement.interactionBoundary === 'candidate_bbox' ? ['AI recognition bbox boundary acceptance is pending.'] : [],
+          model: draftElement.aiModel || draft.lastAiModel || null,
         },
       };
       if (ownerKind === 'application') {
@@ -648,7 +659,7 @@ export class GraphWorkflow {
     for (const element of draft.elements) {
       if (element.reviewStatus === 'pending') warnings.push(`待审核元素未进入 staging：${element.label}`);
       if (['accepted', 'edited'].includes(element.reviewStatus) && element.interactionBoundary === 'candidate_bbox') {
-        warnings.push(`元素边界仍是 Model A 候选框：${element.label}`);
+        warnings.push(`元素边界仍是 AI 识别候选框：${element.label}`);
       }
     }
     for (const transition of draft.transitions) {

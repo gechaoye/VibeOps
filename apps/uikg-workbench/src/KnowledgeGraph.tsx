@@ -1,5 +1,5 @@
 import '@xyflow/react/dist/style.css';
-import { ArrowRight, CircleAlert, LoaderCircle, LocateFixed, Network, RefreshCw, Search, ShieldCheck, X } from 'lucide-react';
+import { ArrowRight, Braces, CircleAlert, LoaderCircle, LocateFixed, Network, RefreshCw, Search, ShieldCheck, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { absoluteAssetUrl, workbenchApi } from './api';
 import { ForceKnowledgeGraph } from './ForceKnowledgeGraph';
@@ -9,6 +9,7 @@ import type { CanonicalGraph, CanonicalGraphElementPreview, CanonicalGraphPage, 
 interface KnowledgeGraphProps {
   appKey: string;
   onGoToWorkbench: () => void;
+  onOpenModel: () => void;
 }
 
 const nodeTypeMeta: Record<KnowledgeGraphNodeType, { label: string; className: string }> = {
@@ -53,7 +54,7 @@ function ViewRelationRow({ edge, nodesById, active, onClick }: { edge: Knowledge
   </button>;
 }
 
-export function KnowledgeGraph({ appKey, onGoToWorkbench }: KnowledgeGraphProps) {
+export function KnowledgeGraph({ appKey, onGoToWorkbench, onOpenModel }: KnowledgeGraphProps) {
   const [graph, setGraph] = useState<CanonicalGraph | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -106,7 +107,7 @@ export function KnowledgeGraph({ appKey, onGoToWorkbench }: KnowledgeGraphProps)
   if (graph.pages.length === 0) return <main className="kg-state kg-state-empty">
     <Network size={34} />
     <strong>还没有知识图谱</strong>
-    <p>前往工作台创建页面对象，上传页面图片或使用设备画面开始构建知识图谱。</p>
+    <p>前往工作台创建页面对象，上传页面图片或使用设备帧开始构建知识图谱。</p>
     <button type="button" className="button button-primary" onClick={onGoToWorkbench}>前往工作台<ArrowRight size={15} /></button>
   </main>;
 
@@ -119,6 +120,7 @@ export function KnowledgeGraph({ appKey, onGoToWorkbench }: KnowledgeGraphProps)
       <section className="kg-filter-section kg-node-type-list"><h3>节点类型</h3>{(Object.keys(nodeTypeMeta) as KnowledgeGraphNodeType[]).map((type) => <div key={type}><span><i className={`kg-legend-dot ${nodeTypeMeta[type].className}`} />{nodeTypeMeta[type].label}</span><em>{view.nodes.filter((node) => node.type === type).length}</em></div>)}</section>
       <section className="kg-filter-section kg-edge-type-list"><h3>关系类型</h3><div><span><i />入口 / 页面关系</span></div><div><span><i className="placement" />可配置收纳</span></div></section>
       <div className="kg-filter-note"><ShieldCheck size={14} /><span>总览只展示功能入口关系；页面内部状态变更、取消和返回关系不进入该层。</span></div>
+      <div className="kg-filter-actions"><button type="button" className="button" onClick={onOpenModel}><Braces size={14} />打开图谱模型</button><span>维护对象、字段和关联规则</span></div>
     </aside>
 
     <section className="kg-canvas-panel kg-demo-canvas-panel">

@@ -170,6 +170,31 @@
             "type": "number"
           }
         },
+        "gridRegion": {
+          "type": "object",
+          "required": [
+            "columns",
+            "rows",
+            "index"
+          ],
+          "properties": {
+            "columns": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "rows": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        },
         "dpr": {
           "type": "number",
           "exclusiveMinimum": 0

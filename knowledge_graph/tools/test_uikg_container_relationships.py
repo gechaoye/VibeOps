@@ -21,7 +21,7 @@ def make_composition_member(key, element_id, parent_id, actionable, capabilities
         "key": key,
         "owner": {"kind": "component", "ref": parent_id},
         "parentElementRef": parent_id,
-        "controlType": "control",
+        "elementType": "control",
         "role": "member",
         "capabilities": list(capabilities or []),
         "interactionBoundary": {"actionable": actionable, "function": key},
@@ -44,7 +44,7 @@ def make_composition_container(profile, roles, children, actionable=False, capab
         "key": f"settings.{profile}",
         "owner": {"kind": "page", "ref": "PAGE"},
         "parentElementRef": None,
-        "controlType": "container",
+        "elementType": "container",
         "role": "setting_group",
         "capabilities": list(capabilities or []),
         "interactionBoundary": {"actionable": actionable, "function": profile},
@@ -224,7 +224,7 @@ def test_flat_page_owned_setting_row_is_rejected():
         "id": "FLAT",
         "key": "settings.flat",
         "owner": {"kind": "page", "ref": "PAGE"},
-        "controlType": "toggle",
+        "elementType": "toggle",
         "role": "setting",
     }
 

@@ -147,7 +147,7 @@ Obsidian 是派生阅读视图，不是第二份 Canonical。
 每个 Canonical Element 恰有一张 Element 卡片，必须展示：
 
 - owner、parent 和 child；
-- role、controlType、capabilities、状态和交互边界；设置行容器还必须展示 profile 与具名角色；
+- role、elementType、capabilities、状态和交互边界；设置行容器还必须展示 profile 与具名角色；
 - Transition 和 AuthorityContract；
 - 每个 Observation 的全页红框图；
 - rect、center、dpr、当前状态、动态值、构建和来源帧。

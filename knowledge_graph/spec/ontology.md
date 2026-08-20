@@ -111,9 +111,10 @@ Element 表示稳定 UI 控件、状态指示、结构容器或稳定内容锚�
 | `aliases` | string[] | 否 | 检索别名，不承担身份。 |
 | `owner` | Owner | 是 | 唯一直接 owner。 |
 | `parentElementRef` | ULID/null | 是 | 嵌套 Element 必须为父 Element ID；顶层必须为 null。 |
-| `controlType` | string | 是 | 例如 `container`、`icon_button`、`text_label`、`toggle`。 |
+| `elementType` | string | 是 | 例如 `container`、`icon_button`、`text_label`、`toggle`。 |
 | `role` | string | 是 | 语义角色。 |
-| `capabilities` | string[] | 是 | 可执行能力；纯说明或结构元素为空。 |
+| `capabilities` | string[] | 是 | 用户实际执行的物理交互动作；纯说明或结构元素为空。 |
+| `actionEffects` | ActionEffect[] | 否 | 各物理交互产生的业务结果，例如点击后删除成员或进入页面。 |
 | `summary` | string | 是 | 稳定职责及必要交互边界。 |
 | `relationshipRefs` | string[] | 是 | owner、parent、child、Transition、Contract 等规范关系引用。 |
 | `childElementRefs` | ULID[] | 否 | 直接子 Element；有子元素时必须提供。 |
@@ -139,6 +140,10 @@ owner:
 - `component` 和 `shared_component` 表示嵌套归属，`owner.ref` 必须等于 `parentElementRef`。
 - `component` 的祖先链必须终止于 Page。
 - `shared_component` 的祖先链必须终止于 Application 持有的共享 Element。
+
+`capabilities` 不记录删除、提交、跳转、启用或关闭等业务结果。例如删除成员按钮应使用
+`capabilities: [tap]`，并以 `actionEffects: [{ action: tap, effect: 删除该成员 }]` 描述点击结果。
+每条 `actionEffects.action` 必须对应一个已声明的 capability。
 
 ### 4.2 InteractionBoundary
 

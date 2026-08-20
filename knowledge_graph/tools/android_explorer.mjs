@@ -13,23 +13,26 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
-import * as nodeUtil from 'node:util';
 import zlib from 'node:zlib';
 import {fileURLToPath, pathToFileURL} from 'node:url';
-import {normalizeWorkerOutput, validateWorkerConsistency} from '../../apps/uikg-workbench/server/draft-model.mjs';
-import {runWorkerModel} from '../../apps/uikg-workbench/server/worker-client.mjs';
-import {buildWorkerPrompt} from '../../apps/uikg-workbench/server/worker-prompt.mjs';
+import {normalizeRecognitionOutput, validateRecognitionConsistency} from '../../apps/uikg-workbench/server/draft-model.mjs';
+import {runRecognitionModel} from '../../apps/uikg-workbench/server/recognition-client.mjs';
+import {buildRecognitionPrompt} from '../../apps/uikg-workbench/server/recognition-prompt.mjs';
+import {ModelSettingsStore} from '../../apps/uikg-workbench/server/model-settings-store.mjs';
+import {resolveTargetModelConfig} from '../../apps/uikg-workbench/server/model-settings.mjs';
+import {setModelRuntime} from '../../apps/uikg-workbench/server/model-runtime.mjs';
 
 const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const EVIDENCE_SCHEMA_VERSION = '2.0.0';
 const EVIDENCE_PRODUCER_ID = 'midscene-android-uikg-evidence-producer';
 const LOCATE_CONCURRENCY = 4;
-const WORKER_SCHEMA = JSON.parse(
-  await fs.readFile(new URL('../../apps/uikg-workbench/server/worker-output.schema.json', import.meta.url), 'utf8'),
+const RECOGNITION_SCHEMA = JSON.parse(
+  await fs.readFile(new URL('../../apps/uikg-workbench/server/recognition-output.schema.json', import.meta.url), 'utf8'),
 );
 const SCREEN_QUERY_SHAPE =
   '{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, ' +
-  'visibleControls: {candidateKey: string, label: string, controlType: string, visibleState: string, ' +
+  'visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, ' +
   'semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, ' +
   'functionDescription: string, locatorPrompt: string}[], ' +
   'scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], ' +
@@ -173,15 +176,15 @@ export function buildScreenQueryPrompt(plan, stateKey = plan.initialState) {
     'back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. ' +
     'candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same ' +
     'visible control for a subsequent Midscene aiLocate call. ' +
-    `Requested control types: ${JSON.stringify(requestedTypes)}. ` +
+    `Requested element types: ${JSON.stringify(requestedTypes)}. ` +
     `${inspection?.queryPrompt ?? ''} ${semanticContextInstruction(plan)} ` +
     'Do not infer any additional icon function from shape alone; use semanticRole "unknown", riskHint "unknown", ' +
     'and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.'
   );
 }
 
-export function buildFrameWorkerPrompt(plan, frameId) {
-  return buildWorkerPrompt(frameId, semanticContextInstruction(plan));
+export function buildFrameRecognitionPrompt(plan, frameId) {
+  return buildRecognitionPrompt(frameId, semanticContextInstruction(plan));
 }
 
 export function buildResultQueryPrompt(plan, step) {
@@ -211,7 +214,7 @@ function sleep(milliseconds) {
 async function mapWithConcurrency(values, concurrency, mapper) {
   const results = new Array(values.length);
   let cursor = 0;
-  const workers = Array.from(
+  const tasks = Array.from(
     {length: Math.min(Math.max(1, concurrency), values.length)},
     async () => {
       while (cursor < values.length) {
@@ -221,7 +224,7 @@ async function mapWithConcurrency(values, concurrency, mapper) {
       }
     },
   );
-  await Promise.all(workers);
+  await Promise.all(tasks);
   return results;
 }
 
@@ -1200,61 +1203,61 @@ async function invokeQuery({runtime, writer, frame, prompt, semanticContext = nu
   }
 }
 
-function validateWorkerInventory(value, expectedFrameId, worker) {
-  const {workerResult, normalizationIssues} = normalizeWorkerOutput(value);
-  if (workerResult.frameId !== expectedFrameId) {
+function validateRecognitionInventory(value, expectedFrameId) {
+  const {recognitionResult, normalizationIssues} = normalizeRecognitionOutput(value);
+  if (recognitionResult.frameId !== expectedFrameId) {
     throw new SemanticResolutionError(
-      'WORKER_FRAME_ID_MISMATCH',
-      `${worker} 答卷未绑定当前冻结帧`,
+      'RECOGNITION_FRAME_ID_MISMATCH',
+      'Auto 页面识别结果未绑定当前冻结帧',
     );
   }
-  const consistencyIssues = validateWorkerConsistency(workerResult);
+  const consistencyIssues = validateRecognitionConsistency(recognitionResult);
   if (consistencyIssues.some((issue) => issue.startsWith('候选键重复'))) {
-    throw new SemanticResolutionError('WORKER_RESULT_INVALID', `${worker} 答卷包含重复候选键`);
+    throw new SemanticResolutionError('RECOGNITION_RESULT_INVALID', 'Auto 页面识别结果包含重复候选键');
   }
-  return {workerResult, normalizationIssues, consistencyIssues};
+  return {recognitionResult, normalizationIssues, consistencyIssues};
 }
 
-async function invokeWorker({runtime, writer, frame, worker, prompt, imageBuffer}) {
+async function invokeRecognition({runtime, writer, frame, prompt, imageBuffer}) {
   const startedAt = new Date().toISOString();
   const startedNs = process.hrtime.bigint();
   let rawResult = null;
   try {
-    rawResult = await runtime.runWorker({worker, prompt, imageBuffer});
-    const validated = validateWorkerInventory(rawResult, frame.id, worker);
+    rawResult = await runtime.runRecognition({prompt, imageBuffer});
+    const validated = validateRecognitionInventory(rawResult, frame.id);
     const endedNs = process.hrtime.bigint();
     const resourceRef = await writer.addInsight({
       frameRef: frame.id,
       sourceScreenshotRef: frame.screenshot.resourceRef,
-      operation: worker,
+      operation: 'auto_recognition',
       prompt,
       status: 'pass',
       result: sanitizeForEvidence(validated),
-      model: runtime.modelSummary[worker],
+      model: runtime.modelSummary.auto,
       startedAt,
       endedAt: new Date().toISOString(),
       durationMs: Number(endedNs - startedNs) / 1_000_000,
       captureCoupling: 'frozen_frame',
     });
-    attachRecognition(frame, worker, resourceRef, 'pass');
-    return {status: 'pass', resourceRef, result: validated.workerResult, ...validated};
+    attachRecognition(frame, 'auto_recognition', resourceRef, 'pass');
+    return {status: 'pass', resourceRef, result: validated.recognitionResult, ...validated};
   } catch (error) {
     const endedNs = process.hrtime.bigint();
     const resourceRef = await writer.addInsight({
       frameRef: frame.id,
       sourceScreenshotRef: frame.screenshot.resourceRef,
-      operation: worker,
+      operation: 'auto_recognition',
       prompt,
       status: 'unknown',
       result: rawResult === null ? null : sanitizeForEvidence(rawResult),
-      failure: {code: error?.code ?? 'WORKER_RESULT_UNRESOLVED', category: error?.name ?? 'Error'},
-      model: runtime.modelSummary[worker],
+      failure: {code: error?.code ?? 'RECOGNITION_RESULT_UNRESOLVED', category: error?.name ?? 'Error'},
+      model: runtime.modelSummary.auto,
       startedAt,
       endedAt: new Date().toISOString(),
       durationMs: Number(endedNs - startedNs) / 1_000_000,
       captureCoupling: 'frozen_frame',
     });
-    attachRecognition(frame, worker, resourceRef, 'unknown');
+    attachRecognition(frame, 'auto_recognition', resourceRef, 'unknown');
     return {status: 'unknown', resourceRef, result: null};
   }
 }
@@ -1362,7 +1365,7 @@ function normalizeControlCandidate(value, index) {
   return {
     candidateKey,
     label: requireString(control.label, `visibleControls[${index}].label`),
-    controlType: requireString(control.controlType, `visibleControls[${index}].controlType`),
+    elementType: requireString(control.elementType, `visibleControls[${index}].elementType`),
     visibleState: requireString(control.visibleState ?? 'default', `visibleControls[${index}].visibleState`),
     semanticRole: requireString(control.semanticRole ?? 'unknown', `visibleControls[${index}].semanticRole`),
     enabled: typeof control.enabled === 'boolean' ? control.enabled : null,
@@ -1400,7 +1403,7 @@ function normalizeControlInventory(result, state) {
         normalizeControlCandidate(
           {
             ...value,
-            controlType: 'scroll_region',
+            elementType: 'scroll_region',
             visibleState: Array.isArray(value.directions)
               ? `directions:${value.directions.join(',')}`
               : 'scrollable',
@@ -1607,49 +1610,33 @@ async function assertRuntimeStillReady(runtime, packageId, operation) {
   return context;
 }
 
-function buildAgreedControlInventory(workerAResult, workerBResult) {
-  if (workerAResult.status !== 'pass' || workerBResult.status !== 'pass') {
+function buildAutoControlInventory(recognitionResult) {
+  if (recognitionResult.status !== 'pass') {
     return {status: 'unknown', result: null};
   }
-  const byKeyB = new Map(workerBResult.result.elements.map((element) => [element.candidateKey, element]));
   const visibleControls = [];
   const unresolvedVisualMeanings = [];
-  for (const elementA of workerAResult.result.elements) {
-    const elementB = byKeyB.get(elementA.candidateKey);
-    if (!elementB) {
-      unresolvedVisualMeanings.push(`${elementA.candidateKey}: 仅 Worker A 返回`);
-      continue;
-    }
-    const agreed = ['label', 'controlType', 'interactive', 'enabled', 'state']
-      .every((field) => JSON.stringify(elementA[field]) === JSON.stringify(elementB[field]));
-    if (!agreed) {
-      unresolvedVisualMeanings.push(`${elementA.candidateKey}: A/B 字段存在差异，等待人工合并`);
-      continue;
-    }
-    if (!elementA.interactive) continue;
+  for (const element of recognitionResult.result.elements) {
+    if (!element.interactive) continue;
     visibleControls.push({
-      candidateKey: elementA.candidateKey,
-      label: elementA.label || elementA.candidateKey,
-      controlType: elementA.controlType,
-      visibleState: elementA.state || 'default',
-      semanticRole: elementA.meaning?.status === 'known' ? 'known' : 'unknown',
-      enabled: elementA.enabled,
+      candidateKey: element.candidateKey,
+      label: element.label || element.candidateKey,
+      elementType: element.elementType,
+      visibleState: element.state || 'default',
+      semanticRole: element.meaning?.status === 'known' ? 'known' : 'unknown',
+      enabled: element.enabled,
       reversible: null,
-      riskHint: elementA.riskSignals?.length ? 'unknown' : 'safe',
-      functionDescription: elementA.meaning?.description || elementA.visualDescription,
-      locatorPrompt: elementA.visualDescription || elementA.label || elementA.candidateKey,
+      riskHint: element.riskSignals?.length ? 'unknown' : 'safe',
+      functionDescription: element.meaning?.description || element.visualDescription,
+      locatorPrompt: element.visualDescription || element.label || element.candidateKey,
     });
   }
-  const keysA = new Set(workerAResult.result.elements.map((element) => element.candidateKey));
-  for (const elementB of workerBResult.result.elements) {
-    if (!keysA.has(elementB.candidateKey)) unresolvedVisualMeanings.push(`${elementB.candidateKey}: 仅 Worker B 返回`);
-  }
   return {
-    status: unresolvedVisualMeanings.length ? 'unknown' : 'pass',
+    status: 'pass',
     result: {
-      visiblePageTitle: workerAResult.result.page.name,
+      visiblePageTitle: recognitionResult.result.page.name,
       visiblePrimaryContent: [],
-      visibleNavigationState: workerAResult.result.page.stateSummary,
+      visibleNavigationState: recognitionResult.result.page.stateSummary,
       visibleControls,
       scrollableRegions: [],
       unresolvedVisualMeanings,
@@ -1717,8 +1704,7 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
     runtimeContextRef,
     recognitionStatus: 'not_attempted',
     recognitionResults: [],
-    workerAStatus: 'not_attempted',
-    workerBStatus: 'not_attempted',
+    autoRecognitionStatus: 'not_attempted',
     controlInventoryStatus: 'not_attempted',
     visibleControls: [],
     unresolvedControls: [],
@@ -1747,8 +1733,7 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
   }
   const state = plan.states[stateKey];
   const assertionResults = [];
-  let workerAResult = {status: 'unknown', resourceRef: null, result: null};
-  let workerBResult = {status: 'unknown', resourceRef: null, result: null};
+  let autoRecognitionResult = {status: 'unknown', resourceRef: null, result: null};
   let queryResult = {status: 'unknown', result: null};
   let controlInventory = {
     status: 'unknown',
@@ -1757,13 +1742,10 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
     pageSummary: null,
   };
   if (operationalFailures.length === 0) {
-    const prompt = buildFrameWorkerPrompt(plan, frame.id);
-    [workerAResult, workerBResult] = await Promise.all([
-      invokeWorker({runtime, writer, frame, worker: 'worker_a', prompt, imageBuffer: sampled.buffer}),
-      invokeWorker({runtime, writer, frame, worker: 'worker_b', prompt, imageBuffer: sampled.buffer}),
-    ]);
-    await assertRuntimeStillReady(runtime, plan.packageId, 'parallel Worker analysis');
-    queryResult = buildAgreedControlInventory(workerAResult, workerBResult);
+    const prompt = buildFrameRecognitionPrompt(plan, frame.id);
+    autoRecognitionResult = await invokeRecognition({runtime, writer, frame, prompt, imageBuffer: sampled.buffer});
+    await assertRuntimeStillReady(runtime, plan.packageId, 'Auto page recognition');
+    queryResult = buildAutoControlInventory(autoRecognitionResult);
     if (queryResult.status === 'pass') {
       controlInventory = await inspectVisibleControls({
         runtime,
@@ -1791,14 +1773,12 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
       await assertRuntimeStillReady(runtime, plan.packageId, 'state assertions');
     }
   }
-  frame.workerAStatus = workerAResult.status;
-  frame.workerBStatus = workerBResult.status;
+  frame.autoRecognitionStatus = autoRecognitionResult.status;
   frame.controlInventoryStatus = controlInventory.status;
   frame.visibleControls = controlInventory.visibleControls;
   frame.unresolvedControls = controlInventory.unresolvedControls;
   const semanticStatuses = [
-    workerAResult.status,
-    workerBResult.status,
+    autoRecognitionResult.status,
     controlInventory.status,
     ...assertionResults.map((item) => item.status),
   ];
@@ -1815,11 +1795,8 @@ async function captureFrame({runtime, writer, plan, policy, stateKey, stepId, st
     frameRef: frame.id,
     observationType: 'midscene_visible_state_evidence',
     planStateKeyHint: stateKey,
-    workerAEvidenceRef: workerAResult.resourceRef,
-    workerAStatus: workerAResult.status,
-    workerBEvidenceRef: workerBResult.resourceRef,
-    workerBStatus: workerBResult.status,
-    mergeStatus: queryResult.status === 'pass' ? 'deterministic_agreement' : 'requires_field_selection',
+    autoRecognitionEvidenceRef: autoRecognitionResult.resourceRef,
+    autoRecognitionStatus: autoRecognitionResult.status,
     pageSummary: controlInventory.pageSummary,
     visibleControls: controlInventory.visibleControls,
     unresolvedControls: controlInventory.unresolvedControls,
@@ -2335,35 +2312,6 @@ function parseDisplayRotation(raw) {
   return value <= 3 ? value * 90 : value;
 }
 
-function allowedMidsceneEnvKey(key) {
-  return /^MIDSCENE_WORKER_[AB]_MODEL_/.test(key);
-}
-
-async function parseMidsceneEnv(source, midsceneRepo) {
-  if (typeof nodeUtil.parseEnv === 'function') return nodeUtil.parseEnv(source);
-  const dotenvModulePath = path.join(
-    midsceneRepo,
-    'packages',
-    'android',
-    'node_modules',
-    'dotenv',
-    'lib',
-    'main.js',
-  );
-  try {
-    const dotenv = await import(pathToFileURL(dotenvModulePath).href);
-    const parse = dotenv.parse ?? dotenv.default?.parse;
-    if (typeof parse !== 'function') throw new Error('dotenv.parse export is unavailable');
-    return parse(source);
-  } catch {
-    throw new ExplorerError(
-      'MIDSCENE_ENV_PARSER_UNAVAILABLE',
-      'No supported parser is available for the Midscene .env file',
-      'model_gate',
-    );
-  }
-}
-
 export function resolveMidsceneRepo(midsceneRepo, env = process.env) {
   const explicitRepo = typeof midsceneRepo === 'string' ? midsceneRepo.trim() : '';
   const inheritedRepo = typeof env.MIDSCENE_REPO === 'string' ? env.MIDSCENE_REPO.trim() : '';
@@ -2378,116 +2326,46 @@ export function resolveMidsceneRepo(midsceneRepo, env = process.env) {
   return path.resolve(configuredRepo);
 }
 
-export async function loadMidsceneEnvironment({midsceneRepo, env = process.env} = {}) {
-  const resolvedRepo = resolveMidsceneRepo(midsceneRepo, env);
-  const envFilePath = path.join(resolvedRepo, '.env');
-  let source;
+export async function loadAutoModelConfiguration({
+  databasePath = path.join(process.env.UIKG_WORKBENCH_DATA_DIR || path.join(PROJECT_ROOT, 'apps/uikg-workbench/.data'), 'model-settings.sqlite'),
+  env = process.env,
+} = {}) {
+  const store = new ModelSettingsStore(databasePath);
+  await store.initialize();
   try {
-    source = await fs.readFile(envFilePath, 'utf8');
-  } catch (error) {
-    if (error?.code === 'ENOENT') {
-      return {
-        status: 'not_found',
-        loadedKeyCount: 0,
-        preservedKeyCount: 0,
-        ignoredKeyCount: 0,
-      };
+    const auto = resolveTargetModelConfig(store, 'auto');
+    const midscene = resolveTargetModelConfig(store, 'midscene');
+    if (!auto?.modelName || !auto.apiKey || !auto.baseUrl) {
+      throw new ExplorerError('AUTO_MODEL_CONFIG_MISSING', 'Auto 页面识别模型未完整配置', 'model_gate');
     }
-    throw new ExplorerError(
-      'MIDSCENE_ENV_FILE_READ_FAILED',
-      `Cannot read Midscene .env: ${error.message}`,
-      'model_gate',
-    );
-  }
-
-  let parsed;
-  try {
-    parsed = await parseMidsceneEnv(source, resolvedRepo);
-  } catch (error) {
-    if (error instanceof ExplorerError) throw error;
-    throw new ExplorerError(
-      'MIDSCENE_ENV_FILE_INVALID',
-      'Midscene .env is invalid',
-      'model_gate',
-    );
-  }
-
-  let loadedKeyCount = 0;
-  let preservedKeyCount = 0;
-  let ignoredKeyCount = 0;
-  for (const [key, value] of Object.entries(parsed)) {
-    if (!allowedMidsceneEnvKey(key)) {
-      ignoredKeyCount += 1;
-      continue;
+    if (!midscene?.modelName || !midscene.apiKey || !midscene.baseUrl) {
+      throw new ExplorerError('MIDSCENE_MODEL_CONFIG_MISSING', 'Auto Midscene 模型未完整配置', 'model_gate');
     }
-    if (typeof env[key] === 'string' && env[key].trim().length > 0) {
-      preservedKeyCount += 1;
-      continue;
-    }
-    env[key] = value;
-    loadedKeyCount += 1;
-  }
-  return {
-    status: 'loaded',
-    loadedKeyCount,
-    preservedKeyCount,
-    ignoredKeyCount,
-  };
-}
-
-function summarizeModelEnvironment(env, envLoadResult) {
-  const configuredValue = (value) =>
-    typeof value === 'string' && value.trim().length > 0 ? value.trim() : null;
-  return {
-    worker_a: {
-      name: configuredValue(env.MIDSCENE_WORKER_A_MODEL_NAME),
-      family: configuredValue(env.MIDSCENE_WORKER_A_MODEL_FAMILY),
-      slot: 'worker_a',
-    },
-    worker_b: {
-      name: configuredValue(env.MIDSCENE_WORKER_B_MODEL_NAME),
-      family: configuredValue(env.MIDSCENE_WORKER_B_MODEL_FAMILY),
-      slot: 'worker_b',
-    },
-    configurationSource:
-      envLoadResult.status === 'loaded'
-        ? envLoadResult.preservedKeyCount > 0
-          ? 'process_environment_with_midscene_repo_dotenv_fallback'
-          : 'midscene_repo_dotenv'
-        : 'process_environment',
-    credentialsPersisted: false,
-    serviceLocationPersisted: false,
-  };
-}
-
-function validateModelEnvironment(summary, env) {
-  for (const slot of ['worker_a', 'worker_b']) {
-    if (!summary[slot].name || !summary[slot].family) {
-      throw new ExplorerError(
-        'WORKER_MODEL_CONFIG_MISSING',
-        `${slot} model name/family is not configured`,
-        'model_gate',
-      );
-    }
-    const prefix = slot === 'worker_a' ? 'MIDSCENE_WORKER_A_MODEL' : 'MIDSCENE_WORKER_B_MODEL';
-    if (!env[`${prefix}_BASE_URL`] || !env[`${prefix}_API_KEY`]) {
-      throw new ExplorerError(
-        'WORKER_MODEL_CONFIG_MISSING',
-        `${slot} model Base URL/API Key is not configured`,
-        'model_gate',
-      );
-    }
+    setModelRuntime('auto', auto);
+    Object.assign(env, {
+      MIDSCENE_MODEL_NAME: midscene.modelName,
+      MIDSCENE_MODEL_FAMILY: midscene.modelFamily,
+      MIDSCENE_MODEL_BASE_URL: midscene.baseUrl,
+      MIDSCENE_MODEL_API_KEY: midscene.apiKey,
+      MIDSCENE_MODEL_TIMEOUT: String(midscene.timeout),
+      MIDSCENE_MODEL_TEMPERATURE: String(midscene.temperature),
+      MIDSCENE_MODEL_REASONING_EFFORT: midscene.reasoningEffort,
+    });
+    return {
+      auto: {name: auto.modelName, family: auto.modelFamily, slot: 'auto'},
+      midscene: {name: midscene.modelName, family: midscene.modelFamily, slot: 'midscene'},
+      configurationSource: 'workbench_model_settings',
+      credentialsPersisted: false,
+      serviceLocationPersisted: false,
+    };
+  } finally {
+    store.close();
   }
 }
 
 export async function createRealRuntime({serial, adbPath, midsceneRepo}) {
   const resolvedRepo = resolveMidsceneRepo(midsceneRepo, process.env);
-  const envLoadResult = await loadMidsceneEnvironment({
-    midsceneRepo: resolvedRepo,
-    env: process.env,
-  });
-  const modelSummary = summarizeModelEnvironment(process.env, envLoadResult);
-  validateModelEnvironment(modelSummary, process.env);
+  const modelSummary = await loadAutoModelConfiguration();
   const modulePath = path.join(resolvedRepo, 'packages', 'android', 'dist', 'es', 'index.mjs');
   const coreModulePath = path.join(resolvedRepo, 'packages', 'core', 'dist', 'es', 'index.mjs');
   const packagePath = path.join(resolvedRepo, 'packages', 'android', 'package.json');
@@ -2775,11 +2653,11 @@ export async function createRealRuntime({serial, adbPath, midsceneRepo}) {
           return data;
         }
       : null,
-    runWorker: ({worker, prompt, imageBuffer}) => runWorkerModel({
-      worker,
+    runRecognition: ({prompt, imageBuffer}) => runRecognitionModel({
+      target: 'auto',
       prompt,
       imageBuffer,
-      responseSchema: WORKER_SCHEMA,
+      responseSchema: RECOGNITION_SCHEMA,
     }),
     aiQuery: async (prompt, semanticContext = null) => {
       if (!semanticContext) return agent.aiQuery(prompt);
@@ -2878,8 +2756,7 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
   const stats = {
     connects: 0,
     queries: 0,
-    workerACalls: 0,
-    workerBCalls: 0,
+    autoRecognitionCalls: 0,
     assertions: 0,
     locates: 0,
     taps: 0,
@@ -2924,8 +2801,8 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
     mode: 'offline_fixture_evidence_certification',
     midsceneVersion: 'offline-fixture',
     modelSummary: {
-      worker_a: {name: 'offline-fixture-worker-a', family: 'fixture', slot: 'worker_a'},
-      worker_b: {name: 'offline-fixture-worker-b', family: 'fixture', slot: 'worker_b'},
+      auto: {name: 'offline-fixture-auto-recognition', family: 'fixture', slot: 'auto'},
+      midscene: {name: 'offline-fixture-midscene', family: 'fixture', slot: 'midscene'},
       credentialsPersisted: false,
       serviceLocationPersisted: false,
     },
@@ -2999,18 +2876,17 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
       stats.semanticContexts += 1;
       return {fixtureFrozenFrame: true};
     },
-    runWorker: async ({worker, prompt}) => {
-      if (worker === 'worker_a') stats.workerACalls += 1;
-      else stats.workerBCalls += 1;
+    runRecognition: async ({prompt}) => {
+      stats.autoRecognitionCalls += 1;
       const frameId = prompt.match(/frameId[^"\n]*"([^"]+)"/)?.[1];
-      if (!frameId) throw new Error('fixture Worker prompt does not declare a frame ID');
+      if (!frameId) throw new Error('fixture recognition prompt does not declare a frame ID');
       const controls = plan.steps
         .filter((step) => ['tap', 'scroll'].includes(step.kind) && step.fromState === fixtureStateKey)
         .map((step, index) => ({
           candidateKey: step.target.key,
           label: step.target.label,
           visualDescription: step.target.locatorPrompt,
-          controlType: step.kind === 'scroll' ? 'scroll-view' : 'text-button',
+          elementType: step.kind === 'scroll' ? 'scroll-view' : 'text-button',
           interactive: true,
           enabled: true,
           state: 'enabled',
@@ -3032,13 +2908,13 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
           name: plan.states[fixtureStateKey]?.label ?? null,
           surfaceType: 'page',
           stateSummary: fixtureStateKey,
-          scrollableRegions: controls.filter((control) => control.controlType === 'scroll-view').map((control) => control.candidateKey),
+          scrollableRegions: controls.filter((control) => control.elementType === 'scroll-view').map((control) => control.candidateKey),
         },
         elements: controls,
         relationships: [],
         actionCandidates: controls.map((control) => ({
           triggerCandidateKey: control.candidateKey,
-          action: control.controlType === 'scroll-view' ? 'scroll_vertical' : 'tap',
+          action: control.elementType === 'scroll-view' ? 'scroll_vertical' : 'tap',
           expectedOutcome: '进入下一状态',
           basis: 'visible-affordance',
           riskSignals: [],
@@ -3057,7 +2933,7 @@ export function createOfflineFixtureRuntime({plan, policy, assertionFailureAt = 
         .map((step) => ({
           candidateKey: step.target.key,
           label: step.target.label,
-          controlType: 'button',
+          elementType: 'button',
           visibleState: 'enabled',
           semanticRole: 'navigation',
           enabled: true,
@@ -3263,10 +3139,10 @@ function printHelp() {
   node knowledge_graph/tools/android_explorer.mjs \\
     --package PACKAGE --plan PLAN --policy POLICY --output NEW_DIR --offline-fixture
 
-Real mode resolves <midscene-repo> from --midscene-repo, then MIDSCENE_REPO, and automatically
-loads its .env; inherited non-empty model variables take precedence. It uses Midscene AndroidAgent
-for every action. Offline fixture mode uses no device, ADB, or model service and exists only for
-producer certification.`);
+Real mode resolves <midscene-repo> from --midscene-repo, then MIDSCENE_REPO. Auto page recognition
+and Midscene use their independent Workbench model settings. Midscene AndroidAgent performs every
+device action. Offline fixture mode uses no device, ADB, or model service and exists only for producer
+certification.`);
 }
 
 export async function cliMain(argv = process.argv.slice(2)) {

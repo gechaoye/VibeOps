@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { getModelRuntime } from './model-runtime.mjs';
 import { modelFamilyForName, ZTO_NEWAPI_VISIBLE_MODELS } from './model-compatibility.mjs';
 
-export const MODEL_TARGETS = ['model_a', 'model_b', 'midscene'];
+export const MODEL_TARGETS = ['manual', 'auto', 'ultra_a', 'ultra_b', 'midscene'];
 export const DEFAULT_MODEL_GATEWAY_ID = 'zto-newapi';
 export const MODEL_FAMILIES = [
   'gpt-5',

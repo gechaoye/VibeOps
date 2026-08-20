@@ -89,7 +89,7 @@ expectedStates:
     requiredSemanticAssertions: [当前页面标题为特别关注，红色实时未读数量角标可见。]
     inspection:
       queryPrompt: >-
-        本批是针对已完整盘点页面的补充几何观测，visibleControls 只返回会话右侧红色未读数量角标，其他页面控件必须省略。角标必须作为唯一的单独 visibleControls 项返回：candidateKey 固定为 special_follow_unread_badge，label 固定为“实时未读消息数量角标”，controlType 为 status_badge，semanticRole 为 realtime_unread_count_indicator，enabled 为 false，reversible 为 false，riskHint 为 safe，functionDescription 说明它展示当前实时未读消息数量，locatorPrompt 只定位红色角标本身。visibleState 可以记录本帧观察到的数字，但 candidateKey、label 和 functionDescription 禁止包含具体数字。不要把角标数字解释为固定值。
+        本批是针对已完整盘点页面的补充几何观测，visibleControls 只返回会话右侧红色未读数量角标，其他页面控件必须省略。角标必须作为唯一的单独 visibleControls 项返回：candidateKey 固定为 special_follow_unread_badge，label 固定为“实时未读消息数量角标”，elementType 为 status_badge，semanticRole 为 realtime_unread_count_indicator，enabled 为 false，reversible 为 false，riskHint 为 safe，functionDescription 说明它展示当前实时未读消息数量，locatorPrompt 只定位红色角标本身。visibleState 可以记录本帧观察到的数字，但 candidateKey、label 和 functionDescription 禁止包含具体数字。不要把角标数字解释为固定值。
       locateAllInteractiveControls: true
       includeControlTypes: [status_badge]
       requireScrollCoverage: false

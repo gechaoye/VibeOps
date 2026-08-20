@@ -71,6 +71,8 @@ function PageEditor({ page, status, onUpdate, onChangeEnd }: { page: DraftPage; 
   const displayPage = pendingRecognition ? {
     ...page,
     name: '待识别页面',
+    functionRef: '',
+    implementationType: 'unknown' as const,
     surfaceType: 'unknown',
     stateSummary: '待识别',
     featurePath: ['待归类'],
@@ -85,9 +87,10 @@ function PageEditor({ page, status, onUpdate, onChangeEnd }: { page: DraftPage; 
       <label className="field"><span>Page ID</span><input value={page.id} readOnly /></label>
       <label className="field"><span>页面名称</span><input value={displayPage.name} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ name: event.target.value }, 'page:name')} /></label>
       <label className="field"><span>稳定键</span><input value={page.key} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ key: event.target.value }, 'page:key')} /></label>
-      <label className="field"><span>页面类型</span><select value={displayPage.surfaceType} disabled={pendingRecognition} onChange={(event) => onUpdate({ surfaceType: event.target.value })}><option value="page">页面</option><option value="dialog">对话框</option><option value="drawer">抽屉</option><option value="bottom-sheet">底部弹层</option><option value="menu">菜单</option><option value="shared-component">共享组件</option><option value="unknown">待确认</option></select></label>
+      <label className="field"><span>所属功能</span><input value={displayPage.functionRef || ''} placeholder="例如：特别关注、待办；也可填写功能 ID" readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ functionRef: event.target.value, featurePath: event.target.value.trim() ? [event.target.value.trim()] : ['待归类'] }, 'page:function')} /></label>
+      <label className="field"><span>页面实现类型</span><select value={displayPage.implementationType || 'unknown'} disabled={pendingRecognition} onChange={(event) => onUpdate({ implementationType: event.target.value as DraftPage['implementationType'] })}><option value="native">原生</option><option value="rn">RN</option><option value="h5">H5</option><option value="mini-program">小程序</option><option value="unknown">待确认</option></select></label>
+      <label className="field"><span>页面形态</span><select value={displayPage.surfaceType} disabled={pendingRecognition} onChange={(event) => onUpdate({ surfaceType: event.target.value })}><option value="page">页面</option><option value="dialog">对话框</option><option value="drawer">抽屉</option><option value="bottom-sheet">底部弹层</option><option value="menu">菜单</option><option value="shared-component">共享组件</option><option value="unknown">待确认</option></select></label>
       <label className="field field-textarea"><span>页面说明</span><textarea value={displayPage.stateSummary} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ stateSummary: event.target.value }, 'page:summary')} /></label>
-      <label className="field"><span>功能路径</span><input value={displayPage.featurePath.join(' / ')} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ featurePath: event.target.value.split('/').map((item) => item.trim()).filter(Boolean).slice(0, 3) }, 'page:path')} /></label>
       <label className="field field-textarea"><span>滚动区域</span><textarea value={displayPage.scrollableRegions.join('\n')} readOnly={pendingRecognition} placeholder="每行一个区域" onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ scrollableRegions: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) }, 'page:scrollable-regions')} /></label>
       <label className="field field-textarea page-reference-field"><span>Frame IDs</span><textarea value={page.frameIds.join('\n')} readOnly /></label>
       <label className="field field-textarea page-reference-field"><span>Element IDs</span><textarea value={displayPage.elementIds.length ? displayPage.elementIds.join('\n') : '暂无元素'} readOnly /></label>
@@ -154,7 +157,7 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
               <button type="button" className="page-node-create-action" aria-label="创建页面对象" title="创建页面对象" onClick={() => setCreateMenuOpen((value) => !value)}><Plus size={28} /><span>创建页面对象</span></button>
               {createMenuOpen && <div className="page-node-create-menu" role="menu" aria-label="创建页面对象方式">
                 <button type="button" title="上传图片" aria-label="上传图片" onClick={() => { setCreateMenuOpen(false); setUploadOpen(true); }}><ImageUp size={16} /></button>
-                <button type="button" title="使用设备画面" aria-label="使用设备画面" onClick={() => { setCreateMenuOpen(false); onCreateFromDevice(); }}><Smartphone size={16} /></button>
+                <button type="button" title="使用设备帧" aria-label="使用设备帧" onClick={() => { setCreateMenuOpen(false); onCreateFromDevice(); }}><Smartphone size={16} /></button>
               </div>}
             </div>
             {draft.pages.map((page, index) => {
@@ -166,7 +169,7 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
                 <button type="button" className="page-node-select-target" aria-label={`选择 Page：${page.name}`} onClick={() => selectPage(page.id)} />
                 <span className={`page-status page-status-${status}`}>{pageWorkflowStatusLabels[status]}</span>
                 <span className="page-node-preview">{latestFrameId ? <img src={absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(latestFrameId)}/image`)} alt={`${page.name || '待识别页面'}截图`} loading="lazy" /> : <span>暂无截图</span>}</span>
-                <span className="page-node-content"><strong>{page.name}</strong><span className="page-node-meta">{page.surfaceType} · {page.frameIds.length} 帧 · {page.elementIds.length} 个标注</span><code>{page.key}</code></span>
+                <span className="page-node-content"><strong>{page.name}</strong><span className="page-node-meta">{page.functionRef || '待归类功能'} · {page.implementationType || '待确认'} · {page.frameIds.length} 帧</span><code>{page.key}</code></span>
                 <button type="button" className={`page-node-action page-node-delete-action ${deleting ? 'confirming' : ''}`} title={deleting ? '再次点击确认删除页面及其元素' : '删除页面'} aria-label={deleting ? `确认删除 ${page.name}` : `删除 ${page.name}`} onClick={(event) => { event.stopPropagation(); if (deleting) { setDeleteConfirmPageId(null); onDeletePage(page.id); } else setDeleteConfirmPageId(page.id); }}>{deleting ? <Check size={15} /> : <Trash2 size={15} />}</button>
                 <button type="button" className="page-node-action page-node-open-action" disabled={!latestFrameId} title={latestFrameId ? '在新标签页标注' : '暂无截图，无法标注'} aria-label={`在新标签页标注 ${page.name}`} onClick={(event) => { event.stopPropagation(); onOpenPage(page.id); }}><PanelTopOpen size={15} /></button>
               </div>;

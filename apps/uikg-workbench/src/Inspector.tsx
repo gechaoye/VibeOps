@@ -1,5 +1,5 @@
 import { Check, Eye, EyeOff, RotateCcw, Trash2, X } from 'lucide-react';
-import { actionEffectsFor, capabilityGroups, capabilityLabel, defaultDescriptionForElementType, elementTypeGroups, interactionBoundaryForActions, recommendedActionsForElementType } from './model';
+import { actionEffectsFor, capabilityGroups, capabilityLabel, defaultDescriptionForElementType, elementTypeGroups, interactionBoundaryForActions, normalizeGridCount, recommendedActionsForElementType } from './model';
 import type { DraftElement, DraftPage } from './types';
 
 interface InspectorProps {
@@ -8,17 +8,19 @@ interface InspectorProps {
   elements: DraftElement[];
   pages: DraftPage[];
   currentPageId: string;
+  showGridGuides: boolean;
   canRestoreCurrent: boolean;
   onChange: (patch: Partial<DraftElement>, historyKey?: string) => void;
   onChangeEnd: () => void;
+  onShowGridGuidesChange: (show: boolean) => void;
   onRestoreCurrent: () => void;
   onAccept: () => void;
   onReject: () => void;
   onDelete: () => void;
 }
 
-function percentage(value: number) {
-  return Math.round(value * 1000) / 10;
+function decimal(value: number) {
+  return value.toFixed(3);
 }
 
 const meaningStatusLabels = {
@@ -40,24 +42,24 @@ function fieldValuesEqual(field: keyof DraftElement, current: unknown, initial: 
   return JSON.stringify(current) === JSON.stringify(initial);
 }
 
-export function Inspector({ element, initialElement, elements, pages, currentPageId, canRestoreCurrent, onChange, onChangeEnd, onRestoreCurrent, onAccept, onReject, onDelete }: InspectorProps) {
+export function Inspector({ element, initialElement, elements, pages, currentPageId, showGridGuides, canRestoreCurrent, onChange, onChangeEnd, onShowGridGuidesChange, onRestoreCurrent, onAccept, onReject, onDelete }: InspectorProps) {
   if (!element) return <div className="inspector-empty-state"><div className="inspector-empty"><CircleSelection /></div></div>;
   const possibleParents = elements.filter((candidate) => candidate.id !== element.id && candidate.reviewStatus !== 'rejected');
   const updateField = (field: keyof DraftElement, value: unknown, group = false) => onChange({ [field]: value } as Partial<DraftElement>, group ? `field:${field}` : undefined);
   const fieldModified = (...fields: Array<keyof DraftElement>) => Boolean(initialElement && fields.some((field) => !fieldValuesEqual(field, element[field], initialElement[field])));
-  const fieldClass = (...fields: Array<keyof DraftElement>) => `field${fieldModified(...fields) ? ' field-modified' : ''}${fields.includes('controlType') && !element.controlType ? ' field-invalid' : ''}`;
+  const fieldClass = (...fields: Array<keyof DraftElement>) => `field${fieldModified(...fields) ? ' field-modified' : ''}${fields.includes('elementType') && !element.elementType ? ' field-invalid' : ''}`;
   const groupClass = (...fields: Array<keyof DraftElement>) => `field-group${fieldModified(...fields) ? ' field-modified' : ''}`;
   const bboxModified = (key: keyof DraftElement['bbox']) => Boolean(initialElement && element.bbox[key] !== initialElement.bbox[key]);
   const accepted = element.reviewStatus === 'accepted';
   const rejected = element.reviewStatus === 'rejected';
-  const displayedActionEffects = actionEffectsFor(element.controlType, element.capabilities, element.actionEffects);
-  const changeElementType = (controlType: string) => {
-    const capabilities = recommendedActionsForElementType(controlType);
+  const displayedActionEffects = actionEffectsFor(element.elementType, element.capabilities, element.actionEffects);
+  const changeElementType = (elementType: string) => {
+    const capabilities = recommendedActionsForElementType(elementType);
     onChange({
-      controlType,
-      visualDescription: defaultDescriptionForElementType(controlType),
+      elementType,
+      visualDescription: defaultDescriptionForElementType(elementType),
       capabilities,
-      actionEffects: actionEffectsFor(controlType, capabilities),
+      actionEffects: actionEffectsFor(elementType, capabilities),
       interactionBoundary: interactionBoundaryForActions(capabilities, element.interactionBoundary),
     });
   };
@@ -68,7 +70,7 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
     if (capabilities.length === 0) capabilities = ['none'];
     onChange({
       capabilities,
-      actionEffects: actionEffectsFor(element.controlType, capabilities, element.actionEffects),
+      actionEffects: actionEffectsFor(element.elementType, capabilities, element.actionEffects),
       interactionBoundary: interactionBoundaryForActions(capabilities, element.interactionBoundary),
     });
   };
@@ -88,8 +90,9 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
       </div>
 
       <label className={fieldClass('label')}><span>元素名称</span><input value={element.label} onBlur={onChangeEnd} onChange={(event) => updateField('label', event.target.value, true)} /></label>
-      <label className={fieldClass('controlType')}><span>元素类型</span><select value={element.controlType} onChange={(event) => changeElementType(event.target.value)}><option value="" disabled />{elementTypeGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</optgroup>)}</select></label>
+      <label className={fieldClass('elementType')}><span>元素类型</span><select value={element.elementType} onChange={(event) => changeElementType(event.target.value)}><option value="" disabled />{elementTypeGroups.map((group) => <optgroup key={group.label} label={group.label}>{group.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</optgroup>)}</select></label>
       <label className={fieldClass('visualDescription')}><span>元素描述</span><input value={element.visualDescription} onBlur={onChangeEnd} onChange={(event) => updateField('visualDescription', event.target.value, true)} /></label>
+      <label className={`${fieldClass('displayCondition')} field-textarea`}><span>展示条件</span><textarea value={element.displayCondition} placeholder="例如：当前用户存在以参会人身份加入的会议" rows={2} onBlur={onChangeEnd} onChange={(event) => updateField('displayCondition', event.target.value, true)} /></label>
 
       <fieldset className={groupClass('capabilities')}>
         <legend>元素动作</legend>
@@ -126,17 +129,27 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
       <label className={fieldClass('interactionBoundary')}><span>交互区域</span><select value={element.interactionBoundary} disabled={element.capabilities.includes('none')} onChange={(event) => updateField('interactionBoundary', event.target.value)}><option value="none">无</option><option value="candidate_bbox">候选边框，待校准</option><option value="whole_element">整个元素可操作</option><option value="trailing_control">仅尾部控件可操作</option><option value="point_only">仅验证中心点</option><option value="unresolved">尚未确定</option></select></label>
 
       <fieldset className="field-group">
-        <legend>边框位置（百分比）</legend>
+        <legend>边框位置（归一化小数）</legend>
         <div className="number-grid">
           {(['x', 'y', 'width', 'height'] as const).map((key) => (
-            <label key={key} className={bboxModified(key) ? 'number-modified' : undefined}><span>{{ x: '左', y: '上', width: '宽', height: '高' }[key]}</span><input type="number" min="0" max="100" step="0.1" value={percentage(element.bbox[key])} onBlur={onChangeEnd} onChange={(event) => onChange({ bbox: { ...element.bbox, [key]: Number(event.target.value) / 100 } }, `bbox:${key}`)} /></label>
+            <label key={key} className={bboxModified(key) ? 'number-modified' : undefined}><span>{{ x: '左', y: '上', width: '宽', height: '高' }[key]}</span><input type="number" min="0" max="1" step="0.001" value={decimal(element.bbox[key])} onBlur={onChangeEnd} onChange={(event) => onChange({ bbox: { ...element.bbox, [key]: Number(event.target.value) } }, `bbox:${key}`)} /></label>
           ))}
+        </div>
+      </fieldset>
+
+      <fieldset className={groupClass('gridColumns', 'gridRows', 'gridRegion')}>
+        <legend>屏幕宫格定位</legend>
+        <label className="check-field grid-guide-toggle"><input type="checkbox" checked={showGridGuides} onChange={(event) => onShowGridGuidesChange(event.target.checked)} /><span>在画面中显示宫格辅助线与区域编号</span></label>
+        <div className="grid-location-controls">
+          <label><span>横向分割</span><input type="number" min="1" max="12" step="1" value={element.gridColumns} onBlur={onChangeEnd} onChange={(event) => updateField('gridColumns', normalizeGridCount(Number(event.target.value)), true)} /></label>
+          <label><span>纵向分割</span><input type="number" min="1" max="12" step="1" value={element.gridRows} onBlur={onChangeEnd} onChange={(event) => updateField('gridRows', normalizeGridCount(Number(event.target.value)), true)} /></label>
+          <label><span>区域编号</span><input type="number" value={element.gridRegion} readOnly aria-label="由完整元素边框自动定位的区域编号" /></label>
         </div>
       </fieldset>
 
       <div className="evidence-summary">
         <div><span>识别可信度</span><strong>{Math.round(element.confidence * 100)}%</strong></div>
-        <div><span>信息来源</span><strong title={element.workerModel || undefined}>{element.source === 'ai_worker' ? `AI Worker · ${element.workerModel || '模型未知'}` : element.source === 'human' ? '人工新增' : `AI Worker · ${element.workerModel || '模型未知'} + 人工`}</strong></div>
+        <div><span>信息来源</span><strong title={element.aiModel || undefined}>{element.source === 'ai' ? `AI 识别 · ${element.aiModel || '模型未知'}` : element.source === 'human' ? '人工新增' : `AI 识别 · ${element.aiModel || '模型未知'} + 人工确认`}</strong></div>
         <div><span>人工审核</span><strong>{element.reviewStatus === 'pending' ? '待人工确认' : element.reviewStatus === 'accepted' ? '已审核通过' : element.reviewStatus === 'edited' ? '人工修订' : '已忽略'}</strong></div>
       </div>
 

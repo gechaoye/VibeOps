@@ -47,7 +47,7 @@
 
 把错误聚合的“整行入口”拆分为容器、说明文字和独立触发器时：
 
-1. 先从用户事实和运行证据确定最外层语义容器、全部稳定成员、设置行 profile 和真实交互边界，不能从旧 key 或旧 `controlType` 猜测。
+1. 先从用户事实和运行证据确定最外层语义容器、全部稳定成员、设置行 profile 和真实交互边界，不能从旧 key 或旧 `elementType` 猜测。
 2. 为新增语义实体创建稳定 ID。旧实体如果明确表示实际设置控件或 Trigger，优先保留其 ID 并迁移为相应子 Element；如果明确表示整行语义，优先保留为容器；语义发生拆分或重定向时写迁移账本。
 3. 为行容器设置 `composition.profile`，并按 profile 填写必需角色。不能给所有设置行统一补成 `label/helpTrigger/helpPopover/settingControl` 四个角色。
 4. Page 的直接引用改为总容器；子元素通过 owner、parent、child 和 relationshipRefs 形成双向关系。

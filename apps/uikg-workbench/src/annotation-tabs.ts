@@ -25,6 +25,8 @@ export function draftForAnnotationTarget(draft: Draft, target: AnnotationTarget)
       id: page.id,
       key: page.key,
       name: page.name,
+      functionRef: page.functionRef,
+      implementationType: page.implementationType,
       surfaceType: page.surfaceType,
       stateSummary: page.stateSummary,
       scrollableRegions: page.scrollableRegions,

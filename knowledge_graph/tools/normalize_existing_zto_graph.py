@@ -285,7 +285,7 @@ def make_element(record: dict, page_by_id: dict[str, dict], instances: list[dict
         "featurePath": feature_for_element(record),
         "owner": element_owner(record, page_by_id),
         "parentElementRef": parent,
-        "controlType": "container" if record["kind"] == "container" else "menu-item",
+        "elementType": "container" if record["kind"] == "container" else "menu-item",
         "role": record.get("semanticRole", "unknown"),
         "capabilities": [item["key"] for item in record.get("interactionCapabilities", [])],
         "summary": record.get("description", {}).get("zh-CN", ""),
@@ -316,7 +316,7 @@ def write_page_card(root: Path, page: dict, page_by_id: dict[str, dict], element
         elements.extend(item for item in element_by_id.values() if item["owner"].get("kind") == "shared_component")
     element_rows = []
     for item in sorted({entry["id"]: entry for entry in elements}.values(), key=lambda entry: entry["key"]):
-        element_rows.append(f"| {markdown_link(element_card_path(item), item['label'])} | {item['controlType']} | {', '.join(item['capabilities']) or '仅观察'} |")
+        element_rows.append(f"| {markdown_link(element_card_path(item), item['label'])} | {item['elementType']} | {', '.join(item['capabilities']) or '仅观察'} |")
     legacy_rows = []
     for item in legacy_by_trigger.values():
         for transition in item:
@@ -403,7 +403,7 @@ status: {element['coverage']}
 
 | 类型 | 语义角色 | 能力 | 风险 | 覆盖 |
 | --- | --- | --- | --- | --- |
-| {element['controlType']} | `{element['role']}` | {', '.join(element['capabilities']) or '仅观察'} | {element['risk']} | {element['coverage']} |
+| {element['elementType']} | `{element['role']}` | {', '.join(element['capabilities']) or '仅观察'} | {element['risk']} | {element['coverage']} |
 
 ## 元素实例
 

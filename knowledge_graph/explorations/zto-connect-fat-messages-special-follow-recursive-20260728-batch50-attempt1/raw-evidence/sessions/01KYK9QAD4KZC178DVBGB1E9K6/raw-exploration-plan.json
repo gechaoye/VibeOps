@@ -151,7 +151,7 @@
         "当前页面标题为特别关注，成员条目、会话摘要中的橙色特别关注前缀和红色实时未读数量角标可见。"
       ],
       "inspection": {
-        "queryPrompt": "盘点当前“特别关注”页面。返回设置按钮、顶部成员头像条目和会话行等可交互控件；另外为了知识图谱几何证据，必须把会话右侧红色未读数量角标作为单独 visibleControls 项返回：candidateKey 固定为 special_follow_unread_badge，label 固定为“实时未读消息数量角标”，controlType 为 status_badge，semanticRole 为 realtime_unread_count_indicator，enabled 为 false，reversible 为 false，riskHint 为 safe，functionDescription 说明它展示当前实时未读消息数量，locatorPrompt 只定位红色角标本身。visibleState 可以记录本帧观察到的数字，但 candidateKey、label 和 functionDescription 禁止包含具体数字。不要把角标数字解释为固定值。",
+        "queryPrompt": "盘点当前“特别关注”页面。返回设置按钮、顶部成员头像条目和会话行等可交互控件；另外为了知识图谱几何证据，必须把会话右侧红色未读数量角标作为单独 visibleControls 项返回：candidateKey 固定为 special_follow_unread_badge，label 固定为“实时未读消息数量角标”，elementType 为 status_badge，semanticRole 为 realtime_unread_count_indicator，enabled 为 false，reversible 为 false，riskHint 为 safe，functionDescription 说明它展示当前实时未读消息数量，locatorPrompt 只定位红色角标本身。visibleState 可以记录本帧观察到的数字，但 candidateKey、label 和 functionDescription 禁止包含具体数字。不要把角标数字解释为固定值。",
         "locateAllInteractiveControls": true,
         "includeControlTypes": [
           "button",

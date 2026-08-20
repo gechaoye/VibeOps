@@ -16,28 +16,34 @@ function assignment(target, gatewayId, modelName, modelFamily) {
   return { target, gatewayId, modelName, modelFamily, timeout: 180000, temperature: 0, reasoningEffort: 'medium' };
 }
 
-test('数据库配置热加载 Worker，并只把 Midscene 标签配置同步给 SDK', async () => {
+test('数据库配置热加载识别模型，并只把 Midscene 标签配置同步给 SDK', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-model-runtime-'));
   const modelStore = new ModelSettingsStore(path.join(root, 'model-settings.sqlite'));
   await modelStore.initialize();
-  modelStore.saveGateway({ id: 'workers', label: 'Workers', baseUrl: 'https://workers.example/v1', apiKey: 'worker-secret' });
+  modelStore.saveGateway({ id: 'recognition', label: 'Recognition', baseUrl: 'https://recognition.example/v1', apiKey: 'recognition-secret' });
   modelStore.saveGateway({ id: 'midscene', label: 'Midscene', baseUrl: 'https://midscene.example/v1', apiKey: 'midscene-secret' });
-  modelStore.saveAssignment(assignment('model_a', 'workers', 'worker-a-v1', 'qwen3-vl'));
-  modelStore.saveAssignment(assignment('model_b', 'workers', 'worker-b-v1', 'gpt-5'));
+  modelStore.saveAssignment(assignment('manual', 'recognition', 'manual-v1', 'qwen3-vl'));
+  modelStore.saveAssignment(assignment('auto', 'recognition', 'auto-v1', 'gpt-5'));
+  modelStore.saveAssignment(assignment('ultra_a', 'recognition', 'ultra-a-v1', 'qwen3-vl'));
+  modelStore.saveAssignment(assignment('ultra_b', 'recognition', 'ultra-b-v1', 'gpt-5'));
   modelStore.saveAssignment(assignment('midscene', 'midscene', 'midscene-v1', 'gpt-5'));
 
   const app = express();
   let draft = createEmptyDraft();
   let clearCount = 0;
-  let expectedWorkerB = 'worker-b-v1';
+  const expectedManual = 'manual-v1';
+  let expectedAuto = 'auto-v1';
+  let expectedModelB = 'ultra-b-v1';
   let expectedMidscene = { modelName: 'midscene-v1', family: 'gpt-5', reasoningBudget: '' };
   const agent = {
     interface: {},
     modelConfigManager: { clearModelConfigMap() { clearCount += 1; } },
     async unfreezePageContext() {},
     async freezePageContext() {
-      assert.equal(getModelRuntime('model_b').modelName, expectedWorkerB);
-      assert.equal(getModelRuntime('model_a').modelName, 'worker-a-v1');
+      assert.equal(getModelRuntime('manual').modelName, expectedManual);
+      assert.equal(getModelRuntime('auto').modelName, expectedAuto);
+      assert.equal(getModelRuntime('ultra_b').modelName, expectedModelB);
+      assert.equal(getModelRuntime('ultra_a').modelName, 'ultra-a-v1');
       assert.equal(process.env.MIDSCENE_MODEL_NAME, expectedMidscene.modelName);
       assert.equal(process.env.MIDSCENE_MODEL_BASE_URL, 'https://midscene.example/v1');
       assert.equal(process.env.MIDSCENE_MODEL_API_KEY, 'midscene-secret');
@@ -67,11 +73,17 @@ test('数据库配置热加载 Worker，并只把 Midscene 标签配置同步给
     assert.equal((await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' })).status, 200);
     assert.equal(clearCount, 1, '数据库配置未变化时不应清理模型缓存');
 
-    expectedWorkerB = 'worker-b-v2';
-    modelStore.saveAssignment(assignment('model_b', 'workers', expectedWorkerB, 'gpt-5'));
+    expectedAuto = 'auto-v2';
+    modelStore.saveAssignment(assignment('auto', 'recognition', expectedAuto, 'gpt-5'));
     assert.equal((await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' })).status, 200);
+    assert.equal(getModelRuntime('manual').modelName, expectedManual, '修改 Auto 配置不应改变 Manual 模型');
     assert.equal(clearCount, 2);
-    assert.equal(process.env.MIDSCENE_MODEL_NAME, 'midscene-v1', 'Worker 变化不应改变 Midscene 指派');
+
+    expectedModelB = 'ultra-b-v2';
+    modelStore.saveAssignment(assignment('ultra_b', 'recognition', expectedModelB, 'gpt-5'));
+    assert.equal((await fetch(`${baseUrl}/workbench/api/frames`, { method: 'POST' })).status, 200);
+    assert.equal(clearCount, 3);
+    assert.equal(process.env.MIDSCENE_MODEL_NAME, 'midscene-v1', '识别模型变化不应改变 Midscene 指派');
 
     expectedMidscene = { modelName: 'qwen3.8-max', family: 'qwen3', reasoningBudget: '8192' };
     modelStore.saveAssignment(assignment('midscene', 'midscene', expectedMidscene.modelName, expectedMidscene.family));

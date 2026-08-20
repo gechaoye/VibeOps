@@ -52,7 +52,13 @@ interface GatewayForm {
 type ModelForms = Record<ModelTarget, ModelForm>;
 type GatewayTestState = { status: 'testing' | 'success' | 'error'; detail?: string };
 
-const TARGETS: ModelTarget[] = ['model_a', 'model_b', 'midscene'];
+const TARGETS: ModelTarget[] = ['manual', 'auto', 'ultra_a', 'ultra_b', 'midscene'];
+const MODE_TARGETS: Record<WorkbenchMode, ModelTarget[]> = {
+  manual: ['manual'],
+  ultra: ['ultra_a', 'ultra_b'],
+  auto: ['auto', 'midscene'],
+};
+const MODE_LABELS: Record<WorkbenchMode, string> = { manual: 'Manual', ultra: 'Ultra', auto: 'Auto' };
 const CUSTOM_GATEWAY_LIMIT = 5;
 
 function familyForModel(modelName: string) {
@@ -71,9 +77,12 @@ function familyForModel(modelName: string) {
 }
 
 function slotForTarget(settings: ModelSettingsData, target: ModelTarget) {
-  if (target === 'model_b') return settings.modelB;
+  if (target === 'manual') return settings.manual;
+  if (target === 'auto') return settings.auto;
+  if (target === 'ultra_a') return settings.ultraModelA;
+  if (target === 'ultra_b') return settings.ultraModelB;
   if (target === 'midscene') return settings.midscene;
-  return settings.modelA;
+  return settings.manual;
 }
 
 function formFromSlot(slot: ModelSlotSettings): ModelForm {
@@ -106,6 +115,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
   const [query, setQuery] = useState('');
   const [forms, setForms] = useState<ModelForms | null>(null);
   const [mode, setMode] = useState<WorkbenchMode>('ultra');
+  const [pendingMode, setPendingMode] = useState<WorkbenchMode | null>(null);
   const [loading, setLoading] = useState(true);
   const [modelsLoading, setModelsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -118,10 +128,10 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
   const [openModelTarget, setOpenModelTarget] = useState<ModelTarget | null>(null);
   const [modelQueries, setModelQueries] = useState<Partial<Record<ModelTarget, string>>>({});
 
-  const applySettings = (result: ModelSettingsData) => {
+  const applySettings = (result: ModelSettingsData, syncMode = true) => {
     setSettings(result);
     setForms(formsFromSettings(result));
-    setMode(result.modeConfiguration?.mode || 'ultra');
+    if (syncMode) setMode(result.modeConfiguration?.mode || 'ultra');
   };
 
   const loadSettings = async () => {
@@ -157,9 +167,37 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     modelFamily: gateway.modelFamilies[modelName] || familyForModel(modelName),
   }))), [catalog]);
 
-  const modeDirty = Boolean(settings && mode !== (settings.modeConfiguration?.mode || 'ultra'));
-  const dirtyTargets = settings && forms ? TARGETS.filter((target) => formChanged(forms[target], slotForTarget(settings, target))) : [];
-  const dirty = modeDirty || Boolean(dirtyTargets?.length);
+  const dirtyTargets = settings && forms
+    ? MODE_TARGETS[mode].filter((target) => formChanged(forms[target], slotForTarget(settings, target)))
+    : [];
+  const dirty = dirtyTargets.length > 0;
+
+  const resetCurrentConfiguration = () => {
+    if (!settings) return;
+    const savedForms = formsFromSettings(settings);
+    setForms((current) => current ? MODE_TARGETS[mode].reduce((next, target) => ({
+      ...next,
+      [target]: savedForms[target],
+    }), current) : current);
+    setOpenModelTarget(null);
+  };
+
+  const changeConfigurationMode = (nextMode: WorkbenchMode) => {
+    if (nextMode === mode) return;
+    if (dirty) {
+      setPendingMode(nextMode);
+      return;
+    }
+    setOpenModelTarget(null);
+    setMode(nextMode);
+  };
+
+  const confirmModeChange = () => {
+    if (!pendingMode) return;
+    resetCurrentConfiguration();
+    setMode(pendingMode);
+    setPendingMode(null);
+  };
 
   const updateModel = (target: ModelTarget, value: string) => {
     const selected = modelOptions.find((option) => option.key === value);
@@ -181,9 +219,8 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     setSaving(true);
     try {
       let result = settings;
-      if (modeDirty) result = await workbenchApi.saveModelMode(mode);
-      for (const target of dirtyTargets || []) result = await workbenchApi.saveModelSettings({ ...forms[target], target });
-      applySettings(result);
+      for (const target of dirtyTargets) result = await workbenchApi.saveModelSettings({ ...forms[target], target });
+      applySettings(result, false);
       onSaved(result);
       onNotice('success', '模式配置已保存并应用');
     } catch (error) { onNotice('error', error instanceof Error ? error.message : String(error)); }
@@ -197,7 +234,13 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
 
   const editingGatewayUsage = useMemo(() => {
     if (!settings || !editingGatewayId) return [];
-    const labels: Record<ModelTarget, string> = { model_a: 'Model A', model_b: 'Model B', midscene: 'Midscene' };
+    const labels: Record<ModelTarget, string> = {
+      manual: 'Manual 页面识别模型',
+      auto: 'Auto 页面识别模型',
+      ultra_a: 'Ultra Model A',
+      ultra_b: 'Ultra Model B',
+      midscene: 'Auto Midscene 模型',
+    };
     return TARGETS.filter((target) => slotForTarget(settings, target).config.gatewayId === editingGatewayId).map((target) => labels[target]);
   }, [editingGatewayId, settings]);
 
@@ -246,7 +289,13 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
   if (loading && !settings) return <main className="settings-page"><div className="settings-state"><LoaderCircle className="spin" size={20} />正在读取设置</div></main>;
   if (!settings || !forms) return <main className="settings-page"><div className="settings-state"><CircleAlert size={20} />设置读取失败<button type="button" className="button" onClick={() => void loadSettings()}><RefreshCw size={14} />重试</button></div></main>;
 
-  const targetLabels: Record<ModelTarget, string> = { model_a: 'Model A', model_b: 'Model B', midscene: 'Midscene' };
+  const targetLabels: Record<ModelTarget, string> = {
+    manual: 'Manual 页面识别模型',
+    auto: 'Auto 页面识别模型',
+    ultra_a: 'Model A',
+    ultra_b: 'Model B',
+    midscene: 'Midscene 模型',
+  };
 
   const renderModelParameters = (target: ModelTarget, disabled: boolean) => {
     const form = forms[target];
@@ -332,18 +381,29 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
           <div className="gateway-catalog-group"><h3><span>默认网关 <small>{defaultGateways.length}</small></span></h3>{filteredGateways.filter((gateway) => gateway.kind === 'default').map(renderGateway)}{!defaultGateways.length && <div className="settings-empty"><span>暂无默认网关</span></div>}</div>
           <div className="gateway-catalog-group"><h3><span>自定义网关 <small>{customGateways.length} / {CUSTOM_GATEWAY_LIMIT}</small>{customGateways.length > 0 && customGateways.length < CUSTOM_GATEWAY_LIMIT && <button type="button" className="button gateway-inline-add" disabled={gatewaySaving} onClick={() => openGatewayDialog()}><Plus size={13} />添加网关</button>}</span></h3>{filteredGateways.filter((gateway) => gateway.kind === 'custom').map(renderGateway)}{!customGateways.length && <div className="settings-empty gateway-empty-state"><span>尚未添加自定义网关</span>{customGateways.length < CUSTOM_GATEWAY_LIMIT && <button type="button" className="button" disabled={gatewaySaving} onClick={() => openGatewayDialog()}><Plus size={13} />添加网关</button>}</div>}</div>
         </section> : <section className="mode-detail-page" aria-labelledby="mode-settings-title">
-          <div className="settings-group-heading"><div><Gauge size={17} /><span><h2 id="mode-settings-title">工作模式</h2><p>Manual 使用单模型，Ultra 使用 Model A/B 双模型并行。</p></span></div></div>
-          <div className="setting-row mode-setting-row"><div className="setting-copy"><strong>工作模式</strong><span>Auto 模式暂未开放。</span></div><div className="mode-segment" role="radiogroup" aria-label="工作模式">{(['manual', 'ultra', 'auto'] as WorkbenchMode[]).map((value) => <button key={value} type="button" role="radio" aria-checked={mode === value} className={mode === value ? 'active' : ''} disabled={value === 'auto'} onClick={() => setMode(value)}>{value === 'manual' ? 'Manual' : value === 'ultra' ? 'Ultra' : 'Auto'}{value === 'auto' && <small>待开发</small>}</button>)}</div></div>
-          {renderModelSelect('model_a', 'Model A', mode === 'manual' ? 'Manual 模式使用的模型。' : 'Ultra 模式的主模型。')}
-          {renderModelSelect('model_b', 'Model B', 'Ultra 模式的第二个并行模型。', mode !== 'ultra')}
-          {renderModelSelect('midscene', 'Midscene 模型', '预留给 Midscene，当前模式暂不使用。')}
-          <footer className="settings-save-bar"><span>{dirty ? '有未保存的更改' : <><Check size={13} />设置已同步</>}</span><button type="button" className="button" disabled={!dirty || saving} onClick={() => { setForms(formsFromSettings(settings)); setMode(settings.modeConfiguration?.mode || 'ultra'); }}><RotateCcw size={14} />还原</button><button type="button" className="button button-primary" disabled={!dirty || saving} onClick={() => void saveConfiguration()}>{saving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}保存设置</button></footer>
+          <div className="settings-group-heading"><div><Gauge size={17} /><span><h2 id="mode-settings-title">工作模式</h2><p>每种模式独立配置；Model A / B 只属于 Ultra，且两者地位对等。</p></span></div></div>
+          <div className="setting-row mode-setting-row"><div className="setting-copy"><strong>工作模式</strong><span>Auto 模式暂未开放。</span></div><div className="mode-segment" role="radiogroup" aria-label="工作模式">{(['manual', 'ultra', 'auto'] as WorkbenchMode[]).map((value) => <button key={value} type="button" role="radio" aria-checked={mode === value} className={mode === value ? 'active' : ''} disabled={value === 'auto'} onClick={() => changeConfigurationMode(value)}>{MODE_LABELS[value]}{value === 'auto' && <small>待开发</small>}</button>)}</div></div>
+          {mode === 'manual' && <>
+            <div className="settings-group-heading"><div><span><h2>Manual</h2><p>人工触发页面识别，识别后进入人工维护与审核。</p></span></div></div>
+            {renderModelSelect('manual', '页面识别模型', '仅供 Manual 模式使用。')}
+          </>}
+          {mode === 'auto' && <>
+            <div className="settings-group-heading"><div><span><h2>Auto</h2><p>自动探索使用独立的页面识别模型与设备交互模型，当前工作流尚未开放。</p></span></div></div>
+            {renderModelSelect('auto', '页面识别模型', '仅供 Auto 模式使用，不与 Manual 共用。')}
+            {renderModelSelect('midscene', 'Midscene 模型', 'Auto 模式用于理解并操作设备。')}
+          </>}
+          {mode === 'ultra' && <>
+            <div className="settings-group-heading"><div><span><h2>Ultra</h2><p>Model A 与 Model B 对同一设备帧并行识别，完成后由用户合并结果。</p></span></div></div>
+            {renderModelSelect('ultra_a', 'Model A', 'Ultra 模式的并列识别模型。')}
+            {renderModelSelect('ultra_b', 'Model B', 'Ultra 模式的并列识别模型。')}
+          </>}
+          <footer className="settings-save-bar"><span>{dirty ? '有未保存的更改' : <><Check size={13} />设置已同步</>}</span><button type="button" className="button" disabled={!dirty || saving} onClick={resetCurrentConfiguration}><RotateCcw size={14} />还原</button><button type="button" className="button button-primary" disabled={!dirty || saving} onClick={() => void saveConfiguration()}>{saving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}保存设置</button></footer>
         </section>}
       </div>
 
       {gatewayForm && <div className="gateway-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !gatewaySaving && !gatewayDeleting) setGatewayForm(null); }}>
         <form className="gateway-dialog" role="dialog" aria-modal="true" aria-labelledby="gateway-dialog-title" autoComplete="off" onSubmit={(event) => { event.preventDefault(); if (!gatewaySaving && !gatewayDeleting) void saveGateway(); }} onMouseDown={(event) => event.stopPropagation()}>
-          <header><div><strong id="gateway-dialog-title">{editingGatewayId ? '编辑模型网关' : '添加自定义网关'}</strong><span>保存后可用于 Model A、Model B 和 Midscene。</span></div><button type="button" className="icon-button" aria-label="关闭" title="关闭" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}><X size={16} /></button></header>
+          <header><div><strong id="gateway-dialog-title">{editingGatewayId ? '编辑模型网关' : '添加自定义网关'}</strong><span>保存后可用于 Manual、Auto、Ultra 和 Midscene 的模型配置。</span></div><button type="button" className="icon-button" aria-label="关闭" title="关闭" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}><X size={16} /></button></header>
           <div className="gateway-dialog-fields">
             <label className="settings-field settings-field-wide"><span>显示名称</span><input required value={gatewayForm.label} placeholder="例如 Internal API" onChange={(event) => setGatewayForm({ ...gatewayForm, label: event.target.value })} /></label>
             <label className="settings-field settings-field-wide"><span>Base URL</span><input required type="url" value={gatewayForm.baseUrl} placeholder="https://gateway.example.com/v1" onChange={(event) => setGatewayForm({ ...gatewayForm, baseUrl: event.target.value })} /></label>
@@ -353,6 +413,14 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
           {editingGatewayUsage.length > 0 && <div className="gateway-usage-note"><CircleAlert size={14} /><span>当前被 {editingGatewayUsage.join('、')} 使用。</span></div>}
           <footer><button type="button" className="button" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}>取消</button><button type="submit" className="button button-primary" disabled={gatewaySaving || gatewayDeleting}>{gatewaySaving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}{editingGateway?.kind === 'default' ? '保存默认值' : '保存网关'}</button></footer>
         </form>
+      </div>}
+
+      {pendingMode && <div className="gateway-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPendingMode(null); }}>
+        <section className="gateway-dialog mode-change-dialog" role="dialog" aria-modal="true" aria-labelledby="mode-change-dialog-title" aria-describedby="mode-change-dialog-description" onKeyDown={(event) => { if (event.key === 'Escape') setPendingMode(null); }} onMouseDown={(event) => event.stopPropagation()}>
+          <header><div><strong id="mode-change-dialog-title">切换配置模式？</strong><span>当前 {MODE_LABELS[mode]} 配置尚未保存。</span></div><button type="button" className="icon-button" aria-label="关闭" title="关闭" onClick={() => setPendingMode(null)}><X size={16} /></button></header>
+          <div className="mode-change-dialog-body"><CircleAlert size={17} /><p id="mode-change-dialog-description">切换到 {MODE_LABELS[pendingMode]} 后，当前未保存的更改将被丢弃。</p></div>
+          <footer><button type="button" autoFocus className="button" onClick={() => setPendingMode(null)}>取消</button><button type="button" className="button button-primary" onClick={confirmModeChange}>继续切换</button></footer>
+        </section>
       </div>}
     </main>
   );

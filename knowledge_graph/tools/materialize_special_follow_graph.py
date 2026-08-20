@@ -807,7 +807,7 @@ def apply_confirmed_navigation_model(
         tab.pop("availableOnPageRefs", None)
 
     more_trigger = elements[navigation["moreTriggerElementKey"]]
-    more_trigger["controlType"] = "shared-component-trigger"
+    more_trigger["elementType"] = "shared-component-trigger"
     more_trigger["role"] = "role.menu"
     more_trigger["capabilities"] = list(dict.fromkeys(more_trigger.get("capabilities", []) + ["open_more"]))
     more_trigger["summary"] = "打开底部导航中的“更多”共享应用入口抽屉；不创建同名 Page。"
@@ -902,7 +902,7 @@ def render_page_card(
         if not element:
             continue
         link = wiki_path(element_cards[element_id], obsidian_root)
-        lines.append(f"| [[{link}|{element['label']}]] | {element.get('controlType')} | {format_list(element.get('capabilities', []))} |")
+        lines.append(f"| [[{link}|{element['label']}]] | {element.get('elementType')} | {format_list(element.get('capabilities', []))} |")
     lines.extend(["", "## 导航关系", "", "### 进入", ""])
     inbound = [transition_by_id[item] for item in page.get("inboundTransitionRefs", []) if item in transition_by_id]
     if inbound:
@@ -1081,7 +1081,7 @@ def render_element_card(
             "",
             "| 类型 | 语义角色 | 能力 | 风险 | 覆盖 |",
             "| --- | --- | --- | --- | --- |",
-            f"| {element.get('controlType')} | `{element.get('role')}` | {format_list(element.get('capabilities', []))} | "
+            f"| {element.get('elementType')} | `{element.get('role')}` | {format_list(element.get('capabilities', []))} | "
             f"{element.get('risk')} | {element.get('coverage')} |",
         ]
     )
@@ -1413,7 +1413,7 @@ def main() -> None:
             "featurePath": feature_path,
             "owner": owner,
             "parentElementRef": parent_ref,
-            "controlType": candidate.get("controlType", candidate.get("kind", "control")),
+            "elementType": candidate.get("elementType", candidate.get("kind", "control")),
             "role": candidate.get("semanticRole", "unknown"),
             "capabilities": candidate.get("capabilities", []),
             "summary": candidate.get("description", ""),

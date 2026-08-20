@@ -170,7 +170,7 @@ def validate_compositions(
             not composition
             and owner.get("kind") == "page"
             and element.get("role") == "setting"
-            and element.get("controlType") in {"list_entry", "toggle"}
+            and element.get("elementType") in {"list_entry", "toggle"}
         ):
             errors.append(f"Element {key} is a flat Page-owned setting row without a composition profile")
             continue
@@ -748,7 +748,7 @@ def main() -> None:
                     or certified_trigger.get("owner") != expected_child_owner
                 ):
                     errors.append(f"AuthorityContract {key} child owner does not resolve to the container")
-                if label_element.get("controlType") != "text_label" or label_element.get("capabilities"):
+                if label_element.get("elementType") != "text_label" or label_element.get("capabilities"):
                     errors.append(f"AuthorityContract {key} label is not a non-actionable text element")
                 if label_element.get("interactionBoundary", {}).get("actionable") is not False:
                     errors.append(f"AuthorityContract {key} label is not explicitly marked non-actionable")

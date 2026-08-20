@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createEmptyDraft, mergeWorkerIntoDraft } from './draft-model.mjs';
+import { createEmptyDraft, mergeRecognitionIntoDraft } from './draft-model.mjs';
 import { draftTransitionIssues } from './graph-workflow.mjs';
 
-function minimalWorker() {
+function minimalRecognition() {
   return {
     frameId: 'sha256:before',
     page: { name: '来源页', surfaceType: 'page', stateSummary: '默认', scrollableRegions: [] },
     elements: [{
-      candidateKey: 'source.open', label: '打开详情', visualDescription: '入口', controlType: 'button', interactive: true, enabled: true, state: null,
+      candidateKey: 'source.open', label: '打开详情', visualDescription: '入口', elementType: 'button', interactive: true, enabled: true, state: null,
       approximateRegion: { x: 0.1, y: 0.1, width: 0.2, height: 0.1 }, geometryKind: 'tap-target', geometryConfidence: 0.9,
       meaning: {
         status: 'known',
@@ -24,7 +24,7 @@ function minimalWorker() {
 }
 
 test('Transition 仅在完整动作证据闭环后通过', () => {
-  const draft = mergeWorkerIntoDraft(createEmptyDraft(), minimalWorker(), 'model.json', 'qwen3-vl-plus');
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), minimalRecognition(), 'model.json', 'qwen3-vl-plus');
   draft.pages.push({ ...draft.pages[0], id: 'draft-page-target', key: 'page.target', name: '目标页', frameIds: ['sha256:after'], elementIds: [] });
   const transition = {
     id: 'draft-transition-1', key: 'source.open_target', sourcePageId: draft.currentPageId, sourceStateKey: 'default',

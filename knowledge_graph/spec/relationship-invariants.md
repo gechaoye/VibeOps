@@ -15,7 +15,7 @@
 
 ### 2.1 容器身份
 
-任何拥有直接子 Element 的 Element 都是结构意义上的容器，不要求其 `controlType` 必须为 `container`。例如“更多”既是可点击触发器，也可以在 `open` 状态下持有抽屉入口。
+任何拥有直接子 Element 的 Element 都是结构意义上的容器，不要求其 `elementType` 必须为 `container`。例如“更多”既是可点击触发器，也可以在 `open` 状态下持有抽屉入口。
 
 `component` 和 `shared_component` 不代表两种容器结构：
 

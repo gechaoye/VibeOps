@@ -11,11 +11,11 @@ test('成功和失败的模型会话都会持久化到历史', async () => {
   try {
     await store.initialize();
     await store.saveAnalysisSession({
-      id: 'workerA-1', kind: 'worker_a', status: 'completed', frameId: 'frame-1', model: 'workerA',
+      id: 'modelA-1', kind: 'ultra_a', status: 'completed', frameId: 'frame-1', model: 'modelA',
       startedAt: '2026-08-15T01:00:00.000Z', updatedAt: '2026-08-15T01:01:00.000Z', reasoningContent: '', outputContent: '{}',
     });
     await store.saveAnalysisSession({
-      id: 'review-1', kind: 'review', status: 'failed', frameId: 'frame-1', model: 'workerB',
+      id: 'review-1', kind: 'review', status: 'failed', frameId: 'frame-1', model: 'modelB',
       startedAt: '2026-08-15T01:02:00.000Z', updatedAt: '2026-08-15T01:03:00.000Z', errorMessage: '上游错误', reasoningContent: '检查画面', outputContent: '',
     });
     const sessions = await store.listAnalysisSessions();

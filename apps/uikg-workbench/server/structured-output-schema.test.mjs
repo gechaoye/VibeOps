@@ -11,7 +11,7 @@ test('GPT-5 和两个 Qwen3.7 模型启用结构化输出', () => {
   assert.equal(supportsStructuredOutput('qwen3-vl-plus', 'qwen3-vl'), false);
 });
 
-test('Worker A 断点续写 Schema 包含严格 done 字段', () => {
+test('Model A 断点续写 Schema 包含严格 done 字段', () => {
   const schema = openAIStructuredOutputSchema({
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     type: 'object',

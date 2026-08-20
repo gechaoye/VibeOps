@@ -8,6 +8,7 @@ interface AnnotationCanvasProps {
   selectedId: string | null;
   drawing: boolean;
   showRejected: boolean;
+  showGridGuides: boolean;
   onSelect: (id: string | null) => void;
   onAdd: (box: BBox) => void;
   onBoxChange: (id: string, box: BBox) => void;
@@ -45,7 +46,7 @@ function elementAtPoint(elements: DraftElement[], selectedId: string | null, x: 
   return hits[(selectedIndex + 1) % hits.length];
 }
 
-export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, showRejected, onSelect, onAdd, onBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
+export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, showRejected, showGridGuides, onSelect, onAdd, onBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
@@ -123,6 +124,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
     : null;
   const visibleElements = elements.filter((element) => showRejected || element.reviewStatus !== 'rejected');
   const renderedElements = [...visibleElements].sort((left, right) => Number(left.id === selectedId) - Number(right.id === selectedId));
+  const selectedElement = visibleElements.find((element) => element.id === selectedId) || null;
 
   return (
     <div
@@ -151,6 +153,22 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
         draggable={false}
         onLoad={(event) => setImageSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
       />
+      {showGridGuides && selectedElement && (
+        <div
+          className="annotation-grid"
+          aria-hidden="true"
+          style={{
+            gridTemplateColumns: `repeat(${selectedElement.gridColumns}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${selectedElement.gridRows}, minmax(0, 1fr))`,
+          }}
+        >
+          {Array.from({ length: selectedElement.gridColumns * selectedElement.gridRows }, (_, index) => (
+            <span key={index} className={`annotation-grid-cell ${index + 1 === selectedElement.gridRegion ? 'annotation-grid-cell-active' : ''}`}>
+              <span className="annotation-grid-label">{index + 1}</span>
+            </span>
+          ))}
+        </div>
+      )}
       {renderedElements.map((element) => {
         const selected = element.id === selectedId;
         return (
@@ -177,6 +195,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
               <span className={`bbox-detail ${element.bbox.y > 0.72 ? 'bbox-detail-above' : ''}`}>
                 <strong>{element.meaning.description || element.visualDescription || '含义待确认'}</strong>
                 <span>可信度 {Math.round(element.confidence * 100)}%</span>
+                <span>宫格 {element.gridColumns} × {element.gridRows} · 区域 {element.gridRegion}</span>
                 <span>中心点 ({Math.round((element.bbox.x + element.bbox.width / 2) * imageSize.width)}, {Math.round((element.bbox.y + element.bbox.height / 2) * imageSize.height)})</span>
               </span>
             )}

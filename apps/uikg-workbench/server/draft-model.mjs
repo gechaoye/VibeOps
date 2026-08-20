@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { ELEMENT_ACTIONS, ELEMENT_TYPES, WORKER_ACTIONS } from './element-taxonomy.mjs';
+import { ELEMENT_ACTIONS, ELEMENT_TYPES, RECOGNITION_ACTIONS } from './element-taxonomy.mjs';
 
 const ELEMENT_TYPE_REPLACEMENTS = {
   'bottom-navigation': 'navigation-bar',
@@ -27,6 +27,48 @@ export const DRAFT_SCHEMA_VERSION = 'uikg-workbench-draft/1.1';
 
 const MEANING_EVIDENCE_FIELDS = ['visibleTexts', 'visibleIcons', 'visibleStates', 'visualCues'];
 
+export function normalizeGridCount(value) {
+  return Math.min(12, Math.max(1, Math.round(Number(value) || 1)));
+}
+
+export function inferGridForBox(bbox) {
+  const grid = gridForBox(bbox);
+  return { columns: grid.columns, rows: grid.rows };
+}
+
+function gridAxisForBox(offset, size, maximumCount) {
+  const maximum = normalizeGridCount(maximumCount);
+  const candidateFor = (count) => {
+    const start = Math.floor(offset * count);
+    const end = Math.ceil((offset + size) * count - 1e-9) - 1;
+    if (start !== end || start < 0 || end >= count) return null;
+    const leftMargin = offset * count - start;
+    const rightMargin = start + 1 - (offset + size) * count;
+    // Keep at least 10% of the element size clear on both sides when possible.
+    const minimumMargin = Math.max(0.025, size * count * 0.1);
+    return { count, index: start, hasTolerance: Math.min(leftMargin, rightMargin) >= minimumMargin };
+  };
+
+  let fallback = null;
+  for (let count = maximum; count >= 1; count -= 1) {
+    const candidate = candidateFor(count);
+    if (!candidate) continue;
+    fallback ||= candidate;
+    if (candidate.hasTolerance) return candidate;
+  }
+  return fallback || { count: 1, index: 0, hasTolerance: false };
+}
+
+export function gridForBox(bbox, maximumColumns = 12, maximumRows = 12) {
+  const column = gridAxisForBox(bbox.x, bbox.width, maximumColumns);
+  const row = gridAxisForBox(bbox.y, bbox.height, maximumRows);
+  return {
+    columns: column.count,
+    rows: row.count,
+    region: row.index * column.count + column.index + 1,
+  };
+}
+
 function normalizeCapabilities(capabilities) {
   const normalized = [...new Set((Array.isArray(capabilities) ? capabilities : [])
     .filter((capability) => typeof capability === 'string' && capability.trim())
@@ -36,26 +78,25 @@ function normalizeCapabilities(capabilities) {
   return actions.length > 0 ? actions : ['none'];
 }
 
-function defaultActionEffect(controlType, action) {
-  if (action === 'none') return `${controlType} 仅展示或承载内容，不触发交互`;
-  if (action === 'input') return `向 ${controlType} 输入文本或数值`;
-  if (action === 'delete') return `删除 ${controlType} 对应的内容`;
-  if (action === 'scroll_vertical') return `纵向滚动 ${controlType} 中的内容`;
-  if (action === 'scroll_horizontal') return `横向滚动 ${controlType} 中的内容`;
-  if (action === 'swipe') return `滑动 ${controlType} 以切换内容或状态`;
-  if (action === 'drag') return `拖拽 ${controlType} 或其中的目标对象`;
-  if (action === 'zoom') return `缩放 ${controlType} 中的内容`;
-  if (action === 'multi_touch') return `在 ${controlType} 上执行多点触控`;
-  if (action === 'double_tap') return `双击 ${controlType} 触发对应交互`;
-  if (action === 'long_press') return `长按 ${controlType} 打开扩展操作或状态`;
-  return `点击 ${controlType} 触发对应操作`;
+function defaultActionEffect(elementType, action) {
+  if (action === 'none') return `${elementType} 仅展示或承载内容，不触发交互`;
+  if (action === 'input') return `向 ${elementType} 输入文本或数值`;
+  if (action === 'scroll_vertical') return `纵向滚动 ${elementType} 中的内容`;
+  if (action === 'scroll_horizontal') return `横向滚动 ${elementType} 中的内容`;
+  if (action === 'swipe') return `滑动 ${elementType} 以切换内容或状态`;
+  if (action === 'drag') return `拖拽 ${elementType} 或其中的目标对象`;
+  if (action === 'zoom') return `缩放 ${elementType} 中的内容`;
+  if (action === 'multi_touch') return `在 ${elementType} 上执行多点触控`;
+  if (action === 'double_tap') return `双击 ${elementType} 触发对应交互`;
+  if (action === 'long_press') return `长按 ${elementType} 打开扩展操作或状态`;
+  return `点击 ${elementType} 触发对应操作`;
 }
 
-function normalizeActionEffects(actionEffects, controlType, capabilities) {
+function normalizeActionEffects(actionEffects, elementType, capabilities) {
   const current = Array.isArray(actionEffects) ? actionEffects : [];
   return capabilities.map((action) => ({
     action,
-    effect: current.find((item) => item?.action === action && typeof item?.effect === 'string')?.effect || defaultActionEffect(controlType, action),
+    effect: current.find((item) => item?.action === action && typeof item?.effect === 'string')?.effect || defaultActionEffect(elementType, action),
   }));
 }
 
@@ -175,11 +216,11 @@ function hasClassifiedMeaningEvidence(evidence) {
   return MEANING_EVIDENCE_FIELDS.some((field) => evidence[field].length > 0) || Boolean(evidence.userContext);
 }
 
-export function normalizeWorkerOutput(rawWorkerResult) {
-  const workerResult = structuredClone(rawWorkerResult);
+export function normalizeRecognitionOutput(rawRecognitionResult) {
+  const recognitionResult = structuredClone(rawRecognitionResult);
   const normalizationIssues = [];
-  if (!Array.isArray(workerResult?.elements)) return { workerResult, normalizationIssues };
-  workerResult.elements = workerResult.elements.map((element, index) => {
+  if (!Array.isArray(recognitionResult?.elements)) return { recognitionResult, normalizationIssues };
+  recognitionResult.elements = recognitionResult.elements.map((element, index) => {
     const repairIssues = [];
     const meaningIssues = [];
     const normalizedElement = { ...element };
@@ -205,21 +246,21 @@ export function normalizeWorkerOutput(rawWorkerResult) {
       repairIssues.push('geometryKind 已从 container 归一化为 boundary');
     }
 
-    if (typeof normalizedElement.controlType === 'string') {
-      const rawControlType = normalizedElement.controlType.trim();
-      const repairedControlType = ELEMENT_TYPE_REPLACEMENTS[rawControlType] || rawControlType;
-      if (ELEMENT_TYPES.includes(repairedControlType)) {
-        normalizedElement.controlType = repairedControlType;
-        if (repairedControlType !== rawControlType) {
-          repairIssues.push(`controlType 已从 ${rawControlType} 归一化为 ${repairedControlType}`);
+    if (typeof normalizedElement.elementType === 'string') {
+      const rawElementType = normalizedElement.elementType.trim();
+      const repairedElementType = ELEMENT_TYPE_REPLACEMENTS[rawElementType] || rawElementType;
+      if (ELEMENT_TYPES.includes(repairedElementType)) {
+        normalizedElement.elementType = repairedElementType;
+        if (repairedElementType !== rawElementType) {
+          repairIssues.push(`elementType 已从 ${rawElementType} 归一化为 ${repairedElementType}`);
         }
       } else {
-        normalizedElement.controlType = '';
+        normalizedElement.elementType = '';
         normalizedElement.riskSignals = [...new Set([
           ...(Array.isArray(normalizedElement.riskSignals) ? normalizedElement.riskSignals : []),
-          'control-type-needs-review',
+          'element-type-needs-review',
         ])];
-        repairIssues.push(`controlType ${rawControlType || '(empty)'} 未在当前分类中，已留空等待审核`);
+        repairIssues.push(`elementType ${rawElementType || '(empty)'} 未在当前分类中，已留空等待审核`);
       }
     }
 
@@ -260,8 +301,8 @@ export function normalizeWorkerOutput(rawWorkerResult) {
     }
     return { ...normalizedElement, meaning };
   });
-  if (Array.isArray(workerResult.actionCandidates)) {
-    workerResult.actionCandidates = workerResult.actionCandidates.map((actionCandidate, index) => {
+  if (Array.isArray(recognitionResult.actionCandidates)) {
+    recognitionResult.actionCandidates = recognitionResult.actionCandidates.map((actionCandidate, index) => {
       const messages = [];
       const normalized = { ...actionCandidate };
       if (actionCandidate?.basis === 'visible-icon') {
@@ -278,16 +319,16 @@ export function normalizeWorkerOutput(rawWorkerResult) {
       return normalized;
     });
   }
-  if (workerResult.comparison && typeof workerResult.comparison === 'object' && Array.isArray(workerResult.comparison.changes)) {
-    const rawChanges = workerResult.comparison.changes;
-    if (workerResult.comparison.status === 'not-requested' && rawChanges.length > 0) {
-      workerResult.comparison.changes = [];
+  if (recognitionResult.comparison && typeof recognitionResult.comparison === 'object' && Array.isArray(recognitionResult.comparison.changes)) {
+    const rawChanges = recognitionResult.comparison.changes;
+    if (recognitionResult.comparison.status === 'not-requested' && rawChanges.length > 0) {
+      recognitionResult.comparison.changes = [];
       normalizationIssues.push({
         section: 'comparison',
         messages: [`comparison.status 为 not-requested，已移除 ${rawChanges.length} 条模型说明`],
       });
     } else if (rawChanges.some((change) => typeof change === 'string')) {
-      workerResult.comparison.changes = rawChanges.map((change) => (
+      recognitionResult.comparison.changes = rawChanges.map((change) => (
         typeof change === 'string' ? { summary: change } : change
       ));
       normalizationIssues.push({
@@ -296,7 +337,7 @@ export function normalizeWorkerOutput(rawWorkerResult) {
       });
     }
   }
-  return { workerResult, normalizationIssues };
+  return { recognitionResult, normalizationIssues };
 }
 
 function pageKeyFromName(name) {
@@ -318,6 +359,8 @@ function makeDraftPage(page, frameId = null, featurePath = []) {
     id: page.id || draftPageId(),
     key: page.key || pageKeyFromName(page.name),
     name: page.name || '当前页面',
+    functionRef: page.functionRef || '',
+    implementationType: page.implementationType || 'unknown',
     surfaceType: page.surfaceType || 'unknown',
     stateSummary: page.stateSummary || '',
     scrollableRegions: [...(page.scrollableRegions || [])],
@@ -338,6 +381,8 @@ export function beginFrameCapture(currentDraft, frameId, { forceNewPage = false,
         id: draftPageId(),
         key: `page.capture.${randomUUID().slice(0, 8)}`,
         name: '待识别页面',
+        functionRef: '',
+        implementationType: 'unknown',
         surfaceType: 'unknown',
         stateSummary: '',
         scrollableRegions: [],
@@ -354,6 +399,8 @@ export function beginFrameCapture(currentDraft, frameId, { forceNewPage = false,
       id: page.id,
       key: page.key,
       name: page.name,
+      functionRef: page.functionRef,
+      implementationType: page.implementationType,
       surfaceType: page.surfaceType,
       stateSummary: page.stateSummary,
       scrollableRegions: page.scrollableRegions,
@@ -381,6 +428,8 @@ export function removePagesFromDraft(currentDraft, pageIds) {
     id: 'draft-page-empty',
     key: 'page.empty',
     name: '',
+    functionRef: '',
+    implementationType: 'unknown',
     surfaceType: 'unknown',
     stateSummary: '',
     scrollableRegions: [],
@@ -391,7 +440,7 @@ export function removePagesFromDraft(currentDraft, pageIds) {
     currentPageId: nextPage?.id || emptyPage.id,
     currentFrameId: nextPage?.frameIds.at(-1) || null,
     page: nextPage
-      ? { id: nextPage.id, key: nextPage.key, name: nextPage.name, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions }
+      ? { id: nextPage.id, key: nextPage.key, name: nextPage.name, functionRef: nextPage.functionRef, implementationType: nextPage.implementationType, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions }
       : emptyPage,
     pages,
     elements,
@@ -416,6 +465,8 @@ export function createEmptyDraft() {
       id: 'draft-page-current',
       key: 'page.current',
       name: '当前页面',
+      functionRef: '',
+      implementationType: 'unknown',
       surfaceType: 'unknown',
       stateSummary: '',
       scrollableRegions: [],
@@ -424,7 +475,7 @@ export function createEmptyDraft() {
     elements: [],
     elementEditRecords: [],
     transitions: [],
-    lastWorkerModel: null,
+    lastAiModel: null,
     createdAt: now,
     updatedAt: now,
   };
@@ -438,6 +489,8 @@ export function normalizeDraftShape(value) {
     id: draft.currentPageId,
     key: 'page.current',
     name: '当前页面',
+    functionRef: '',
+    implementationType: 'unknown',
     surfaceType: 'unknown',
     stateSummary: '',
     scrollableRegions: [],
@@ -450,18 +503,23 @@ export function normalizeDraftShape(value) {
   }
   draft.elements = (draft.elements || []).map((element) => {
     const { actionable: _removedActionable, ...elementFields } = element;
-    const controlType = normalizeElementType(element.controlType);
+    const elementType = normalizeElementType(element.elementType);
     const capabilities = normalizeCapabilities(element.capabilities);
+    const grid = gridForBox(element.bbox, element.gridColumns ?? 12, element.gridRows ?? 12);
     return {
       ...elementFields,
-      controlType,
+      displayCondition: typeof element.displayCondition === 'string' ? element.displayCondition : '',
+      elementType,
       capabilities,
-      actionEffects: normalizeActionEffects(element.actionEffects, controlType, capabilities),
+      actionEffects: normalizeActionEffects(element.actionEffects, elementType, capabilities),
       interactionBoundary: normalizeInteractionBoundary(element.interactionBoundary, capabilities),
+      gridColumns: grid.columns,
+      gridRows: grid.rows,
+      gridRegion: grid.region,
       meaning: normalizeDraftMeaning(element.meaning),
       pageId: element.pageId ?? (['application', 'shared_component'].includes(element.ownerKind) ? null : draft.currentPageId),
       availableOnPageIds: [...(element.availableOnPageIds || (element.ownerKind === 'application' ? [draft.currentPageId] : []))],
-      workerModel: element.workerModel || draft.lastWorkerModel || null,
+      aiModel: element.aiModel || draft.lastAiModel || null,
     };
   });
   draft.elementEditRecords = Array.isArray(draft.elementEditRecords)
@@ -473,14 +531,16 @@ export function normalizeDraftShape(value) {
     return {
       ...element,
       reviewStatus: element.reviewStatus === 'edited' ? 'pending' : element.reviewStatus,
-      source: 'ai_worker',
+      source: 'ai',
     };
   });
   draft.transitions = Array.isArray(draft.transitions) ? draft.transitions : [];
-  draft.lastWorkerModel ||= null;
+  draft.lastAiModel ||= null;
   const pageById = new Map(draft.pages.map((page) => [page.id, page]));
   for (const page of draft.pages) {
     page.key ||= pageKeyFromName(page.name);
+    page.functionRef ||= '';
+    page.implementationType ||= 'unknown';
     page.featurePath = page.featurePath?.length ? page.featurePath.slice(0, 3) : [page.name || '待归类'];
     page.frameIds = [...new Set(page.frameIds || [])];
     page.elementIds = [];
@@ -503,9 +563,9 @@ function draftElementId(candidateKey) {
 }
 
 function inferRole(element) {
-  if (element.controlType === 'container') return 'container';
-  if (element.controlType === 'label') return 'label';
-  if (element.controlType === 'status' || element.controlType === 'badge') {
+  if (element.elementType === 'container') return 'container';
+  if (element.elementType === 'label') return 'label';
+  if (element.elementType === 'status' || element.elementType === 'badge') {
     return 'status_indicator';
   }
   if (element.interactive) return 'action_trigger';
@@ -516,34 +576,39 @@ function capabilitiesFor(candidateKey, actions) {
   const capabilities = [...new Set(
     actions
       .filter((action) => action.triggerCandidateKey === candidateKey)
-      .map((action) => WORKER_ACTIONS.includes(action.action) ? action.action : null)
+      .map((action) => RECOGNITION_ACTIONS.includes(action.action) ? action.action : null)
       .filter(Boolean),
   )];
   return capabilities.length > 0 ? capabilities : ['none'];
 }
 
-function actionEffectsFor(candidateKey, actions, controlType, capabilities) {
+function actionEffectsFor(candidateKey, actions, elementType, capabilities) {
   return capabilities.map((action) => ({
     action,
-    effect: actions.find((candidate) => candidate.triggerCandidateKey === candidateKey && candidate.action === action)?.expectedOutcome || defaultActionEffect(controlType, action),
+    effect: actions.find((candidate) => candidate.triggerCandidateKey === candidateKey && candidate.action === action)?.expectedOutcome || defaultActionEffect(elementType, action),
   }));
 }
 
-function nextElementFromWorker(element, actions, pageId, model) {
+function nextElementFromRecognition(element, actions, pageId, model) {
   const capabilities = capabilitiesFor(element.candidateKey, actions);
+  const grid = gridForBox(element.approximateRegion);
   return {
     id: draftElementId(element.candidateKey),
     candidateKey: element.candidateKey,
     label: element.label || element.visualDescription,
     visualDescription: element.visualDescription,
-    controlType: element.controlType,
+    displayCondition: '',
+    elementType: element.elementType,
     role: inferRole(element),
     capabilities,
-    actionEffects: actionEffectsFor(element.candidateKey, actions, element.controlType, capabilities),
+    actionEffects: actionEffectsFor(element.candidateKey, actions, element.elementType, capabilities),
     enabled: element.enabled ?? null,
     state: element.state || '',
     dynamicContent: element.dynamicContent,
     bbox: { ...element.approximateRegion },
+    gridColumns: grid.columns,
+    gridRows: grid.rows,
+    gridRegion: grid.region,
     geometryKind: element.geometryKind,
     geometryConfidence: element.geometryConfidence,
     confidence: element.confidence,
@@ -557,8 +622,8 @@ function nextElementFromWorker(element, actions, pageId, model) {
     availableOnPageIds: [],
     interactionBoundary: normalizeInteractionBoundary(null, capabilities),
     reviewStatus: 'pending',
-    source: 'ai_worker',
-    workerModel: model || null,
+    source: 'ai',
+    aiModel: model || null,
     lastModelProposal: null,
   };
 }
@@ -579,8 +644,8 @@ function clampUnitBox(box) {
   };
 }
 
-export function prepareWorkerForDraft(workerResult) {
-  const proposal = structuredClone(workerResult);
+export function prepareRecognitionForDraft(recognitionResult) {
+  const proposal = structuredClone(recognitionResult);
   const byKey = new Map(proposal.elements.map((element) => [element.candidateKey, element]));
   for (const element of proposal.elements) {
     const original = element.approximateRegion;
@@ -599,7 +664,7 @@ export function prepareWorkerForDraft(workerResult) {
   return proposal;
 }
 
-export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef, model = null) {
+export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, modelResultRef, model = null) {
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
   const editedElementIds = new Set(previous.elementEditRecords.map((record) => record.elementId));
   const currentPageHasElements = previous.elements.some((item) => item.pageId === previous.currentPageId);
@@ -612,14 +677,14 @@ export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef,
     && !currentPageIsEmptyCapture
     && previous.page.name
     && previous.page.name !== '当前页面'
-    && workerResult.page.name
-    && workerResult.page.name !== previous.page.name,
+    && recognitionResult.page.name
+    && recognitionResult.page.name !== previous.page.name,
   );
   const currentPageId = pageChanged ? draftPageId() : previous.currentPageId;
   const currentPageElements = previous.elements.filter((item) => item.pageId === previous.currentPageId || ['application', 'shared_component'].includes(item.ownerKind));
   const previousByKey = new Map(currentPageElements.map((item) => [item.candidateKey, item]));
-  const nextElements = workerResult.elements.map((candidate) => {
-    const generated = nextElementFromWorker(candidate, workerResult.actionCandidates || [], currentPageId, model);
+  const nextElements = recognitionResult.elements.map((candidate) => {
+    const generated = nextElementFromRecognition(candidate, recognitionResult.actionCandidates || [], currentPageId, model);
     const existing = previousByKey.get(candidate.candidateKey);
     if (!existing) return generated;
     if (['application', 'shared_component'].includes(existing.ownerKind)) {
@@ -630,7 +695,7 @@ export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef,
           : existing.availableOnPageIds,
         lastModelProposal: isHumanProtected(existing, editedElementIds) ? {
           label: generated.label,
-          controlType: generated.controlType,
+          elementType: generated.elementType,
           bbox: generated.bbox,
           confidence: generated.confidence,
           modelResultRef,
@@ -648,7 +713,7 @@ export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef,
       ...existing,
       lastModelProposal: {
         label: generated.label,
-        controlType: generated.controlType,
+        elementType: generated.elementType,
         bbox: generated.bbox,
         confidence: generated.confidence,
         modelResultRef,
@@ -664,7 +729,7 @@ export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef,
   });
   const mergedElements = [...preservedElements, ...nextElements];
   const byKey = new Map(nextElements.map((item) => [item.candidateKey, item]));
-  for (const relation of workerResult.relationships || []) {
+  for (const relation of recognitionResult.relationships || []) {
     if (relation.type !== 'contains') continue;
     const parent = byKey.get(relation.fromCandidateKey);
     const child = byKey.get(relation.toCandidateKey);
@@ -689,19 +754,19 @@ export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef,
   const currentPage = {
     id: currentPageId,
     key: pageChanged || currentPageIsEmptyCapture
-      ? pageKeyFromName(workerResult.page.name)
-      : (previous.page.key || pageKeyFromName(workerResult.page.name)),
-    name: workerResult.page.name || previous.page.name,
-    surfaceType: workerResult.page.surfaceType,
-    stateSummary: workerResult.page.stateSummary,
-    scrollableRegions: workerResult.page.scrollableRegions,
+      ? pageKeyFromName(recognitionResult.page.name)
+      : (previous.page.key || pageKeyFromName(recognitionResult.page.name)),
+    name: recognitionResult.page.name || previous.page.name,
+    surfaceType: recognitionResult.page.surfaceType,
+    stateSummary: recognitionResult.page.stateSummary,
+    scrollableRegions: recognitionResult.page.scrollableRegions,
   };
   const pages = previous.pages.filter((page) => page.id !== currentPageId);
   const existingPage = previous.pages.find((page) => page.id === currentPageId);
   pages.push({
-    ...(existingPage || makeDraftPage(currentPage, workerResult.frameId, [currentPage.name || '待归类'])),
+    ...(existingPage || makeDraftPage(currentPage, recognitionResult.frameId, [currentPage.name || '待归类'])),
     ...currentPage,
-    frameIds: [...new Set([...(existingPage?.frameIds || []), workerResult.frameId])],
+    frameIds: [...new Set([...(existingPage?.frameIds || []), recognitionResult.frameId])],
     elementIds: mergedElements.filter((element) => element.pageId === currentPageId || (element.ownerKind === 'application' && element.availableOnPageIds.includes(currentPageId))).map((element) => element.id),
     publishedAt: null,
   });
@@ -709,9 +774,9 @@ export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef,
     ...previous,
     revision: previous.revision + 1,
     currentPageId,
-    currentFrameId: workerResult.frameId,
+    currentFrameId: recognitionResult.frameId,
     rawModelResultRef: modelResultRef,
-    lastWorkerModel: model || previous.lastWorkerModel,
+    lastAiModel: model || previous.lastAiModel,
     page: currentPage,
     pages,
     elements: mergedElements,
@@ -720,9 +785,9 @@ export function mergeWorkerIntoDraft(currentDraft, workerResult, modelResultRef,
   });
 }
 
-export function validateWorkerConsistency(workerResult) {
+export function validateRecognitionConsistency(recognitionResult) {
   const issues = [];
-  const elements = Array.isArray(workerResult?.elements) ? workerResult.elements : [];
+  const elements = Array.isArray(recognitionResult?.elements) ? recognitionResult.elements : [];
   const keys = new Set();
   for (const element of elements) {
     if (keys.has(element.candidateKey)) {
@@ -734,17 +799,17 @@ export function validateWorkerConsistency(workerResult) {
       issues.push(`候选框超出截图边界：${element.candidateKey}`);
     }
   }
-  for (const relation of workerResult?.relationships || []) {
+  for (const relation of recognitionResult?.relationships || []) {
     if (!keys.has(relation.fromCandidateKey) || !keys.has(relation.toCandidateKey)) {
       issues.push(`关系引用了不可见候选：${relation.fromCandidateKey} -> ${relation.toCandidateKey}`);
     }
   }
-  for (const action of workerResult?.actionCandidates || []) {
+  for (const action of recognitionResult?.actionCandidates || []) {
     const trigger = elements.find((item) => item.candidateKey === action.triggerCandidateKey);
     if (!trigger) issues.push(`动作引用了不可见候选：${action.triggerCandidateKey}`);
     else if (!trigger.interactive) issues.push(`动作触发元素不可操作：${action.triggerCandidateKey}`);
   }
-  if (workerResult?.comparison?.basisFrameId !== null || workerResult?.comparison?.status !== 'not-requested') {
+  if (recognitionResult?.comparison?.basisFrameId !== null || recognitionResult?.comparison?.status !== 'not-requested') {
     issues.push('第一阶段单帧分析必须使用 not-requested 比较状态');
   }
   return issues;
@@ -763,14 +828,24 @@ export function validateDraft(draft) {
       issues.push({ level: 'error', code: 'candidate_key_required', elementId: element.id, message: '候选键不能为空' });
     }
 
-    if (!ELEMENT_TYPES.includes(element.controlType)) {
-      issues.push({ level: 'error', code: 'control_type_required', elementId: element.id, message: '元素类型未识别，请由 Model B 或人工补齐' });
+    if (!ELEMENT_TYPES.includes(element.elementType)) {
+      issues.push({ level: 'error', code: 'element_type_required', elementId: element.id, message: '元素类型未识别，请由 AI 重新识别或人工补齐' });
     }
 
     const box = element.bbox;
     const validBox = box && [box.x, box.y, box.width, box.height].every(Number.isFinite) && box.x >= 0 && box.y >= 0 && box.width > 0 && box.height > 0 && box.x + box.width <= 1 && box.y + box.height <= 1;
     if (!validBox) {
       issues.push({ level: 'error', code: 'bbox_invalid', elementId: element.id, message: '元素边框必须位于截图范围内' });
+    }
+    const calculatedGrid = validBox ? gridForBox(element.bbox, element.gridColumns, element.gridRows) : null;
+    const validGrid = Boolean(calculatedGrid)
+      && Number.isInteger(element.gridColumns) && element.gridColumns >= 1 && element.gridColumns <= 12
+      && Number.isInteger(element.gridRows) && element.gridRows >= 1 && element.gridRows <= 12
+      && element.gridColumns === calculatedGrid.columns
+      && element.gridRows === calculatedGrid.rows
+      && element.gridRegion === calculatedGrid.region;
+    if (!validGrid) {
+      issues.push({ level: 'error', code: 'grid_region_invalid', elementId: element.id, message: '宫格分块必须为 1 至 12，且单一区域需完整覆盖元素边框' });
     }
     if (element.parentId && !byId.has(element.parentId)) {
       issues.push({ level: 'error', code: 'parent_missing', elementId: element.id, message: '父级元素不存在' });
@@ -789,10 +864,10 @@ export function validateDraft(draft) {
       issues.push({ level: 'warning', code: 'review_pending', elementId: element.id, message: 'AI 候选尚未完成人工审核' });
     }
     if (element.riskSignals?.includes('geometry-clamped-to-frame')) {
-      issues.push({ level: 'warning', code: 'worker_bbox_clamped', elementId: element.id, message: 'AI 候选框超出截图边缘，已自动裁剪，请人工校准' });
+      issues.push({ level: 'warning', code: 'model_bbox_clamped', elementId: element.id, message: 'AI 候选框超出截图边缘，已自动裁剪，请人工校准' });
     }
     if (element.riskSignals?.includes('model-action-inconsistent')) {
-      issues.push({ level: 'warning', code: 'worker_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
+      issues.push({ level: 'warning', code: 'model_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
     }
   }
 

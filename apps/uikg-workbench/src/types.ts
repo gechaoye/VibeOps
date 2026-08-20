@@ -27,7 +27,8 @@ export interface DraftElement {
   candidateKey: string;
   label: string;
   visualDescription: string;
-  controlType: string;
+  displayCondition: string;
+  elementType: string;
   role: string;
   capabilities: string[];
   actionEffects: Array<{ action: string; effect: string }>;
@@ -35,6 +36,9 @@ export interface DraftElement {
   state: string;
   dynamicContent: boolean;
   bbox: BBox;
+  gridColumns: number;
+  gridRows: number;
+  gridRegion: number;
   geometryKind: string;
   geometryConfidence: number;
   confidence: number;
@@ -52,8 +56,8 @@ export interface DraftElement {
   availableOnPageIds: string[];
   interactionBoundary: string;
   reviewStatus: ReviewStatus;
-  source: 'ai_worker' | 'human' | 'mixed';
-  workerModel: string | null;
+  source: 'ai' | 'human' | 'mixed';
+  aiModel: string | null;
   lastModelProposal: Record<string, unknown> | null;
 }
 
@@ -61,6 +65,8 @@ export interface DraftPage {
   id: string;
   key: string;
   name: string;
+  functionRef?: string;
+  implementationType?: 'native' | 'rn' | 'h5' | 'mini-program' | 'unknown';
   surfaceType: string;
   stateSummary: string;
   scrollableRegions: string[];
@@ -124,6 +130,8 @@ export interface Draft {
     id: string;
     key: string;
     name: string;
+    functionRef?: string;
+    implementationType?: 'native' | 'rn' | 'h5' | 'mini-program' | 'unknown';
     surfaceType: string;
     stateSummary: string;
     scrollableRegions: string[];
@@ -132,7 +140,7 @@ export interface Draft {
   elements: DraftElement[];
   elementEditRecords: ElementEditRecord[];
   transitions: DraftTransition[];
-  lastWorkerModel: string | null;
+  lastAiModel: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -165,7 +173,7 @@ export interface CanonicalGraphElementPreview extends CanonicalGraphPreview {
     id: string;
     key: string;
     label: string;
-    controlType: string;
+    elementType: string;
     rect: { left: number; top: number; width: number; height: number };
   };
 }
@@ -182,7 +190,7 @@ export interface CanonicalGraphEdge {
   action: string;
   capability: string;
   triggerElementId: string;
-  trigger: { id: string; key: string; label: string; controlType: string } | null;
+  trigger: { id: string; key: string; label: string; elementType: string } | null;
   preview: CanonicalGraphElementPreview | null;
   reversible: boolean | null;
   risk: 'safe' | 'low' | 'medium' | 'high' | 'critical' | string;
@@ -250,13 +258,16 @@ export interface PageUploadTask {
 export interface WorkbenchStatus {
   ok: boolean;
   agentConnected: boolean;
-  workersRunning: boolean;
-  workerAConfigured: boolean;
-  workerAModel: string | null;
-  workerBConfigured: boolean;
-  workerBModel: string | null;
-  workerASession: WorkerResumeSession | null;
-  workerBSession: WorkerResumeSession | null;
+  recognitionRunning: boolean;
+  manualModelConfigured: boolean;
+  manualModel: string | null;
+  ultraModelAConfigured: boolean;
+  ultraModelA: string | null;
+  ultraModelBConfigured: boolean;
+  ultraModelB: string | null;
+  manualSession: RecognitionResumeSession | null;
+  ultraModelASession: RecognitionResumeSession | null;
+  ultraModelBSession: RecognitionResumeSession | null;
   spec: {
     version: string;
     schemaVersion: string;
@@ -266,7 +277,7 @@ export interface WorkbenchStatus {
   session: PlaygroundSessionState | null;
 }
 
-export interface WorkerResumeSession {
+export interface RecognitionResumeSession {
   id: string;
   status: 'paused';
   frameId: string;
@@ -290,7 +301,7 @@ export interface WorkerResumeSession {
 
 export interface AnalysisSession {
   id: string;
-  kind: 'worker_a' | 'worker_b';
+  kind: 'manual' | 'ultra_a' | 'ultra_b';
   status: 'running' | 'completed' | 'failed' | 'cancelled';
   frameId: string | null;
   pageId?: string | null;
@@ -300,23 +311,23 @@ export interface AnalysisSession {
   errorMessage?: string | null;
   reasoningContent: string;
   outputContent: string;
-  retryAttempts?: WorkerResumeSession['retryAttempts'];
+  retryAttempts?: RecognitionResumeSession['retryAttempts'];
 }
 
-export interface WorkerElementCandidate {
+export interface RecognitionElementCandidate {
   candidateKey: string;
   label?: string | null;
   visualDescription?: string;
-  controlType?: string;
+  elementType?: string;
   approximateRegion?: BBox;
   confidence?: number;
   [key: string]: unknown;
 }
 
-export interface WorkerResult {
+export interface RecognitionResult {
   frameId: string;
   page: Record<string, unknown>;
-  elements: WorkerElementCandidate[];
+  elements: RecognitionElementCandidate[];
   relationships: Array<Record<string, unknown>>;
   actionCandidates: Array<Record<string, unknown>>;
   comparison: Record<string, unknown>;
@@ -325,17 +336,17 @@ export interface WorkerResult {
   [key: string]: unknown;
 }
 
-export type WorkerMergeSource = 'workerA' | 'workerB';
+export type UltraModelMergeSource = 'modelA' | 'modelB';
 
-export interface WorkerElementMergeSelection {
+export interface UltraModelElementMergeSelection {
   candidateKey: string;
-  workerACandidateKey?: string;
-  workerBCandidateKey?: string;
-  baseSource: WorkerMergeSource;
-  fieldSources: Record<string, WorkerMergeSource>;
+  modelACandidateKey?: string;
+  modelBCandidateKey?: string;
+  baseSource: UltraModelMergeSource;
+  fieldSources: Record<string, UltraModelMergeSource>;
 }
 
-export interface WorkerModelPreset {
+export interface ModelPreset {
   id: string;
   name: string;
   modelName: string;
@@ -347,7 +358,7 @@ export interface WorkerModelPreset {
 }
 
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
-export type ModelTarget = 'model_a' | 'model_b' | 'midscene';
+export type ModelTarget = 'manual' | 'auto' | 'ultra_a' | 'ultra_b' | 'midscene';
 export type WorkbenchMode = 'manual' | 'ultra' | 'auto';
 
 export interface ModelGatewaySettings {
@@ -375,12 +386,71 @@ export interface AvailableModels {
 export interface ModelSettingsData {
   settingsSchemaVersion?: number;
   sections?: Array<{ id: string; label: string; order: number }>;
-  modelA: ModelSlotSettings;
-  modelB: ModelSlotSettings;
+  manual: ModelSlotSettings;
+  auto: ModelSlotSettings;
+  ultraModelA: ModelSlotSettings;
+  ultraModelB: ModelSlotSettings;
   midscene: ModelSlotSettings;
   gateways: ModelGatewaySettings[];
   runtimeReloaded?: boolean;
   modeConfiguration: { mode: WorkbenchMode };
+}
+
+export type ProjectModelFieldValueType = 'string' | 'text' | 'integer' | 'number' | 'boolean' | 'date' | 'datetime' | 'option' | 'multi_option' | 'entity_ref' | 'entity_ref_list' | 'object' | 'object_list';
+
+export interface ProjectModelOption {
+  value: string;
+  label: string;
+  status?: 'active' | 'inactive';
+}
+
+export interface ProjectModelField {
+  key: string;
+  label?: string;
+  description?: string;
+  example?: string;
+  appliesTo: string[];
+  valueType: ProjectModelFieldValueType;
+  required?: boolean;
+  defaultValue?: unknown;
+  optionSetRef?: string;
+  allowCustomOptions?: boolean;
+  searchable?: boolean;
+  itemFields?: Array<Record<string, unknown>>;
+  ui?: { group?: string; component?: string; [key: string]: unknown };
+}
+
+export interface ProjectModelRelationType {
+  sourceTypes: string[];
+  targetTypes: string[];
+  constraints?: Record<string, unknown>;
+  label?: string;
+  description?: string;
+}
+
+export interface ProjectModelOptionSet {
+  label?: string;
+  description?: string;
+  options?: ProjectModelOption[];
+  addOptions?: ProjectModelOption[];
+}
+
+export interface ProjectModelDefinition {
+  projectRef?: string;
+  baseModelVersion?: string;
+  modelVersion: string;
+  name?: string;
+  entityTypes?: Record<string, { label: string; description?: string; group?: string }>;
+  relationTypes?: Record<string, ProjectModelRelationType>;
+  optionSets?: Record<string, ProjectModelOptionSet>;
+  fields?: ProjectModelField[];
+}
+
+export interface ProjectModelData {
+  projectKey: string;
+  core: ProjectModelDefinition;
+  project: ProjectModelDefinition;
+  effectiveModelVersion: string;
 }
 
 export interface ModelSlotSettings {
@@ -398,7 +468,7 @@ export interface ModelSlotSettings {
     apiKeyConfigured: boolean;
     apiKeyHint: string | null;
   };
-  presets: WorkerModelPreset[];
+  presets: ModelPreset[];
   modelFamilies: string[];
   runtimeModel: string | null;
   runtimeSynced: boolean;

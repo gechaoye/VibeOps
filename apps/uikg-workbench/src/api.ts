@@ -1,4 +1,4 @@
-import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelTarget, PageUploadTask, ReasoningEffort, WorkbenchMode, AvailableModels, WorkerElementMergeSelection, ModelSettingsData, WorkerResult, WorkerResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelTarget, PageUploadTask, ProjectModelData, ProjectModelDefinition, ReasoningEffort, WorkbenchMode, AvailableModels, UltraModelElementMergeSelection, ModelSettingsData, RecognitionResult, RecognitionResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -34,10 +34,10 @@ async function binaryRequest<T>(path: string, options: RequestInit): Promise<T> 
   return body as T;
 }
 
-export type WorkerStreamResult = {
+export type RecognitionStreamResult = {
   frameId: string;
-  worker: 'worker_a' | 'worker_b';
-  workerResult: WorkerResult;
+  target: 'manual' | 'ultra_a' | 'ultra_b';
+  recognitionResult: RecognitionResult;
   modelResultRef: string;
   model: string | null;
   reasoningContent?: string;
@@ -46,11 +46,11 @@ export type WorkerStreamResult = {
   issues?: ValidationIssue[];
 };
 
-async function consumeWorkerStream(
+async function consumeRecognitionStream(
   path: string,
   body: Record<string, unknown>,
   onEvent: (event: { type: string; [key: string]: unknown }) => void,
-): Promise<WorkerStreamResult> {
+): Promise<RecognitionStreamResult> {
   const response = await fetch(`${serverUrl}/workbench/api${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
@@ -60,12 +60,12 @@ async function consumeWorkerStream(
     const responseBody = await response.json().catch(() => ({}));
     throw new Error(responseBody.error || `请求失败：${response.status}`);
   }
-  if (!response.body) throw new Error('Worker 流式响应不可用');
+  if (!response.body) throw new Error('模型流式响应不可用');
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
-  let result: WorkerStreamResult | null = null;
+  let result: RecognitionStreamResult | null = null;
   const consume = (block: string) => {
     let eventType = 'message';
     let data = '';
@@ -76,7 +76,7 @@ async function consumeWorkerStream(
     if (!data) return;
     const payload = JSON.parse(data) as Record<string, unknown>;
     onEvent({ type: eventType, ...payload });
-    if (eventType === 'result') result = payload as WorkerStreamResult;
+    if (eventType === 'result') result = payload as RecognitionStreamResult;
     if (eventType === 'error') {
       const error = new Error(String(payload.message || '模型分析失败')) as Error & { details?: Record<string, unknown> };
       error.details = payload;
@@ -110,6 +110,8 @@ async function consumeWorkerStream(
 export const workbenchApi = {
   status: (workspaceSessionId?: string) => request<WorkbenchStatus>(`/status${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
   knowledgeGraph: (appKey: string) => request<CanonicalGraph>(`/knowledge-graph?appKey=${encodeURIComponent(appKey)}`),
+  projectModel: (projectKey = 'baohe') => request<ProjectModelData>(`/project-model?project=${encodeURIComponent(projectKey)}`),
+  saveProjectModel: (model: ProjectModelDefinition, projectKey = 'baohe') => request<ProjectModelData>(`/project-model?project=${encodeURIComponent(projectKey)}`, { method: 'PUT', body: JSON.stringify({ model }) }),
   modelSettings: () => request<ModelSettingsData>('/model-settings'),
   availableModels: () => request<AvailableModels>('/model-settings/models'),
   saveModelSettings: (config: {
@@ -142,37 +144,27 @@ export const workbenchApi = {
   processPageUpload: (taskId: string) => request<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/process`, { method: 'POST', body: '{}' }),
   deletePageUploads: (ids: string[], deletePages: boolean) => request<{ deletedIds: string[]; draft: Draft }>('/page-uploads', { method: 'DELETE', body: JSON.stringify({ ids, deletePages }) }),
   freezeFrame: (forceNewPage = false) => request<{ frame: FrameMetadata; draft: Draft }>('/frames', { method: 'POST', body: JSON.stringify({ forceNewPage }) }),
-  workerAStream: (
+  recognitionStream: (
+    target: 'manual' | 'ultra_a' | 'ultra_b',
     frameId: string,
     pageContext: string,
     mergeIntoDraft: boolean,
     onEvent: (event: { type: string; [key: string]: unknown }) => void,
     pageId?: string,
     workspaceSessionId?: string,
-  ) => consumeWorkerStream('/workers/a/stream', { frameId, pageId, pageContext, mergeIntoDraft, workspaceSessionId }, onEvent),
-  workerBStream: (
-    frameId: string,
-    pageContext: string,
-    onEvent: (event: { type: string; [key: string]: unknown }) => void,
-    pageId?: string,
-    workspaceSessionId?: string,
-  ) => consumeWorkerStream('/workers/b/stream', { frameId, pageId, pageContext, workspaceSessionId }, onEvent),
-  workerASession: (workspaceSessionId?: string) => request<{ session: WorkerResumeSession | null }>(`/workers/a/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
-  workerBSession: (workspaceSessionId?: string) => request<{ session: WorkerResumeSession | null }>(`/workers/b/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
-  resumeWorkerAStream: (sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
-    consumeWorkerStream('/workers/a/resume/stream', { sessionId, workspaceSessionId }, onEvent),
-  resumeWorkerBStream: (sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
-    consumeWorkerStream('/workers/b/resume/stream', { sessionId, workspaceSessionId }, onEvent),
-  cancelWorkerA: (workspaceSessionId?: string) => request<{ cancelled: boolean }>('/workers/a/cancel', { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
-  cancelWorkerB: (workspaceSessionId?: string) => request<{ cancelled: boolean }>('/workers/b/cancel', { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
-  mergeWorkerResults: (payload: {
+  ) => consumeRecognitionStream(`/recognition/${target}/stream`, { frameId, pageId, pageContext, mergeIntoDraft, workspaceSessionId }, onEvent),
+  recognitionSession: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId?: string) => request<{ session: RecognitionResumeSession | null }>(`/recognition/${target}/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
+  resumeRecognitionStream: (target: 'manual' | 'ultra_a' | 'ultra_b', sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+    consumeRecognitionStream(`/recognition/${target}/resume/stream`, { sessionId, workspaceSessionId }, onEvent),
+  cancelRecognition: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId?: string) => request<{ cancelled: boolean }>(`/recognition/${target}/cancel`, { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
+  mergeUltraModelResults: (payload: {
     frameId: string;
     pageId?: string;
-    workerAResult: WorkerResult;
-    workerBResult: WorkerResult;
-    selections: WorkerElementMergeSelection[];
+    modelAResult: RecognitionResult;
+    modelBResult: RecognitionResult;
+    selections: UltraModelElementMergeSelection[];
     modelResultRef: string;
-  }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/workers/merge', { method: 'POST', body: JSON.stringify(payload) }),
+  }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/ultra/merge', { method: 'POST', body: JSON.stringify(payload) }),
   prepareStaging: () => request<StagingResult>('/staging', { method: 'POST', body: '{}' }),
   stagingVersions: () => request<{ versions: StagingResult[] }>('/staging'),
   staging: (stageId: string) => request<StagingResult>(`/staging/${encodeURIComponent(stageId)}`),

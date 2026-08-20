@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -25,11 +25,11 @@ async function temporaryStore() {
   return { root, store };
 }
 
-test('网关和三个运行目标持久化到 SQLite 且彼此独立', async () => {
+test('网关和五个运行目标持久化到 SQLite 且彼此独立', async () => {
   const { root, store } = await temporaryStore();
   try {
     store.saveGateway({ id: 'alpha', label: 'Alpha', baseUrl: 'https://alpha.example/v1', apiKey: 'alpha-secret-1234' });
-    for (const [target, modelName] of [['model_a', 'model-a'], ['model_b', 'model-b'], ['midscene', 'model-midscene']]) {
+    for (const [target, modelName] of [['manual', 'manual-model'], ['auto', 'auto-model'], ['ultra_a', 'ultra-a-model'], ['ultra_b', 'ultra-b-model'], ['midscene', 'midscene-model']]) {
       saveTargetModelSettings(store, {
         target, gatewayId: 'alpha', modelName, modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'medium',
       });
@@ -38,9 +38,11 @@ test('网关和三个运行目标持久化到 SQLite 且彼此独立', async () 
 
     const reopened = new ModelSettingsStore(path.join(root, 'model-settings.sqlite'));
     await reopened.initialize();
-    assert.equal(reopened.getAssignment('model_a').modelName, 'model-a');
-    assert.equal(reopened.getAssignment('model_b').modelName, 'model-b');
-    assert.equal(reopened.getAssignment('midscene').modelName, 'model-midscene');
+    assert.equal(reopened.getAssignment('manual').modelName, 'manual-model');
+    assert.equal(reopened.getAssignment('auto').modelName, 'auto-model');
+    assert.equal(reopened.getAssignment('ultra_a').modelName, 'ultra-a-model');
+    assert.equal(reopened.getAssignment('ultra_b').modelName, 'ultra-b-model');
+    assert.equal(reopened.getAssignment('midscene').modelName, 'midscene-model');
     assert.equal(reopened.getGateway('alpha', { includeApiKey: true }).apiKey, 'alpha-secret-1234');
     reopened.close();
   } finally {
@@ -52,9 +54,9 @@ test('设置响应只返回 SQLite 网关密钥掩码', async () => {
   const { root, store } = await temporaryStore();
   try {
     store.saveGateway({ id: 'cfz', label: 'CFZ', baseUrl: 'https://gateway.example/v1', apiKey: 'private-value-5678' });
-    store.saveAssignment({ target: 'model_a', gatewayId: 'cfz', modelName: 'gpt-5.6-sol', modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'high' });
+    store.saveAssignment({ target: 'manual', gatewayId: 'cfz', modelName: 'gpt-5.6-sol', modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'high' });
     const gateways = loadModelGateways(store);
-    const settings = loadTargetModelSettings(store, 'model_a');
+    const settings = loadTargetModelSettings(store, 'manual');
     assert.equal(gateways[0].apiKeyHint, '••••••••5678');
     assert.equal(settings.config.apiKeyConfigured, true);
     assert.equal(settings.storagePath, store.databasePath);
@@ -156,11 +158,11 @@ test('删除网关时同步清除关联的模型指派', async () => {
   try {
     store.saveGateway({ id: 'active', label: 'Active', baseUrl: 'https://active.example/v1', apiKey: 'active-secret' });
     store.saveGateway({ id: 'unused', label: 'Unused', baseUrl: 'https://unused.example/v1', apiKey: 'unused-secret' });
-    store.saveAssignment({ target: 'model_a', gatewayId: 'active', modelName: 'model-a', modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'medium' });
+    store.saveAssignment({ target: 'manual', gatewayId: 'active', modelName: 'model-a', modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'medium' });
 
-    assert.deepEqual(deleteModelGateway(store, 'active'), { deleted: true, gatewayId: 'active', clearedTargets: ['model_a'] });
+    assert.deepEqual(deleteModelGateway(store, 'active'), { deleted: true, gatewayId: 'active', clearedTargets: ['manual'] });
     assert.equal(store.getGateway('active'), null);
-    assert.equal(store.getAssignment('model_a'), null);
+    assert.equal(store.getAssignment('manual'), null);
 
     assert.deepEqual(deleteModelGateway(store, 'unused'), { deleted: true, gatewayId: 'unused', clearedTargets: [] });
     assert.equal(store.getGateway('unused'), null);
@@ -266,56 +268,27 @@ test('所有已保存网关均可执行连通性测试', async () => {
   }
 });
 
-test('首次启动把旧环境配置迁移到 SQLite，Midscene 默认继承原 Worker A', async () => {
-  const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-model-migration-'));
-  const envPath = path.join(root, '.env');
-  await writeFile(envPath, [
-    'MIDSCENE_GATEWAY_ALPHA_LABEL="Alpha"',
-    'MIDSCENE_GATEWAY_ALPHA_BASE_URL="https://alpha.example/v1"',
-    'MIDSCENE_GATEWAY_ALPHA_API_KEY="alpha-secret"',
-    'MIDSCENE_WORKER_A_MODEL_GATEWAY="alpha"',
-    'MIDSCENE_WORKER_A_MODEL_NAME="qwen3.7-flash"',
-    'MIDSCENE_WORKER_A_MODEL_FAMILY="qwen3"',
-    'MIDSCENE_WORKER_A_MODEL_REASONING_EFFORT="low"',
-    'MIDSCENE_WORKER_B_MODEL_GATEWAY="alpha"',
-    'MIDSCENE_WORKER_B_MODEL_NAME="gpt-5.6-sol"',
-    'MIDSCENE_WORKER_B_MODEL_FAMILY="gpt-5"',
-    '',
-  ].join('\n'), 'utf8');
-  const store = new ModelSettingsStore(path.join(root, 'model-settings.sqlite'));
-  try {
-    assert.equal(await store.initialize({ legacyEnvPath: envPath }), undefined);
-    assert.equal(store.getAssignment('model_a').modelName, 'qwen3.7-flash');
-    assert.equal(store.getAssignment('model_b').modelName, 'gpt-5.6-sol');
-    assert.equal(store.getAssignment('midscene').modelName, 'qwen3.7-flash');
-    assert.equal(store.getGateway('alpha', { includeApiKey: true }).apiKey, 'alpha-secret');
-    await store.migrateLegacyEnvironment(envPath);
-    assert.equal(store.listGateways().length, 1, '重复启动不应重复迁移');
-  } finally {
-    store.close();
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test('旧数据库中的 worker 目标无损迁移为 model 目标', async () => {
+test('旧数据库中的 Ultra 目标迁移为正式模式目标', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-model-target-migration-'));
   const databasePath = path.join(root, 'model-settings.sqlite');
   const legacy = new Database(databasePath);
   legacy.exec(`
     CREATE TABLE model_gateways (id TEXT PRIMARY KEY, label TEXT NOT NULL, base_url TEXT NOT NULL UNIQUE COLLATE NOCASE, api_key TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-    CREATE TABLE model_assignments (target TEXT PRIMARY KEY CHECK (target IN ('worker_a', 'worker_b', 'midscene')), gateway_id TEXT NOT NULL REFERENCES model_gateways(id), model_name TEXT NOT NULL, model_family TEXT NOT NULL, timeout INTEGER NOT NULL, temperature REAL NOT NULL, reasoning_effort TEXT NOT NULL, updated_at TEXT NOT NULL);
+    CREATE TABLE model_assignments (target TEXT PRIMARY KEY CHECK (target IN ('ultra_a', 'ultra_b', 'midscene')), gateway_id TEXT NOT NULL REFERENCES model_gateways(id), model_name TEXT NOT NULL, model_family TEXT NOT NULL, timeout INTEGER NOT NULL, temperature REAL NOT NULL, reasoning_effort TEXT NOT NULL, updated_at TEXT NOT NULL);
     CREATE TABLE model_settings_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
     INSERT INTO model_gateways VALUES ('legacy', 'Legacy', 'https://legacy.example/v1', 'secret', '2026-01-01', '2026-01-01');
-    INSERT INTO model_assignments VALUES ('worker_a', 'legacy', 'old-a', 'gpt-5', 180000, 0, 'medium', '2026-01-01');
-    INSERT INTO model_assignments VALUES ('worker_b', 'legacy', 'old-b', 'gpt-5', 180000, 0, 'medium', '2026-01-01');
+    INSERT INTO model_assignments VALUES ('ultra_a', 'legacy', 'old-a', 'gpt-5', 180000, 0, 'medium', '2026-01-01');
+    INSERT INTO model_assignments VALUES ('ultra_b', 'legacy', 'old-b', 'gpt-5', 180000, 0, 'medium', '2026-01-01');
   `);
   legacy.close();
   const store = new ModelSettingsStore(databasePath);
   try {
     await store.initialize();
-    assert.equal(store.getAssignment('model_a').modelName, 'old-a');
-    assert.equal(store.getAssignment('model_b').modelName, 'old-b');
-    assert.deepEqual(store.listAssignments().map((assignment) => assignment.target), ['model_a', 'model_b']);
+    assert.equal(store.getAssignment('manual').modelName, 'old-a');
+    assert.equal(store.getAssignment('ultra_b').modelName, 'old-b');
+    assert.equal(store.getAssignment('auto'), null);
+    assert.equal(store.getAssignment('ultra_a').modelName, 'old-a');
+    assert.deepEqual(store.listAssignments().map((assignment) => assignment.target), ['manual', 'ultra_a', 'ultra_b']);
   } finally {
     store.close();
     await rm(root, { recursive: true, force: true });

@@ -57,7 +57,7 @@ async function main() {
   const modelStore = new ModelSettingsStore(path.join(dataRoot, 'model-settings.sqlite'));
   await Promise.all([
     store.initialize(),
-    modelStore.initialize({ legacyEnvPath: modelEnvPath }),
+    modelStore.initialize(),
   ]);
   const spec = await normativeSpecContract();
   const graphWorkflow = new GraphWorkflow({ graphRoot, workbenchRoot, dataRoot, spec });
@@ -118,6 +118,7 @@ async function main() {
         store,
         modelStore,
         graphWorkflow,
+        graphRoot,
         workbenchRoot,
         spec,
       });

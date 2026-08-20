@@ -508,7 +508,7 @@ elements:
     pageKey: messages.root
     label: 特别关注
     description: 打开特别关注功能；特别关注人员存在未读消息时，该爱心入口呈橙黄色高亮。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: navigation
     capabilities: [open_special_follow]
     risk: safe
@@ -522,7 +522,7 @@ elements:
     pageKey: messages.special_follow
     label: 返回消息页
     description: 收起特别关注页面并返回消息页。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: navigation
     capabilities: [close_special_follow]
     risk: safe
@@ -534,7 +534,7 @@ elements:
     pageKey: messages.special_follow
     label: 特别关注设置
     description: 打开特别关注提醒设置；空状态中显示为“设置特别关注”，有成员时显示为“设置”。
-    controlType: button
+    elementType: button
     semanticRole: navigation
     capabilities: [open_special_follow_settings]
     risk: safe
@@ -546,7 +546,7 @@ elements:
     pageKey: messages.special_follow
     label: 特别关注成员
     description: 展示特别关注成员，并可进入该成员的通用会话页。
-    controlType: list_entry
+    elementType: list_entry
     semanticRole: navigation
     capabilities: [open_followed_member_conversation]
     risk: safe
@@ -558,7 +558,7 @@ elements:
     pageKey: messages.special_follow
     label: 特别关注会话
     description: 展示存在于特别关注列表中的会话，并可进入通用会话页。
-    controlType: list_entry
+    elementType: list_entry
     semanticRole: navigation
     capabilities: [open_special_follow_conversation]
     risk: safe
@@ -570,7 +570,7 @@ elements:
     ownerElementKey: messages.special_follow.conversation_entry
     label: 实时未读消息数量角标
     description: 展示该特别关注会话当前实时未读消息数量；具体数字仅属于每个 Runtime ElementInstance 的当帧呈现。
-    controlType: status_badge
+    elementType: status_badge
     semanticRole: state_indicator
     capabilities: []
     risk: safe
@@ -581,7 +581,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 返回特别关注
     description: 返回特别关注页面。
-    controlType: back
+    elementType: back
     semanticRole: navigation
     capabilities: [navigate_back]
     risk: safe
@@ -594,7 +594,7 @@ elements:
     label: 我的特别关注
     aliases: [我的特别关注入口容器]
     description: “我的特别关注”复合入口的总容器；页面只直接引用该容器，容器持有不可点击的说明文案和可点击的右侧箭头两个子元素。
-    controlType: container
+    elementType: container
     semanticRole: navigation_group
     capabilities: []
     childElementKeys:
@@ -624,7 +624,7 @@ elements:
     label: 说明文字
     aliases: [我的特别关注文案]
     description: 显示“我的特别关注”，用于说明右侧箭头入口的业务含义；该文案不可点击，不触发导航。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary:
@@ -647,7 +647,7 @@ elements:
     label: 右侧箭头
     aliases: [我的特别关注入口, 我的特别关注列表入口]
     description: 位于“我的特别关注”说明文案右侧；这是打开全部特别关注成员列表的独立可点击入口。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: navigation
     capabilities: [open_special_follow_people]
     presentation:
@@ -674,7 +674,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 已关注成员
     description: 展示当前特别关注成员。
-    controlType: list_entry
+    elementType: list_entry
     semanticRole: state
     capabilities: []
     risk: safe
@@ -686,7 +686,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 添加特别关注
     description: 进入APP级通用选人组件以添加特别关注成员。
-    controlType: button
+    elementType: button
     semanticRole: navigation
     capabilities: [open_person_picker]
     risk: safe
@@ -698,7 +698,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 移除特别关注
     description: 打开成员移除流程入口。
-    controlType: button
+    elementType: button
     semanticRole: action
     capabilities: [open_remove_member_flow]
     risk: low
@@ -710,7 +710,7 @@ elements:
     label: 单聊消息未读弹窗提醒设置项
     aliases: [单聊弹窗提醒设置项]
     description: 单聊消息未读弹窗提醒的总容器；页面只直接引用该容器，容器持有设置名称、帮助图标、帮助浮层和开关。
-    controlType: container
+    elementType: container
     semanticRole: setting_group
     capabilities: []
     childElementKeys:
@@ -739,7 +739,7 @@ elements:
     label: 名称文案
     aliases: [单聊消息未读弹窗提醒名称]
     description: 显示设置名称“单聊消息未读，弹窗提醒我”；该文案只说明设置含义，不承担帮助或开关动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: describes_sibling_controls}
@@ -754,7 +754,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.popup_reminder_row
     label: 开关
     description: 开启或关闭单聊消息未读时的弹窗提醒。
-    controlType: toggle
+    elementType: toggle
     semanticRole: setting
     capabilities: [toggle_popup_reminder]
     liveLocatorBinding: popup_reminder_toggle
@@ -767,7 +767,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.popup_reminder_row
     label: 帮助图标
     description: 显示单聊消息未读弹窗提醒的帮助浮层；当前构建未验证再次点击同一图标可收起浮层。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: help
     capabilities: [open_popup_reminder_help]
     liveLocatorBinding: popup_reminder_help
@@ -781,7 +781,7 @@ elements:
     label: 帮助浮层
     aliases: [单聊弹窗提醒帮助说明文案泡泡框]
     description: 展示单聊消息未读弹窗提醒规则的深灰色说明气泡；该浮层不是第二个帮助图标。
-    controlType: help_popover
+    elementType: help_popover
     semanticRole: help_content
     capabilities: []
     interactionBoundary: {actionable: false, function: presents_help_content}
@@ -796,7 +796,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 单聊弹窗提醒间隔
     description: 单聊弹窗提醒间隔选择行总容器；名称区域实测可触发父行，因此由容器承担选择动作，当前值与箭头仅呈现状态和可操作提示。
-    controlType: container
+    elementType: container
     semanticRole: setting_group
     capabilities: [open_popup_interval_selector]
     childElementKeys:
@@ -820,7 +820,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.popup_interval
     label: 名称文案
     description: 显示第一组“间隔时间”设置名称；名称区域属于父选择行命中范围，但不是独立 Trigger。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_parent_selector_row}
@@ -834,7 +834,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.popup_interval
     label: 当前值
     description: 显示单聊弹窗提醒的当前间隔；具体值仅进入观测，不承担独立动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: current_value
     capabilities: []
     interactionBoundary: {actionable: false, function: presents_current_selector_value}
@@ -848,7 +848,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.popup_interval
     label: 选择箭头提示
     description: 表示父行可进入间隔选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
-    controlType: icon
+    elementType: icon
     semanticRole: affordance
     capabilities: []
     interactionBoundary: {actionable: false, function: indicates_parent_selector_row_action}
@@ -862,7 +862,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 短信或电话提醒设置项
     description: 短信或电话提醒的总容器；页面只直接引用该容器，容器持有设置名称、帮助图标、帮助浮层和开关。
-    controlType: container
+    elementType: container
     semanticRole: setting_group
     capabilities: []
     childElementKeys:
@@ -891,7 +891,7 @@ elements:
     label: 名称文案
     aliases: [短信或电话提醒名称]
     description: 显示设置名称“弹窗消息未读，短信/电话提醒我”；该文案只说明设置含义，不承担帮助或开关动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: describes_sibling_controls}
@@ -906,7 +906,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sms_phone_row
     label: 开关
     description: 开启或关闭弹窗消息未读时的短信或电话提醒。
-    controlType: toggle
+    elementType: toggle
     semanticRole: setting
     capabilities: [toggle_sms_phone_reminder]
     liveLocatorBinding: sms_phone_toggle
@@ -919,7 +919,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sms_phone_row
     label: 帮助图标
     description: 显示短信或电话提醒的帮助浮层。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: help
     capabilities: [open_sms_phone_help]
     liveLocatorBinding: sms_phone_help
@@ -933,7 +933,7 @@ elements:
     label: 帮助浮层
     aliases: [短信或电话提醒帮助说明文案泡泡框]
     description: 展示短信或电话提醒规则的深灰色说明气泡；该浮层不是第二个帮助图标。
-    controlType: help_popover
+    elementType: help_popover
     semanticRole: help_content
     capabilities: []
     interactionBoundary: {actionable: false, function: presents_help_content}
@@ -948,7 +948,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 短信或电话提醒间隔
     description: 短信或电话提醒间隔选择行总容器；名称区域实测可触发父行，当前值与箭头不承担独立动作。
-    controlType: container
+    elementType: container
     semanticRole: setting_group
     capabilities: [open_sms_phone_interval_selector]
     childElementKeys:
@@ -972,7 +972,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sms_phone_interval
     label: 名称文案
     description: 显示第二组“间隔时间”设置名称；名称区域属于父选择行命中范围，但不是独立 Trigger。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_parent_selector_row}
@@ -986,7 +986,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sms_phone_interval
     label: 当前值
     description: 显示短信或电话提醒的当前间隔；具体值仅进入观测，不承担独立动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: current_value
     capabilities: []
     interactionBoundary: {actionable: false, function: presents_current_selector_value}
@@ -1000,7 +1000,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sms_phone_interval
     label: 选择箭头提示
     description: 表示父行可进入间隔选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
-    controlType: icon
+    elementType: icon
     semanticRole: affordance
     capabilities: []
     interactionBoundary: {actionable: false, function: indicates_parent_selector_row_action}
@@ -1014,7 +1014,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 提醒方式
     description: 提醒方式选择行总容器；名称区域实测可触发父行，当前值与箭头不承担独立动作。
-    controlType: container
+    elementType: container
     semanticRole: setting_group
     capabilities: [open_reminder_method_selector]
     childElementKeys:
@@ -1038,7 +1038,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.reminder_method
     label: 名称文案
     description: 显示“提醒方式”名称；名称区域属于父选择行命中范围，但不是独立 Trigger。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_parent_selector_row}
@@ -1052,7 +1052,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.reminder_method
     label: 当前值
     description: 显示当前提醒方式；具体值仅进入观测，不承担独立动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: current_value
     capabilities: []
     interactionBoundary: {actionable: false, function: presents_current_selector_value}
@@ -1066,7 +1066,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.reminder_method
     label: 选择箭头提示
     description: 表示父行可进入提醒方式选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
-    controlType: icon
+    elementType: icon
     semanticRole: affordance
     capabilities: []
     interactionBoundary: {actionable: false, function: indicates_parent_selector_row_action}
@@ -1080,7 +1080,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 夜间免打扰
     description: 夜间免打扰设置行总容器，持有名称、说明文案和独立开关。
-    controlType: container
+    elementType: container
     semanticRole: setting_group
     capabilities: []
     childElementKeys:
@@ -1103,7 +1103,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.night_dnd_row
     label: 名称文案
     description: 显示“夜间免打扰”设置名称，不承担开关动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_sibling_toggle}
@@ -1117,7 +1117,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.night_dnd_row
     label: 说明文案
     description: 说明夜间免打扰生效时段与通知行为，不承担动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: secondary_text
     capabilities: []
     interactionBoundary: {actionable: false, function: explains_sibling_setting_control}
@@ -1131,7 +1131,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.night_dnd_row
     label: 开关
     description: 开启或关闭夜间免打扰。
-    controlType: toggle
+    elementType: toggle
     semanticRole: setting
     capabilities: [toggle_night_dnd]
     liveLocatorBinding: night_dnd_toggle
@@ -1144,7 +1144,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 免打扰群通知设置项
     description: 免打扰群通知的总容器；页面只直接引用该容器，容器持有设置名称、帮助图标、帮助浮层和开关。
-    controlType: container
+    elementType: container
     semanticRole: setting_group
     capabilities: []
     childElementKeys:
@@ -1173,7 +1173,7 @@ elements:
     label: 名称文案
     aliases: [免打扰群通知名称]
     description: 显示设置名称“免打扰群通知”；该文案只说明设置含义，不承担帮助或开关动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: describes_sibling_controls}
@@ -1188,7 +1188,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.group_dnd_row
     label: 开关
     description: 开启或关闭免打扰群的特别关注通知。
-    controlType: toggle
+    elementType: toggle
     semanticRole: setting
     capabilities: [toggle_group_dnd]
     liveLocatorBinding: group_dnd_toggle
@@ -1201,7 +1201,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.group_dnd_row
     label: 帮助图标
     description: 显示免打扰群通知的帮助浮层。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: help
     capabilities: [open_group_dnd_help]
     liveLocatorBinding: group_dnd_help
@@ -1215,7 +1215,7 @@ elements:
     label: 帮助浮层
     aliases: [免打扰群通知帮助说明文案泡泡框]
     description: 展示免打扰群通知规则的深灰色说明气泡；该浮层不是第二个帮助图标。
-    controlType: help_popover
+    elementType: help_popover
     semanticRole: help_content
     capabilities: []
     interactionBoundary: {actionable: false, function: presents_help_content}
@@ -1230,7 +1230,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 特别关注提示音
     description: 特别关注提示音选择行总容器；名称区域实测可触发父行，当前值与箭头不承担独立动作。
-    controlType: container
+    elementType: container
     semanticRole: setting_group
     capabilities: [open_sound_selector]
     childElementKeys:
@@ -1254,7 +1254,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound
     label: 名称文案
     description: 显示“特别关注提示音”设置名称；名称区域属于父选择行命中范围，但不是独立 Trigger。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_parent_selector_row}
@@ -1268,7 +1268,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound
     label: 当前值
     description: 显示当前特别关注提示音；具体值仅进入观测，不承担独立动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: current_value
     capabilities: []
     interactionBoundary: {actionable: false, function: presents_current_selector_value}
@@ -1282,7 +1282,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound
     label: 选择箭头提示
     description: 表示父行可进入提示音选择器的视觉 affordance；父行整体承担命中，不作为独立 Trigger。
-    controlType: icon
+    elementType: icon
     semanticRole: affordance
     capabilities: []
     interactionBoundary: {actionable: false, function: indicates_parent_selector_row_action}
@@ -1296,7 +1296,7 @@ elements:
     pageKey: messages.special_follow.settings
     label: 设置页纵向滚动
     description: 纵向滚动设置页以查看视口外设置项。
-    controlType: scroll_region
+    elementType: scroll_region
     semanticRole: navigation
     capabilities: [scroll_settings]
     risk: safe
@@ -1308,7 +1308,7 @@ elements:
     pageKey: messages.special_follow.people
     label: 返回设置
     description: 返回特别关注提醒设置页。
-    controlType: back
+    elementType: back
     semanticRole: navigation
     capabilities: [navigate_back]
     risk: safe
@@ -1320,7 +1320,7 @@ elements:
     pageKey: messages.special_follow.people
     label: 关闭全部成员
     description: 关闭全部成员页面并返回特别关注页。
-    controlType: close
+    elementType: close
     semanticRole: navigation
     capabilities: [close_people]
     risk: safe
@@ -1332,7 +1332,7 @@ elements:
     pageKey: messages.special_follow.people
     label: 特别关注成员
     description: 成员行总容器；成员头像和姓名是动态业务内容，成员行与右侧移除按钮是两个独立动作边界。
-    controlType: container
+    elementType: container
     semanticRole: member_row
     capabilities: [activate_member_row]
     childElementKeys:
@@ -1351,7 +1351,7 @@ elements:
     ownerElementKey: messages.special_follow.people.member
     label: 移除成员
     description: 打开移除特别关注成员确认弹窗。
-    controlType: button
+    elementType: button
     semanticRole: action
     capabilities: [open_remove_confirmation]
     interactionBoundary: {actionable: true, function: opens_remove_confirmation}
@@ -1365,7 +1365,7 @@ elements:
     pageKey: messages.special_follow.people.remove_confirmation
     label: 取消移除
     description: 取消移除并返回保留该成员的全部成员页。
-    controlType: button
+    elementType: button
     semanticRole: action
     capabilities: [cancel_remove_member]
     risk: safe
@@ -1377,7 +1377,7 @@ elements:
     pageKey: messages.special_follow.people.remove_confirmation
     label: 确定移除
     description: 确认移除该特别关注成员。
-    controlType: button
+    elementType: button
     semanticRole: action
     capabilities: [confirm_remove_member]
     risk: low
@@ -1389,7 +1389,7 @@ elements:
     pageKey: messages.special_follow.settings.popup_interval_selector
     label: 10分钟
     description: 将单聊弹窗提醒间隔设为10分钟。
-    controlType: radio
+    elementType: radio
     semanticRole: setting
     capabilities: [select_popup_interval_10_minutes]
     interactionBoundary: {actionable: true, function: selects_popup_interval_10_minutes_from_full_option_row}
@@ -1403,7 +1403,7 @@ elements:
     pageKey: messages.special_follow.settings.popup_interval_selector
     label: 30分钟
     description: 将单聊弹窗提醒间隔设为30分钟。
-    controlType: radio
+    elementType: radio
     semanticRole: setting
     capabilities: [select_popup_interval_30_minutes]
     interactionBoundary: {actionable: true, function: selects_popup_interval_30_minutes_from_full_option_row}
@@ -1417,7 +1417,7 @@ elements:
     pageKey: messages.special_follow.settings.popup_interval_selector
     label: 1小时
     description: 将单聊弹窗提醒间隔设为1小时。
-    controlType: radio
+    elementType: radio
     semanticRole: setting
     capabilities: [select_popup_interval_1_hour]
     interactionBoundary: {actionable: true, function: selects_popup_interval_1_hour_from_full_option_row}
@@ -1431,7 +1431,7 @@ elements:
     pageKey: messages.special_follow.settings.popup_interval_selector
     label: 4小时
     description: 将单聊弹窗提醒间隔设为4小时。
-    controlType: radio
+    elementType: radio
     semanticRole: setting
     capabilities: [select_popup_interval_4_hours]
     interactionBoundary: {actionable: true, function: selects_popup_interval_4_hours_from_full_option_row}
@@ -1445,7 +1445,7 @@ elements:
     pageKey: messages.special_follow.settings.popup_interval_selector
     label: 取消
     description: 取消间隔选择并关闭面板。
-    controlType: close
+    elementType: close
     semanticRole: navigation
     capabilities: [cancel_popup_interval_selector]
     risk: safe
@@ -1457,7 +1457,7 @@ elements:
     pageKey: messages.special_follow.settings.popup_interval_selector
     label: 背景遮罩
     description: 选择面板外的背景遮罩关闭区域。
-    controlType: close
+    elementType: close
     semanticRole: navigation
     capabilities: [dismiss_popup_interval_selector]
     liveLocatorBinding: popup_backdrop_v301
@@ -1469,7 +1469,7 @@ elements:
     pageKey: messages.special_follow.settings.sms_phone_interval_selector
     label: 10分钟
     description: 将短信或电话提醒间隔设为10分钟。
-    controlType: radio
+    elementType: radio
     semanticRole: setting
     capabilities: [select_sms_phone_interval_10_minutes]
     interactionBoundary: {actionable: true, function: selects_sms_phone_interval_10_minutes_from_full_option_row}
@@ -1483,7 +1483,7 @@ elements:
     pageKey: messages.special_follow.settings.sms_phone_interval_selector
     label: 30分钟
     description: 将短信或电话提醒间隔设为30分钟。
-    controlType: radio
+    elementType: radio
     semanticRole: setting
     capabilities: [select_sms_phone_interval_30_minutes]
     interactionBoundary: {actionable: true, function: selects_sms_phone_interval_30_minutes_from_full_option_row}
@@ -1497,7 +1497,7 @@ elements:
     pageKey: messages.special_follow.settings.sms_phone_interval_selector
     label: 取消
     description: 取消短信或电话提醒间隔选择并关闭面板。
-    controlType: close
+    elementType: close
     semanticRole: navigation
     capabilities: [cancel_sms_phone_interval_selector]
     risk: safe
@@ -1509,7 +1509,7 @@ elements:
     pageKey: messages.special_follow.settings.reminder_method_selector
     label: 短信
     description: 将提醒方式设为短信。
-    controlType: radio
+    elementType: radio
     semanticRole: setting
     capabilities: [select_reminder_method_sms]
     interactionBoundary: {actionable: true, function: selects_sms_from_full_option_row}
@@ -1522,7 +1522,7 @@ elements:
     pageKey: messages.special_follow.settings.reminder_method_selector
     label: 电话
     description: 将提醒方式设为电话。
-    controlType: radio
+    elementType: radio
     semanticRole: setting
     capabilities: [select_reminder_method_phone]
     interactionBoundary: {actionable: true, function: selects_phone_from_full_option_row}
@@ -1536,7 +1536,7 @@ elements:
     pageKey: messages.special_follow.settings.reminder_method_selector
     label: 取消
     description: 取消提醒方式选择并关闭面板。
-    controlType: close
+    elementType: close
     semanticRole: navigation
     capabilities: [cancel_reminder_method_selector]
     risk: safe
@@ -1548,7 +1548,7 @@ elements:
     pageKey: messages.special_follow.settings.sound_selector
     label: 默认提示音
     description: 默认提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
-    controlType: container
+    elementType: container
     semanticRole: selection_option_group
     capabilities: [select_sound_default]
     childElementKeys:
@@ -1569,7 +1569,7 @@ elements:
     pageKey: messages.special_follow.settings.sound_selector
     label: 波浪提示音
     description: 波浪提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
-    controlType: container
+    elementType: container
     semanticRole: selection_option_group
     capabilities: [select_sound_wave]
     childElementKeys:
@@ -1590,7 +1590,7 @@ elements:
     pageKey: messages.special_follow.settings.sound_selector
     label: 简报提示音
     description: 简报提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
-    controlType: container
+    elementType: container
     semanticRole: selection_option_group
     capabilities: [select_sound_briefing]
     childElementKeys:
@@ -1611,7 +1611,7 @@ elements:
     pageKey: messages.special_follow.settings.sound_selector
     label: 门铃提示音
     description: 门铃提示音复合选择行；行内名称用于说明，右侧试听按钮是独立子 Trigger，行的其余命中区选择该提示音。
-    controlType: container
+    elementType: container
     semanticRole: selection_option_group
     capabilities: [select_sound_bell]
     childElementKeys:
@@ -1632,7 +1632,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound_selector.default
     label: 名称文案
     description: 显示“默认”提示音选项名称，不承担独立动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_parent_sound_option}
@@ -1646,7 +1646,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound_selector.wave
     label: 名称文案
     description: 显示“波浪”提示音选项名称，不承担独立动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_parent_sound_option}
@@ -1660,7 +1660,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound_selector.briefing
     label: 名称文案
     description: 显示“简报”提示音选项名称，不承担独立动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_parent_sound_option}
@@ -1674,7 +1674,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound_selector.bell
     label: 名称文案
     description: 显示“门铃”提示音选项名称，不承担独立动作。
-    controlType: text_label
+    elementType: text_label
     semanticRole: description
     capabilities: []
     interactionBoundary: {actionable: false, function: labels_parent_sound_option}
@@ -1688,7 +1688,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound_selector.default
     label: 试听默认提示音
     description: 试听默认提示音。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: action
     capabilities: [preview_sound_default]
     liveLocatorBinding: sound_default_preview
@@ -1701,7 +1701,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound_selector.wave
     label: 试听波浪提示音
     description: 试听波浪提示音。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: action
     capabilities: [preview_sound_wave]
     liveLocatorBinding: sound_wave_preview
@@ -1714,7 +1714,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound_selector.briefing
     label: 试听简报提示音
     description: 试听简报提示音。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: action
     capabilities: [preview_sound_briefing]
     liveLocatorBinding: sound_briefing_preview
@@ -1727,7 +1727,7 @@ elements:
     ownerElementKey: messages.special_follow.settings.sound_selector.bell
     label: 试听门铃提示音
     description: 试听门铃提示音。
-    controlType: icon_button
+    elementType: icon_button
     semanticRole: action
     capabilities: [preview_sound_bell]
     liveLocatorBinding: sound_bell_preview
@@ -1740,7 +1740,7 @@ elements:
     pageKey: messages.special_follow.settings.sound_selector
     label: 取消
     description: 取消提示音选择并关闭面板。
-    controlType: close
+    elementType: close
     semanticRole: navigation
     capabilities: [cancel_sound_selector]
     risk: safe
@@ -1752,7 +1752,7 @@ elements:
     pageKey: boundary.common.person_picker
     label: 关闭选人组件
     description: 关闭APP级通用选人组件。
-    controlType: close
+    elementType: close
     semanticRole: navigation
     capabilities: [close_person_picker]
     risk: safe
@@ -1763,7 +1763,7 @@ elements:
     pageKey: boundary.common.person_picker
     label: 选择人员
     description: 在通用选人组件中选择一名人员，以完成特别关注添加流程。
-    controlType: checkbox
+    elementType: checkbox
     semanticRole: action
     capabilities: [select_person]
     risk: safe
@@ -1775,7 +1775,7 @@ elements:
     pageKey: boundary.common.person_picker
     label: 确定选择
     description: 确认已选择人员并返回特别关注提醒设置页。
-    controlType: button
+    elementType: button
     semanticRole: action
     capabilities: [confirm_person_selection]
     risk: low
@@ -1787,7 +1787,7 @@ elements:
     pageKey: boundary.common.conversation
     label: 返回特别关注
     description: 会话页可见的返回控件；本次实际往返使用 AndroidAgent 系统返回动作。
-    controlType: back
+    elementType: back
     semanticRole: navigation
     capabilities: [navigate_back]
     risk: safe

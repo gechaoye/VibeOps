@@ -12,13 +12,14 @@ import {
   cliMain,
   createOfflineFixtureRuntime,
   createRealRuntime,
-  loadMidsceneEnvironment,
+  loadAutoModelConfiguration,
   resolveMidsceneRepo,
   runExploration,
   validateObservedControl,
   validateLocatedTarget,
   validatePlanPolicy,
 } from './android_explorer.mjs';
+import {ModelSettingsStore} from '../../apps/uikg-workbench/server/model-settings-store.mjs';
 
 const TOOL_DIR = path.dirname(fileURLToPath(import.meta.url));
 const GRAPH_ROOT = path.dirname(TOOL_DIR);
@@ -124,80 +125,38 @@ test('Midscene checkout resolves from explicit input, then MIDSCENE_REPO', () =>
   );
 });
 
-test('Midscene repository .env is loaded without overriding inherited settings or exposing secrets', async (t) => {
-  const midsceneRepo = await fs.mkdtemp(path.join(os.tmpdir(), 'uikg-midscene-env-'));
-  t.after(() => fs.rm(midsceneRepo, {recursive: true, force: true}));
-  await fs.writeFile(
-    path.join(midsceneRepo, '.env'),
-    [
-      'MIDSCENE_WORKER_A_MODEL_BASE_URL=https://fixture.invalid/v1',
-      'MIDSCENE_WORKER_A_MODEL_API_KEY=fixture-secret-must-not-be-returned',
-      'MIDSCENE_WORKER_A_MODEL_NAME=file-model',
-      'MIDSCENE_WORKER_A_MODEL_FAMILY=gpt-5',
-      'MIDSCENE_WORKER_A_MODEL_TIMEOUT=60000',
-      'UNRELATED_VALUE=must-not-be-loaded',
-      '',
-    ].join('\n'),
-    'utf8',
-  );
-  const env = {MIDSCENE_WORKER_A_MODEL_NAME: 'inherited-model'};
-  const result = await loadMidsceneEnvironment({midsceneRepo, env});
+test('Auto 页面识别与 Midscene 从正式配置数据库独立加载且不暴露凭据', async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'vibeops-auto-model-settings-'));
+  const databasePath = path.join(root, 'model-settings.sqlite');
+  t.after(() => fs.rm(root, {recursive: true, force: true}));
+  const store = new ModelSettingsStore(databasePath);
+  await store.initialize();
+  store.saveGateway({id: 'fixture', label: 'Fixture', baseUrl: 'https://fixture.invalid/v1', apiKey: 'fixture-secret'});
+  store.saveAssignment({target: 'auto', gatewayId: 'fixture', modelName: 'auto-model', modelFamily: 'gpt-5', timeout: 60000, temperature: 0, reasoningEffort: 'medium'});
+  store.saveAssignment({target: 'midscene', gatewayId: 'fixture', modelName: 'midscene-model', modelFamily: 'qwen3', timeout: 120000, temperature: 0, reasoningEffort: 'low'});
+  store.close();
+  const env = {};
+  const result = await loadAutoModelConfiguration({databasePath, env});
 
-  assert.deepEqual(result, {
-    status: 'loaded',
-    loadedKeyCount: 4,
-    preservedKeyCount: 1,
-    ignoredKeyCount: 1,
-  });
-  assert.equal(env.MIDSCENE_WORKER_A_MODEL_NAME, 'inherited-model');
-  assert.equal(env.MIDSCENE_WORKER_A_MODEL_FAMILY, 'gpt-5');
-  assert.equal(env.MIDSCENE_WORKER_A_MODEL_TIMEOUT, '60000');
-  assert.equal(env.UNRELATED_VALUE, undefined);
+  assert.deepEqual(result.auto, {name: 'auto-model', family: 'gpt-5', slot: 'auto'});
+  assert.deepEqual(result.midscene, {name: 'midscene-model', family: 'qwen3', slot: 'midscene'});
+  assert.equal(env.MIDSCENE_MODEL_NAME, 'midscene-model');
+  assert.equal(env.MIDSCENE_MODEL_FAMILY, 'qwen3');
   assert.doesNotMatch(JSON.stringify(result), /fixture-secret|fixture\.invalid/);
 });
 
-test('incomplete auto-loaded model configuration fails before Midscene runtime import', async (t) => {
-  const midsceneRepo = await fs.mkdtemp(path.join(os.tmpdir(), 'uikg-midscene-env-incomplete-'));
-  const keys = [
-    'MIDSCENE_WORKER_A_MODEL_NAME',
-    'MIDSCENE_WORKER_A_MODEL_FAMILY',
-    'MIDSCENE_WORKER_A_MODEL_BASE_URL',
-    'MIDSCENE_WORKER_A_MODEL_API_KEY',
-    'MIDSCENE_WORKER_B_MODEL_NAME',
-    'MIDSCENE_WORKER_B_MODEL_FAMILY',
-    'MIDSCENE_WORKER_B_MODEL_BASE_URL',
-    'MIDSCENE_WORKER_B_MODEL_API_KEY',
-  ];
-  const previous = new Map(keys.map((key) => [key, process.env[key]]));
-  for (const key of keys) delete process.env[key];
-  t.after(async () => {
-    for (const [key, value] of previous) {
-      if (value === undefined) delete process.env[key];
-      else process.env[key] = value;
-    }
-    await fs.rm(midsceneRepo, {recursive: true, force: true});
-  });
-  await fs.writeFile(
-    path.join(midsceneRepo, '.env'),
-    [
-      'MIDSCENE_WORKER_A_MODEL_NAME=fixture-model-a',
-      'MIDSCENE_WORKER_A_MODEL_FAMILY=gpt-5',
-      'MIDSCENE_WORKER_A_MODEL_BASE_URL=https://fixture.invalid/v1',
-      'MIDSCENE_WORKER_A_MODEL_API_KEY=fixture-key',
-      'MIDSCENE_WORKER_B_MODEL_NAME=fixture-model-b',
-      'MIDSCENE_WORKER_B_MODEL_FAMILY=gpt-5',
-      '',
-    ].join('\n'),
-    'utf8',
-  );
+test('缺少 Auto 页面识别配置时在设备运行时加载前失败', async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'vibeops-auto-model-settings-incomplete-'));
+  const databasePath = path.join(root, 'model-settings.sqlite');
+  t.after(() => fs.rm(root, {recursive: true, force: true}));
+  const store = new ModelSettingsStore(databasePath);
+  await store.initialize();
+  store.saveGateway({id: 'fixture', label: 'Fixture', baseUrl: 'https://fixture.invalid/v1', apiKey: 'fixture-secret'});
+  store.saveAssignment({target: 'midscene', gatewayId: 'fixture', modelName: 'midscene-model', modelFamily: 'gpt-5', timeout: 60000, temperature: 0, reasoningEffort: 'medium'});
+  store.close();
 
-  await assert.rejects(
-    createRealRuntime({serial: 'fixture-device', midsceneRepo}),
-    (error) =>
-      error.code === 'WORKER_MODEL_CONFIG_MISSING' &&
-      error.stage === 'model_gate' &&
-      /Base URL/.test(error.message),
-  );
+  await assert.rejects(loadAutoModelConfiguration({databasePath, env: {}}), (error) =>
+    error.code === 'AUTO_MODEL_CONFIG_MISSING' && error.stage === 'model_gate');
 });
 
 test('legacy OCR and prebound target geometry are rejected', async () => {

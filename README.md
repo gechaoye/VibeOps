@@ -1,6 +1,8 @@
 # VibeOps
 
-VibeOps is a visual testing operations platform built around a versioned UI knowledge graph.
+VibeOps is an AI-assisted project knowledge graph platform that connects product,
+application UI, service, API, data, code, testing, defect, release, and operations assets.
+UI exploration is the current pilot workflow, not the boundary of the platform model.
 
 ## Start
 
@@ -20,13 +22,16 @@ Stop development services started by this project with `pnpm dev:stop`.
 
 ## Knowledge Graph
 
-`knowledge_graph/` is the platform knowledge base. It contains the UIKG specification, canonical application graph, evidence, projections, exploration records, and deterministic graph tools.
+`knowledge_graph/` is the platform knowledge base. The normative model is VibeOps Project
+Graph 1.0. The existing UIKG 3.x graph remains exploration-stage source material until
+the new model and workbench are ready for publication.
 
 ```bash
+pnpm graph:vibeops:validate
 pnpm graph:validate
 pnpm graph:query -- --from messages.root --to messages.special_follow.settings --profile shortest --pretty
 ```
 
 ## Workbench
 
-`apps/uikg-workbench/` maintains graph drafts from a connected Android device. It supports live device interaction, frozen-frame evidence, Worker A inventory, editable annotations, consistency validation, AI review, staging, and publication.
+`apps/uikg-workbench/` maintains graph drafts from a connected Android device. It supports live device interaction, frozen-frame recognition evidence, editable annotations, consistency validation, AI review, staging, and publication. Manual and Auto use independent page-recognition models; Ultra uses two peer models for parallel recognition.

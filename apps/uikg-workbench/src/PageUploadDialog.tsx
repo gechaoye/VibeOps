@@ -176,14 +176,14 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
 
   const runWithConcurrency = async <T,>(items: T[], operation: (item: T) => Promise<void>) => {
     let index = 0;
-    const workers = Array.from({ length: Math.min(3, items.length) }, async () => {
+    const uploadRunners = Array.from({ length: Math.min(3, items.length) }, async () => {
       while (index < items.length) {
         const item = items[index];
         index += 1;
         await operation(item);
       }
     });
-    await Promise.all(workers);
+    await Promise.all(uploadRunners);
   };
 
   const addLocalFiles = async (files: File[]) => {

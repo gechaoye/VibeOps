@@ -42,7 +42,7 @@ export function ElementTree({ elements, filterCandidateKey, selectedId, multiSel
       return (
         <div key={element.id}>
           <div
-            className={`tree-row ${selectedId === element.id ? 'tree-row-selected' : ''} ${element.reviewStatus === 'rejected' ? 'tree-row-rejected' : ''} ${!element.controlType ? 'tree-row-needs-type' : ''}`}
+            className={`tree-row ${selectedId === element.id ? 'tree-row-selected' : ''} ${element.reviewStatus === 'rejected' ? 'tree-row-rejected' : ''} ${!element.elementType ? 'tree-row-needs-type' : ''}`}
             style={{ paddingLeft: `${12 + depth * 18}px` }}
           >
             {multiSelect && <input className="tree-checkbox" type="checkbox" checked={checkedIds.has(element.id)} aria-label={`选择 ${element.label}`} onChange={(event) => onCheck(element.id, event.target.checked)} />}
@@ -50,7 +50,7 @@ export function ElementTree({ elements, filterCandidateKey, selectedId, multiSel
             <Container size={14} className="tree-control-icon" />
             <span className="tree-row-main">
               <span className="tree-row-label">{element.label}</span>
-              <span className="tree-row-meta">{elementTypeLabel(element.controlType)}</span>
+              <span className="tree-row-meta">{elementTypeLabel(element.elementType)}</span>
             </span>
             <span className={`tree-status tree-status-${element.reviewStatus}`} title={reviewStatusLabels[element.reviewStatus]}>
               <StatusIcon status={element.reviewStatus} />

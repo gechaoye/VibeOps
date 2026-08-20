@@ -13,7 +13,7 @@
     "featurePath",
     "owner",
     "parentElementRef",
-    "controlType",
+    "elementType",
     "role",
     "capabilities",
     "summary",
@@ -55,8 +55,25 @@
     "parentElementRef": {
       "$ref": "common.schema.json#/$defs/nullableUlid"
     },
-    "controlType": {
+    "elementType": {
       "$ref": "common.schema.json#/$defs/nonEmptyString"
+    },
+    "displayCondition": {
+      "type": "string"
+    },
+    "gridColumns": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12
+    },
+    "gridRows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12
+    },
+    "gridRegion": {
+      "type": "integer",
+      "minimum": 1
     },
     "role": {
       "$ref": "common.schema.json#/$defs/nonEmptyString"

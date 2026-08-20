@@ -1,10 +1,30 @@
-# UIKG 3.0.1 规范索引
+# 规范索引
 
-本目录是本知识库唯一的 UI 知识图谱规范来源。规范版本为 `UIKG 3.0.1`，适用于 `knowledge_graph/apps/*` 的 Canonical 图谱、`knowledge_graph/explorations/*` 的探索证据以及 `knowledge_graph/obsidian/*` 的阅读投影。机器记录继续使用 `schemaVersion: 3.0.0`；本次 Patch 没有增加实体类型、字段或结构枚举。
+VibeOps 上线目标模型是 [VibeOps Project Graph 1.0](VIBEOPS-PROJECT-GRAPH-1.0.md)。
+它是项目级知识图谱规范，并有意不兼容 UIKG 3.x。
+
+UIKG 3.0.1 文档仅适用于现有 `knowledge_graph/apps/*`、`explorations/*` 和
+`obsidian/*` 探索期材料，不再定义 VibeOps 的上线数据结构。
 
 UIKG 3.0.1 明确收紧了 UIKG 3.0 已有的统一容器模型：任何由多个稳定语义部分组成的设置行都必须建立行总容器，并使用 `toggle_row`、`selector_row`、`help_toggle_row` 或 `action_row` 之一描述其成员角色。设置行直接位于页面时，页面只引用该行容器；设置行嵌套在其他容器时，页面只引用其顶层祖先，始终禁止越过容器引用行内成员。说明文字、帮助内容和当前值默认不可操作，Transition 与 AuthorityContract 只能指向证据确认的实际触发 Element。缺少设置行分类或交互边界证据时不得标记为 `complete`。
 
-## 规范优先级
+## VibeOps 1.0 组成
+
+- [VIBEOPS-PROJECT-GRAPH-1.0.md](VIBEOPS-PROJECT-GRAPH-1.0.md)：项目图谱边界、记录模型与图级不变量。
+- [schemas/vibeops-record.schema.json](schemas/vibeops-record.schema.json)：Entity、Relation、Observation 和 Evidence。
+- [schemas/vibeops-model.schema.json](schemas/vibeops-model.schema.json)：可配置实体类型、关系、字段和选项。
+
+## UIKG 3.x 历史规范
+
+以下文档继续用于解释和校验探索期数据，不作为 VibeOps 1.0 的兼容层：
+
+- [UIKG-3.0.1.md](UIKG-3.0.1.md)
+- [ontology.md](ontology.md)
+- [relationship-invariants.md](relationship-invariants.md)
+- [evidence-and-projection.md](evidence-and-projection.md)
+- [migrations/UIKG-3.0.1-migration-policy.md](migrations/UIKG-3.0.1-migration-policy.md)
+
+## UIKG 3.x 规范优先级
 
 发生冲突时按以下顺序处理：
 

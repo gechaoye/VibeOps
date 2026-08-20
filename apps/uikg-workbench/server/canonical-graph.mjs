@@ -104,7 +104,7 @@ function edgePreview(appKey, edge, trigger, elementsById, availableFrames) {
       id: trigger.id,
       key: trigger.key,
       label: trigger.label,
-      controlType: trigger.controlType,
+      elementType: trigger.elementType,
       rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
     },
   };
@@ -196,7 +196,7 @@ export async function loadCanonicalGraph({ graphRoot, yaml, appKey: requestedApp
     const { beforeFrameRef: _beforeFrameRef, ...projection } = edge;
     return {
       ...projection,
-      trigger: trigger ? { id: trigger.id, key: trigger.key, label: trigger.label, controlType: trigger.controlType } : null,
+      trigger: trigger ? { id: trigger.id, key: trigger.key, label: trigger.label, elementType: trigger.elementType } : null,
       preview: edgePreview(appKey, edge, trigger, elementsById, availableFrames),
     };
   });

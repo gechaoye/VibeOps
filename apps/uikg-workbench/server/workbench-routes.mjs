@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
@@ -7,20 +8,20 @@ import express from 'express';
 import { imageSize } from 'image-size';
 import {
   beginFrameCapture,
-  mergeWorkerIntoDraft,
+  mergeRecognitionIntoDraft,
   normalizeDraftForSave,
-  normalizeWorkerOutput,
-  prepareWorkerForDraft,
+  normalizeRecognitionOutput,
+  prepareRecognitionForDraft,
   removePagesFromDraft,
   validateDraft,
-  validateWorkerConsistency,
+  validateRecognitionConsistency,
 } from './draft-model.mjs';
 import { deleteModelGateway, fetchAvailableModelsByGateway, loadModelGateways, loadTargetModelSettings, loadWorkbenchPreferences, MODEL_TARGETS, resolveTargetModelConfig, resetDefaultModelGateway, saveModelGateway, saveTargetModelSettings, saveWorkbenchMode, testModelGateway } from './model-settings.mjs';
 import { reasoningBudgetForModel } from './model-compatibility.mjs';
 import { clearModelRuntime, getModelRuntime, setModelRuntime } from './model-runtime.mjs';
-import { recoverWorkerCheckpointFromStream, runResumableWorker, WORKER_ERROR_RETRY_LIMIT } from './resumable-worker.mjs';
-import { runWorkerModel } from './worker-client.mjs';
-import { buildWorkerContinuationPrompt, buildWorkerPrompt } from './worker-prompt.mjs';
+import { recoverRecognitionCheckpointFromStream, runResumableRecognition, RECOGNITION_ERROR_RETRY_LIMIT } from './resumable-recognition.mjs';
+import { runRecognitionModel } from './recognition-client.mjs';
+import { buildRecognitionContinuationPrompt, buildRecognitionPrompt } from './recognition-prompt.mjs';
 import { canonicalFullPageAssetPath, loadCanonicalGraph } from './canonical-graph.mjs';
 
 const MAX_PAGE_UPLOAD_BATCH = 20;
@@ -74,24 +75,56 @@ async function freezeAndCapture(agent) {
   };
 }
 
-export async function registerWorkbenchRoutes({ server, store, modelStore, graphWorkflow, workbenchRoot, spec }) {
+export async function registerWorkbenchRoutes({ server, store, modelStore, graphWorkflow, graphRoot, workbenchRoot, spec }) {
   const router = express.Router();
   router.use(express.json({ limit: '50mb' }));
-  const schema = JSON.parse(await readFile(path.join(workbenchRoot, 'server', 'worker-output.schema.json'), 'utf8'));
+  const schema = JSON.parse(await readFile(path.join(workbenchRoot, 'server', 'recognition-output.schema.json'), 'utf8'));
   const ajv = new Ajv2020({ allErrors: true, strict: false });
   addFormats(ajv);
-  const validateWorkerSchema = ajv.compile(schema);
-  const activeWorkerA = new Map();
-  const activeWorkerB = new Map();
-  const resumableWorkerA = new Map();
-  const resumableWorkerB = new Map();
+  const validateRecognitionSchema = ajv.compile(schema);
+  const activeRecognitionSessions = new Map([
+    ['manual', new Map()],
+    ['ultra_a', new Map()],
+    ['ultra_b', new Map()],
+  ]);
+  const resumableRecognitionSessions = new Map([
+    ['manual', new Map()],
+    ['ultra_a', new Map()],
+    ['ultra_b', new Map()],
+  ]);
   let loadedModelRuntimeSignature = null;
   let uploadDraftQueue = Promise.resolve();
   let annotationDraftQueue = Promise.resolve();
   const activePageUploadControllers = new Map();
   const deletedPageUploadIds = new Set();
   const workspaceSessionKey = (value) => String(value || 'default').trim().slice(0, 160) || 'default';
-  const workersInProgress = () => activeWorkerA.size > 0 || activeWorkerB.size > 0;
+  const runProjectModelService = (command, projectKey, payload = null) => new Promise((resolve, reject) => {
+    if (!/^[a-z0-9][a-z0-9.-]*$/.test(projectKey)) {
+      reject(workbenchError(400, '项目标识无效'));
+      return;
+    }
+    const script = path.join(graphRoot, 'tools', 'project_model_service.py');
+    const child = spawn('python', [script, command, '--root', graphRoot, '--project', projectKey], { stdio: ['pipe', 'pipe', 'pipe'] });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0) {
+        try { resolve(JSON.parse(stdout)); } catch { reject(workbenchError(500, '模型配置服务返回了无效数据')); }
+        return;
+      }
+      let details = {};
+      try { details = JSON.parse(stderr); } catch {}
+      reject(workbenchError(400, details.error || '模型配置保存失败', details));
+    });
+    if (payload) child.stdin.end(JSON.stringify(payload));
+    else child.stdin.end();
+  });
+  const recognitionInProgress = () => [...activeRecognitionSessions.values()].some((sessions) => sessions.size > 0);
   const queueAnnotationDraftMutation = (operation) => {
     const run = annotationDraftQueue.then(operation, operation);
     annotationDraftQueue = run.catch(() => {});
@@ -112,6 +145,8 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         id: page.id,
         key: page.key,
         name: page.name,
+        functionRef: page.functionRef,
+        implementationType: page.implementationType,
         surfaceType: page.surfaceType,
         stateSummary: page.stateSummary,
         scrollableRegions: page.scrollableRegions,
@@ -154,7 +189,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         ...incomingRecords,
       ],
       rawModelResultRef: incoming.rawModelResultRef,
-      lastWorkerModel: incoming.lastWorkerModel,
+      lastAiModel: incoming.lastAiModel,
       currentPageId: currentPage.id,
       currentFrameId: currentPage.frameIds.includes(current.currentFrameId) ? current.currentFrameId : currentPage.frameIds.at(-1) || null,
       page: currentPage,
@@ -193,13 +228,15 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   };
 
   const loadCombinedModelSettings = () => ({
-    settingsSchemaVersion: 1,
+    settingsSchemaVersion: 2,
     sections: [
       { id: 'model-gateways', label: '模型网关', order: 10 },
       { id: 'mode-configuration', label: '模式配置', order: 20 },
     ],
-    modelA: loadTargetModelSettings(modelStore, 'model_a'),
-    modelB: loadTargetModelSettings(modelStore, 'model_b'),
+    manual: loadTargetModelSettings(modelStore, 'manual'),
+    auto: loadTargetModelSettings(modelStore, 'auto'),
+    ultraModelA: loadTargetModelSettings(modelStore, 'ultra_a'),
+    ultraModelB: loadTargetModelSettings(modelStore, 'ultra_b'),
     midscene: loadTargetModelSettings(modelStore, 'midscene'),
     gateways: loadModelGateways(modelStore),
     modeConfiguration: loadWorkbenchPreferences(modelStore),
@@ -299,14 +336,14 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   };
 
-  const inspectWorkerResult = (candidate) => {
-    const { workerResult: normalizedResult, normalizationIssues } = normalizeWorkerOutput(candidate);
-    const schemaValid = validateWorkerSchema(normalizedResult);
-    const schemaErrors = structuredClone(validateWorkerSchema.errors || []);
+  const inspectRecognitionResult = (candidate) => {
+    const { recognitionResult: normalizedResult, normalizationIssues } = normalizeRecognitionOutput(candidate);
+    const schemaValid = validateRecognitionSchema(normalizedResult);
+    const schemaErrors = structuredClone(validateRecognitionSchema.errors || []);
     return { normalizedResult, normalizationIssues, schemaValid, schemaErrors };
   };
 
-  const publicWorkerSession = (session, includeStreams = false) => session ? {
+  const publicRecognitionSession = (session, includeStreams = false) => session ? {
     id: session.id,
     status: 'paused',
     frameId: session.frameId,
@@ -324,17 +361,24 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     } : {}),
   } : null;
 
-  async function executeWorker({ worker, frameId, pageId = null, pageContext = '', mergeIntoDraft = false, signal, onProgress = () => {}, resumeSession = null, workspaceSessionId = 'default' }) {
-    const label = worker === 'worker_a' ? 'Model A' : 'Model B';
+  const recognitionLabels = {
+    manual: 'Manual 页面识别模型',
+    ultra_a: 'Model A',
+    ultra_b: 'Model B',
+  };
+
+  async function executeRecognition({ target, frameId, pageId = null, pageContext = '', mergeIntoDraft = false, signal, onProgress = () => {}, resumeSession = null, workspaceSessionId = 'default' }) {
+    const label = recognitionLabels[target];
+    if (!label) throw workbenchError(400, `未知识别目标：${target}`);
     await syncModelRuntime();
-    const runtime = getModelRuntime(worker === 'worker_a' ? 'model_a' : 'model_b');
+    const runtime = getModelRuntime(target);
     const model = runtime?.modelName || null;
     const setResumable = (value) => {
-      const sessions = worker === 'worker_a' ? resumableWorkerA : resumableWorkerB;
+      const sessions = resumableRecognitionSessions.get(target);
       if (value) sessions.set(workspaceSessionId, value);
       else sessions.delete(workspaceSessionId);
     };
-    const modelResultId = `${worker}-${Date.now()}-${randomUUID().slice(0, 8)}`;
+    const modelResultId = `${target}-${Date.now()}-${randomUUID().slice(0, 8)}`;
     const sessionStartedAt = resumeSession?.createdAt || new Date().toISOString();
     let rawResult = null;
     let modelStarted = false;
@@ -354,7 +398,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     try {
       await persistAnalysisSession({
         id: modelResultId,
-        kind: worker,
+        kind: target,
         status: sessionStatus,
         frameId: frameId || null,
         pageId: pageId || null,
@@ -380,11 +424,11 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         message: resumeSession ? `正在从已保存断点继续 ${label}` : `${label} 正在分析画面`,
       });
       setResumable(null);
-      const run = await runResumableWorker({
-        initialPrompt: buildWorkerPrompt(frameId, pageContext),
+      const run = await runResumableRecognition({
+        initialPrompt: buildRecognitionPrompt(frameId, pageContext),
         initialResult: resumeSession?.rawResult,
         initialFallback: { frameId, elements: [] },
-        callWorker: async (prompt, attempt) => {
+        callModel: async (prompt, attempt) => {
           let accumulated = '';
           try {
             const onChunk = (chunk) => {
@@ -395,9 +439,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
                 reasoningContent: chunk.reasoning_content || '',
               });
             };
-            const workerRunner = typeof server.runWorkerModel === 'function' ? server.runWorkerModel : runWorkerModel;
-            return await workerRunner({
-              worker,
+            const recognitionRunner = typeof server.runRecognitionModel === 'function' ? server.runRecognitionModel : runRecognitionModel;
+            return await recognitionRunner({
+              target,
               prompt,
               imagePath: frozenFrame.imagePath,
               mimeType: frozenFrame.mimeType,
@@ -407,16 +451,16 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
               onChunk,
             });
           } catch (error) {
-            const recovered = recoverWorkerCheckpointFromStream(accumulated);
+            const recovered = recoverRecognitionCheckpointFromStream(accumulated);
             if (error && typeof error === 'object') {
-              error.workerCheckpoint = recovered;
+              error.recognitionCheckpoint = recovered;
               error.receivedContent = Boolean(accumulated.trim());
             }
             throw error;
           }
         },
-        buildContinuationPrompt: (checkpoint, attempt) => buildWorkerContinuationPrompt(frameId, pageContext, checkpoint, attempt),
-        isComplete: (candidate) => inspectWorkerResult(candidate).schemaValid,
+        buildContinuationPrompt: (checkpoint, attempt) => buildRecognitionContinuationPrompt(frameId, pageContext, checkpoint, attempt),
+        isComplete: (candidate) => inspectRecognitionResult(candidate).schemaValid,
         signal,
         onRetry: ({ attempt, retryLimit, checkpoint }) => emitProgress({
           type: 'stage',
@@ -432,16 +476,16 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       signal?.throwIfAborted();
 
       emitProgress({ type: 'stage', phase: 'normalize', message: '正在归一化并校验模型输出' });
-      const { normalizedResult, normalizationIssues, schemaValid, schemaErrors } = inspectWorkerResult(rawResult);
-      const consistencyIssues = schemaValid ? validateWorkerConsistency(normalizedResult) : [];
+      const { normalizedResult, normalizationIssues, schemaValid, schemaErrors } = inspectRecognitionResult(rawResult);
+      const consistencyIssues = schemaValid ? validateRecognitionConsistency(normalizedResult) : [];
       const blockingConsistencyIssues = consistencyIssues.filter((issue) => issue.startsWith('候选键重复'));
       const record = {
-        recordType: 'WorkbenchWorkerResult',
+        recordType: 'WorkbenchRecognitionResult',
         modelResultId,
         frameId,
         startedAt,
         completedAt: new Date().toISOString(),
-        worker,
+        target,
         model,
         frameIntegrity: frozenFrame.frameId === frameId,
         schemaValid,
@@ -465,7 +509,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           frameId,
           pageId,
           pageContext,
-          worker,
+          target,
           model,
           rawResult,
           completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
@@ -480,10 +524,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         setResumable(resumableSession);
         throw workbenchError(502, run.lastError, {
           modelResultRef,
-          retryLimit: WORKER_ERROR_RETRY_LIMIT,
+          retryLimit: RECOGNITION_ERROR_RETRY_LIMIT,
           retryAttempts,
           completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
-          resumableSession: publicWorkerSession(resumableSession, true),
+          resumableSession: publicRecognitionSession(resumableSession, true),
         });
       }
       if (!schemaValid || !run.completed || blockingConsistencyIssues.length > 0) {
@@ -506,7 +550,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         draft = await queueAnnotationDraftMutation(async () => {
           const currentDraft = await store.loadDraft();
           const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) || currentDraft : currentDraft;
-          const merged = mergeWorkerIntoDraft(pageDraft, prepareWorkerForDraft(normalizedResult), modelResultRef, model);
+          const merged = mergeRecognitionIntoDraft(pageDraft, prepareRecognitionForDraft(normalizedResult), modelResultRef, model);
           await store.saveDraft(merged);
           return merged;
         });
@@ -515,15 +559,15 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       }
       emitProgress({ type: 'stage', phase: 'complete', message: `${label} 分析完成` });
       sessionStatus = 'completed';
-      return { frameId, worker, workerResult: normalizedResult, modelResultRef, model, reasoningContent, outputContent, ...(draft ? { draft, issues } : {}) };
+      return { frameId, target, recognitionResult: normalizedResult, modelResultRef, model, reasoningContent, outputContent, ...(draft ? { draft, issues } : {}) };
     } catch (error) {
       if (signal?.aborted && (!error || typeof error !== 'object')) error = new Error(`用户中断 ${label}`);
       sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
       sessionError = signal?.aborted ? `用户中断 ${label}` : error instanceof Error ? error.message : String(error);
       if (signal?.aborted) {
         const rawCheckpoint = error && typeof error === 'object'
-          ? error.workerRawResult || recoverWorkerCheckpointFromStream(outputContent)
-          : recoverWorkerCheckpointFromStream(outputContent);
+          ? error.recognitionRawResult || recoverRecognitionCheckpointFromStream(outputContent)
+          : recoverRecognitionCheckpointFromStream(outputContent);
         const rawResultForResume = rawCheckpoint || { frameId, elements: [] };
         const resumableSession = {
           id: modelResultId,
@@ -531,7 +575,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           frameId,
           pageId,
           pageContext,
-          worker,
+          target,
           model,
           rawResult: rawResultForResume,
           completedCandidates: Array.isArray(rawResultForResume?.elements) ? rawResultForResume.elements.length : 0,
@@ -547,18 +591,18 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         if (error && typeof error === 'object') {
           error.details = {
             ...(error.details || {}),
-            resumableSession: publicWorkerSession(resumableSession, true),
+            resumableSession: publicRecognitionSession(resumableSession, true),
           };
         }
       }
       if (modelStarted && !resultSaved) {
         try {
           const resultPath = await store.saveModelResult(modelResultId, {
-            recordType: signal?.aborted ? 'WorkbenchWorkerCancellation' : 'WorkbenchWorkerFailure',
+            recordType: signal?.aborted ? 'WorkbenchRecognitionCancellation' : 'WorkbenchRecognitionFailure',
             modelResultId,
             frameId: frameId || null,
             completedAt: new Date().toISOString(),
-            worker,
+            target,
             model,
             error: signal?.aborted ? `用户中断 ${label}` : error instanceof Error ? error.message : String(error),
           });
@@ -574,7 +618,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     } finally {
       await persistAnalysisSession({
         id: modelResultId,
-        kind: worker,
+        kind: target,
         status: sessionStatus,
         frameId: frameId || null,
         pageId: pageId || null,
@@ -589,32 +633,24 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   }
 
-  function beginWorkerASession(workspaceSessionId = 'default') {
-    if (activeWorkerA.has(workspaceSessionId)) throw workbenchError(409, '当前标签页已有 Model A 分析正在运行');
+  function beginRecognitionSession(target, workspaceSessionId = 'default') {
+    const sessions = activeRecognitionSessions.get(target);
+    const label = recognitionLabels[target];
+    if (!sessions || !label) throw workbenchError(400, `未知识别目标：${target}`);
+    if (sessions.has(workspaceSessionId)) throw workbenchError(409, `当前标签页已有 ${label} 分析正在运行`);
     const session = { id: randomUUID(), workspaceSessionId, controller: new AbortController() };
-    activeWorkerA.set(workspaceSessionId, session);
+    sessions.set(workspaceSessionId, session);
     return session;
   }
 
-  function endWorkerASession(session) {
-    if (activeWorkerA.get(session.workspaceSessionId)?.id !== session.id) return;
-    activeWorkerA.delete(session.workspaceSessionId);
-  }
-
-  function beginWorkerBSession(workspaceSessionId = 'default') {
-    if (activeWorkerB.has(workspaceSessionId)) throw workbenchError(409, '当前标签页已有 Model B 分析正在运行');
-    const session = { id: randomUUID(), workspaceSessionId, controller: new AbortController() };
-    activeWorkerB.set(workspaceSessionId, session);
-    return session;
-  }
-
-  function endWorkerBSession(session) {
-    if (activeWorkerB.get(session.workspaceSessionId)?.id !== session.id) return;
-    activeWorkerB.delete(session.workspaceSessionId);
+  function endRecognitionSession(target, session) {
+    const sessions = activeRecognitionSessions.get(target);
+    if (sessions?.get(session.workspaceSessionId)?.id !== session.id) return;
+    sessions.delete(session.workspaceSessionId);
   }
 
   server.app.use((req, res, next) => {
-    if (workersInProgress() && req.path === '/interact') {
+    if (recognitionInProgress() && req.path === '/interact') {
       return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
     }
     next();
@@ -627,13 +663,16 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       res.json({
         ok: true,
         agentConnected: Boolean(server.agent),
-        workersRunning: workersInProgress(),
-        workerAConfigured: Boolean(getModelRuntime('model_a')?.modelName),
-        workerAModel: getModelRuntime('model_a')?.modelName || null,
-        workerBConfigured: Boolean(getModelRuntime('model_b')?.modelName),
-        workerBModel: getModelRuntime('model_b')?.modelName || null,
-        workerASession: publicWorkerSession(resumableWorkerA.get(workspaceSessionKey(req.query.workspaceSessionId))),
-        workerBSession: publicWorkerSession(resumableWorkerB.get(workspaceSessionKey(req.query.workspaceSessionId))),
+        recognitionRunning: recognitionInProgress(),
+        manualModelConfigured: Boolean(getModelRuntime('manual')?.modelName),
+        manualModel: getModelRuntime('manual')?.modelName || null,
+        ultraModelAConfigured: Boolean(getModelRuntime('ultra_a')?.modelName),
+        ultraModelA: getModelRuntime('ultra_a')?.modelName || null,
+        ultraModelBConfigured: Boolean(getModelRuntime('ultra_b')?.modelName),
+        ultraModelB: getModelRuntime('ultra_b')?.modelName || null,
+        manualSession: publicRecognitionSession(resumableRecognitionSessions.get('manual').get(workspaceSessionKey(req.query.workspaceSessionId))),
+        ultraModelASession: publicRecognitionSession(resumableRecognitionSessions.get('ultra_a').get(workspaceSessionKey(req.query.workspaceSessionId))),
+        ultraModelBSession: publicRecognitionSession(resumableRecognitionSessions.get('ultra_b').get(workspaceSessionKey(req.query.workspaceSessionId))),
         spec,
         session,
       });
@@ -642,12 +681,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   });
 
-  router.get('/workers/a/session', (req, res) => {
-    res.json({ session: publicWorkerSession(resumableWorkerA.get(workspaceSessionKey(req.query.workspaceSessionId)), true) });
-  });
-
-  router.get('/workers/b/session', (req, res) => {
-    res.json({ session: publicWorkerSession(resumableWorkerB.get(workspaceSessionKey(req.query.workspaceSessionId)), true) });
+  router.get('/recognition/:target/session', (req, res) => {
+    const sessions = resumableRecognitionSessions.get(req.params.target);
+    if (!sessions) return res.status(404).json({ error: '未知识别目标' });
+    res.json({ session: publicRecognitionSession(sessions.get(workspaceSessionKey(req.query.workspaceSessionId)), true) });
   });
 
   router.get('/sessions', async (_req, res, next) => {
@@ -668,6 +705,22 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   });
 
+  router.get('/project-model', async (req, res, next) => {
+    try {
+      res.json(await runProjectModelService('read', String(req.query.project || 'baohe')));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.put('/project-model', async (req, res, next) => {
+    try {
+      res.json(await runProjectModelService('save', String(req.query.project || 'baohe'), req.body));
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get('/model-settings/models', async (_req, res, next) => {
     try {
       await syncModelRuntime();
@@ -679,7 +732,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.put('/model-settings', async (req, res, next) => {
     try {
-      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
+      if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
       saveTargetModelSettings(modelStore, req.body);
       let runtimeReloaded = true;
       try {
@@ -695,7 +748,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.put('/model-settings/gateways/:gatewayId', async (req, res, next) => {
     try {
-      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能修改模型网关' });
+      if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能修改模型网关' });
       saveModelGateway(modelStore, { ...req.body, id: req.params.gatewayId });
       await syncModelRuntime();
       res.json(loadCombinedModelSettings());
@@ -706,7 +759,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.post('/model-settings/gateways', async (req, res, next) => {
     try {
-      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能新增模型网关' });
+      if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能新增模型网关' });
       saveModelGateway(modelStore, req.body);
       await syncModelRuntime();
       res.json(loadCombinedModelSettings());
@@ -725,7 +778,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.post('/model-settings/gateways/:gatewayId/reset', async (req, res, next) => {
     try {
-      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能重置模型网关' });
+      if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能重置模型网关' });
       resetDefaultModelGateway(modelStore);
       await syncModelRuntime();
       res.json(loadCombinedModelSettings());
@@ -736,7 +789,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.put('/model-settings/mode', async (req, res, next) => {
     try {
-      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模式' });
+      if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模式' });
       saveWorkbenchMode(modelStore, req.body?.mode);
       res.json(loadCombinedModelSettings());
     } catch (error) {
@@ -746,7 +799,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.delete('/model-settings/gateways/:gatewayId', async (req, res, next) => {
     try {
-      if (workersInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能移除模型网关' });
+      if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能移除模型网关' });
       const deleted = deleteModelGateway(modelStore, req.params.gatewayId);
       res.json({ ...loadCombinedModelSettings(), ...deleted });
     } catch (error) {
@@ -756,7 +809,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   router.post('/device/tap', async (req, res, next) => {
     try {
-      if (workersInProgress()) return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
+      if (recognitionInProgress()) return res.status(423).json({ error: 'AI 正在分析冻结帧，设备操作已临时锁定' });
       if (!server.agent) return res.status(409).json({ error: '请先连接 Android 设备' });
       const x = Number(req.body?.x);
       const y = Number(req.body?.y);
@@ -1031,32 +1084,11 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   });
 
-  router.post('/workers/a', async (req, res, next) => {
-    let session;
-    try {
-      const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
-      session = beginWorkerASession(workspaceSessionId);
-      res.json(await executeWorker({
-        worker: 'worker_a',
-        frameId: req.body?.frameId,
-        pageId: req.body?.pageId,
-        pageContext: req.body?.pageContext || '',
-        mergeIntoDraft: Boolean(req.body?.mergeIntoDraft),
-        signal: session.controller.signal,
-        workspaceSessionId,
-      }));
-    } catch (error) {
-      next(error);
-    } finally {
-      if (session) endWorkerASession(session);
-    }
-  });
-
-  async function streamWorkerA(req, res, resumeSession = null) {
+  async function streamRecognition(target, req, res, resumeSession = null) {
     let session;
     const workspaceSessionId = workspaceSessionKey(resumeSession?.workspaceSessionId || req.body?.workspaceSessionId);
     try {
-      session = beginWorkerASession(workspaceSessionId);
+      session = beginRecognitionSession(target, workspaceSessionId);
     } catch (error) {
       return res.status(error?.status || 500).json({ error: error instanceof Error ? error.message : String(error), ...(error?.details || {}) });
     }
@@ -1075,12 +1107,13 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     };
     res.on('close', () => {
-      if (!responseComplete && activeWorkerA.get(workspaceSessionId)?.id === session.id) session.controller.abort('Model A 流连接已关闭');
+      const activeSessions = activeRecognitionSessions.get(target);
+      if (!responseComplete && activeSessions?.get(workspaceSessionId)?.id === session.id) session.controller.abort(`${recognitionLabels[target]} 流连接已关闭`);
     });
 
     try {
-      const result = await executeWorker({
-        worker: 'worker_a',
+      const result = await executeRecognition({
+        target,
         frameId: resumeSession?.frameId || req.body?.frameId,
         pageId: resumeSession?.pageId || req.body?.pageId || null,
         pageContext: resumeSession?.pageContext || req.body?.pageContext || '',
@@ -1093,7 +1126,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       send('result', result);
     } catch (error) {
       if (session.controller.signal.aborted) {
-        send('cancelled', { message: 'Model A 已中断', ...(error?.details || {}) });
+        send('cancelled', { message: `${recognitionLabels[target]} 已中断`, ...(error?.details || {}) });
       } else {
         send('error', {
           message: error instanceof Error ? error.message : String(error),
@@ -1102,123 +1135,62 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       }
     } finally {
       responseComplete = true;
-      endWorkerASession(session);
+      endRecognitionSession(target, session);
       if (!res.writableEnded) res.end();
     }
   }
 
-  router.post('/workers/a/stream', async (req, res) => {
-    await streamWorkerA(req, res);
+  router.post('/recognition/:target/stream', async (req, res) => {
+    if (!activeRecognitionSessions.has(req.params.target)) return res.status(404).json({ error: '未知识别目标' });
+    await streamRecognition(req.params.target, req, res);
   });
 
-  router.post('/workers/a/resume/stream', async (req, res) => {
+  router.post('/recognition/:target/resume/stream', async (req, res) => {
+    const target = req.params.target;
+    const sessions = resumableRecognitionSessions.get(target);
+    if (!sessions) return res.status(404).json({ error: '未知识别目标' });
     const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
-    const resumeSession = resumableWorkerA.get(workspaceSessionId);
+    const resumeSession = sessions.get(workspaceSessionId);
     if (!resumeSession || resumeSession.id !== req.body?.sessionId) {
-      return res.status(404).json({ error: '没有可从断点继续的 Model A 会话' });
+      return res.status(404).json({ error: `没有可从断点继续的 ${recognitionLabels[target]} 会话` });
     }
-    await streamWorkerA(req, res, resumeSession);
+    await streamRecognition(target, req, res, resumeSession);
   });
 
-  router.post('/workers/a/cancel', (req, res) => {
-    const session = activeWorkerA.get(workspaceSessionKey(req.body?.workspaceSessionId));
+  router.post('/recognition/:target/cancel', (req, res) => {
+    const target = req.params.target;
+    const sessions = activeRecognitionSessions.get(target);
+    if (!sessions) return res.status(404).json({ error: '未知识别目标' });
+    const session = sessions.get(workspaceSessionKey(req.body?.workspaceSessionId));
     if (!session) return res.json({ cancelled: false });
-    session.controller.abort('用户中断 Model A');
+    session.controller.abort(`用户中断 ${recognitionLabels[target]}`);
     res.json({ cancelled: true });
   });
 
-  async function streamWorkerB(req, res, resumeSession = null) {
-    let session;
-    const workspaceSessionId = workspaceSessionKey(resumeSession?.workspaceSessionId || req.body?.workspaceSessionId);
-    try {
-      session = beginWorkerBSession(workspaceSessionId);
-      await syncModelRuntime();
-    } catch (error) {
-      if (session) endWorkerBSession(session);
-      return res.status(error?.status || 500).json({ error: error instanceof Error ? error.message : String(error) });
-    }
-    let responseComplete = false;
-    res.status(200).set({
-      'Content-Type': 'text/event-stream; charset=utf-8',
-      'Cache-Control': 'no-cache, no-transform',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no',
-    }).flushHeaders();
-    const send = (event, data) => {
-      if (res.writableEnded || res.destroyed) return;
-      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
-    };
-    res.on('close', () => {
-      if (!responseComplete && activeWorkerB.get(workspaceSessionId)?.id === session.id) session.controller.abort('Model B 流连接已关闭');
-    });
-    try {
-      const result = await executeWorker({
-        worker: 'worker_b',
-        frameId: resumeSession?.frameId || String(req.body?.frameId || ''),
-        pageId: resumeSession?.pageId || req.body?.pageId || null,
-        pageContext: resumeSession?.pageContext || req.body?.pageContext || '',
-        mergeIntoDraft: false,
-        signal: session.controller.signal,
-        onProgress: (event) => send(event.type, event),
-        resumeSession,
-        workspaceSessionId,
-      });
-      send('result', result);
-    } catch (error) {
-      send(session.controller.signal.aborted ? 'cancelled' : 'error', {
-        message: session.controller.signal.aborted ? 'Model B 已中断' : error instanceof Error ? error.message : String(error),
-        ...(error?.details || {}),
-      });
-    } finally {
-      responseComplete = true;
-      endWorkerBSession(session);
-      if (!res.writableEnded) res.end();
-    }
-  }
-
-  router.post('/workers/b/stream', async (req, res) => {
-    await streamWorkerB(req, res);
-  });
-
-  router.post('/workers/b/resume/stream', async (req, res) => {
-    const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
-    const resumeSession = resumableWorkerB.get(workspaceSessionId);
-    if (!resumeSession || resumeSession.id !== req.body?.sessionId) {
-      return res.status(404).json({ error: '没有可从断点继续的 Model B 会话' });
-    }
-    await streamWorkerB(req, res, resumeSession);
-  });
-
-  router.post('/workers/b/cancel', (req, res) => {
-    const session = activeWorkerB.get(workspaceSessionKey(req.body?.workspaceSessionId));
-    if (!session) return res.json({ cancelled: false });
-    session.controller.abort('用户中断 Model B');
-    res.json({ cancelled: true });
-  });
-
-  router.post('/workers/b', async (req, res, next) => {
+  router.post('/recognition/:target', async (req, res, next) => {
     let session;
     try {
+      const target = req.params.target;
+      if (!activeRecognitionSessions.has(target)) throw workbenchError(404, '未知识别目标');
       const workspaceSessionId = workspaceSessionKey(req.body?.workspaceSessionId);
-      session = beginWorkerBSession(workspaceSessionId);
-      await syncModelRuntime();
-      const result = await executeWorker({
-        worker: 'worker_b',
-        frameId: String(req.body?.frameId || ''),
+      session = beginRecognitionSession(target, workspaceSessionId);
+      res.json(await executeRecognition({
+        target,
+        frameId: req.body?.frameId,
         pageId: req.body?.pageId,
         pageContext: req.body?.pageContext || '',
+        mergeIntoDraft: Boolean(req.body?.mergeIntoDraft),
         signal: session.controller.signal,
         workspaceSessionId,
-      });
-      res.json(result);
+      }));
     } catch (error) {
       next(error);
     } finally {
-      if (session) endWorkerBSession(session);
+      if (session) endRecognitionSession(req.params.target, session);
     }
   });
 
-  router.post('/workers/merge', async (req, res, next) => {
+  router.post('/recognition/ultra/merge', async (req, res, next) => {
     try {
       const frameId = String(req.body?.frameId || '');
       const pageId = String(req.body?.pageId || '');
@@ -1226,31 +1198,31 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : currentDraft;
       if (!frameId || !pageDraft || pageDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
       const selections = Array.isArray(req.body?.selections) ? req.body.selections.filter((selection) => selection && typeof selection === 'object') : [];
-      const { workerResult: workerAResult } = normalizeWorkerOutput(req.body?.workerAResult || {});
-      const { workerResult: workerBResult } = normalizeWorkerOutput(req.body?.workerBResult || {});
-      const workerAByKey = new Map((workerAResult.elements || []).map((element) => [element.candidateKey, element]));
-      const workerBByKey = new Map((workerBResult.elements || []).map((element) => [element.candidateKey, element]));
+      const { recognitionResult: modelAResult } = normalizeRecognitionOutput(req.body?.modelAResult || {});
+      const { recognitionResult: modelBResult } = normalizeRecognitionOutput(req.body?.modelBResult || {});
+      const modelAByKey = new Map((modelAResult.elements || []).map((element) => [element.candidateKey, element]));
+      const modelBByKey = new Map((modelBResult.elements || []).map((element) => [element.candidateKey, element]));
       const candidateByKey = new Map();
       const actionSourceByKey = new Map();
-      const workerAKeyToMergedKey = new Map();
-      const workerBKeyToMergedKey = new Map();
+      const modelAKeyToMergedKey = new Map();
+      const modelBKeyToMergedKey = new Map();
       for (const selection of selections) {
         const candidateKey = String(selection.candidateKey || '');
-        const workerACandidateKey = String(selection.workerACandidateKey || candidateKey);
-        const workerBCandidateKey = String(selection.workerBCandidateKey || candidateKey);
-        const workerA = workerAByKey.get(workerACandidateKey);
-        const workerB = workerBByKey.get(workerBCandidateKey);
-        const baseSource = selection.baseSource === 'workerB' && workerB ? 'workerB' : workerA ? 'workerA' : workerB ? 'workerB' : null;
+        const modelACandidateKey = String(selection.modelACandidateKey || candidateKey);
+        const modelBCandidateKey = String(selection.modelBCandidateKey || candidateKey);
+        const modelA = modelAByKey.get(modelACandidateKey);
+        const modelB = modelBByKey.get(modelBCandidateKey);
+        const baseSource = selection.baseSource === 'modelB' && modelB ? 'modelB' : modelA ? 'modelA' : modelB ? 'modelB' : null;
         if (!candidateKey || !baseSource) continue;
-        const base = structuredClone(baseSource === 'workerB' ? workerB : workerA);
+        const base = structuredClone(baseSource === 'modelB' ? modelB : modelA);
         for (const [field, source] of Object.entries(selection.fieldSources || {})) {
           if (field === 'actions') continue;
-          const sourceCandidate = source === 'workerB' ? workerB : workerA;
+          const sourceCandidate = source === 'modelB' ? modelB : modelA;
           if (sourceCandidate && Object.hasOwn(sourceCandidate, field)) base[field] = structuredClone(sourceCandidate[field]);
         }
         let mergedKey = String(base.candidateKey || candidateKey);
         if (candidateByKey.has(mergedKey)) {
-          const suffix = baseSource === 'workerA' ? 'worker_a' : 'worker_b';
+          const suffix = baseSource === 'modelA' ? 'ultra_a' : 'ultra_b';
           let sequence = 1;
           let uniqueKey = `${mergedKey}.${suffix}`;
           while (candidateByKey.has(uniqueKey)) uniqueKey = `${mergedKey}.${suffix}.${sequence++}`;
@@ -1258,17 +1230,17 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           base.candidateKey = mergedKey;
         }
         candidateByKey.set(mergedKey, base);
-        actionSourceByKey.set(mergedKey, selection.fieldSources?.actions === 'workerB' ? 'workerB' : baseSource);
-        if (workerA) workerAKeyToMergedKey.set(workerACandidateKey, mergedKey);
-        if (workerB) workerBKeyToMergedKey.set(workerBCandidateKey, mergedKey);
+        actionSourceByKey.set(mergedKey, selection.fieldSources?.actions === 'modelB' ? 'modelB' : baseSource);
+        if (modelA) modelAKeyToMergedKey.set(modelACandidateKey, mergedKey);
+        if (modelB) modelBKeyToMergedKey.set(modelBCandidateKey, mergedKey);
       }
-      const workerBActions = (workerBResult.actionCandidates || []).flatMap((action) => {
-        const mergedKey = workerBKeyToMergedKey.get(action.triggerCandidateKey);
-        return mergedKey && actionSourceByKey.get(mergedKey) === 'workerB' ? [{ ...action, triggerCandidateKey: mergedKey }] : [];
+      const modelBActions = (modelBResult.actionCandidates || []).flatMap((action) => {
+        const mergedKey = modelBKeyToMergedKey.get(action.triggerCandidateKey);
+        return mergedKey && actionSourceByKey.get(mergedKey) === 'modelB' ? [{ ...action, triggerCandidateKey: mergedKey }] : [];
       });
-      const workerAActions = (workerAResult.actionCandidates || []).flatMap((action) => {
-        const mergedKey = workerAKeyToMergedKey.get(action.triggerCandidateKey);
-        return mergedKey && actionSourceByKey.get(mergedKey) === 'workerA' ? [{ ...action, triggerCandidateKey: mergedKey }] : [];
+      const modelAActions = (modelAResult.actionCandidates || []).flatMap((action) => {
+        const mergedKey = modelAKeyToMergedKey.get(action.triggerCandidateKey);
+        return mergedKey && actionSourceByKey.get(mergedKey) === 'modelA' ? [{ ...action, triggerCandidateKey: mergedKey }] : [];
       });
       const remapRelationships = (relationships, keyMap) => (relationships || []).flatMap((relationship) => {
         const fromCandidateKey = keyMap.get(relationship.fromCandidateKey);
@@ -1276,13 +1248,13 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         return fromCandidateKey && toCandidateKey ? [{ ...relationship, fromCandidateKey, toCandidateKey }] : [];
       });
       const combinedResult = {
-        ...(workerAResult.page ? workerAResult : workerBResult),
+        ...(modelAResult.page ? modelAResult : modelBResult),
         frameId,
         elements: [...candidateByKey.values()],
-        relationships: [...remapRelationships(workerAResult.relationships, workerAKeyToMergedKey), ...remapRelationships(workerBResult.relationships, workerBKeyToMergedKey)],
-        actionCandidates: [...workerBActions, ...workerAActions],
+        relationships: [...remapRelationships(modelAResult.relationships, modelAKeyToMergedKey), ...remapRelationships(modelBResult.relationships, modelBKeyToMergedKey)],
+        actionCandidates: [...modelBActions, ...modelAActions],
       };
-      const draft = mergeWorkerIntoDraft(pageDraft, prepareWorkerForDraft(combinedResult), String(req.body?.modelResultRef || 'worker-merge'), null);
+      const draft = mergeRecognitionIntoDraft(pageDraft, prepareRecognitionForDraft(combinedResult), String(req.body?.modelResultRef || 'ultra-model-merge'), null);
       await store.saveDraft(draft);
       res.json({ draft, issues: validateDraft(draft) });
     } catch (error) {

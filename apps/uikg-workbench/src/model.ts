@@ -24,48 +24,34 @@ export const elementTypeGroups: readonly OptionGroup[] = [
     ['navigation-bar', '导航栏'], ['sidebar', '侧边栏'], ['drawer', '抽屉'], ['hamburger', '汉堡菜单'],
     ['tab', '标签页'], ['breadcrumb', '面包屑'], ['page-indicator', '页面指示器'], ['pagination', '分页器'],
   ] },
-  { label: '操作 Action', options: [
+  { label: '按钮/开关 Button & Switch', options: [
     ['text-button', '文字按钮'], ['icon-button', '图标按钮'], ['floating-button', '悬浮按钮'],
-    ['radio', '单选项'], ['checkbox', '复选框'], ['switch', '开关'],
+    ['switch', '开关'], ['slider', '滑块'],
   ] },
   { label: '输入 Input', options: [
-    ['input', '文本输入框'], ['search-input', '搜索输入框'], ['password-input', '密码输入框'], ['number-input', '数字输入框'],
-    ['amount-input', '金额输入框'], ['url-input', 'URL 输入框'], ['email-input', '邮箱输入框'], ['phone-input', '手机号输入框'],
-    ['verification-code-input', '验证码输入框'], ['pin-input', 'PIN 输入框'], ['text-area', '多行文本框'], ['search', '搜索组件'],
+    ['input', '单行输入框'], ['text-area', '多行输入框'], ['rich-text-input', '富文本输入框'],
   ] },
-  { label: '选择 Selection', options: [
-    ['dropdown', '下拉框'], ['spinner', '下拉选择器'], ['select', '选择器'], ['date-picker', '日期选择器'],
-    ['time-picker', '时间选择器'], ['date-time-picker', '日期时间选择器'], ['city-picker', '城市选择器'], ['number-picker', '数字选择器'],
-    ['address-picker', '地址选择器'], ['autocomplete', '自动补全'], ['slider', '滑块'],
+  { label: '选择器 Selector', options: [
+    ['dropdown-selector', '下拉选择器'], ['radio', '单选选择器'], ['checkbox', '多选选择器'], ['wheel-picker', '滚轮选择器'],
+    ['date-picker', '日期选择器'], ['time-picker', '时间选择器'], ['date-time-picker', '日期时间选择器'], ['number-picker', '数字选择器'],
+    ['cascader', '级联选择器'], ['tag-selector', '标签选择器'], ['segmented-selector', '分段选择器'],
   ] },
   { label: '展示 Display', options: [
-    ['text', '文本'], ['label', '文字标签'], ['title', '标题'], ['subtitle', '副标题'], ['caption', '辅助说明'], ['badge', '角标'],
-    ['static-chip', '静态标签块'], ['selectable-chip', '可选标签块'], ['filter-chip', '筛选标签块'], ['action-chip', '操作标签块'],
-    ['input-chip', '输入标签块'], ['avatar', '头像'], ['avatar-group', '头像组'], ['image', '图片'], ['banner', '横幅'],
-    ['thumbnail', '缩略图'], ['preview', '预览图'], ['product-image', '商品图片'], ['carousel', '轮播图'],
-  ] },
-  { label: '列表 List', options: [
-    ['list', '列表'], ['list-item', '列表项'], ['grouped-list', '分组列表'], ['swipe-list', '侧滑列表'], ['expandable-list', '可展开列表'],
+    ['text', '文本'], ['static-label', '静态标签'], ['title', '标题'], ['subtitle', '副标题'], ['caption', '辅助说明'], ['badge', '角标'],
+    ['avatar', '头像'], ['avatar-group', '头像组'], ['image', '图片'], ['banner', '横幅'],
+    ['thumbnail', '缩略图'], ['preview', '预览图'], ['carousel', '轮播图'],
   ] },
   { label: '容器 Container', options: [
-    ['container', '容器'], ['card', '卡片'], ['panel', '面板'], ['section', '页面区域'], ['group', '元素组'], ['form', '表单'], ['grid', '网格'],
+    ['list', '列表'], ['list-item', '列表项'], ['grouped-list', '分组列表'], ['swipe-list', '侧滑列表'], ['expandable-list', '可展开列表'],
+    ['card', '卡片'], ['panel', '面板'], ['section', '页面区域'], ['form', '表单'], ['table', '表格'], ['chart', '图表'],
+    ['audio', '音频播放器'], ['video', '视频播放器'], ['image-viewer', '图片查看器'], ['file-preview', '文件预览器'],
   ] },
-  { label: '弹层 Overlay', options: [
-    ['dialog', '对话框'], ['alert', '警告弹层'], ['confirm-dialog', '确认对话框'], ['bottom-sheet', '底部弹层'],
-    ['popup', '弹出层'], ['tooltip', '文字提示'], ['snackbar', '底部提示条'], ['toast', '轻提示'],
-  ] },
-  { label: '滚动 Scroll', options: [
-    ['scroll-view', '纵向滚动区'], ['horizontal-scroll', '横向滚动区'], ['recycler-view', '回收列表'], ['pager', '翻页容器'],
-  ] },
-  { label: '反馈 Feedback', options: [
-    ['error', '错误反馈'], ['warning', '警告反馈'], ['success', '成功反馈'], ['info', '信息反馈'], ['status', '状态信息'],
+  { label: '弹层与反馈 Overlay & Feedback', options: [
+    ['dialog', '弹窗'], ['confirm-dialog', '确认框'], ['bottom-sheet', '底部弹层'],
+    ['popover', '泡泡框'], ['floating-card', '浮层卡片'], ['toast', 'Toast'],
   ] },
   { label: '进度 Progress', options: [
-    ['progress-bar', '进度条'], ['circular-progress', '环形进度'], ['loading', '加载状态'], ['skeleton', '骨架屏'], ['download-progress', '下载进度'],
-  ] },
-  { label: '媒体 Media', options: [
-    ['video', '视频'], ['audio', '音频'], ['image-viewer', '图片查看器'], ['camera', '相机'], ['file-preview', '文件预览'],
-    ['live-stream', '直播'], ['screen-share', '屏幕共享'], ['remote-control', '远程控制'],
+    ['progress-bar', '进度条'], ['loading', 'Loading'],
   ] },
   { label: '地图 Map', options: [
     ['map', '地图'], ['marker', '地图标记'], ['location', '位置'], ['route', '路线'], ['zoom-control', '缩放控件'], ['compass', '指南针'],
@@ -78,22 +64,12 @@ export const elementTypeGroups: readonly OptionGroup[] = [
   { label: '手势 Gesture', options: [
     ['gesture-region', '手势区域'],
   ] },
-  { label: '业务 Business', options: [
-    ['message-bubble', '消息气泡'], ['chat-input', '聊天输入框'], ['send-button', '发送按钮'], ['voice-button', '语音按钮'],
-    ['emoji-button', '表情按钮'], ['attachment-button', '附件按钮'], ['mention', '提及'], ['reply', '回复'], ['forward', '转发'],
-    ['read-status', '已读状态'], ['typing-indicator', '输入状态'], ['product-card', '商品卡片'], ['price', '价格'], ['discount', '折扣'],
-    ['sku-selector', 'SKU 选择器'], ['quantity-stepper', '数量步进器'], ['cart-button', '购物车按钮'], ['buy-button', '购买按钮'],
-    ['coupon', '优惠券'], ['approval-node', '审批节点'], ['approval-status', '审批状态'], ['signature', '签名'],
-    ['department-selector', '部门选择器'], ['employee-selector', '人员选择器'], ['date-range', '日期范围'], ['file-item', '文件项'],
-    ['folder', '文件夹'], ['file-tree', '文件树'], ['upload', '上传入口'], ['download', '下载入口'], ['rename', '重命名入口'],
-    ['move', '移动入口'], ['share', '分享入口'], ['other', '其他元素'],
-  ] },
 ];
 
 export const elementTypeOptions = elementTypeGroups.flatMap((group) => group.options);
 
 export const capabilityGroups: readonly OptionGroup[] = [{ label: '元素动作', options: [
-  ['none', '无'], ['tap', '点击'], ['double_tap', '双击'], ['long_press', '长按'], ['input', '输入'], ['delete', '删除'],
+  ['none', '无'], ['tap', '点击'], ['double_tap', '双击'], ['long_press', '长按'], ['input', '输入'],
   ['scroll_vertical', '纵向滚动'], ['scroll_horizontal', '横向滚动'], ['swipe', '滑动'], ['drag', '拖拽'], ['zoom', '缩放'], ['multi_touch', '多点触控'],
 ] }];
 
@@ -116,42 +92,52 @@ const typeGroup = (value: string) => elementTypeGroups.find((group) => group.opt
 
 export function defaultDescriptionForElementType(value: string) {
   const label = elementTypeLabel(value);
+  const specificTemplates: Record<string, string> = {
+    form: '围绕数据录入或提交组织的一组字段与操作',
+    table: '按稳定的行列结构展示或编辑多条数据',
+    dialog: '覆盖当前页面并承载内容或操作的弹窗',
+    'confirm-dialog': '要求用户明确确认或取消的确认框',
+    'bottom-sheet': '从屏幕底部出现的半屏或底部弹层',
+    popover: '依附具体元素出现的上下文泡泡框',
+    'floating-card': '悬浮于页面上方、可交互且可能自动消失的卡片；广告用途写入元素描述',
+    toast: '无需交互、短暂显示的结果或状态反馈；具体级别写入元素描述',
+  };
+  if (specificTemplates[value]) return specificTemplates[value];
   const group = typeGroup(value)?.label.split(' ')[0] || '业务';
   const templates: Record<string, string> = {
     导航: `用于页面、层级或内容位置导航的${label}`,
-    操作: `用于触发用户操作的${label}`,
+    '按钮/开关': `用于触发操作或调整连续值的${label}`,
     输入: `用于接收用户输入的${label}`,
-    选择: `用于选择候选值的${label}`,
+    选择器: `用于从候选项中选择一个或多个值的${label}`,
     展示: `用于展示页面内容的${label}`,
-    列表: `用于组织和展示重复内容的${label}`,
-    容器: `用于组织页面元素的${label}`,
-    弹层: `覆盖在当前页面上方的${label}`,
+    容器: `用于组织、承载或呈现页面内容的${label}`,
+    弹层与反馈: `覆盖当前页面或反馈操作结果的${label}`,
     滚动: `用于承载可滚动内容的${label}`,
-    反馈: `用于反馈当前结果或状态的${label}`,
     进度: `用于展示任务进度的${label}`,
-    媒体: `用于展示或控制媒体内容的${label}`,
     地图: `用于展示或操作地理信息的${label}`,
     系统: `由系统提供的${label}`,
     手势: `用于接收手势输入的${label}`,
-    业务: `承载具体业务信息或操作的${label}`,
   };
   return templates[group] || `页面中的${label}`;
 }
 
-const noActionGroups = new Set(['展示 Display', '容器 Container', '反馈 Feedback', '进度 Progress', '系统 System']);
-const inputTypes = new Set(['input', 'search-input', 'password-input', 'number-input', 'amount-input', 'url-input', 'email-input', 'phone-input', 'verification-code-input', 'pin-input', 'text-area', 'chat-input']);
+const noActionGroups = new Set(['展示 Display', '进度 Progress', '系统 System']);
+const noActionTypes = new Set(['card', 'panel', 'section', 'form', 'table', 'chart', 'dialog', 'confirm-dialog', 'bottom-sheet', 'popover', 'floating-card', 'toast']);
+const inputTypes = new Set(['input', 'text-area', 'rich-text-input']);
 
 export function recommendedActionsForElementType(value: string): string[] {
   const group = typeGroup(value)?.label || '';
   if (inputTypes.has(value)) return ['input'];
-  if (['scroll-view', 'recycler-view', 'list', 'grouped-list'].includes(value)) return ['scroll_vertical'];
-  if (['horizontal-scroll', 'carousel', 'pager'].includes(value)) return ['scroll_horizontal', 'swipe'];
+  if (value === 'slider') return ['tap', 'drag'];
+  if (value === 'wheel-picker') return ['swipe'];
+  if (value === 'number-picker') return ['tap', 'swipe'];
+  if (['list', 'grouped-list'].includes(value)) return ['scroll_vertical'];
+  if (value === 'carousel') return ['scroll_horizontal', 'swipe'];
   if (value === 'swipe-list') return ['scroll_vertical', 'swipe'];
   if (value === 'image-viewer') return ['swipe', 'zoom', 'multi_touch'];
   if (value === 'map') return ['tap', 'drag', 'zoom', 'multi_touch'];
-  if (value === 'remote-control' || value === 'gesture-region') return ['tap', 'swipe', 'drag', 'zoom', 'multi_touch'];
-  if (value === 'screen-share') return ['tap', 'zoom'];
   if (['sidebar', 'drawer'].includes(value)) return ['tap', 'swipe'];
+  if (noActionTypes.has(value)) return ['none'];
   if (noActionGroups.has(group)) return ['none'];
   return ['tap'];
 }
@@ -161,7 +147,6 @@ export function defaultActionEffect(value: string, action: string) {
   const group = typeGroup(value)?.label.split(' ')[0] || '业务';
   if (action === 'none') return `${label}仅展示或承载内容，不触发交互`;
   if (action === 'input') return `向${label}输入文本或数值`;
-  if (action === 'delete') return `删除${label}对应的内容`;
   if (action === 'scroll_vertical') return `纵向滚动${label}中的内容`;
   if (action === 'scroll_horizontal') return `横向滚动${label}中的内容`;
   if (action === 'swipe') return `滑动${label}以切换内容或状态`;
@@ -171,8 +156,8 @@ export function defaultActionEffect(value: string, action: string) {
   if (action === 'double_tap') return `双击${label}触发对应交互`;
   if (action === 'long_press') return `长按${label}打开扩展操作或状态`;
   if (group === '导航') return `点击${label}切换导航位置或进入对应内容`;
-  if (group === '选择') return `点击${label}更新当前选择`;
-  if (group === '弹层') return `点击${label}触发弹层中的对应操作`;
+  if (group === '选择器') return `点击${label}更新当前选择`;
+  if (group === '弹层与反馈') return `点击${label}触发弹层中的对应操作`;
   return `点击${label}触发对应操作`;
 }
 
@@ -185,21 +170,68 @@ export function interactionBoundaryForActions(actions: string[], current = 'cand
   return current === 'none' ? 'candidate_bbox' : current;
 }
 
+export function normalizeGridCount(value: number) {
+  return Math.min(12, Math.max(1, Math.round(Number(value) || 1)));
+}
+
+export function inferGridForBox(bbox: BBox) {
+  const grid = gridForBox(bbox);
+  return { columns: grid.columns, rows: grid.rows };
+}
+
+function gridAxisForBox(offset: number, size: number, maximumCount: number) {
+  const maximum = normalizeGridCount(maximumCount);
+  const candidateFor = (count: number) => {
+    const start = Math.floor(offset * count);
+    const end = Math.ceil((offset + size) * count - 1e-9) - 1;
+    if (start !== end || start < 0 || end >= count) return null;
+    const leftMargin = offset * count - start;
+    const rightMargin = start + 1 - (offset + size) * count;
+    // Keep at least 10% of the element size clear on both sides when possible.
+    const minimumMargin = Math.max(0.025, size * count * 0.1);
+    return { count, index: start, hasTolerance: Math.min(leftMargin, rightMargin) >= minimumMargin };
+  };
+
+  let fallback: { count: number; index: number; hasTolerance: boolean } | null = null;
+  for (let count = maximum; count >= 1; count -= 1) {
+    const candidate = candidateFor(count);
+    if (!candidate) continue;
+    fallback ||= candidate;
+    if (candidate.hasTolerance) return candidate;
+  }
+  return fallback || { count: 1, index: 0, hasTolerance: false };
+}
+
+export function gridForBox(bbox: BBox, maximumColumns = 12, maximumRows = 12) {
+  const column = gridAxisForBox(bbox.x, bbox.width, maximumColumns);
+  const row = gridAxisForBox(bbox.y, bbox.height, maximumRows);
+  return {
+    columns: column.count,
+    rows: row.count,
+    region: row.index * column.count + column.index + 1,
+  };
+}
+
 export function createHumanElement(bbox: BBox, pageId: string): DraftElement {
   const suffix = `${Date.now()}-${crypto.randomUUID().slice(0, 6)}`;
+  const grid = gridForBox(bbox);
   return {
     id: `element-manual-${suffix}`,
     candidateKey: `manual.element.${suffix}`,
     label: '新元素',
-    visualDescription: defaultDescriptionForElementType('other'),
-    controlType: 'other',
+    visualDescription: '',
+    displayCondition: '',
+    elementType: '',
     role: 'unknown',
     capabilities: ['none'],
-    actionEffects: actionEffectsFor('other', ['none']),
+    actionEffects: actionEffectsFor('', ['none']),
     enabled: null,
     state: '',
     dynamicContent: false,
     bbox,
+    gridColumns: grid.columns,
+    gridRows: grid.rows,
+    gridRegion: grid.region,
     geometryKind: 'approximate',
     geometryConfidence: 1,
     confidence: 1,
@@ -225,7 +257,7 @@ export function createHumanElement(bbox: BBox, pageId: string): DraftElement {
     interactionBoundary: 'none',
     reviewStatus: 'edited',
     source: 'human',
-    workerModel: null,
+    aiModel: null,
     lastModelProposal: null,
   };
 }
@@ -313,6 +345,15 @@ export function validateDraftClient(draft: Draft): ValidationIssue[] {
     if (b.x < 0 || b.y < 0 || b.width <= 0 || b.height <= 0 || b.x + b.width > 1 || b.y + b.height > 1) {
       issues.push({ level: 'error', code: 'bbox_invalid', elementId: element.id, message: '元素边框必须位于截图范围内' });
     }
+    const calculatedGrid = gridForBox(element.bbox, element.gridColumns, element.gridRows);
+    const validGrid = Number.isInteger(element.gridColumns) && element.gridColumns >= 1 && element.gridColumns <= 12
+      && Number.isInteger(element.gridRows) && element.gridRows >= 1 && element.gridRows <= 12
+      && element.gridColumns === calculatedGrid.columns
+      && element.gridRows === calculatedGrid.rows
+      && element.gridRegion === calculatedGrid.region;
+    if (!validGrid) {
+      issues.push({ level: 'error', code: 'grid_region_invalid', elementId: element.id, message: '宫格分块必须为 1 至 12，且单一区域需完整覆盖元素边框' });
+    }
     if (element.parentId && !byId.has(element.parentId)) {
       issues.push({ level: 'error', code: 'parent_missing', elementId: element.id, message: '父级元素不存在' });
     }
@@ -323,10 +364,10 @@ export function validateDraftClient(draft: Draft): ValidationIssue[] {
       issues.push({ level: 'warning', code: 'review_pending', elementId: element.id, message: 'AI 候选尚未完成人工审核' });
     }
     if (element.riskSignals.includes('geometry-clamped-to-frame')) {
-      issues.push({ level: 'warning', code: 'worker_bbox_clamped', elementId: element.id, message: 'AI 候选框超出截图边缘，已自动裁剪，请人工校准' });
+      issues.push({ level: 'warning', code: 'model_bbox_clamped', elementId: element.id, message: 'AI 候选框超出截图边缘，已自动裁剪，请人工校准' });
     }
     if (element.riskSignals.includes('model-action-inconsistent')) {
-      issues.push({ level: 'warning', code: 'worker_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
+      issues.push({ level: 'warning', code: 'model_action_inconsistent', elementId: element.id, message: 'AI 对该元素的可操作性判断存在矛盾，请人工确认' });
     }
     const visited = new Set([element.id]);
     let cursor: DraftElement | undefined = element;
