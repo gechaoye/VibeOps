@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHD3E5FPXBD4B6SV0CMRZ7V",
+  "sessionRef": "01KYHD0YFZEZ4NFERXP1ZE7BHX",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHD2FWWDDG736WZY4E1RWCK",
+  "sourceScreenshotRef": "sha256:e48c01101d658c01aed25030df8eb90b54da690f061d7f8d49955ec7f716932c",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"link\",\"menu\",\"list_entry\",\"toggle\",\"checkbox\",\"radio\",\"segmented_control\",\"tab\",\"slider\",\"stepper\",\"input\",\"back\",\"close\",\"scroll_region\"]. 完整盘点关闭“全部成员”后的实际页面，识别页面标题、主要内容和全部可见交互控件；以当前画面为准，不根据导航历史猜测页面。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "添加",
+      "这是练工练工练工练...",
+      "🥰 努力工...",
+      "练良伟 创建了待办 循环待办每天",
+      "10:28",
+      "未读 58"
+    ],
+    "visibleNavigationState": "当前位于“特别关注”页面；可见“我的特别关注”内容区，未见选中的标签页或展开的导航菜单。",
+    "visibleControls": [
+      {
+        "candidateKey": "top_left_chevron",
+        "label": "无文字向下折线图标",
+        "elementType": "icon_button",
+        "visibleState": "页面左上角可见，黑色向下折线图标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "当前画面与已提供上下文不足以确定该图标的具体功能。",
+        "locatorPrompt": "定位“特别关注”标题栏最左侧、黑色向下折线形的无文字图标按钮"
+      },
+      {
+        "candidateKey": "special_attention_settings",
+        "label": "设置",
+        "elementType": "button",
+        "visibleState": "蓝色文字，位于“我的特别关注”标题右侧",
+        "semanticRole": "settings",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能进入特别关注设置；当前画面未显示是否会直接修改数据。",
+        "functionDescription": "打开特别关注相关设置。",
+        "locatorPrompt": "定位“我的特别关注”区域右上方的蓝色文字按钮“设置”"
+      },
+      {
+        "candidateKey": "add_special_attention",
+        "label": "添加",
+        "elementType": "button",
+        "visibleState": "虚线圆圈加号，下方文字“添加”",
+        "semanticRole": "add",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能发起添加特别关注对象的流程；是否立即生效不可见。",
+        "functionDescription": "添加特别关注对象。",
+        "locatorPrompt": "定位“我的特别关注”区域左侧、虚线圆圈加号及下方“添加”文字组成的按钮"
+      },
+      {
+        "candidateKey": "conversation_practice_work",
+        "label": "这是练工练工练工练...",
+        "elementType": "list_entry",
+        "visibleState": "可见会话条目，摘要为“练良伟 创建了待办 循环待办每天”，时间10:28，红色未读徽标58",
+        "semanticRole": "conversation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "进入条目通常会改变当前页面，并可能影响未读状态。",
+        "functionDescription": "打开标题为“这是练工练工练工练...”的会话或消息条目。",
+        "locatorPrompt": "定位特别关注列表中唯一一行会话：左侧彩色头像，标题“这是练工练工练工练...”，右侧时间“10:28”及红色未读数“58”"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": [
+      "顶部左侧无文字向下折线图标的具体功能无法由当前画面及已提供上下文确定。",
+      "会话标题右侧的“🥰 努力工...”是成员、发送者、状态还是其他字段，当前画面无法确定。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:04:12.910Z",
+  "endedAt": "2026-07-27T09:04:41.135Z",
+  "durationMs": 28224.808667,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:cc4c8465bb1a4b3659995e71f32580ae36d5c484787228bea3481ba7667e06ed"
+}

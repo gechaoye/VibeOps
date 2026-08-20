@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHNSK5QNC15JRZH8AMXD19Q",
+  "sessionRef": "01KYHNK2NQDTEG375N9GATH53W",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHNRVSTYEQS58VJXTAHH7EX",
+  "sourceScreenshotRef": "sha256:39fd42ad87ae9ad63c35eb808f25772e9e1a674f44b0b4cf6037a0a9093d97af",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"list_entry\",\"radio\",\"close\"]. 完整盘点提醒方式面板的短信、电话和取消；背景页控件不作为当前可操作控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.method\",\"predicate\":\"visible_options\",\"value\":\"提醒方式面板包含短信、电话和取消，当前短信选中。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "日程",
+      "您有一个新日程",
+      "日程UI自动化",
+      "07月27日 20:00 - 21:00"
+    ],
+    "visibleNavigationState": "前景显示日程提醒弹窗；特别关注提醒背景页被遮罩且当前不可操作。",
+    "visibleControls": [
+      {
+        "candidateKey": "calendar_reminder_ignore",
+        "label": "忽略",
+        "elementType": "button",
+        "visibleState": "可见、未按下",
+        "semanticRole": "忽略当前日程提醒",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能关闭本次提醒，但当前画面未说明是否影响日程本身",
+        "functionDescription": "忽略当前显示的新日程提醒。",
+        "locatorPrompt": "定位前景白色“日程”提醒弹窗底部最左侧、白底灰色描边且文字为“忽略”的按钮"
+      },
+      {
+        "candidateKey": "calendar_reminder_reject",
+        "label": "拒绝",
+        "elementType": "button",
+        "visibleState": "可见、蓝色、未按下",
+        "semanticRole": "拒绝当前日程",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能拒绝日程邀请，是否可撤销未显示",
+        "functionDescription": "拒绝当前显示的新日程。",
+        "locatorPrompt": "定位前景白色“日程”提醒弹窗底部中间、蓝底白字且文字为“拒绝”的按钮"
+      },
+      {
+        "candidateKey": "calendar_reminder_accept",
+        "label": "接受",
+        "elementType": "button",
+        "visibleState": "可见、蓝色、未按下",
+        "semanticRole": "接受当前日程",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能接受日程邀请并改变参与状态，是否可撤销未显示",
+        "functionDescription": "接受当前显示的新日程。",
+        "locatorPrompt": "定位前景白色“日程”提醒弹窗底部最右侧、蓝底白字且文字为“接受”的按钮"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": [
+      "当前视口未显示提醒方式选择面板，无法从画面确认或定位“短信”“电话”“取消”三个控件；供应上下文说明该面板包含这些选项且短信选中。",
+      "前景日程提醒弹窗未显示独立关闭控件；点击弹窗外遮罩是否可关闭无法仅凭画面确定。",
+      "背景页面右侧可见滚动条，但背景被模态遮罩，当前不作为可操作或可滚动区域。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:36:14.657Z",
+  "endedAt": "2026-07-27T11:36:35.767Z",
+  "durationMs": 21110.2065,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3a2a0ebe392028f7903cd5cc4d05fe6f504f4c146402a6df0a453da11d9399fa"
+}

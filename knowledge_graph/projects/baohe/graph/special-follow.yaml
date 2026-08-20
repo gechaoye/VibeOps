@@ -1,0 +1,361 @@
+graphVersion: 1.0.0
+modelVersion: baohe@1.0.0
+projectRef: project:baohe
+scope: function:special_follow
+
+records:
+- recordKind: Entity
+  modelVersion: baohe@1.0.0
+  id: project:baohe
+  entityType: Project
+  projectRef: project:baohe
+  key: baohe
+  label: 宝盒项目
+  summary: VibeOps 当前试点项目。
+  lifecycleStatus: active
+  attributes: {}
+  knowledge: &manual_confirmed
+    origin: manual
+    reviewStatus: confirmed
+    validationStatus: unverified
+    evidenceRefs: []
+
+- recordKind: Entity
+  modelVersion: baohe@1.0.0
+  id: community:baohe.applications
+  entityType: Community
+  projectRef: project:baohe
+  key: baohe.applications
+  label: 宝盒应用社区
+  summary: 组织宝盒及其依赖应用。
+  lifecycleStatus: active
+  attributes: {communityType: application}
+  knowledge: *manual_confirmed
+
+- recordKind: Entity
+  modelVersion: baohe@1.0.0
+  id: community:baohe.messages
+  entityType: Community
+  projectRef: project:baohe
+  key: baohe.messages
+  label: 消息功能社区
+  summary: 组织消息域功能及相关项目资产。
+  lifecycleStatus: active
+  attributes: {communityType: functional}
+  knowledge: *manual_confirmed
+
+- recordKind: Entity
+  modelVersion: baohe@1.0.0
+  id: app:baohe
+  entityType: Application
+  projectRef: project:baohe
+  key: baohe
+  label: 中通宝盒
+  summary: 宝盒应用产品；具体客户端和构建信息由运行 Observation 记录。
+  lifecycleStatus: active
+  attributes: {}
+  knowledge: *manual_confirmed
+
+- recordKind: Entity
+  modelVersion: baohe@1.0.0
+  id: function:special_follow
+  entityType: Function
+  projectRef: project:baohe
+  key: messages.special_follow
+  label: 特别关注
+  summary: 管理特别关注成员，并对其消息提供差异化提醒。
+  lifecycleStatus: active
+  attributes: {functionType: native}
+  knowledge: *manual_confirmed
+
+- &page_base
+  recordKind: Entity
+  modelVersion: baohe@1.0.0
+  id: page:messages.root
+  entityType: Page
+  projectRef: project:baohe
+  key: messages.root
+  label: 消息首页
+  summary: 展示消息入口和会话列表。
+  lifecycleStatus: active
+  attributes: {implementationType: native, surfaceType: page, stateDefinitions: []}
+  knowledge: *manual_confirmed
+
+- <<: *page_base
+  id: page:messages.special_follow
+  key: messages.special_follow
+  label: 特别关注
+  summary: 展示特别关注成员及其会话。
+  attributes:
+    functionRef: function:special_follow
+    implementationType: native
+    surfaceType: page
+    stateDefinitions:
+    - {key: empty, label: 暂无特别关注成员}
+    - {key: read_conversation, label: 已读会话}
+    - {key: unread_conversation, label: 含未读会话}
+
+- <<: *page_base
+  id: page:messages.special_follow.settings
+  key: messages.special_follow.settings
+  label: 特别关注提醒
+  summary: 管理特别关注成员和提醒设置。
+  attributes:
+    functionRef: function:special_follow
+    implementationType: native
+    surfaceType: page
+    stateDefinitions:
+    - {key: baseline, label: 基础设置}
+    - {key: popup_reminder_on, label: 弹窗提醒已开启}
+    - {key: popup_reminder_off, label: 弹窗提醒已关闭}
+    - {key: popup_help_visible, label: 弹窗提醒帮助可见}
+
+- <<: *page_base
+  id: page:messages.special_follow.people
+  key: messages.special_follow.people
+  label: 全部特别关注成员
+  summary: 展示和维护全部特别关注成员。
+  attributes:
+    functionRef: function:special_follow
+    implementationType: native
+    surfaceType: page
+    stateDefinitions:
+    - {key: empty, label: 无成员}
+    - {key: nonempty, label: 有成员}
+
+- &element_base
+  recordKind: Entity
+  modelVersion: baohe@1.0.0
+  id: element:messages.root.special_follow_entry
+  entityType: Element
+  projectRef: project:baohe
+  key: messages.root.special_follow_entry
+  label: 特别关注入口
+  summary: 从消息首页打开特别关注。
+  lifecycleStatus: active
+  attributes:
+    elementType: icon-button
+    capabilities: [tap]
+    actionEffects: [{action: tap, effect: 进入特别关注页面}]
+    interactionBoundary: whole_element
+  knowledge: *manual_confirmed
+
+- <<: *element_base
+  id: element:messages.special_follow.settings_entry
+  key: messages.special_follow.settings_entry
+  label: 特别关注设置入口
+  summary: 打开特别关注提醒设置。
+  attributes:
+    elementType: icon-button
+    capabilities: [tap]
+    actionEffects: [{action: tap, effect: 进入特别关注提醒页面}]
+    interactionBoundary: whole_element
+
+- <<: *element_base
+  id: element:messages.special_follow.settings.members_container
+  key: messages.special_follow.settings.members_container
+  label: 我的特别关注容器
+  summary: 组合说明文字和右侧入口，不承担点击行为。
+  attributes: {elementType: list-item, capabilities: [none], actionEffects: [], interactionBoundary: none}
+
+- <<: *element_base
+  id: element:messages.special_follow.settings.members_label
+  key: messages.special_follow.settings.members_label
+  label: 我的特别关注文字
+  summary: 入口说明文字，不承担点击行为。
+  attributes: {elementType: text, capabilities: [none], actionEffects: [], interactionBoundary: none}
+
+- <<: *element_base
+  id: element:messages.special_follow.settings.members_chevron
+  key: messages.special_follow.settings.members_chevron
+  label: 我的特别关注右侧箭头
+  summary: 打开全部特别关注成员的已验证点击区域。
+  attributes:
+    elementType: icon-button
+    capabilities: [tap]
+    actionEffects: [{action: tap, effect: 进入全部特别关注成员页面}]
+    interactionBoundary: trailing_control
+  knowledge:
+    origin: manual
+    reviewStatus: confirmed
+    validationStatus: runtime_verified
+    evidenceRefs: [evidence:open_people.trace]
+
+- &interaction_base
+  recordKind: Entity
+  modelVersion: baohe@1.0.0
+  id: interaction:messages.open_special_follow
+  entityType: Interaction
+  projectRef: project:baohe
+  key: messages.open_special_follow
+  label: 打开特别关注
+  summary: 点击消息首页入口进入特别关注。
+  lifecycleStatus: active
+  attributes: {operation: tap, reversible: true, risk: safe}
+  knowledge: *manual_confirmed
+
+- <<: *interaction_base
+  id: interaction:messages.special_follow.open_settings
+  key: messages.special_follow.open_settings
+  label: 打开特别关注提醒
+  summary: 点击设置入口进入特别关注提醒。
+
+- <<: *interaction_base
+  id: interaction:messages.special_follow.settings.open_people
+  key: messages.special_follow.settings.open_people
+  label: 打开全部特别关注成员
+  summary: 点击“我的特别关注”右侧箭头进入全部成员页。
+  knowledge:
+    origin: manual
+    reviewStatus: confirmed
+    validationStatus: runtime_verified
+    evidenceRefs: [evidence:open_people.trace]
+
+- recordKind: Evidence
+  modelVersion: baohe@1.0.0
+  id: evidence:open_people.trace
+  projectRef: project:baohe
+  evidenceType: action_trace
+  uri: explorations/zto-connect-fat-messages-special-follow-uikg301-remaining-20260731-attempt1/actions/open-all-members-via-chevron-uikg301.json
+  contentHash: sha256:59a6f380e67834c7fdba061046adb00ec4c6b60c7d980144ad0cdf8e002c31b6
+  capturedAt: '2026-07-31T06:19:26.974Z'
+  attributes: {postcondition: pass}
+
+- recordKind: Evidence
+  modelVersion: baohe@1.0.0
+  id: evidence:settings.baseline.screenshot
+  projectRef: project:baohe
+  evidenceType: screenshot
+  uri: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  contentHash: sha256:d51601503327cc26f595d0cfdc149540e74780d1bf5bd14e6c3d94ee6c046329
+  capturedAt: '2026-07-31T06:19:26.974Z'
+  attributes: {}
+
+- recordKind: Observation
+  modelVersion: baohe@1.0.0
+  id: observation:settings.baseline.android.20260731
+  projectRef: project:baohe
+  subjectRef: page:messages.special_follow.settings
+  observedAt: '2026-07-31T06:19:26.974Z'
+  context:
+    client: android
+    buildRef: android-package:com.zto.connect.fat@10542
+    deviceRef: sha256:b1485ad4b9da3cb307ec62ea7b5c062bd3753b1875f0897bdbe49cba51e5eb36
+    viewport: {width: 1152, height: 2376, orientation: portrait}
+  payload:
+    stateKeys: [baseline]
+    screenshotRef: evidence:settings.baseline.screenshot
+    elements:
+    - elementRef: element:messages.special_follow.settings.members_container
+      presence: present
+      locator: {left: 48, top: 278, width: 1028, height: 99}
+    - elementRef: element:messages.special_follow.settings.members_label
+      presence: present
+    - elementRef: element:messages.special_follow.settings.members_chevron
+      presence: present
+      locator: {left: 1036, top: 310, width: 28, height: 45}
+  evidenceRefs: [evidence:settings.baseline.screenshot]
+
+relationDefaults: &relation_defaults
+  recordKind: Relation
+  modelVersion: baohe@1.0.0
+  projectRef: project:baohe
+  attributes: {}
+  knowledge: *manual_confirmed
+
+relations:
+- <<: *relation_defaults
+  id: relation:app.member_of.app_community
+  relationType: member_of
+  sourceRef: app:baohe
+  targetRef: community:baohe.applications
+- <<: *relation_defaults
+  id: relation:function.member_of.messages
+  relationType: member_of
+  sourceRef: function:special_follow
+  targetRef: community:baohe.messages
+- <<: *relation_defaults
+  id: relation:app.provides.special_follow
+  relationType: provides_function
+  sourceRef: app:baohe
+  targetRef: function:special_follow
+- <<: *relation_defaults
+  id: relation:messages.contains.entry
+  relationType: contains
+  sourceRef: page:messages.root
+  targetRef: element:messages.root.special_follow_entry
+- <<: *relation_defaults
+  id: relation:special_follow.contains.settings_entry
+  relationType: contains
+  sourceRef: page:messages.special_follow
+  targetRef: element:messages.special_follow.settings_entry
+- <<: *relation_defaults
+  id: relation:settings.contains.members_container
+  relationType: contains
+  sourceRef: page:messages.special_follow.settings
+  targetRef: element:messages.special_follow.settings.members_container
+- <<: *relation_defaults
+  id: relation:members_container.contains.label
+  relationType: contains
+  sourceRef: element:messages.special_follow.settings.members_container
+  targetRef: element:messages.special_follow.settings.members_label
+- <<: *relation_defaults
+  id: relation:members_container.contains.chevron
+  relationType: contains
+  sourceRef: element:messages.special_follow.settings.members_container
+  targetRef: element:messages.special_follow.settings.members_chevron
+- <<: *relation_defaults
+  id: relation:entry.triggers.open_special_follow
+  relationType: triggers
+  sourceRef: element:messages.root.special_follow_entry
+  targetRef: interaction:messages.open_special_follow
+- <<: *relation_defaults
+  id: relation:open_special_follow.starts_from.messages
+  relationType: starts_from
+  sourceRef: interaction:messages.open_special_follow
+  targetRef: page:messages.root
+- <<: *relation_defaults
+  id: relation:open_special_follow.navigates_to.special_follow
+  relationType: navigates_to
+  sourceRef: interaction:messages.open_special_follow
+  targetRef: page:messages.special_follow
+- <<: *relation_defaults
+  id: relation:settings_entry.triggers.open_settings
+  relationType: triggers
+  sourceRef: element:messages.special_follow.settings_entry
+  targetRef: interaction:messages.special_follow.open_settings
+- <<: *relation_defaults
+  id: relation:open_settings.starts_from.special_follow
+  relationType: starts_from
+  sourceRef: interaction:messages.special_follow.open_settings
+  targetRef: page:messages.special_follow
+- <<: *relation_defaults
+  id: relation:open_settings.navigates_to.settings
+  relationType: navigates_to
+  sourceRef: interaction:messages.special_follow.open_settings
+  targetRef: page:messages.special_follow.settings
+- <<: *relation_defaults
+  id: relation:members_chevron.triggers.open_people
+  relationType: triggers
+  sourceRef: element:messages.special_follow.settings.members_chevron
+  targetRef: interaction:messages.special_follow.settings.open_people
+  knowledge:
+    origin: manual
+    reviewStatus: confirmed
+    validationStatus: runtime_verified
+    evidenceRefs: [evidence:open_people.trace]
+- <<: *relation_defaults
+  id: relation:open_people.starts_from.settings
+  relationType: starts_from
+  sourceRef: interaction:messages.special_follow.settings.open_people
+  targetRef: page:messages.special_follow.settings
+- <<: *relation_defaults
+  id: relation:open_people.navigates_to.people
+  relationType: navigates_to
+  sourceRef: interaction:messages.special_follow.settings.open_people
+  targetRef: page:messages.special_follow.people
+  knowledge:
+    origin: manual
+    reviewStatus: confirmed
+    validationStatus: runtime_verified
+    evidenceRefs: [evidence:open_people.trace]

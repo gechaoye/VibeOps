@@ -1,0 +1,224 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSTRWAS9FFDP5R2205WX25",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSS9G8BZJRVG6B9KMH3891",
+  "sourceScreenshotRef": "sha256:01b70f6b7a4bfa2d5dea6fd4452518f34be95ddfd625e60c466e6f9834026824",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"list_entry\",\"toggle\",\"back\",\"close\",\"scroll_region\"]. 完整盘点当前视口中拥有完整点击区域的交互控件，准确记录两个免打扰开关状态；底边裁切行只记录为内容。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.night_dnd\",\"predicate\":\"visible_description\",\"value\":\"开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我",
+      "间隔时间：30分钟",
+      "弹窗消息未读，短信/电话提醒我",
+      "间隔时间：30分钟",
+      "提醒方式：电话",
+      "夜间免打扰",
+      "开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知",
+      "免打扰群通知",
+      "个性化提醒",
+      "特别关注提示音：简报"
+    ],
+    "visibleNavigationState": "当前位于“特别关注提醒”设置页；页面已向下滚动但仍可见顶部标题，右侧滚动条滑块从靠近顶部延伸至视口底部附近；底部“特别关注提示音”行被视口裁切。",
+    "visibleControls": [
+      {
+        "candidateKey": "back",
+        "label": "返回",
+        "elementType": "back",
+        "visibleState": "可见",
+        "semanticRole": "返回上一页",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "返回上一页面。",
+        "locatorPrompt": "定位页面左上角、标题“特别关注提醒”左侧的黑色向左箭头返回控件。"
+      },
+      {
+        "candidateKey": "special_follow_list",
+        "label": "我的特别关注",
+        "elementType": "list_entry",
+        "visibleState": "可见，右侧有向右箭头",
+        "semanticRole": "打开特别关注列表",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "进入“我的特别关注”列表。",
+        "locatorPrompt": "定位标题下方第一块白色区域中，文字“我的特别关注”及其最右侧向右箭头所在的整行入口。"
+      },
+      {
+        "candidateKey": "add_special_follow",
+        "label": "添加",
+        "elementType": "button",
+        "visibleState": "可见，虚线方框内为加号",
+        "semanticRole": "添加特别关注",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "medium",
+        "functionDescription": "开始添加新的特别关注对象。",
+        "locatorPrompt": "定位“我的特别关注”区域左下方，虚线方框加号及下方文字“添加”组成的按钮。"
+      },
+      {
+        "candidateKey": "single_chat_popup_reminder",
+        "label": "单聊消息未读，弹窗提醒我",
+        "elementType": "toggle",
+        "visibleState": "开启，蓝色开关，滑块在右侧",
+        "semanticRole": "控制单聊未读消息弹窗提醒",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "开启或关闭特别关注对象单聊消息未读时的弹窗提醒。",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”这一行最右侧的蓝色开启开关。"
+      },
+      {
+        "candidateKey": "single_chat_popup_help",
+        "label": "单聊消息未读，弹窗提醒我说明",
+        "elementType": "icon_button",
+        "visibleState": "可见，灰色圆圈问号",
+        "semanticRole": "查看该设置说明",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "查看单聊消息未读弹窗提醒设置的说明。",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”文字右侧、该行蓝色开关左侧的灰色圆圈问号图标。"
+      },
+      {
+        "candidateKey": "single_chat_interval",
+        "label": "间隔时间 30分钟",
+        "elementType": "list_entry",
+        "visibleState": "当前值为30分钟，右侧有向右箭头",
+        "semanticRole": "设置单聊弹窗提醒间隔时间",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "打开并修改单聊未读弹窗提醒的间隔时间。",
+        "locatorPrompt": "定位第一个“间隔时间”整行入口，右侧当前值显示“30分钟”，位于“单聊消息未读，弹窗提醒我”开关行正下方。"
+      },
+      {
+        "candidateKey": "sms_phone_reminder",
+        "label": "弹窗消息未读，短信/电话提醒我",
+        "elementType": "toggle",
+        "visibleState": "开启，蓝色开关，滑块在右侧",
+        "semanticRole": "控制短信或电话提醒",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "high",
+        "functionDescription": "开启或关闭弹窗消息未读时通过短信或电话提醒。",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”这一行最右侧的蓝色开启开关。"
+      },
+      {
+        "candidateKey": "sms_phone_reminder_help",
+        "label": "弹窗消息未读，短信/电话提醒我说明",
+        "elementType": "icon_button",
+        "visibleState": "可见，灰色圆圈问号",
+        "semanticRole": "查看该设置说明",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "查看短信或电话提醒设置的说明。",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”文字右侧、该行蓝色开关左侧的灰色圆圈问号图标。"
+      },
+      {
+        "candidateKey": "sms_phone_interval",
+        "label": "间隔时间 30分钟",
+        "elementType": "list_entry",
+        "visibleState": "当前值为30分钟，右侧有向右箭头",
+        "semanticRole": "设置短信或电话提醒间隔时间",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "打开并修改短信或电话提醒的间隔时间。",
+        "locatorPrompt": "定位第二个“间隔时间”整行入口，右侧当前值显示“30分钟”，位于“弹窗消息未读，短信/电话提醒我”开关行正下方。"
+      },
+      {
+        "candidateKey": "reminder_method",
+        "label": "提醒方式 电话",
+        "elementType": "list_entry",
+        "visibleState": "当前值为电话，右侧有向右箭头",
+        "semanticRole": "设置提醒方式",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "high",
+        "functionDescription": "打开提醒方式选项并修改当前短信或电话通知方式。",
+        "locatorPrompt": "定位第二个“间隔时间 30分钟”下方的“提醒方式”整行入口，其右侧当前值为“电话”。"
+      },
+      {
+        "candidateKey": "night_dnd",
+        "label": "夜间免打扰",
+        "elementType": "toggle",
+        "visibleState": "关闭，灰白色开关，滑块在左侧",
+        "semanticRole": "控制夜间短信或电话免打扰",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "high",
+        "functionDescription": "控制22:00至次日06:00期间是否停止通过短信或电话方式通知。",
+        "locatorPrompt": "定位“夜间免打扰”这一行最右侧的灰白色关闭开关，滑块位于左侧。"
+      },
+      {
+        "candidateKey": "group_notification_dnd",
+        "label": "免打扰群通知",
+        "elementType": "toggle",
+        "visibleState": "开启，蓝色开关，滑块在右侧",
+        "semanticRole": "控制免打扰群通知",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "开启或关闭免打扰群的通知。",
+        "locatorPrompt": "定位夜间免打扰说明下方独立白色区域中，“免打扰群通知”这一行最右侧的蓝色开启开关。"
+      },
+      {
+        "candidateKey": "group_notification_dnd_help",
+        "label": "免打扰群通知说明",
+        "elementType": "icon_button",
+        "visibleState": "可见，灰色圆圈问号",
+        "semanticRole": "查看该设置说明",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "查看免打扰群通知设置的说明。",
+        "locatorPrompt": "定位“免打扰群通知”文字右侧、该行蓝色开关左侧的灰色圆圈问号图标。"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "settings_page_scroll",
+        "label": "特别关注提醒设置内容",
+        "directions": [
+          "up",
+          "down"
+        ],
+        "locatorPrompt": "定位标题“特别关注提醒”下方覆盖主要设置内容的纵向页面区域；其右侧可见灰色竖向滚动条。"
+      }
+    ],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:46:22.918Z",
+  "endedAt": "2026-07-27T12:47:08.682Z",
+  "durationMs": 45766.435208,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:21734f6497dc44c3d55536d23b77e0bf2d42d5a6004c444e46f3a3a5e54305eb"
+}

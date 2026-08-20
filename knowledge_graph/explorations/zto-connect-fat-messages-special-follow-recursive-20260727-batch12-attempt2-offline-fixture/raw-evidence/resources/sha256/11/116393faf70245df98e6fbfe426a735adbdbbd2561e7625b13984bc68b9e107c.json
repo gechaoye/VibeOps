@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHD0HX0JJMR57C2P3MFPH1A",
+  "sessionRef": "01KYHD0DE3DQSAK3QCJ4NFD863",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHD0GWX4WMR1CCZNF12421T",
+  "sourceScreenshotRef": "sha256:21ee0973da163540213e6766bee96c59e316f795eda269a74c1d7bca842054bd",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"link\",\"menu\",\"list_entry\",\"toggle\",\"checkbox\",\"radio\",\"segmented_control\",\"tab\",\"slider\",\"stepper\",\"input\",\"back\",\"close\",\"scroll_region\"]. 完整盘点关闭“全部成员”后的实际页面，识别页面标题、主要内容和全部可见交互控件；以当前画面为准，不根据导航历史猜测页面。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "关闭全部成员后的实际返回页",
+    "visiblePrimaryContent": [
+      "offline fixture state messages.special_follow.people.close_result"
+    ],
+    "visibleControls": [],
+    "scrollableRegions": [],
+    "visibleNavigationState": "messages.special_follow.people.close_result",
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "offline-fixture-model",
+      "family": "fixture"
+    },
+    "planning": {
+      "name": "offline-fixture-model",
+      "family": "fixture"
+    },
+    "insight": {
+      "name": "offline-fixture-model",
+      "family": "fixture"
+    },
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:03:06.656Z",
+  "endedAt": "2026-07-27T09:03:06.656Z",
+  "durationMs": 0.010208,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:90626faa96ad2595098db5a9fecb24b1a89552a8cce54d7db8a09dbe213ac501"
+}

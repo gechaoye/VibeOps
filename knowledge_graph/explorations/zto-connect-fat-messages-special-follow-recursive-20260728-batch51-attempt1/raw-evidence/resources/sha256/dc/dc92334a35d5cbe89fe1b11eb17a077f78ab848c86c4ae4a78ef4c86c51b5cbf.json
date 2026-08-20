@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYKDMN5JTW51AP0KXEK94FW5",
+  "sessionRef": "01KYKDKVV8W2XD0Q80SSMFJZBQ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYKDM4XEBFKJGGXZAVH9Z9BY",
+  "sourceScreenshotRef": "sha256:3def539291f397167216cfae5bab8816fbe4f04c1b44f9828fd2ed77d7345611",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\"]. 本批为补充往返证据，visibleControls 只返回右上蓝色“设置”按钮，candidateKey 固定为 special_follow_settings_for_help_close；其他控件省略。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示当前实时未读消息数量；具体数字只属于 Runtime 呈现。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "这是练...",
+      "这是练工练工练工练...",
+      "🥳努力工...",
+      "[特别关注]练良伟 创建了待办 循环待办每天",
+      "10:28",
+      "未读消息数：4"
+    ],
+    "visibleNavigationState": "当前位于“特别关注”页面",
+    "visibleControls": [
+      {
+        "candidateKey": "special_follow_settings_for_help_close",
+        "label": "设置",
+        "elementType": "button",
+        "visibleState": "右上方蓝色文字按钮，可见且未显示按下或禁用状态",
+        "semanticRole": "settings",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能进入或修改特别关注设置；当前画面未展示具体操作及其影响",
+        "functionDescription": "打开特别关注的设置界面",
+        "locatorPrompt": "定位“特别关注”页面中“我的特别关注”标题同一行最右侧的蓝色文字按钮“设置”"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T03:52:20.265Z",
+  "endedAt": "2026-07-28T03:52:34.226Z",
+  "durationMs": 13960.217583,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:bc18cf6f43b22e7679b7c5b24213fec1b39e24df2e258e4d8f0ff2b7dafbc7e1"
+}

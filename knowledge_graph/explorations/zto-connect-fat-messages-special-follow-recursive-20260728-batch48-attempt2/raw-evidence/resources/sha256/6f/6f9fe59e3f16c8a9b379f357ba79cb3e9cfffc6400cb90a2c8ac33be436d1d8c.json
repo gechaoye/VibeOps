@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK672PGSDJYM54JKZ36PM3W",
+  "sessionRef": "01KYK660P4DEBSA3NGF1SET476",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK66H0196RNQ2KCZ37DDJY5",
+  "sourceScreenshotRef": "sha256:503f6642dd3a7ec0861ea629fe386871eb88029d2dcfad745e914d95d0e7ef88",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\"]. 本状态帧只输出消息页和顶部橙黄色特别关注爱心可见的事实，visibleControls 必须返回空数组；爱心由动作步骤单独实时 aiLocate。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "消息",
+    "visiblePrimaryContent": [
+      "您有2条重要消息未读，点击查看",
+      "分类标签：全部、未读、必看、置顶、单聊、群聊、服务",
+      "上海总部IT部网点老板助…",
+      "三个必看群22233",
+      "四个必看群",
+      "一个必看群",
+      "airtest公开群",
+      "airtest日志接收群",
+      "龚帆",
+      "顶部橙黄色特别关注爱心可见"
+    ],
+    "visibleNavigationState": "消息页；底部导航“消息”处于蓝色选中状态，顶部特别关注爱心呈橙黄色。",
+    "visibleControls": [],
+    "scrollableRegions": [
+      {
+        "candidateKey": "messages.conversation_list",
+        "label": "消息会话列表",
+        "directions": [
+          "up",
+          "down"
+        ],
+        "locatorPrompt": "定位消息页中分类标签下方、底部导航栏上方的会话列表区域；区域内可见“上海总部IT部网点老板助…”、“三个必看群22233”、“airtest公开群”等会话。"
+      }
+    ],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:42:34.112Z",
+  "endedAt": "2026-07-28T01:42:49.296Z",
+  "durationMs": 15183.761708,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f947829f4c527e65823758231bc28e9a880e6e9c3536f7f7da4c55fb02140d80"
+}

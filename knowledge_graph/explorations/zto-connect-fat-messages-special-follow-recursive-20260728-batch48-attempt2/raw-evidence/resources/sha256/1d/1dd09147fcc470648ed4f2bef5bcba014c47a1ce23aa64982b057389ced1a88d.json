@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK68EJC0X8SCGQFZ155P6YP",
+  "sessionRef": "01KYK660P4DEBSA3NGF1SET476",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK67VX792MACW0PT0MR3S48",
+  "sourceScreenshotRef": "sha256:54ea07eaf3db76a8e3efcf5c107a98f64ec7957c9b8a9f71c4804671fab74436",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\"]. 本状态帧只输出标题、成员条目、会话摘要中的橙色特别关注前缀和实时未读数量角标可见的事实，visibleControls 必须返回空数组；设置由动作步骤单独实时 aiLocate。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "成员条目：这是练…",
+      "会话：这是练工练工练工练…",
+      "会话摘要橙色前缀：[特别关注]",
+      "实时未读数量角标：3"
+    ],
+    "visibleNavigationState": "当前位于特别关注页面",
+    "visibleControls": [],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:43:17.876Z",
+  "endedAt": "2026-07-28T01:43:34.220Z",
+  "durationMs": 16343.76075,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:26ccb3e3b162d1c479bbf84f6cd0471ad8a381ce02e9dbdabff38632c6b52cc3"
+}

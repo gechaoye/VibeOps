@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHPXJXXTGBWWE58VMA0DPYW",
+  "sessionRef": "01KYHPTTGF5EFQQ3PKGYAVRB0S",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHPWTR2HQTH8S4ERBCB0N3H",
+  "sourceScreenshotRef": "sha256:806ff58916a39d21f8b3e9d7ad4990804def2a26c288369efb4c873d93a7e143",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"list_entry\",\"toggle\",\"radio\",\"back\",\"close\",\"tab\",\"menu\",\"scroll_region\"]. 完整盘点启动宝盒主 Activity 后的实际落点、当前标签页和全部可见交互控件；不激活任何控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.transient_schedule_overlay\",\"predicate\":\"scope_boundary\",\"value\":\"日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。\",\"source\":\"task_policy\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "账号安全检查",
+    "visiblePrimaryContent": [
+      "检测到账号1项异常",
+      "建议立即处理",
+      "常用聊天账号已设置",
+      "中天账号",
+      "真人已认证",
+      "人员信息已绑定"
+    ],
+    "visibleNavigationState": "启动宝盒主 Activity 后当前实际落点为“账号安全检查”页面；当前视口未显示可识别的标签栏或已选标签页。",
+    "visibleControls": [
+      {
+        "candidateKey": "account_security.close",
+        "label": "关闭",
+        "elementType": "close",
+        "visibleState": "右上角浅色圆形区域内显示黑色叉号",
+        "semanticRole": "关闭账号安全检查页面",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "可能退出当前检查页面",
+        "functionDescription": "关闭当前账号安全检查页面。",
+        "locatorPrompt": "定位“账号安全检查”页面右上角、橙红色标题区域内的圆形叉号关闭控件"
+      },
+      {
+        "candidateKey": "account_security.dismiss_login",
+        "label": "暂不处理，先登录（剩余-1534天）",
+        "elementType": "button",
+        "visibleState": "底部固定灰色按钮，文字为白色，视觉上呈禁用状态",
+        "semanticRole": "暂不处理并继续登录",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "当前不可用",
+        "functionDescription": "暂不处理检测到的异常并尝试继续登录；当前视觉状态显示不可用。",
+        "locatorPrompt": "定位屏幕底部固定的宽灰色圆角按钮，文字为“暂不处理，先登录（剩余-1534天）”"
+      },
+      {
+        "candidateKey": "account_security.partial_blue_control",
+        "label": "未完整显示的蓝色描边控件",
+        "elementType": "button",
+        "visibleState": "仅顶部部分可见，位于底部固定按钮上方右侧，标签被遮挡",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "控件标签和对应检查项在当前视口中被遮挡，无法确定功能。",
+        "locatorPrompt": "定位底部灰色固定按钮上方、页面内容区右侧仅露出上半部的蓝色描边圆角控件"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "account_security.checklist_scroll",
+        "label": "账号安全检查项目列表",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位橙红色检查摘要下方、包含“常用聊天账号已设置”“中天账号”“真人已认证”“人员信息已绑定”等白色检查项的主体列表区域"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "当前视口未显示可识别的标签栏，因此无法从像素确定当前标签页。",
+      "底部内容区露出一个未完整显示的检查项及蓝色描边控件，其标签与功能被固定底栏遮挡，无法确定语义。",
+      "各已完成检查项右侧的绿色勾选仅能确认状态展示，当前截图不能证明整行或勾选图标是否可交互。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:55:53.244Z",
+  "endedAt": "2026-07-27T11:56:15.165Z",
+  "durationMs": 21920.825209,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:5bcc85f1e507fea138390427168bea058e9bd6acc05a00cb34abb7185bff3eee"
+}

@@ -1,0 +1,160 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHHGEVFHBAGPZ7T14DGMY76",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHHFBA6FRB5MJ42CF887DXR",
+  "sourceScreenshotRef": "sha256:0073f611c0c6ad24c4a7773c493c7a2d435d48cb7b12f3d8c60c019b630b6b1b",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"list_entry\",\"radio\",\"close\"]. 完整盘点提示音面板四个单选项、四个试听按钮和“取消”；背景遮罩只记录为呈现，不作为交互控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "提示音选择面板",
+      "默认",
+      "波浪",
+      "简报（当前选中）",
+      "门铃",
+      "取消",
+      "背景页面被灰色遮罩覆盖"
+    ],
+    "visibleNavigationState": "位于“特别关注提醒”页面，提示音选择底部面板已打开，当前提示音为“简报”",
+    "visibleControls": [
+      {
+        "candidateKey": "sound_default",
+        "label": "默认",
+        "elementType": "radio",
+        "visibleState": "未选中",
+        "semanticRole": "提示音单选项",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会将特别关注提醒的提示音切换为“默认”",
+        "functionDescription": "选择“默认”作为特别关注提醒提示音",
+        "locatorPrompt": "定位底部白色提示音面板第一行左侧、文本为“默认”的单选项，不要定位该行右侧的圆形试听按钮"
+      },
+      {
+        "candidateKey": "sound_default_preview",
+        "label": "试听默认",
+        "elementType": "icon_button",
+        "visibleState": "可用，深灰色圆形内有白色向右三角形",
+        "semanticRole": "试听按钮",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "会播放“默认”提示音，不改变当前选择",
+        "functionDescription": "试听“默认”提示音",
+        "locatorPrompt": "定位底部提示音面板第一行“默认”最右侧的深灰色圆形白色播放三角按钮"
+      },
+      {
+        "candidateKey": "sound_wave",
+        "label": "波浪",
+        "elementType": "radio",
+        "visibleState": "未选中",
+        "semanticRole": "提示音单选项",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会将特别关注提醒的提示音切换为“波浪”",
+        "functionDescription": "选择“波浪”作为特别关注提醒提示音",
+        "locatorPrompt": "定位底部白色提示音面板第二行左侧、文本为“波浪”的单选项，不要定位该行右侧的圆形试听按钮"
+      },
+      {
+        "candidateKey": "sound_wave_preview",
+        "label": "试听波浪",
+        "elementType": "icon_button",
+        "visibleState": "可用，深灰色圆形内有白色向右三角形",
+        "semanticRole": "试听按钮",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "会播放“波浪”提示音，不改变当前选择",
+        "functionDescription": "试听“波浪”提示音",
+        "locatorPrompt": "定位底部提示音面板第二行“波浪”最右侧的深灰色圆形白色播放三角按钮"
+      },
+      {
+        "candidateKey": "sound_briefing",
+        "label": "简报",
+        "elementType": "radio",
+        "visibleState": "已选中，文字为蓝色且左侧显示蓝色对勾",
+        "semanticRole": "提示音单选项",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "当前已经选中；再次定位该项不会带来可见的新选择变化",
+        "functionDescription": "选择“简报”作为特别关注提醒提示音",
+        "locatorPrompt": "定位底部白色提示音面板第三行、左侧有蓝色对勾且文本为蓝色“简报”的已选单选项，不要定位右侧试听按钮"
+      },
+      {
+        "candidateKey": "sound_briefing_preview",
+        "label": "试听简报",
+        "elementType": "icon_button",
+        "visibleState": "可用，深灰色圆形内有白色向右三角形",
+        "semanticRole": "试听按钮",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "会播放“简报”提示音，不改变当前选择",
+        "functionDescription": "试听“简报”提示音",
+        "locatorPrompt": "定位底部提示音面板第三行“简报”最右侧的深灰色圆形白色播放三角按钮"
+      },
+      {
+        "candidateKey": "sound_doorbell",
+        "label": "门铃",
+        "elementType": "radio",
+        "visibleState": "未选中",
+        "semanticRole": "提示音单选项",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会将特别关注提醒的提示音切换为“门铃”",
+        "functionDescription": "选择“门铃”作为特别关注提醒提示音",
+        "locatorPrompt": "定位底部白色提示音面板第四行左侧、文本为“门铃”的单选项，不要定位该行右侧的圆形试听按钮"
+      },
+      {
+        "candidateKey": "sound_doorbell_preview",
+        "label": "试听门铃",
+        "elementType": "icon_button",
+        "visibleState": "可用，深灰色圆形内有白色向右三角形",
+        "semanticRole": "试听按钮",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "会播放“门铃”提示音，不改变当前选择",
+        "functionDescription": "试听“门铃”提示音",
+        "locatorPrompt": "定位底部提示音面板第四行“门铃”最右侧的深灰色圆形白色播放三角按钮"
+      },
+      {
+        "candidateKey": "sound_panel_cancel",
+        "label": "取消",
+        "elementType": "close",
+        "visibleState": "可用，位于面板底部居中",
+        "semanticRole": "关闭提示音面板",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "关闭当前提示音选择面板",
+        "functionDescription": "取消并关闭提示音选择面板",
+        "locatorPrompt": "定位屏幕最底部白色区域中央、文本为“取消”的关闭控件"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:21:08.501Z",
+  "endedAt": "2026-07-27T10:21:42.127Z",
+  "durationMs": 33625.305417,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:a7e57f757b6d0e22e7e69ca175c6fb7d5e5f8d5c6730d3be2b7e81ba0b86c9a4"
+}

@@ -1,0 +1,263 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHFTE6ZDJ858Z3V21CEGZC0",
+  "sessionRef": "01KYHFQZT1GQK0KW28EB6G20DC",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHFRBM50J9B3F0GEPPPZZTQ",
+  "sourceScreenshotRef": "sha256:fba0090cd672680f8b9268693dd42459561742b141941ef4a0dedb8b43bce985",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"list_entry\",\"toggle\",\"back\",\"close\"]. 完整盘点四个时间选项、“取消”、背景遮罩和背景页可见控件；四个选项全部可见且无滚动提示，不要把白色面板边界重复分类为控件或滚动区域。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我",
+      "间隔时间：10",
+      "弹窗消息未读，短信/电话提醒我",
+      "免打扰群通知",
+      "个性化提醒（部分可见）",
+      "时间选项：10分钟、30分钟、1小时、4小时",
+      "取消"
+    ],
+    "visibleNavigationState": "“特别关注提醒”页上打开了间隔时间底部选择面板；半透明背景遮罩处于激活状态，背景页控件被阻挡。",
+    "visibleControls": [
+      {
+        "candidateKey": "reminder.back",
+        "label": "返回",
+        "elementType": "back",
+        "visibleState": "左上角返回箭头，位于遮罩后的背景页",
+        "semanticRole": "navigation",
+        "enabled": false,
+        "reversible": true,
+        "riskHint": "离开当前设置页；当前被弹层遮罩阻挡",
+        "functionDescription": "返回上一页",
+        "locatorPrompt": "定位页面左上角、标题“特别关注提醒”左侧的返回箭头"
+      },
+      {
+        "candidateKey": "special_follow.list",
+        "label": "我的特别关注",
+        "elementType": "list_entry",
+        "visibleState": "背景页顶部一行，右侧有向右箭头，处于遮罩后",
+        "semanticRole": "navigation",
+        "enabled": false,
+        "reversible": true,
+        "riskHint": "进入特别关注列表；当前被弹层遮罩阻挡",
+        "functionDescription": "打开我的特别关注列表",
+        "locatorPrompt": "定位遮罩后页面上方文字“我的特别关注”及其最右侧向右箭头所在整行"
+      },
+      {
+        "candidateKey": "special_follow.add",
+        "label": "添加",
+        "elementType": "button",
+        "visibleState": "虚线方框加号及下方“添加”，处于遮罩后",
+        "semanticRole": "add",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "可能修改特别关注人员；当前被弹层遮罩阻挡",
+        "functionDescription": "添加特别关注人员",
+        "locatorPrompt": "定位“我的特别关注”下方左侧的虚线加号方框及文字“添加”"
+      },
+      {
+        "candidateKey": "popup_reminder.toggle",
+        "label": "单聊消息未读，弹窗提醒我",
+        "elementType": "toggle",
+        "visibleState": "蓝色开启状态，处于遮罩后",
+        "semanticRole": "setting",
+        "enabled": false,
+        "reversible": true,
+        "riskHint": "切换会改变单聊未读弹窗提醒；当前被弹层遮罩阻挡",
+        "functionDescription": "开启或关闭单聊未读消息的弹窗提醒",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”这一行最右侧的蓝色开关"
+      },
+      {
+        "candidateKey": "popup_reminder.help",
+        "label": "未标注问号图标（单聊弹窗提醒行）",
+        "elementType": "icon_button",
+        "visibleState": "圆圈问号图标，处于遮罩后",
+        "semanticRole": "unknown",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "可见证据未明确其功能",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”文字右侧、蓝色开关左侧的圆圈问号图标"
+      },
+      {
+        "candidateKey": "reminder.interval",
+        "label": "间隔时间 10",
+        "elementType": "list_entry",
+        "visibleState": "背景行显示当前值10和向右箭头，处于遮罩后",
+        "semanticRole": "setting",
+        "enabled": false,
+        "reversible": true,
+        "riskHint": "打开或修改提醒间隔；当前已打开对应选择面板",
+        "functionDescription": "打开提醒间隔时间选择面板",
+        "locatorPrompt": "定位遮罩后“间隔时间”文字、右侧数值“10”和向右箭头所在整行"
+      },
+      {
+        "candidateKey": "sms_phone_reminder.toggle",
+        "label": "弹窗消息未读，短信/电话提醒我",
+        "elementType": "toggle",
+        "visibleState": "灰色关闭状态，处于遮罩后",
+        "semanticRole": "setting",
+        "enabled": false,
+        "reversible": true,
+        "riskHint": "切换可能改变短信或电话提醒；当前被弹层遮罩阻挡",
+        "functionDescription": "开启或关闭弹窗消息未读后的短信/电话提醒",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”这一行最右侧的灰色开关"
+      },
+      {
+        "candidateKey": "sms_phone_reminder.help",
+        "label": "未标注问号图标（短信/电话提醒行）",
+        "elementType": "icon_button",
+        "visibleState": "圆圈问号图标，处于遮罩后",
+        "semanticRole": "unknown",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "可见证据未明确其功能",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”文字右侧、灰色开关左侧的圆圈问号图标"
+      },
+      {
+        "candidateKey": "dnd_group_notifications.toggle",
+        "label": "免打扰群通知",
+        "elementType": "toggle",
+        "visibleState": "灰色关闭状态，处于遮罩后",
+        "semanticRole": "setting",
+        "enabled": false,
+        "reversible": true,
+        "riskHint": "切换会改变免打扰群通知设置；当前被弹层遮罩阻挡",
+        "functionDescription": "开启或关闭免打扰群通知",
+        "locatorPrompt": "定位“免打扰群通知”这一行最右侧的灰色开关"
+      },
+      {
+        "candidateKey": "dnd_group_notifications.help",
+        "label": "未标注问号图标（免打扰群通知行）",
+        "elementType": "icon_button",
+        "visibleState": "圆圈问号图标，处于遮罩后",
+        "semanticRole": "unknown",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "可见证据未明确其功能",
+        "locatorPrompt": "定位“免打扰群通知”文字右侧的圆圈问号图标"
+      },
+      {
+        "candidateKey": "personalized_reminder.row",
+        "label": "个性化提醒",
+        "elementType": "list_entry",
+        "visibleState": "背景页底部仅上半部分可见，处于遮罩后",
+        "semanticRole": "setting",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "该行未完整显示且当前被弹层遮罩阻挡",
+        "functionDescription": "打开个性化提醒设置",
+        "locatorPrompt": "定位遮罩后、底部时间面板上缘后方部分露出的“个性化提醒”行"
+      },
+      {
+        "candidateKey": "interval.option_10m",
+        "label": "10分钟",
+        "elementType": "list_entry",
+        "visibleState": "底部白色选择面板第一项，完整可见",
+        "semanticRole": "option",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "选择后会把提醒间隔设为10分钟",
+        "functionDescription": "选择10分钟提醒间隔",
+        "locatorPrompt": "定位底部白色时间选择面板中的第一行“10分钟”"
+      },
+      {
+        "candidateKey": "interval.option_30m",
+        "label": "30分钟",
+        "elementType": "list_entry",
+        "visibleState": "底部白色选择面板第二项，完整可见",
+        "semanticRole": "option",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "选择后会把提醒间隔设为30分钟",
+        "functionDescription": "选择30分钟提醒间隔",
+        "locatorPrompt": "定位底部白色时间选择面板中的第二行“30分钟”"
+      },
+      {
+        "candidateKey": "interval.option_1h",
+        "label": "1小时",
+        "elementType": "list_entry",
+        "visibleState": "底部白色选择面板第三项，完整可见",
+        "semanticRole": "option",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "选择后会把提醒间隔设为1小时",
+        "functionDescription": "选择1小时提醒间隔",
+        "locatorPrompt": "定位底部白色时间选择面板中的第三行“1小时”"
+      },
+      {
+        "candidateKey": "interval.option_4h",
+        "label": "4小时",
+        "elementType": "list_entry",
+        "visibleState": "底部白色选择面板第四项，完整可见",
+        "semanticRole": "option",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "选择后会把提醒间隔设为4小时",
+        "functionDescription": "选择4小时提醒间隔",
+        "locatorPrompt": "定位底部白色时间选择面板中的第四行“4小时”"
+      },
+      {
+        "candidateKey": "interval.cancel",
+        "label": "取消",
+        "elementType": "close",
+        "visibleState": "底部独立白色区域内居中显示，完整可见",
+        "semanticRole": "dismiss",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "关闭选择面板且不选择新时间",
+        "functionDescription": "取消并关闭间隔时间选择面板",
+        "locatorPrompt": "定位屏幕最底部独立白色区域中央的“取消”"
+      },
+      {
+        "candidateKey": "interval.backdrop",
+        "label": "背景遮罩",
+        "elementType": "close",
+        "visibleState": "覆盖标题栏下方背景设置页、位于底部白色面板之外的半透明灰色区域",
+        "semanticRole": "dismiss",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "点击可能关闭当前时间选择面板",
+        "functionDescription": "点击面板外部区域以关闭底部选择面板",
+        "locatorPrompt": "定位底部白色时间面板上方、覆盖背景设置页的半透明灰色遮罩空白区域"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": [
+      "“单聊消息未读，弹窗提醒我”旁圆圈问号图标的具体功能未明确。",
+      "“弹窗消息未读，短信/电话提醒我”旁圆圈问号图标的具体功能未明确。",
+      "“免打扰群通知”旁圆圈问号图标的具体功能未明确。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T09:51:06.575Z",
+  "endedAt": "2026-07-27T09:52:11.999Z",
+  "durationMs": 65423.045041,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:38c55ccde1507ed99734b70ad376f8e444e44ba90ef451e2605231dd2431d6a1"
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK9S98MZRSE39SP4M6P66CV",
+  "sessionRef": "01KYK9QAD4KZC178DVBGB1E9K6",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK9RBBS5S6WEFY5X7HC6X01",
+  "sourceScreenshotRef": "sha256:8c67332978d86a7f9b22c649a6b812666a6a4f07811ded12b86596fb53d9ab65",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"list_entry\",\"status_badge\"]. 盘点当前“特别关注”页面。返回设置按钮、顶部成员头像条目和会话行等可交互控件；另外为了知识图谱几何证据，必须把会话右侧红色未读数量角标作为单独 visibleControls 项返回：candidateKey 固定为 special_follow_unread_badge，label 固定为“实时未读消息数量角标”，elementType 为 status_badge，semanticRole 为 realtime_unread_count_indicator，enabled 为 false，reversible 为 false，riskHint 为 safe，functionDescription 说明它展示当前实时未读消息数量，locatorPrompt 只定位红色角标本身。visibleState 可以记录本帧观察到的数字，但 candidateKey、label 和 functionDescription 禁止包含具体数字。不要把角标数字解释为固定值。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现，不能进入稳定元素命名、状态键或规则条件。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "顶部成员：这是练…",
+      "会话：这是练工练工练工练…",
+      "会话右侧文字：努力工…",
+      "时间：10:28",
+      "消息摘要：[特别关注]练良伟 创建了待办 循环待办每天"
+    ],
+    "visibleNavigationState": "当前位于“特别关注”页面",
+    "visibleControls": [
+      {
+        "candidateKey": "header_down_chevron",
+        "label": "无文字向下折线图标",
+        "elementType": "button",
+        "visibleState": "位于标题栏左侧，黑色向下折线图标",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "当前视觉证据与已提供语义不足以确定该图标的具体功能",
+        "locatorPrompt": "定位页面顶部标题“特别关注”左侧的黑色向下折线图标按钮"
+      },
+      {
+        "candidateKey": "special_follow_settings",
+        "label": "设置",
+        "elementType": "button",
+        "visibleState": "蓝色文字，位于“我的特别关注”标题右侧",
+        "semanticRole": "special_follow_settings",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "safe",
+        "functionDescription": "进入特别关注相关设置",
+        "locatorPrompt": "定位“我的特别关注”标题同一行最右侧的蓝色“设置”按钮"
+      },
+      {
+        "candidateKey": "special_follow_member_entry",
+        "label": "这是练…",
+        "elementType": "list_entry",
+        "visibleState": "显示方形头像和截断名称“这是练…”",
+        "semanticRole": "special_follow_member_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "safe",
+        "functionDescription": "打开顶部特别关注成员条目",
+        "locatorPrompt": "定位“我的特别关注”区域内、分隔带上方，带棕橙纹理头像和文字“这是练…”的成员条目"
+      },
+      {
+        "candidateKey": "special_follow_conversation_entry",
+        "label": "这是练工练工练工练…",
+        "elementType": "list_entry",
+        "visibleState": "会话行可见，右侧时间为10:28，摘要以橙色“[特别关注]”开头",
+        "semanticRole": "conversation_entry",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "safe",
+        "functionDescription": "打开该特别关注会话",
+        "locatorPrompt": "定位浅灰分隔带下方唯一的会话行，即左侧有棕橙纹理头像、中间标题“这是练工练工练工练…”且右侧显示时间“10:28”的整行"
+      },
+      {
+        "candidateKey": "special_follow_unread_badge",
+        "label": "实时未读消息数量角标",
+        "elementType": "status_badge",
+        "visibleState": "红色圆形角标，本帧显示4",
+        "semanticRole": "realtime_unread_count_indicator",
+        "enabled": false,
+        "reversible": false,
+        "riskHint": "safe",
+        "functionDescription": "展示当前实时未读消息数量",
+        "locatorPrompt": "只定位会话行最右侧、时间“10:28”下方的红色圆形未读数量角标本身"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "special_follow_page_content",
+        "label": "特别关注页面内容区",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位标题栏下方包含“我的特别关注”、成员头像条目及会话行的整块页面内容区域"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "标题栏左侧无文字向下折线图标的具体功能无法仅凭当前视觉证据和已提供语义确定。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T02:44:43.585Z",
+  "endedAt": "2026-07-28T02:45:11.572Z",
+  "durationMs": 27986.624916,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:e599bd06e6b2c3823cd9051d96381a457cce5a91e50b3ca4d6f1f01ae72d112d"
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYH8SMNA549P47WKRXAMV378",
+  "sessionRef": "01KYH8N35GZVKXGGX75S5PS7K8",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYH8RW02Y6BKSQPV20T9XK31",
+  "sourceScreenshotRef": "sha256:b70c0b04c20b1ec20f9efd4a628e99fe37f6095ff57b3b6229523225ce298f97",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"link\",\"menu\",\"list_entry\",\"toggle\",\"checkbox\",\"radio\",\"segmented_control\",\"tab\",\"slider\",\"stepper\",\"input\",\"back\",\"close\",\"scroll_region\"]. 盘点“全部成员”页面当前视口的全部图标、按键、返回和关闭控件；主体为空白时如实记录，不推断名单不存在、加载状态或业务原因。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "全部成员",
+    "visiblePrimaryContent": [],
+    "visibleNavigationState": "当前位于“全部成员”页面；未见标签栏、选中项或其他可见导航状态。",
+    "visibleControls": [
+      {
+        "candidateKey": "back",
+        "label": "返回",
+        "elementType": "back",
+        "visibleState": "左上角可见黑色向左箭头，未见禁用样式",
+        "semanticRole": "navigation",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "返回上一页面",
+        "locatorPrompt": "定位“全部成员”页面标题栏最左侧的黑色向左箭头返回控件"
+      },
+      {
+        "candidateKey": "close",
+        "label": "关闭",
+        "elementType": "close",
+        "visibleState": "右上角可见黑色X形图标，未见禁用样式",
+        "semanticRole": "dismiss",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "关闭当前页面或视图",
+        "locatorPrompt": "定位“全部成员”页面标题栏最右侧的黑色X形关闭控件"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T07:49:03.256Z",
+  "endedAt": "2026-07-27T07:49:25.802Z",
+  "durationMs": 22544.075917,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:f126fe3175da3c3153f89924bb7e231b13f70d982bef3c61a830bf32080fff8d"
+}

@@ -1,0 +1,18 @@
+projectRef: project:baohe
+baseModelVersion: 1.0.0
+modelVersion: baohe@1.0.0
+
+optionSets:
+  surface-type:
+    addOptions:
+    - {value: selector-overlay, label: 选择器浮层}
+
+fields:
+- key: businessOwner
+  appliesTo: [Function, Page, Service, API]
+  label: 业务负责人
+  description: 负责该对象业务口径确认和日常维护的人员或团队
+  valueType: string
+  required: false
+  searchable: true
+  ui: {group: ownership, component: text}

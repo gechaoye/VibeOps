@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ2BGYH7Z4PXGAPP3FDYXNV",
+  "sessionRef": "01KYJ2933PE5SQBWFPQJ4ZSVBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ2AT020WCB323XQAQ1GBD4",
+  "sourceScreenshotRef": "sha256:6e3dc72990007d47c0cfee76ee1c6f82d84344c8dbfe3f13f028dadb8bead24a",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"list_entry\"]. 本批次仅复核并定位灰色分隔带下方唯一的练良伟相关未读会话整行，包含橙色“[特别关注]”摘要与红色未读徽标58；该页其他控件已有独立批次完整盘点，不要重复返回。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.conversation.lian_liangwei\",\"predicate\":\"unread_badge\",\"value\":\"58\",\"source\":\"verified_evidence\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_open_special_follow_conversation\",\"value\":\"true\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sound\",\"predicate\":\"current_value\",\"value\":\"门铃\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "灰色分隔带下方的练良伟相关未读会话",
+      "主标题：这是练工练工练工练...",
+      "摘要：[特别关注]练良伟 创建了待办 循环待办...",
+      "时间：10:28",
+      "未读徽标：58"
+    ],
+    "visibleNavigationState": "当前位于特别关注页面，目标会话显示在灰色分隔带下方的特别关注列表中。",
+    "visibleControls": [
+      {
+        "candidateKey": "special_follow_lian_liangwei_unread_conversation",
+        "label": "练良伟相关未读会话，[特别关注]练良伟 创建了待办 循环待办...，未读58",
+        "elementType": "list_entry",
+        "visibleState": "可见；位于灰色分隔带下方；摘要含橙色[特别关注]；右侧红色未读徽标为58；时间10:28",
+        "semanticRole": "conversation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "打开会话可能改变当前页面导航状态，并可能影响未读消息状态。",
+        "functionDescription": "打开练良伟相关的特别关注未读会话。",
+        "locatorPrompt": "定位灰色水平分隔带正下方唯一的会话整行：左侧为棕橙色头像，中部摘要以橙色“[特别关注]”开头并包含“练良伟 创建了待办 循环待办...”，右侧有时间“10:28”和红色数字徽标“58”。"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:15:45.460Z",
+  "endedAt": "2026-07-27T15:16:06.225Z",
+  "durationMs": 20764.361042,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:40e809942af5db195e4fa3ac10c73685ac05fd6b031f2357e9b6a68c143d678d"
+}

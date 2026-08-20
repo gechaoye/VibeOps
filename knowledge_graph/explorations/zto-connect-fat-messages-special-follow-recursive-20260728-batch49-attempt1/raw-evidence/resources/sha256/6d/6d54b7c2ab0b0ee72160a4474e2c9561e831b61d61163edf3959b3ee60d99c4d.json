@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK7627X5EYY3FYGECMKME3X",
+  "sessionRef": "01KYK75BTZ4TV4ZP32QETPQ4HB",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK75NK3NAZ4H7H2J0803E47",
+  "sourceScreenshotRef": "sha256:1e514ef0f5644fa8a67c9b1a78687d014e211c2f3d89e240bb1fa1057d32eb18",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\"]. 本状态帧只输出当前为非空全部成员页以及返回、关闭、成员和移除可见的事实，visibleControls 必须返回空数组；本批通过 AndroidAgent back 返回上一页。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现，不能进入稳定元素命名、状态键或规则条件。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.interval\",\"predicate\":\"visible_options\",\"value\":\"短信/电话提醒间隔面板包含10分钟、30分钟和取消，当前设置值为30分钟。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "全部成员",
+    "visiblePrimaryContent": [
+      "成员：练良伟",
+      "该成员右侧显示“移除”"
+    ],
+    "visibleNavigationState": "当前位于非空的“全部成员”页；顶部可见返回与关闭入口，本批通过 AndroidAgent back 返回上一页。",
+    "visibleControls": [],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T01:59:34.359Z",
+  "endedAt": "2026-07-28T01:59:44.637Z",
+  "durationMs": 10277.799791,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:79145efa440a5b1ffa4c7a6f4728186c297e1d949c8ce7a379cf4bbf3d5b51dd"
+}

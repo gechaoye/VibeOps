@@ -1,0 +1,192 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHSJDS89NRFW0T02852D0YW",
+  "sessionRef": "01KYHSGPGD726FQ3REABKQDMJN",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHSH0CRCH2M72SBG1W97JD4",
+  "sourceScreenshotRef": "sha256:bf7c98e4351e4efeaf628455502b7e61aa13e7225becc863bb16fadd70b3b9c1",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"list_entry\",\"toggle\",\"back\",\"close\",\"scroll_region\"]. 完整盘点当前视口中拥有完整点击区域的交互控件，准确记录两个免打扰开关状态；底边裁切行只记录为内容。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.night_dnd\",\"predicate\":\"visible_description\",\"value\":\"开启后在22:00至次日06:00期间将不再通过短信或电话方式进行通知。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我",
+      "间隔时间：30分钟",
+      "弹窗消息未读，短信/电话提醒我",
+      "间隔时间：30分钟",
+      "提醒方式：电话",
+      "夜间免打扰",
+      "开启后，在22:00至次日06:00期间将不再通过短信或电话方式进行通知",
+      "免打扰群通知",
+      "个性化提醒",
+      "特别关注提示音：简报"
+    ],
+    "visibleNavigationState": "当前位于“特别关注提醒”设置页；视口处于页面上部且可继续向下滚动。",
+    "visibleControls": [
+      {
+        "candidateKey": "special_follow_back",
+        "label": "返回",
+        "elementType": "back",
+        "visibleState": "可见，未按下",
+        "semanticRole": "返回上一页",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "返回上一页面。",
+        "locatorPrompt": "定位屏幕左上方、页面标题“特别关注提醒”左侧的黑色向左箭头返回控件"
+      },
+      {
+        "candidateKey": "special_follow_list",
+        "label": "我的特别关注",
+        "elementType": "list_entry",
+        "visibleState": "可见，可点击，右侧有向右箭头",
+        "semanticRole": "导航到特别关注列表",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "进入“我的特别关注”列表。",
+        "locatorPrompt": "定位标题下方首个白色区域中，文字“我的特别关注”及其最右侧向右箭头所在的整行入口"
+      },
+      {
+        "candidateKey": "add_special_follow",
+        "label": "添加",
+        "elementType": "button",
+        "visibleState": "可见，虚线方框内有加号",
+        "semanticRole": "添加特别关注对象",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "medium",
+        "functionDescription": "开始添加特别关注对象。",
+        "locatorPrompt": "定位“我的特别关注”区域左下方，虚线圆角方框加号及下方文字“添加”组成的按钮"
+      },
+      {
+        "candidateKey": "single_chat_popup_unread_toggle",
+        "label": "单聊消息未读，弹窗提醒我",
+        "elementType": "toggle",
+        "visibleState": "开启，蓝色轨道且白色圆点在右侧",
+        "semanticRole": "切换单聊未读弹窗提醒",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "开启或关闭特别关注单聊消息未读时的弹窗提醒。",
+        "locatorPrompt": "定位说明条“来自「特别关注」的未读消息，自定义提醒方式”下方第一行，标签“单聊消息未读，弹窗提醒我”最右侧的蓝色开关"
+      },
+      {
+        "candidateKey": "single_chat_interval",
+        "label": "间隔时间 30分钟",
+        "elementType": "list_entry",
+        "visibleState": "当前值为30分钟，右侧有向右箭头",
+        "semanticRole": "设置单聊弹窗提醒间隔",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "进入并修改单聊消息弹窗提醒的间隔时间。",
+        "locatorPrompt": "定位第一个蓝色提醒开关正下方，左侧文字“间隔时间”、右侧值“30分钟”及向右箭头所在的整行"
+      },
+      {
+        "candidateKey": "popup_sms_phone_unread_toggle",
+        "label": "弹窗消息未读，短信/电话提醒我",
+        "elementType": "toggle",
+        "visibleState": "开启，蓝色轨道且白色圆点在右侧",
+        "semanticRole": "切换弹窗消息未读后的短信或电话提醒",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "开启或关闭弹窗消息仍未读时的短信或电话提醒。",
+        "locatorPrompt": "定位标签“弹窗消息未读，短信/电话提醒我”最右侧的蓝色开关"
+      },
+      {
+        "candidateKey": "sms_phone_interval",
+        "label": "间隔时间 30分钟",
+        "elementType": "list_entry",
+        "visibleState": "当前值为30分钟，右侧有向右箭头",
+        "semanticRole": "设置短信或电话提醒间隔",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "进入并修改短信或电话提醒的间隔时间。",
+        "locatorPrompt": "定位第二个蓝色提醒开关正下方，左侧文字“间隔时间”、右侧值“30分钟”及向右箭头所在的整行"
+      },
+      {
+        "candidateKey": "reminder_method",
+        "label": "提醒方式 电话",
+        "elementType": "list_entry",
+        "visibleState": "当前值为电话，右侧有向右箭头",
+        "semanticRole": "设置提醒方式",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "进入并选择短信或电话等提醒方式。",
+        "locatorPrompt": "定位第二个“间隔时间 30分钟”行下方，左侧文字“提醒方式”、右侧值“电话”及向右箭头所在的整行"
+      },
+      {
+        "candidateKey": "night_dnd_toggle",
+        "label": "夜间免打扰",
+        "elementType": "toggle",
+        "visibleState": "关闭，浅灰色轨道且白色圆点在左侧",
+        "semanticRole": "切换夜间免打扰",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "切换夜间免打扰；开启后在22:00至次日06:00期间不再通过短信或电话方式通知。",
+        "locatorPrompt": "定位“提醒方式 电话”行下方，标签“夜间免打扰”最右侧的浅灰色关闭开关"
+      },
+      {
+        "candidateKey": "group_notification_dnd_toggle",
+        "label": "免打扰群通知",
+        "elementType": "toggle",
+        "visibleState": "关闭，浅灰色轨道且白色圆点在左侧",
+        "semanticRole": "切换免打扰群通知",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "medium",
+        "functionDescription": "开启或关闭群通知免打扰设置。",
+        "locatorPrompt": "定位夜间免打扰说明文字下方的独立白色行，标签“免打扰群通知”最右侧的浅灰色关闭开关"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "special_follow_settings_scroll",
+        "label": "特别关注提醒设置内容",
+        "directions": [
+          "up",
+          "down"
+        ],
+        "locatorPrompt": "定位标题栏下方覆盖主要设置内容、右侧显示竖向滚动条的页面主体滚动区域"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "“单聊消息未读，弹窗提醒我”文字后的圆形问号图标含义未由可见文字或供应上下文明确，且未确认其是否具有独立完整点击区域。",
+      "“弹窗消息未读，短信/电话提醒我”文字后的圆形问号图标含义未由可见文字或供应上下文明确，且未确认其是否具有独立完整点击区域。",
+      "“免打扰群通知”文字后的圆形问号图标含义未由可见文字或供应上下文明确，且未确认其是否具有独立完整点击区域。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:41:51.465Z",
+  "endedAt": "2026-07-27T12:42:35.176Z",
+  "durationMs": 43712.600583,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:2f19f3991f263b80c4321af3b7e441534fca05f239f24ab388b2f7259b195771"
+}

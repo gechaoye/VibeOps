@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYJ4GQD0WACHDZAXPXMKK4TC",
+  "sessionRef": "01KYJ4FXEX0ZV2MQDJVS4B3MYB",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYJ4G6ZA83WEQYN2R6AHS21B",
+  "sourceScreenshotRef": "sha256:4f734320b288191469f77c3199349f85efdef26e97d6d6d5b93f51542554dc3c",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\"]. 本状态帧只输出当前聊天页标题、顶部橙黄色爱心以及消息历史区域和底部输入区域可见的事实，visibleControls 必须返回空数组；这是 APP 级通用聊天组件边界，不递归盘点或探索聊天内部控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_entry\",\"predicate\":\"navigation_result\",\"value\":\"点击顶部成员头像条目会直接进入该成员的通用聊天页。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "这是练工练工练工练工…",
+    "visiblePrimaryContent": [
+      "顶部可见橙黄色爱心",
+      "消息历史区域可见“个人待办任务”卡片",
+      "可见任务“循环待办自定义创建时间每周”，状态为0/2完成，包含我，08月03日 17:28截止",
+      "可见任务“循环待办每天”，状态为0/2完成，包含我，明天10:28截止",
+      "消息历史中可见时间标记09:00和10:28",
+      "底部输入区域可见“测试共享应用”“测试共享应用2”“更多”、空白输入框及若干图标"
+    ],
+    "visibleNavigationState": "当前位于标题为“这是练工练工练工练工…”的通用聊天页；顶部爱心呈橙黄色。",
+    "visibleControls": [],
+    "scrollableRegions": [
+      {
+        "candidateKey": "message_history",
+        "label": "消息历史区域",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位顶部聊天栏下方、底部输入区域上方，包含个人待办任务消息卡片及09:00和10:28时间标记的消息历史区域"
+      }
+    ],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T15:53:39.708Z",
+  "endedAt": "2026-07-27T15:53:53.824Z",
+  "durationMs": 14115.448417,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:ac00979d440b197c13ec54453dfe3a6ea8857097c2f2a5404d6f9d9e2cc262ad"
+}

@@ -1,0 +1,33 @@
+reviewType: CanonicalAssociationReview
+modelVersion: baohe@1.0.0
+projectRef: project:baohe
+scope: function:special_follow
+status: accepted_for_new_model
+decisions:
+- key: remove_authority_contract_duplication
+  oldRefs:
+  - 01KYKA3ENBFD65M644D2KD5QF3
+  decision: omit
+  reason: 人工确认与运行验证是关系状态，不再复制为 AuthorityContract 实体。
+- key: members_chevron_is_only_confirmed_trigger
+  sourceRefs:
+  - 01KYKA3ENB96ERX3FZW7HWSD16
+  - 01KYKA3ENBFXPDZGEBV0MNG0HV
+  - 01KYKA3ENBCNJZQ09AHT9YZFF7
+  decision: retain_only_trailing_chevron_trigger
+  reason: 容器和文字不可点击；只有右侧箭头触发“打开全部特别关注成员”。
+- key: remove_redundant_reverse_references
+  decision: derive
+  reason: Page.elementRefs、inbound/outbound Transition refs 和 Element.relationshipRefs 均由 Relation 派生。
+- key: exclude_contradicted_help_dismissal
+  oldRefs:
+  - 01KYKA3ENB9P8Z8EZ26APK2HR4
+  decision: omit_from_canonical
+  reason: 当前构建的运行记录反驳了“再次点击或返回可关闭帮助浮层”。
+- key: keep_runtime_context_out_of_application_and_page
+  decision: move_to_observation
+  reason: Android 包、构建、设备和视口描述一次观测，不定义 Application 或 Page 身份。
+- key: do_not_infer_api_causality
+  decision: unresolved
+  reason: 现有探索数据没有网络 Trace；不能判断接口由点击直接调用还是目标 Page 加载调用。
+

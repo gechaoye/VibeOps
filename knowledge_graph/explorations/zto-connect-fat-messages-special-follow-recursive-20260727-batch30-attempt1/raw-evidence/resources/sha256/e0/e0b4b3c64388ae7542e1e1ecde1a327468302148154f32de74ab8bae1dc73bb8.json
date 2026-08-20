@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHRMTNNVQPYGAHGHR7BQ6D8",
+  "sessionRef": "01KYHR8DFGG6PD70AVJAZ2X0PW",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHRM2R1Y4C28D2PAA5X4FQ1",
+  "sourceScreenshotRef": "sha256:ae44ade206987bfec11c74d4a93a7a2e7e23af525a73204550ae41af00b02520",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"list_entry\",\"radio\",\"close\"]. 完整盘点再次打开的提醒方式面板三个控件；背景页控件不作为当前可操作控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.method\",\"predicate\":\"visible_options\",\"value\":\"提醒方式面板包含短信、电话和取消。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "短信（当前已选）",
+      "电话（未选）",
+      "取消"
+    ],
+    "visibleNavigationState": "提醒方式面板已打开，短信为当前选项，背景页变暗且当前不可操作",
+    "visibleControls": [
+      {
+        "candidateKey": "reminder_method_sms",
+        "label": "短信",
+        "elementType": "radio",
+        "visibleState": "selected",
+        "semanticRole": "提醒方式选项",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "切换提醒方式，可能改变后续特别关注消息的通知渠道",
+        "functionDescription": "选择短信作为提醒方式",
+        "locatorPrompt": "定位底部提醒方式面板第一行、蓝色对勾右侧的蓝色“短信”选项"
+      },
+      {
+        "candidateKey": "reminder_method_phone",
+        "label": "电话",
+        "elementType": "radio",
+        "visibleState": "unselected",
+        "semanticRole": "提醒方式选项",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "切换提醒方式，可能改变后续特别关注消息的通知渠道",
+        "functionDescription": "选择电话作为提醒方式",
+        "locatorPrompt": "定位底部提醒方式面板第二行、位于“短信”下方的“电话”选项"
+      },
+      {
+        "candidateKey": "reminder_method_cancel",
+        "label": "取消",
+        "elementType": "close",
+        "visibleState": "visible",
+        "semanticRole": "关闭提醒方式面板",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "低风险；关闭面板且不选择新的提醒方式",
+        "functionDescription": "取消本次选择并关闭提醒方式面板",
+        "locatorPrompt": "定位屏幕最底部白色区域中央的“取消”控件"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:26:03.622Z",
+  "endedAt": "2026-07-27T12:26:25.332Z",
+  "durationMs": 21711.21375,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:375a346ed0e1f4491466a496d7a702fddea8bcdc10fa587dd0c9dfc6cdf2c530"
+}

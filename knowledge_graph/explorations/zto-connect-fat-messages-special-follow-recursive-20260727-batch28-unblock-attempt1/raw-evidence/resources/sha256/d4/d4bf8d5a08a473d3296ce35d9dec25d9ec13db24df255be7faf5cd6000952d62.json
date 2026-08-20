@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHP4SWS4ZAEFB6EDEC2KFQE",
+  "sessionRef": "01KYHP3PA8A8CKFKA32NHD7Y0K",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHP40F5ZD58NX47KH1ZZ6N8",
+  "sourceScreenshotRef": "sha256:0958f8a318c44bd1513388d44ea542af5c9302ef77be919e8388d736a3297ca6",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"close\"]. 完整盘点前景日程提醒弹窗全部可见控件，只把忽略、拒绝、接受识别为可操作按钮；背景特别关注设置页不可操作。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.transient_schedule_overlay\",\"predicate\":\"scope_boundary\",\"value\":\"日程提醒是 APP 全局临时遮挡，不属于特别关注功能图谱。\",\"source\":\"task_policy\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "日程",
+    "visiblePrimaryContent": [
+      "您有一个新日程",
+      "日程UI自动化",
+      "07月27日 20:00 - 21:00"
+    ],
+    "visibleNavigationState": "前景显示全局临时日程提醒弹窗；背景“特别关注提醒”设置页已被灰色遮罩覆盖，当前不可操作。",
+    "visibleControls": [
+      {
+        "candidateKey": "schedule_ignore",
+        "label": "忽略",
+        "elementType": "button",
+        "visibleState": "可见、启用，白色描边按钮",
+        "semanticRole": "忽略当前日程提醒",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能关闭或跳过本次日程提醒，后续是否再次提醒不可由当前画面确定",
+        "functionDescription": "忽略当前显示的日程提醒。",
+        "locatorPrompt": "定位前景白色“日程”弹窗底部最左侧、文字为“忽略”的白色描边按钮"
+      },
+      {
+        "candidateKey": "schedule_reject",
+        "label": "拒绝",
+        "elementType": "button",
+        "visibleState": "可见、启用，蓝色按钮",
+        "semanticRole": "拒绝当前日程",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能拒绝该日程邀请或事项，是否可撤销不可由当前画面确定",
+        "functionDescription": "拒绝当前显示的日程。",
+        "locatorPrompt": "定位前景白色“日程”弹窗底部中间、文字为“拒绝”的蓝色按钮"
+      },
+      {
+        "candidateKey": "schedule_accept",
+        "label": "接受",
+        "elementType": "button",
+        "visibleState": "可见、启用，蓝色按钮",
+        "semanticRole": "接受当前日程",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能接受该日程邀请或事项，是否可撤销不可由当前画面确定",
+        "functionDescription": "接受当前显示的日程。",
+        "locatorPrompt": "定位前景白色“日程”弹窗底部最右侧、文字为“接受”的蓝色按钮"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "special_attention_settings_scroll",
+        "label": "特别关注提醒设置页",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位日程弹窗后方被灰色遮罩覆盖、右侧带纵向滚动条的“特别关注提醒”设置页面内容区"
+      }
+    ],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T11:42:19.841Z",
+  "endedAt": "2026-07-27T11:42:43.097Z",
+  "durationMs": 23255.604625,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:3dbc38e3a136eeebd03005f3c4d0e9a36f8ded55d2319078389c48db146d162a"
+}

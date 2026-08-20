@@ -1,0 +1,399 @@
+modelVersion: 1.0.0
+name: VibeOps Project Graph Core
+
+entityTypes:
+  Project: {label: 项目, group: project, description: 公司内一个可独立管理的产品或研发项目，例如宝盒}
+  Community: {label: 社区, group: project, description: 围绕应用、功能或某类资产形成的知识集合}
+  Application: {label: 应用, group: product, description: 项目中的可运行应用，例如宝盒、开放平台或配置平台}
+  Function: {label: 功能, group: product, description: 面向用户或业务提供的一项完整能力，由相关页面、接口和规则共同组成}
+  Page: {label: 页面, group: ui, description: 稳定的业务页面定义；不同设备画面作为观测记录保存}
+  Element: {label: 页面元素, group: ui, description: 页面中可识别的按钮、文本、列表项、容器等界面对象}
+  Interaction: {label: 用户交互, group: ui, description: 用户操作元素后发生的跳转、状态变化或接口调用}
+  Service: {label: 服务, group: service, description: 为应用或接口提供能力的后端服务}
+  API: {label: 接口, group: service, description: 应用、页面或交互调用的服务接口}
+  APIDoc: {label: 接口文档, group: service, description: 描述接口用途、参数和返回值的文档}
+  ConfigItem: {label: 配置项, group: service, description: 影响应用、功能或服务行为的可维护配置}
+  CodeRepository: {label: 代码仓库, group: engineering, description: 承载项目源代码的仓库}
+  CodeModule: {label: 代码模块, group: engineering, description: 实现功能、页面、接口或交互的具体代码模块}
+  Database: {label: 数据库, group: data, description: 项目使用的数据库实例或逻辑数据库}
+  Schema: {label: 数据库 Schema, group: data, description: 数据库中的命名空间或结构集合}
+  Table: {label: 数据表, group: data, description: 保存业务数据的数据库表}
+  Field: {label: 数据字段, group: data, description: 数据表中的字段定义}
+  PRD: {label: 产品文档, group: requirement, description: 描述产品目标和功能方案的需求文档}
+  Requirement: {label: 需求, group: requirement, description: 可追踪到功能、页面和实现的具体需求项}
+  BusinessRule: {label: 业务规则, group: requirement, description: 限制或决定业务行为的规则}
+  TestSuite: {label: 测试集, group: quality, description: 围绕功能或版本组织的一组测试用例}
+  TestCase: {label: 测试用例, group: quality, description: 验证功能、页面、接口或交互的测试步骤与预期}
+  TestRun: {label: 测试执行, group: quality, description: 某次实际测试的环境、结果和证据}
+  Defect: {label: 缺陷, group: quality, description: 影响项目对象的已发现问题}
+  Release: {label: 发布版本, group: engineering, description: 应用或服务的一次可追踪发布}
+
+optionSets:
+  lifecycle-status:
+    options:
+    - {value: draft, label: 草稿}
+    - {value: active, label: 有效}
+    - {value: deprecated, label: 已废弃}
+    - {value: archived, label: 已归档}
+  community-type:
+    options:
+    - {value: application, label: 应用社区}
+    - {value: functional, label: 功能社区}
+    - {value: service, label: 服务社区}
+    - {value: database, label: 数据库社区}
+    - {value: prd, label: PRD 社区}
+    - {value: quality, label: 质量社区}
+  surface-type:
+    options:
+    - {value: page, label: 页面}
+    - {value: dialog, label: 对话框}
+    - {value: drawer, label: 抽屉}
+    - {value: bottom-sheet, label: 底部弹层}
+    - {value: menu, label: 菜单}
+    - {value: shared-component, label: 共享组件}
+    - {value: unknown, label: 待确认}
+  implementation-type:
+    options:
+    - {value: native, label: 原生}
+    - {value: rn, label: RN}
+    - {value: h5, label: H5}
+    - {value: mini-program, label: 小程序}
+    - {value: unknown, label: 待确认}
+  function-type:
+    options:
+    - {value: native, label: 原生}
+    - {value: mini-program, label: 小程序}
+    - {value: rn, label: RN}
+    - {value: h5, label: H5}
+  element-action:
+    options:
+    - {value: none, label: 无}
+    - {value: tap, label: 点击}
+    - {value: double_tap, label: 双击}
+    - {value: long_press, label: 长按}
+    - {value: input, label: 输入}
+    - {value: scroll_vertical, label: 纵向滚动}
+    - {value: scroll_horizontal, label: 横向滚动}
+    - {value: swipe, label: 滑动}
+    - {value: drag, label: 拖拽}
+    - {value: zoom, label: 缩放}
+    - {value: multi_touch, label: 多点触控}
+  element-type:
+    options:
+    - {value: navigation-bar, label: 导航栏}
+    - {value: sidebar, label: 侧边栏}
+    - {value: drawer, label: 抽屉}
+    - {value: hamburger, label: 汉堡菜单}
+    - {value: tab, label: 标签页}
+    - {value: breadcrumb, label: 面包屑}
+    - {value: page-indicator, label: 页面指示器}
+    - {value: pagination, label: 分页器}
+    - {value: text-button, label: 文字按钮}
+    - {value: icon-button, label: 图标按钮}
+    - {value: floating-button, label: 悬浮按钮}
+    - {value: switch, label: 开关}
+    - {value: slider, label: 滑块}
+    - {value: input, label: 单行输入框}
+    - {value: text-area, label: 多行输入框}
+    - {value: rich-text-input, label: 富文本输入框}
+    - {value: dropdown-selector, label: 下拉选择器}
+    - {value: radio, label: 单选选择器}
+    - {value: checkbox, label: 多选选择器}
+    - {value: wheel-picker, label: 滚轮选择器}
+    - {value: date-picker, label: 日期选择器}
+    - {value: time-picker, label: 时间选择器}
+    - {value: date-time-picker, label: 日期时间选择器}
+    - {value: number-picker, label: 数字选择器}
+    - {value: cascader, label: 级联选择器}
+    - {value: tag-selector, label: 标签选择器}
+    - {value: segmented-selector, label: 分段选择器}
+    - {value: text, label: 文本}
+    - {value: static-label, label: 静态标签}
+    - {value: title, label: 标题}
+    - {value: subtitle, label: 副标题}
+    - {value: caption, label: 辅助说明}
+    - {value: badge, label: 角标}
+    - {value: avatar, label: 头像}
+    - {value: avatar-group, label: 头像组}
+    - {value: image, label: 图片}
+    - {value: banner, label: 横幅}
+    - {value: thumbnail, label: 缩略图}
+    - {value: preview, label: 预览图}
+    - {value: carousel, label: 轮播图}
+    - {value: list, label: 列表}
+    - {value: list-item, label: 列表项}
+    - {value: grouped-list, label: 分组列表}
+    - {value: swipe-list, label: 侧滑列表}
+    - {value: expandable-list, label: 可展开列表}
+    - {value: card, label: 卡片}
+    - {value: panel, label: 面板}
+    - {value: section, label: 页面区域}
+    - {value: form, label: 表单}
+    - {value: table, label: 表格}
+    - {value: chart, label: 图表}
+    - {value: audio, label: 音频播放器}
+    - {value: video, label: 视频播放器}
+    - {value: image-viewer, label: 图片查看器}
+    - {value: file-preview, label: 文件预览器}
+    - {value: dialog, label: 弹窗}
+    - {value: confirm-dialog, label: 确认框}
+    - {value: bottom-sheet, label: 底部弹层}
+    - {value: popover, label: 泡泡框}
+    - {value: floating-card, label: 浮层卡片}
+    - {value: toast, label: Toast}
+    - {value: progress-bar, label: 进度条}
+    - {value: loading, label: Loading}
+    - {value: map, label: 地图}
+    - {value: marker, label: 地图标记}
+    - {value: location, label: 位置}
+    - {value: route, label: 路线}
+    - {value: zoom-control, label: 缩放控件}
+    - {value: compass, label: 指南针}
+    - {value: status-bar, label: 状态栏}
+    - {value: system-navigation-bar, label: 系统导航栏}
+    - {value: permission-dialog, label: 权限对话框}
+    - {value: keyboard, label: 键盘}
+    - {value: ime, label: 输入法}
+    - {value: system-dialog, label: 系统对话框}
+    - {value: notification, label: 通知}
+    - {value: quick-settings, label: 快捷设置}
+    - {value: system-date-picker, label: 系统日期选择器}
+    - {value: system-picker, label: 系统选择器}
+    - {value: share-sheet, label: 系统分享面板}
+    - {value: gesture-region, label: 手势区域}
+  interaction-boundary:
+    options:
+    - {value: none, label: 无}
+    - {value: candidate_bbox, label: 候选边框，待校准}
+    - {value: whole_element, label: 整个元素可操作}
+    - {value: trailing_control, label: 仅尾部控件可操作}
+    - {value: point_only, label: 仅验证中心点}
+    - {value: unresolved, label: 尚未确定}
+  presence-status:
+    options:
+    - {value: present, label: 存在}
+    - {value: absent, label: 不存在}
+    - {value: unknown, label: 未知}
+  risk-level:
+    options:
+    - {value: safe, label: 安全}
+    - {value: low, label: 低}
+    - {value: medium, label: 中}
+    - {value: high, label: 高}
+    - {value: critical, label: 严重}
+
+fields:
+- key: communityType
+  appliesTo: [Community]
+  label: 社区类型
+  description: 用于区分社区汇聚的是应用、功能、服务、数据库、需求还是质量资产
+  valueType: option
+  optionSetRef: community-type
+  required: true
+  searchable: true
+- key: functionType
+  appliesTo: [Function]
+  label: 功能类型
+  description: 功能主体采用的实现形态；功能内部的个别页面仍可使用不同实现类型
+  valueType: option
+  optionSetRef: function-type
+  required: true
+  searchable: true
+- key: functionRef
+  appliesTo: [Page]
+  label: 所属功能
+  description: 页面归属的功能，例如特别关注、待办
+  valueType: entity_ref
+  required: false
+  searchable: true
+- key: implementationType
+  appliesTo: [Page]
+  label: 页面实现类型
+  description: 页面由原生、RN、H5 或小程序实现
+  valueType: option
+  optionSetRef: implementation-type
+  required: true
+  searchable: true
+- key: surfaceType
+  appliesTo: [Page]
+  label: 页面形态
+  description: 页面在界面中的呈现形态，例如普通页面、对话框、抽屉或底部弹层
+  valueType: option
+  optionSetRef: surface-type
+  required: true
+  defaultValue: page
+  searchable: true
+- key: stateDefinitions
+  appliesTo: [Page]
+  label: 页面状态定义
+  description: 页面在不同业务条件下可能出现的稳定状态，例如空列表、加载完成或无权限
+  valueType: object_list
+  required: false
+  itemFields:
+  - {key: key, label: 状态键, valueType: string, required: true}
+  - {key: label, label: 状态名称, valueType: string, required: true}
+  - {key: description, label: 状态说明, valueType: text, required: false}
+- key: elementType
+  appliesTo: [Element]
+  label: 元素类型
+  description: 按可观察形态选择；广告按呈现形态归入浮层卡片等现有类型，业务用途和反馈级别写入元素描述；滚动记录为元素动作
+  valueType: option
+  optionSetRef: element-type
+  required: true
+  searchable: true
+- key: displayCondition
+  appliesTo: [Element]
+  label: 展示条件
+  description: 元素能够出现在页面中的业务前置条件，例如当前用户存在以参会人身份加入的会议，或广告已经完成配置；由用户维护
+  valueType: text
+  required: false
+  searchable: true
+- key: gridColumns
+  appliesTo: [Element]
+  label: 横向分割块数
+  description: 将元素所在画面从左到右等分的块数，取值为 1 至 12
+  valueType: integer
+  required: false
+- key: gridRows
+  appliesTo: [Element]
+  label: 纵向分割块数
+  description: 将元素所在画面从上到下等分的块数，取值为 1 至 12
+  valueType: integer
+  required: false
+- key: gridRegion
+  appliesTo: [Element]
+  label: 宫格区域编号
+  description: 根据完整元素边框自动定位；系统会动态调整横纵分割块数，确保元素完整落入单一区域，并从左上角开始按从左到右、从上到下的顺序由 1 编号
+  valueType: integer
+  required: false
+- key: capabilities
+  appliesTo: [Element]
+  label: 元素动作
+  description: 用户对元素实际执行的物理交互动作；删除、提交、跳转等业务结果填写在动作效果中，没有交互时选择“无”
+  valueType: multi_option
+  optionSetRef: element-action
+  required: true
+- key: actionEffects
+  appliesTo: [Element]
+  label: 动作效果
+  description: 每个物理交互动作实际产生的业务结果，例如点击后删除成员或进入特别关注页面
+  valueType: object_list
+  required: false
+  itemFields:
+  - {key: action, label: 元素动作, valueType: option, optionSetRef: element-action, required: true}
+  - {key: effect, label: 效果说明, valueType: string, required: true}
+- key: interactionBoundary
+  appliesTo: [Element]
+  label: 交互区域
+  description: 元素中实际响应操作的区域，与 Inspector 的交互区域一致
+  valueType: option
+  optionSetRef: interaction-boundary
+  required: false
+- key: operation
+  appliesTo: [Interaction]
+  label: 操作类型
+  description: 用户触发该交互时执行的操作，例如点击、输入或滑动
+  valueType: string
+  required: true
+- key: reversible
+  appliesTo: [Interaction]
+  label: 可回退
+  description: 执行交互后是否存在明确的返回或撤销路径
+  valueType: boolean
+  required: true
+- key: risk
+  appliesTo: [Interaction]
+  label: 风险等级
+  description: 交互可能造成的数据或业务影响程度
+  valueType: option
+  optionSetRef: risk-level
+  required: true
+
+relationTypes:
+  member_of:
+    label: 归属于社区
+    description: 指明一个对象被哪个社区收纳和组织
+    sourceTypes: ['*']
+    targetTypes: [Community]
+  provides_function:
+    label: 应用提供功能
+    description: 指明某项功能由哪个应用对外提供
+    sourceTypes: [Application]
+    targetTypes: [Function]
+  contains:
+    label: 页面包含元素
+    description: 描述页面或容器元素中的直接子元素
+    sourceTypes: [Page, Element]
+    targetTypes: [Element]
+    constraints: {singleStructuralParent: true, acyclic: true}
+  triggers:
+    label: 元素触发交互
+    description: 用户操作某个可交互元素后启动一项交互
+    sourceTypes: [Element]
+    targetTypes: [Interaction]
+    constraints: {sourceHasAction: true}
+  starts_from:
+    label: 交互起始页面
+    description: 指明交互发生前用户所在的页面
+    sourceTypes: [Interaction]
+    targetTypes: [Page]
+  navigates_to:
+    label: 交互进入页面
+    description: 指明交互完成后进入的目标页面
+    sourceTypes: [Interaction]
+    targetTypes: [Page]
+  changes_state:
+    label: 交互改变状态
+    description: 指明交互会改变哪个页面或元素的显示状态
+    sourceTypes: [Interaction]
+    targetTypes: [Page, Element]
+  calls:
+    label: 交互调用接口
+    description: 指明用户交互直接触发调用的接口
+    sourceTypes: [Interaction]
+    targetTypes: [API]
+  loads_from:
+    label: 页面加载接口
+    description: 指明页面进入或刷新时用于加载数据的接口
+    sourceTypes: [Page]
+    targetTypes: [API]
+  provided_by:
+    label: 接口由服务提供
+    description: 指明接口的实际后端服务归属
+    sourceTypes: [API]
+    targetTypes: [Service]
+  configured_by:
+    label: 使用配置项
+    description: 指明对象的行为受哪些配置项控制
+    sourceTypes: [Application, Function, Page, Element, Service]
+    targetTypes: [ConfigItem]
+  reads_from:
+    label: 读取数据
+    description: 指明接口或服务会读取的数据库、表或字段
+    sourceTypes: [API, Service]
+    targetTypes: [Database, Table, Field]
+  writes_to:
+    label: 写入数据
+    description: 指明接口或服务会修改的数据库、表或字段
+    sourceTypes: [API, Service]
+    targetTypes: [Database, Table, Field]
+  specified_by:
+    label: 由需求定义
+    description: 将功能和实现对象追溯到产品文档、需求或业务规则
+    sourceTypes: [Function, Page, Interaction, API]
+    targetTypes: [PRD, Requirement, BusinessRule]
+  implemented_by:
+    label: 由技术资产实现
+    description: 将功能、页面、元素或接口关联到代码和服务实现
+    sourceTypes: [Function, Page, Element, Interaction, API]
+    targetTypes: [CodeRepository, CodeModule, Service]
+  covered_by:
+    label: 由测试覆盖
+    description: 指明验证该对象的测试集或测试用例
+    sourceTypes: [Function, Page, Element, Interaction, API]
+    targetTypes: [TestSuite, TestCase]
+  affected_by:
+    label: 受缺陷影响
+    description: 指明当前缺陷影响的项目对象
+    sourceTypes: ['*']
+    targetTypes: [Defect]

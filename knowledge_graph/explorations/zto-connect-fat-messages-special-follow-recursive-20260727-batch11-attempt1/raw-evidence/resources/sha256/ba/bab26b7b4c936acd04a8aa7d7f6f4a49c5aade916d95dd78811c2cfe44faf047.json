@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHC1BKDK4VXQX3J3ZW2R4B4",
+  "sessionRef": "01KYHBRRQ0FNFNTS8NJB3DVSTP",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHC08GF9NJXY200M49HEXPT",
+  "sourceScreenshotRef": "sha256:0b032c5170e1166c0d76608d59f8b921736d99e949b3ad50a47810a9bbcdaa21",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\"]. 复核再次显示的移除确认弹窗，定位取消和确定按钮。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"exploration.authorization\",\"predicate\":\"may_operate_settings_and_members\",\"value\":\"true\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "全部成员",
+    "visiblePrimaryContent": [
+      "练良伟",
+      "确定将练良伟移除特别关注吗？"
+    ],
+    "visibleNavigationState": "全部成员页面上方打开了移除特别关注确认弹窗，背景已被遮罩",
+    "visibleControls": [
+      {
+        "candidateKey": "members.back",
+        "label": "返回",
+        "elementType": "button",
+        "visibleState": "背景可见，因确认弹窗打开而不可操作",
+        "semanticRole": "navigation",
+        "enabled": false,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "返回上一页面",
+        "locatorPrompt": "定位屏幕左上方、‘全部成员’标题左侧的左箭头按钮"
+      },
+      {
+        "candidateKey": "members.close",
+        "label": "关闭",
+        "elementType": "button",
+        "visibleState": "背景可见，因确认弹窗打开而不可操作",
+        "semanticRole": "navigation",
+        "enabled": false,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "关闭当前全部成员页面",
+        "locatorPrompt": "定位屏幕右上方、‘全部成员’标题右侧的X形关闭按钮"
+      },
+      {
+        "candidateKey": "member.lianliangwei.row",
+        "label": "练良伟",
+        "elementType": "button",
+        "visibleState": "成员行在背景中可见，因确认弹窗打开而不可操作",
+        "semanticRole": "member_item",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "成员练良伟的可见条目",
+        "locatorPrompt": "定位页面上部包含头像和姓名‘练良伟’的成员行，位于‘移除’按钮左侧"
+      },
+      {
+        "candidateKey": "member.lianliangwei.remove",
+        "label": "移除",
+        "elementType": "button",
+        "visibleState": "背景可见，因确认弹窗打开而不可操作",
+        "semanticRole": "remove_special_attention",
+        "enabled": false,
+        "reversible": null,
+        "riskHint": "destructive",
+        "functionDescription": "发起将练良伟移出特别关注",
+        "locatorPrompt": "定位背景成员‘练良伟’同一行最右侧、文字为‘移除’的描边按钮"
+      },
+      {
+        "candidateKey": "remove_confirm.cancel",
+        "label": "取消",
+        "elementType": "button",
+        "visibleState": "确认弹窗底部左侧可见且可操作",
+        "semanticRole": "cancel",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "取消移除并关闭确认弹窗",
+        "locatorPrompt": "定位屏幕中央偏下确认弹窗底部左半区、文字为‘取消’的按钮"
+      },
+      {
+        "candidateKey": "remove_confirm.confirm",
+        "label": "确定",
+        "elementType": "button",
+        "visibleState": "确认弹窗底部右侧可见且可操作",
+        "semanticRole": "confirm_removal",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "destructive",
+        "functionDescription": "确认将练良伟移出特别关注",
+        "locatorPrompt": "定位屏幕中央偏下确认弹窗底部右半区、文字为‘确定’的按钮"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": []
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T08:45:31.235Z",
+  "endedAt": "2026-07-27T08:46:04.397Z",
+  "durationMs": 33161.827875,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:6218dc5d8ca9e21728a9b8cafe7be246a8271e032c262a983fea196efe9cdc87"
+}

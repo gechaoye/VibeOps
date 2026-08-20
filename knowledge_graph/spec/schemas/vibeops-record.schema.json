@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vibeops-record.schema.json",
+  "title": "VibeOps Project Graph 1.0 Record",
+  "oneOf": [
+    { "$ref": "#/$defs/entity" },
+    { "$ref": "#/$defs/relation" },
+    { "$ref": "#/$defs/observation" },
+    { "$ref": "#/$defs/evidence" }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*:[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "nonEmptyString": { "type": "string", "minLength": 1 },
+    "knowledge": {
+      "type": "object",
+      "required": ["origin", "reviewStatus", "validationStatus", "evidenceRefs"],
+      "properties": {
+        "origin": {
+          "enum": ["manual", "ai_inferred", "imported", "system_generated"]
+        },
+        "reviewStatus": { "enum": ["pending", "confirmed", "rejected"] },
+        "validationStatus": {
+          "enum": ["unverified", "observed", "runtime_verified", "contradicted"]
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "evidenceRefs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" },
+          "uniqueItems": true
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "fieldKnowledge": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/knowledge" }
+    },
+    "entity": {
+      "type": "object",
+      "required": [
+        "recordKind", "modelVersion", "id", "entityType", "projectRef", "key",
+        "label", "summary", "lifecycleStatus", "attributes", "knowledge"
+      ],
+      "properties": {
+        "recordKind": { "const": "Entity" },
+        "modelVersion": { "$ref": "#/$defs/nonEmptyString" },
+        "id": { "$ref": "#/$defs/id" },
+        "entityType": { "$ref": "#/$defs/nonEmptyString" },
+        "projectRef": { "$ref": "#/$defs/id" },
+        "key": { "$ref": "#/$defs/nonEmptyString" },
+        "label": { "$ref": "#/$defs/nonEmptyString" },
+        "summary": { "$ref": "#/$defs/nonEmptyString" },
+        "lifecycleStatus": { "enum": ["draft", "active", "deprecated", "archived"] },
+        "attributes": { "type": "object" },
+        "knowledge": { "$ref": "#/$defs/knowledge" },
+        "fieldKnowledge": { "$ref": "#/$defs/fieldKnowledge" }
+      },
+      "additionalProperties": false
+    },
+    "relation": {
+      "type": "object",
+      "required": [
+        "recordKind", "modelVersion", "id", "projectRef", "relationType",
+        "sourceRef", "targetRef", "attributes", "knowledge"
+      ],
+      "properties": {
+        "recordKind": { "const": "Relation" },
+        "modelVersion": { "$ref": "#/$defs/nonEmptyString" },
+        "id": { "$ref": "#/$defs/id" },
+        "projectRef": { "$ref": "#/$defs/id" },
+        "relationType": { "$ref": "#/$defs/nonEmptyString" },
+        "sourceRef": { "$ref": "#/$defs/id" },
+        "targetRef": { "$ref": "#/$defs/id" },
+        "attributes": { "type": "object" },
+        "knowledge": { "$ref": "#/$defs/knowledge" }
+      },
+      "additionalProperties": false
+    },
+    "viewport": {
+      "type": "object",
+      "required": ["width", "height", "orientation"],
+      "properties": {
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 },
+        "orientation": { "enum": ["portrait", "landscape", "unknown"] }
+      },
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "required": [
+        "recordKind", "modelVersion", "id", "projectRef", "subjectRef",
+        "observedAt", "context", "payload", "evidenceRefs"
+      ],
+      "properties": {
+        "recordKind": { "const": "Observation" },
+        "modelVersion": { "$ref": "#/$defs/nonEmptyString" },
+        "id": { "$ref": "#/$defs/id" },
+        "projectRef": { "$ref": "#/$defs/id" },
+        "subjectRef": { "$ref": "#/$defs/id" },
+        "observedAt": { "type": "string", "format": "date-time" },
+        "context": {
+          "type": "object",
+          "properties": {
+            "client": { "type": "string" },
+            "buildRef": { "type": "string" },
+            "deviceRef": { "type": "string" },
+            "viewport": { "$ref": "#/$defs/viewport" }
+          },
+          "additionalProperties": true
+        },
+        "payload": { "type": "object" },
+        "evidenceRefs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/id" },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "recordKind", "modelVersion", "id", "projectRef", "evidenceType",
+        "uri", "capturedAt"
+      ],
+      "properties": {
+        "recordKind": { "const": "Evidence" },
+        "modelVersion": { "$ref": "#/$defs/nonEmptyString" },
+        "id": { "$ref": "#/$defs/id" },
+        "projectRef": { "$ref": "#/$defs/id" },
+        "evidenceType": { "$ref": "#/$defs/nonEmptyString" },
+        "uri": { "$ref": "#/$defs/nonEmptyString" },
+        "contentHash": { "type": "string" },
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "attributes": { "type": "object" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
+

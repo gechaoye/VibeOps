@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHZSDEA93WW4HZJ0H9J6CD7",
+  "sessionRef": "01KYHZCNHDWB9DNF17R8JNMBC9",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHZRTKE95BYCNE4S8XPA03V",
+  "sourceScreenshotRef": "sha256:8f523f14cbf38605cf8c18dd234e742b7dc21b2ba9a64e2def37acc5c787e530",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"link\",\"list_entry\",\"back\",\"close\",\"scroll_region\"]. 完整盘点特别关注空状态页的标题、左上收起按钮、空状态说明、设置特别关注链接和全部可见交互控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员的会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"已设置的特别关注人员存在未读消息并在特别关注列表展示会话时，入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.people.close\",\"predicate\":\"target_page\",\"value\":\"右上关闭X关闭全部成员页后返回特别关注功能页。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注",
+    "visiblePrimaryContent": [
+      "包含特别关注人消息的会话会展示在这里",
+      "设置特别关注 >"
+    ],
+    "visibleNavigationState": "特别关注空状态页",
+    "visibleControls": [
+      {
+        "candidateKey": "top_left_chevron",
+        "label": "左上向下折线图标",
+        "elementType": "icon_button",
+        "visibleState": "可见，未显示文字标签",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "当前可见证据与提供的上下文不足以确定该图标的具体功能。",
+        "locatorPrompt": "定位页面白色标题栏左上角、标题“特别关注”左侧的黑色向下V形折线图标"
+      },
+      {
+        "candidateKey": "set_special_follow",
+        "label": "设置特别关注 >",
+        "elementType": "link",
+        "visibleState": "可见，蓝色文字链接",
+        "semanticRole": "navigation",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "进入设置流程，后续操作可能改变特别关注人员配置",
+        "functionDescription": "进入特别关注设置，以配置特别关注人员。",
+        "locatorPrompt": "定位空状态插画和灰色说明文字下方、页面中部的蓝色文字链接“设置特别关注 >”"
+      }
+    ],
+    "scrollableRegions": [],
+    "unresolvedVisualMeanings": [
+      "左上角向下V形折线图标的具体语义无法仅凭当前截图和提供的上下文确定。",
+      "当前截图无法确认页面主体是否支持滚动。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T14:30:59.059Z",
+  "endedAt": "2026-07-27T14:31:15.658Z",
+  "durationMs": 16598.212916,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:6eaca9457c9ee61b1e7a78016e824f96ecb2260733e66da797fb6ca780fc8657"
+}

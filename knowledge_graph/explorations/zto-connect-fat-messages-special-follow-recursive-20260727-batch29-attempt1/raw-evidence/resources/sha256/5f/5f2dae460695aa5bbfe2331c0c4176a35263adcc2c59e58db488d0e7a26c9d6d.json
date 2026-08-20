@@ -1,0 +1,413 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHQH5ZPM4E5ZDQDT4FQJQGH",
+  "sessionRef": "01KYHQEMAS8P6HW0Z1AYX5AKRE",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHQF5NRTVEX32GSYGJMVATM",
+  "sourceScreenshotRef": "sha256:de2d5db041be118aac36dd0f2199ab1a5bf5332193c1edfa0a58af50a328471f",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"list_entry\",\"tab\",\"close\",\"menu\",\"scroll_region\"]. 完整盘点工作台当前全屏可见交互控件和底部标签；如有“重要消息未读”提示气泡也如实记录但不激活。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_list\",\"predicate\":\"behavior\",\"value\":\"设置特别关注人员后，该人员存在未读消息时，其会话显示在特别关注列表中。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_visual_state\",\"value\":\"特别关注人员存在未读消息时，入口爱心图标变为橙黄色。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "工作台",
+    "visiblePrimaryContent": [
+      "用户：葛超烨，上海",
+      "动态验证码：539077",
+      "我的收藏：添加收藏",
+      "最近使用：中通邮局、任务中心、新考勤打卡、全部应用",
+      "消息：会议通知·宝盒，未读数41",
+      "审批中心：待审批流程25，今日日程/会议0",
+      "资讯区域：必读资讯、全部资讯、视频·发现",
+      "可见3个视频缩略图，播放量分别为105、68、53",
+      "提示：您有1条重要消息未读",
+      "底部导航：工作台、消息、通讯录、资讯、更多"
+    ],
+    "visibleNavigationState": "底部导航“工作台”处于蓝色选中状态；“消息”“通讯录”“资讯”“更多”未选中。资讯区域中“视频·发现”呈蓝色并带下划线，表现为当前选中标签。",
+    "visibleControls": [
+      {
+        "candidateKey": "profile.avatar",
+        "label": "葛超烨头像",
+        "elementType": "button",
+        "visibleState": "顶部左侧圆形头像，右上有红点",
+        "semanticRole": "profile",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "进入个人资料或账户相关页面",
+        "locatorPrompt": "定位屏幕顶部左侧、姓名“葛超烨”左边且右上带红点的圆形头像"
+      },
+      {
+        "candidateKey": "otp.dynamic_code",
+        "label": "动态验证码 539077",
+        "elementType": "button",
+        "visibleState": "顶部显示539077并带蓝色进度下划线",
+        "semanticRole": "dynamic_verification_code",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "sensitive",
+        "functionDescription": "查看或使用动态验证码",
+        "locatorPrompt": "定位顶部中间显示数字“539077”、下方文字为“动态验证码”的入口"
+      },
+      {
+        "candidateKey": "top.scan",
+        "label": "扫一扫",
+        "elementType": "icon_button",
+        "visibleState": "可见扫描框图标及文字“扫一扫”",
+        "semanticRole": "scan",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "camera_permission",
+        "functionDescription": "打开扫码功能",
+        "locatorPrompt": "定位顶部“动态验证码”右侧、扫描框图标下方标注“扫一扫”的入口"
+      },
+      {
+        "candidateKey": "top.approval",
+        "label": "审批",
+        "elementType": "icon_button",
+        "visibleState": "可见勾选框图标，红色角标25",
+        "semanticRole": "approval",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "workflow_action",
+        "functionDescription": "进入审批功能",
+        "locatorPrompt": "定位顶部“扫一扫”右侧、带红色数字25角标且文字为“审批”的入口"
+      },
+      {
+        "candidateKey": "top.schedule",
+        "label": "日程",
+        "elementType": "icon_button",
+        "visibleState": "日历图标内显示27",
+        "semanticRole": "schedule",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "进入日程页面",
+        "locatorPrompt": "定位顶部最右侧、日历图标内显示“27”且下方文字为“日程”的入口"
+      },
+      {
+        "candidateKey": "favorites.add",
+        "label": "添加收藏",
+        "elementType": "button",
+        "visibleState": "我的收藏区域内显示加号方块",
+        "semanticRole": "add_favorite",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "添加工作台收藏项目",
+        "locatorPrompt": "定位“我的收藏”区域中带大号加号、下方文字为“添加收藏”的方块"
+      },
+      {
+        "candidateKey": "recent.zto_mail",
+        "label": "中通邮局",
+        "elementType": "button",
+        "visibleState": "最近使用区域内显示彩色信封图标",
+        "semanticRole": "app_shortcut",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "打开中通邮局",
+        "locatorPrompt": "定位“最近使用”区域最左侧、彩色信封图标下方文字为“中通邮局”的入口"
+      },
+      {
+        "candidateKey": "recent.task_center",
+        "label": "任务中心",
+        "elementType": "button",
+        "visibleState": "最近使用区域内为灰色占位图标",
+        "semanticRole": "app_shortcut",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "打开任务中心",
+        "locatorPrompt": "定位“最近使用”区域中“中通邮局”右侧、文字为“任务中心”的入口"
+      },
+      {
+        "candidateKey": "recent.attendance",
+        "label": "新考勤打卡",
+        "elementType": "button",
+        "visibleState": "最近使用区域内为灰色占位图标",
+        "semanticRole": "app_shortcut",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "attendance_action",
+        "functionDescription": "打开新考勤打卡",
+        "locatorPrompt": "定位“最近使用”区域中“任务中心”右侧、文字为“新考勤打卡”的入口"
+      },
+      {
+        "candidateKey": "recent.all_apps",
+        "label": "全部应用",
+        "elementType": "button",
+        "visibleState": "蓝灰色四宫格图标",
+        "semanticRole": "all_apps",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "查看全部应用",
+        "locatorPrompt": "定位“最近使用”区域最右侧、四宫格图标下方文字为“全部应用”的入口"
+      },
+      {
+        "candidateKey": "messages.meeting_notice",
+        "label": "消息 会议通知·宝盒",
+        "elementType": "list_entry",
+        "visibleState": "标题行左侧“消息”为蓝色，右侧显示红色41",
+        "semanticRole": "message_summary",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "communication",
+        "functionDescription": "进入会议通知或宝盒消息列表",
+        "locatorPrompt": "定位最近使用区域下方、左侧蓝字“消息”、正文“会议通知·宝盒”且最右显示红色41的整行"
+      },
+      {
+        "candidateKey": "approval.center",
+        "label": "审批中心",
+        "elementType": "list_entry",
+        "visibleState": "白色面板标题，右侧有向右箭头",
+        "semanticRole": "approval_center",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "workflow_action",
+        "functionDescription": "进入审批中心",
+        "locatorPrompt": "定位白色审批面板顶部、标题为“审批中心”且最右有向右箭头的整行"
+      },
+      {
+        "candidateKey": "approval.pending",
+        "label": "待审批流程 25",
+        "elementType": "list_entry",
+        "visibleState": "显示待审批流程及数量25",
+        "semanticRole": "pending_approval",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "workflow_action",
+        "functionDescription": "查看25条待审批流程",
+        "locatorPrompt": "定位“审批中心”面板左半部分、文字“待审批流程”下方显示数字25的入口"
+      },
+      {
+        "candidateKey": "approval.today_schedule",
+        "label": "今日日程/会议 0",
+        "elementType": "list_entry",
+        "visibleState": "显示今日日程/会议及数量0",
+        "semanticRole": "today_schedule",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "low",
+        "functionDescription": "查看今日的日程与会议",
+        "locatorPrompt": "定位“审批中心”面板右半部分、文字“今日日程/会议”下方显示数字0的入口"
+      },
+      {
+        "candidateKey": "communication.register",
+        "label": "沟通登记",
+        "elementType": "icon_button",
+        "visibleState": "右侧蓝色笔形图标及文字“沟通登记”",
+        "semanticRole": "communication_register",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "data_entry",
+        "functionDescription": "打开沟通登记功能",
+        "locatorPrompt": "定位审批中心面板右下侧外沿、蓝色笔形图标下方文字为“沟通登记”的悬浮入口"
+      },
+      {
+        "candidateKey": "info.required",
+        "label": "必读资讯",
+        "elementType": "tab",
+        "visibleState": "灰色文字，未见选中下划线",
+        "semanticRole": "content_filter",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "切换到必读资讯内容",
+        "locatorPrompt": "定位资讯白色区域顶部最左侧文字标签“必读资讯”"
+      },
+      {
+        "candidateKey": "info.all",
+        "label": "全部资讯",
+        "elementType": "tab",
+        "visibleState": "灰色文字，未见选中下划线",
+        "semanticRole": "content_filter",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "切换到全部资讯内容",
+        "locatorPrompt": "定位资讯白色区域顶部中间文字标签“全部资讯”"
+      },
+      {
+        "candidateKey": "info.video_discover",
+        "label": "视频·发现",
+        "elementType": "tab",
+        "visibleState": "蓝色文字并带蓝色下划线，当前选中",
+        "semanticRole": "content_filter",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "显示视频发现内容",
+        "locatorPrompt": "定位资讯白色区域顶部右侧、带小视频图标且蓝色下划线选中的“视频·发现”标签"
+      },
+      {
+        "candidateKey": "video.card_105",
+        "label": "视频 105",
+        "elementType": "list_entry",
+        "visibleState": "左侧女性花田缩略图，左下角播放量105",
+        "semanticRole": "video_item",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "media_playback",
+        "functionDescription": "打开或播放该视频",
+        "locatorPrompt": "定位视频区域最左侧、女性在花田中的缩略图且左下角显示播放图标和105的卡片"
+      },
+      {
+        "candidateKey": "video.card_68",
+        "label": "视频 68",
+        "elementType": "list_entry",
+        "visibleState": "中间女性人像缩略图，左下角播放量68",
+        "semanticRole": "video_item",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "media_playback",
+        "functionDescription": "打开或播放该视频",
+        "locatorPrompt": "定位视频区域中间、红蓝光女性人像且左下角显示播放图标和68的卡片"
+      },
+      {
+        "candidateKey": "video.card_53",
+        "label": "视频 53",
+        "elementType": "list_entry",
+        "visibleState": "右侧女性人像缩略图，左下角播放量53",
+        "semanticRole": "video_item",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "media_playback",
+        "functionDescription": "打开或播放该视频",
+        "locatorPrompt": "定位视频区域最右侧、红蓝光女性人像且左下角显示播放图标和53的卡片"
+      },
+      {
+        "candidateKey": "important_unread.close",
+        "label": "关闭重要消息未读提示",
+        "elementType": "close",
+        "visibleState": "提示气泡文字“您有1条重要消息未读”右侧显示×",
+        "semanticRole": "dismiss_notification",
+        "enabled": true,
+        "reversible": false,
+        "riskHint": "dismisses_visual_notice",
+        "functionDescription": "关闭当前重要消息未读提示气泡，不激活消息",
+        "locatorPrompt": "定位屏幕下部浅蓝色“您有1条重要消息未读”气泡最右侧的蓝色×关闭按钮"
+      },
+      {
+        "candidateKey": "content.more_arrow",
+        "label": "右箭头",
+        "elementType": "icon_button",
+        "visibleState": "视频卡片下方可见灰色向右箭头，左侧文字被提示气泡遮挡",
+        "semanticRole": "unknown",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "unknown",
+        "functionDescription": "当前画面无法确定该箭头对应的具体功能",
+        "locatorPrompt": "定位三个视频缩略图下方、重要消息提示气泡右侧露出的灰色向右箭头"
+      },
+      {
+        "candidateKey": "bottom.workbench",
+        "label": "工作台",
+        "elementType": "tab",
+        "visibleState": "蓝色图标和文字，红色角标25，当前选中",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "切换到工作台",
+        "locatorPrompt": "定位底部导航最左侧、蓝色四宫格图标、红色25角标且文字为“工作台”的标签"
+      },
+      {
+        "candidateKey": "bottom.messages",
+        "label": "消息",
+        "elementType": "tab",
+        "visibleState": "灰色气泡图标，红色角标99+，未选中",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "communication",
+        "functionDescription": "切换到消息页面",
+        "locatorPrompt": "定位底部导航第二项、灰色双气泡图标、红色99+角标且文字为“消息”的标签"
+      },
+      {
+        "candidateKey": "bottom.contacts",
+        "label": "通讯录",
+        "elementType": "tab",
+        "visibleState": "灰色通讯录图标，未选中",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "personal_data",
+        "functionDescription": "切换到通讯录页面",
+        "locatorPrompt": "定位底部导航中间、灰色通讯录图标且文字为“通讯录”的标签"
+      },
+      {
+        "candidateKey": "bottom.info",
+        "label": "资讯",
+        "elementType": "tab",
+        "visibleState": "灰色资讯图标，未选中",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "切换到资讯页面",
+        "locatorPrompt": "定位底部导航第四项、灰色文档图标且文字为“资讯”的标签"
+      },
+      {
+        "candidateKey": "bottom.more",
+        "label": "更多",
+        "elementType": "tab",
+        "visibleState": "灰色点阵图标，红色角标41，未选中",
+        "semanticRole": "primary_navigation",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "low",
+        "functionDescription": "切换到更多功能页面",
+        "locatorPrompt": "定位底部导航最右侧、灰色点阵图标、红色41角标且文字为“更多”的标签"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "page.main_scroll",
+        "label": "工作台主内容",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位顶部个人信息区域与底部固定导航之间的整块工作台主内容区域"
+      },
+      {
+        "candidateKey": "video.horizontal_scroll",
+        "label": "视频列表",
+        "directions": [
+          "horizontal"
+        ],
+        "locatorPrompt": "定位“视频·发现”标签下方横向排列三张视频缩略图的列表区域"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "“任务中心”和“新考勤打卡”上方显示灰色占位块，无法确认是未加载图标还是控件的其他视觉状态。",
+      "三个视频卡片下方的文字被“您有1条重要消息未读”气泡遮挡，仅能看到灰色右箭头，无法确定其具体标签和功能。",
+      "截图中没有可见爱心工具栏入口；关于“特别关注”的名称、行为及橙黄色未读状态仅属于提供的权威上下文，并非当前像素所显示。",
+      "页面主内容及视频行是否确实支持滚动未由静态截图直接证明，方向依据内容布局记录。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T12:05:54.997Z",
+  "endedAt": "2026-07-27T12:06:57.270Z",
+  "durationMs": 62272.2735,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:4b0ef5ea0bbcde4faf460e49de2d6e74a2b2ebbf77dd9b13a1cae1fd2fe7147b"
+}

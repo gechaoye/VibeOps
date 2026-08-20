@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYK7E48DW5P9T3FXYW1Q6WXM",
+  "sessionRef": "01KYK75BTZ4TV4ZP32QETPQ4HB",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYK7D9HKV7Y99NDN97J8762D",
+  "sourceScreenshotRef": "sha256:5ef168cef91caed85e94c20a422d9f8d761ce7041d62dccfbf6eb98710920df8",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"list_entry\",\"radio\",\"close\"]. 完整盘点底部面板的10分钟、30分钟和取消；背景页控件只记录为被遮罩内容，不作为当前可操作控件。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.unread_badge\",\"predicate\":\"value_semantics\",\"value\":\"红色角标展示特别关注会话当前实时未读消息数量；具体数字只属于 Runtime 呈现，不能进入稳定元素命名、状态键或规则条件。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"unread_highlight_condition\",\"value\":\"特别关注人员存在未读消息时，消息页入口爱心图标变为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings.sms_phone_reminder.interval\",\"predicate\":\"visible_options\",\"value\":\"短信/电话提醒间隔面板包含10分钟、30分钟和取消，当前设置值为30分钟。\",\"source\":\"verified_evidence\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "底部间隔时间选择面板",
+      "10分钟（蓝色勾选，视觉选中）",
+      "30分钟",
+      "取消",
+      "背景页“特别关注提醒”已被半透明遮罩覆盖"
+    ],
+    "visibleNavigationState": "“特别关注提醒”页面上打开了短信/电话提醒间隔的底部选择面板；背景页处于遮罩状态，当前前景交互范围为底部面板。",
+    "visibleControls": [
+      {
+        "candidateKey": "interval_10_minutes",
+        "label": "10分钟",
+        "elementType": "radio",
+        "visibleState": "selected; blue checkmark and blue label",
+        "semanticRole": "选择短信/电话提醒的10分钟间隔",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会修改短信/电话提醒的间隔设置",
+        "functionDescription": "将短信/电话提醒间隔设为10分钟。",
+        "locatorPrompt": "定位底部白色选择面板第一行的“10分钟”选项；该行左侧有蓝色向下勾选标记，文字为蓝色。"
+      },
+      {
+        "candidateKey": "interval_30_minutes",
+        "label": "30分钟",
+        "elementType": "radio",
+        "visibleState": "unselected; dark label without checkmark",
+        "semanticRole": "选择短信/电话提醒的30分钟间隔",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会修改短信/电话提醒的间隔设置",
+        "functionDescription": "将短信/电话提醒间隔设为30分钟。",
+        "locatorPrompt": "定位底部白色选择面板第二行的“30分钟”选项；位于“10分钟”下方，文字为深色且左侧没有勾选标记。"
+      },
+      {
+        "candidateKey": "cancel_interval_picker",
+        "label": "取消",
+        "elementType": "close",
+        "visibleState": "visible; unselected",
+        "semanticRole": "关闭间隔时间选择面板",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "不选择新选项并关闭当前底部面板",
+        "functionDescription": "取消当前选择操作并关闭底部间隔时间面板。",
+        "locatorPrompt": "定位屏幕最底部白色区域中央的“取消”文字控件；其上方有一条浅灰色分隔带，与10分钟和30分钟选项分开。"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "masked_settings_page",
+        "label": "被遮罩的特别关注提醒设置页",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位底部白色选择面板后方、覆盖灰色半透明遮罩的“特别关注提醒”设置内容区域；该区域从标题栏下方延伸至底部面板上缘。"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "截图中“10分钟”呈蓝色勾选的视觉状态，与提供的权威上下文所述当前设置值为30分钟不一致；本结果按当前可见像素记录10分钟为视觉选中，不推断提交后的持久设置状态。",
+      "背景页全部控件因遮罩而不作为当前可操作控件盘点。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-28T02:03:44.243Z",
+  "endedAt": "2026-07-28T02:04:08.845Z",
+  "durationMs": 24602.316083,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:2a01e35bc9256ecf1359acb15a4b4881dfb25350d0c68b3c641e47226b0b799d"
+}

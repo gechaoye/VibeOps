@@ -1,0 +1,303 @@
+{
+  "schemaVersion": "2.0.0",
+  "recordType": "RawMidsceneInsightResult",
+  "id": "01KYHHXFBMEW00KVWK233JPB4A",
+  "sessionRef": "01KYHHCBBFTFM0QSB7KMGKKXBJ",
+  "provider": "midscene",
+  "reasoningPersisted": false,
+  "credentialMaterialPersisted": false,
+  "frameRef": "01KYHHTA0YV3XE1EAH6MVG8CEC",
+  "sourceScreenshotRef": "sha256:0bf108ed91ea8de7bfac41c48f45e5f7415f5d9f84a8170e86d765c22f230237",
+  "operation": "aiQuery",
+  "prompt": "{visiblePageTitle: string, visiblePrimaryContent: string[], visibleNavigationState: string, visibleControls: {candidateKey: string, label: string, elementType: string, visibleState: string, semanticRole: string, enabled: boolean, reversible: boolean | null, riskHint: string, functionDescription: string, locatorPrompt: string}[], scrollableRegions: {candidateKey: string, label: string, directions: string[], locatorPrompt: string}[], unresolvedVisualMeanings: string[]}. Inspect only the current visible viewport and describe visible facts. Return every visible interactive control as a separate visibleControls item, including unlabeled icons, back and close controls, toggles, settings, rows, tabs, fields, and disabled controls. candidateKey must be a concise stable ASCII semantic key; locatorPrompt must uniquely describe the same visible control for a subsequent Midscene aiLocate call. Requested element types: [\"button\",\"icon_button\",\"radio\",\"close\"]. 盘点点击“简报”右侧试听按钮后的提示音面板全部交互控件，记录试听按钮当下视觉状态，确认没有改变当前选项。 Authoritative non-visual task context: [{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"function_name\",\"value\":\"特别关注\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.member_with_unread\",\"predicate\":\"conversation_visibility\",\"value\":\"设置为特别关注的人员存在未读消息时，该人员相关会话显示在特别关注列表。\",\"source\":\"user\"},{\"subjectKey\":\"messages.toolbar.heart\",\"predicate\":\"configured_visual_state\",\"value\":\"设置特别关注人员后，入口爱心图标显示为橙黄色。\",\"source\":\"user\"},{\"subjectKey\":\"messages.special_follow.settings\",\"predicate\":\"exploration_authorization\",\"value\":\"用户明确允许操作开关和设置，探索阶段无需恢复业务状态。\",\"source\":\"user\"}]. Use these facts as supplied context without re-inferring, disputing, or marking them unresolved; do not present them as facts derived from pixels. Do not infer any additional icon function from shape alone; use semanticRole \"unknown\", riskHint \"unknown\", and unresolvedVisualMeanings when visible evidence and supplied facts do not establish meaning.",
+  "status": "pass",
+  "result": {
+    "visiblePageTitle": "特别关注提醒",
+    "visiblePrimaryContent": [
+      "我的特别关注",
+      "添加",
+      "来自「特别关注」的未读消息，自定义提醒方式",
+      "单聊消息未读，弹窗提醒我",
+      "间隔时间：30分钟",
+      "弹窗消息未读，短信/电话提醒我",
+      "免打扰群通知",
+      "提示音选项：默认、波浪、简报、门铃",
+      "当前提示音：简报"
+    ],
+    "visibleNavigationState": "位于“特别关注提醒”页面；提示音选择面板已打开，背景页面被遮罩；“简报”保持选中。",
+    "visibleControls": [
+      {
+        "candidateKey": "nav_back",
+        "label": "返回",
+        "elementType": "icon_button",
+        "visibleState": "背景遮罩下可见左箭头",
+        "semanticRole": "back",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "可能离开当前页面",
+        "functionDescription": "返回上一页",
+        "locatorPrompt": "定位页面顶部左侧、标题“特别关注提醒”左边的返回箭头图标"
+      },
+      {
+        "candidateKey": "special_follow_entry",
+        "label": "我的特别关注",
+        "elementType": "button",
+        "visibleState": "背景遮罩下可见，右侧有箭头",
+        "semanticRole": "navigation",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "打开特别关注人员列表或设置页",
+        "functionDescription": "进入“我的特别关注”",
+        "locatorPrompt": "定位背景页面上方写有“我的特别关注”且最右侧带右箭头的整行"
+      },
+      {
+        "candidateKey": "add_special_follow",
+        "label": "添加",
+        "elementType": "button",
+        "visibleState": "背景遮罩下可见虚线加号框",
+        "semanticRole": "add",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "可能修改特别关注人员",
+        "functionDescription": "添加特别关注人员",
+        "locatorPrompt": "定位“我的特别关注”区域左下方、带虚线方框加号并标注“添加”的控件"
+      },
+      {
+        "candidateKey": "single_chat_popup_toggle",
+        "label": "单聊消息未读，弹窗提醒我",
+        "elementType": "button",
+        "visibleState": "开启，开关轨道为蓝色且滑块位于右侧",
+        "semanticRole": "toggle",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会改变单聊未读弹窗提醒设置",
+        "functionDescription": "开启或关闭单聊未读消息弹窗提醒",
+        "locatorPrompt": "定位背景页面“单聊消息未读，弹窗提醒我”这一行最右侧的蓝色开关"
+      },
+      {
+        "candidateKey": "single_chat_popup_help",
+        "label": "单聊消息未读弹窗提醒说明",
+        "elementType": "icon_button",
+        "visibleState": "背景遮罩下可见问号图标",
+        "semanticRole": "help",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "低风险，可能打开说明",
+        "functionDescription": "查看该提醒方式的说明",
+        "locatorPrompt": "定位“单聊消息未读，弹窗提醒我”文字右侧紧邻的圆形问号图标"
+      },
+      {
+        "candidateKey": "reminder_interval",
+        "label": "间隔时间 30分钟",
+        "elementType": "button",
+        "visibleState": "当前值为30分钟，右侧有箭头",
+        "semanticRole": "settings",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "可能改变提醒间隔",
+        "functionDescription": "打开提醒间隔时间设置",
+        "locatorPrompt": "定位背景页面写有“间隔时间”、右侧显示“30分钟”和箭头的整行"
+      },
+      {
+        "candidateKey": "sms_phone_toggle",
+        "label": "弹窗消息未读，短信/电话提醒我",
+        "elementType": "button",
+        "visibleState": "关闭，开关为灰色且滑块位于左侧",
+        "semanticRole": "toggle",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "开启后可能触发短信或电话提醒并产生相关影响",
+        "functionDescription": "开启或关闭未读弹窗消息的短信或电话提醒",
+        "locatorPrompt": "定位背景页面“弹窗消息未读，短信/电话提醒我”这一行最右侧的灰色开关"
+      },
+      {
+        "candidateKey": "sms_phone_help",
+        "label": "短信/电话提醒说明",
+        "elementType": "icon_button",
+        "visibleState": "背景遮罩下可见问号图标",
+        "semanticRole": "help",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "低风险，可能打开说明",
+        "functionDescription": "查看短信或电话提醒的说明",
+        "locatorPrompt": "定位“弹窗消息未读，短信/电话提醒我”文字右侧紧邻的圆形问号图标"
+      },
+      {
+        "candidateKey": "dnd_group_toggle",
+        "label": "免打扰群通知",
+        "elementType": "button",
+        "visibleState": "关闭，开关为灰色且滑块位于左侧",
+        "semanticRole": "toggle",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "会改变免打扰群的通知设置",
+        "functionDescription": "开启或关闭免打扰群通知",
+        "locatorPrompt": "定位背景页面“免打扰群通知”这一行最右侧的灰色开关"
+      },
+      {
+        "candidateKey": "dnd_group_help",
+        "label": "免打扰群通知说明",
+        "elementType": "icon_button",
+        "visibleState": "背景遮罩下可见问号图标",
+        "semanticRole": "help",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "低风险，可能打开说明",
+        "functionDescription": "查看免打扰群通知的说明",
+        "locatorPrompt": "定位背景页面“免打扰群通知”文字右侧紧邻的圆形问号图标"
+      },
+      {
+        "candidateKey": "sound_default",
+        "label": "默认",
+        "elementType": "radio",
+        "visibleState": "未选中，文字为深色且无蓝色对勾",
+        "semanticRole": "option",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "点击会将当前提示音改为“默认”",
+        "functionDescription": "选择“默认”提示音",
+        "locatorPrompt": "定位底部提示音面板第一行左侧写有“默认”的选项区域，不包括右侧试听按钮"
+      },
+      {
+        "candidateKey": "sound_default_preview",
+        "label": "试听默认",
+        "elementType": "icon_button",
+        "visibleState": "深灰色圆形按钮，内部白色右向三角；当前未显示播放中标记",
+        "semanticRole": "preview",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "会播放“默认”提示音",
+        "functionDescription": "试听“默认”提示音",
+        "locatorPrompt": "定位底部提示音面板“默认”行最右侧的深灰色圆形试听按钮"
+      },
+      {
+        "candidateKey": "sound_wave",
+        "label": "波浪",
+        "elementType": "radio",
+        "visibleState": "未选中，文字为深色且无蓝色对勾",
+        "semanticRole": "option",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "点击会将当前提示音改为“波浪”",
+        "functionDescription": "选择“波浪”提示音",
+        "locatorPrompt": "定位底部提示音面板第二行左侧写有“波浪”的选项区域，不包括右侧试听按钮"
+      },
+      {
+        "candidateKey": "sound_wave_preview",
+        "label": "试听波浪",
+        "elementType": "icon_button",
+        "visibleState": "深灰色圆形按钮，内部白色右向三角；当前未显示播放中标记",
+        "semanticRole": "preview",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "会播放“波浪”提示音",
+        "functionDescription": "试听“波浪”提示音",
+        "locatorPrompt": "定位底部提示音面板“波浪”行最右侧的深灰色圆形试听按钮"
+      },
+      {
+        "candidateKey": "sound_briefing",
+        "label": "简报",
+        "elementType": "radio",
+        "visibleState": "已选中，左侧显示蓝色对勾且文字为蓝色",
+        "semanticRole": "option",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "当前已选中；再次点击的具体行为未由画面确定",
+        "functionDescription": "选择“简报”提示音；当前选择未因试听而改变",
+        "locatorPrompt": "定位底部提示音面板第三行、左侧有蓝色对勾且文字为蓝色的“简报”选项区域，不包括右侧试听按钮"
+      },
+      {
+        "candidateKey": "sound_briefing_preview",
+        "label": "试听简报",
+        "elementType": "icon_button",
+        "visibleState": "深灰色圆形按钮，内部白色右向三角；点击后当前画面仍显示播放三角，未显示暂停、进度或高亮状态",
+        "semanticRole": "preview",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "会播放“简报”提示音，不改变当前选项",
+        "functionDescription": "试听“简报”提示音",
+        "locatorPrompt": "定位底部提示音面板蓝色“简报”选项所在第三行最右侧的深灰色圆形试听按钮"
+      },
+      {
+        "candidateKey": "sound_doorbell",
+        "label": "门铃",
+        "elementType": "radio",
+        "visibleState": "未选中，文字为深色且无蓝色对勾",
+        "semanticRole": "option",
+        "enabled": true,
+        "reversible": true,
+        "riskHint": "点击会将当前提示音改为“门铃”",
+        "functionDescription": "选择“门铃”提示音",
+        "locatorPrompt": "定位底部提示音面板第四行左侧写有“门铃”的选项区域，不包括右侧试听按钮"
+      },
+      {
+        "candidateKey": "sound_doorbell_preview",
+        "label": "试听门铃",
+        "elementType": "icon_button",
+        "visibleState": "深灰色圆形按钮，内部白色右向三角；当前未显示播放中标记",
+        "semanticRole": "preview",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "会播放“门铃”提示音",
+        "functionDescription": "试听“门铃”提示音",
+        "locatorPrompt": "定位底部提示音面板“门铃”行最右侧的深灰色圆形试听按钮"
+      },
+      {
+        "candidateKey": "sound_panel_cancel",
+        "label": "取消",
+        "elementType": "close",
+        "visibleState": "底部白色区域中央显示“取消”",
+        "semanticRole": "close",
+        "enabled": true,
+        "reversible": null,
+        "riskHint": "关闭提示音面板，不应改变当前选项",
+        "functionDescription": "取消并关闭提示音选择面板",
+        "locatorPrompt": "定位屏幕最底部白色区域中央的“取消”控件"
+      }
+    ],
+    "scrollableRegions": [
+      {
+        "candidateKey": "settings_page_scroll",
+        "label": "特别关注提醒设置内容",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位顶部标题栏下方、被半透明遮罩覆盖的特别关注提醒设置主内容区域"
+      },
+      {
+        "candidateKey": "sound_options_scroll",
+        "label": "提示音选项面板",
+        "directions": [
+          "vertical"
+        ],
+        "locatorPrompt": "定位屏幕下半部包含“默认、波浪、简报、门铃”四行的白色提示音选择面板"
+      }
+    ],
+    "unresolvedVisualMeanings": [
+      "画面未提供动画或音频证据，无法仅凭静态截图确认试听音频是否仍在播放、已经播放完毕或从未开始。",
+      "背景控件处于遮罩下时是否可直接交互，无法仅凭静态截图确认。",
+      "提示音面板是否还包含当前视口之外的其他选项，无法从当前可见区域确认。"
+    ]
+  },
+  "model": {
+    "default": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "planning": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "insight": {
+      "name": "gpt-5.6-sol",
+      "family": "gpt-5"
+    },
+    "configurationSource": "midscene_repo_dotenv",
+    "serviceLocationPersisted": false
+  },
+  "startedAt": "2026-07-27T10:27:07.451Z",
+  "endedAt": "2026-07-27T10:28:48.628Z",
+  "durationMs": 101175.664709,
+  "captureCoupling": "frozen_frame",
+  "contentHash": "sha256:8932dd33af68353198512094875aba6ef3f4464e09d7f696eac7cc123f8c104f"
+}
