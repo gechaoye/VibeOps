@@ -308,6 +308,8 @@ export interface AnalysisSession {
   model: string | null;
   startedAt: string;
   updatedAt: string;
+  completedAt?: string | null;
+  durationMs?: number | null;
   errorMessage?: string | null;
   reasoningContent: string;
   outputContent: string;

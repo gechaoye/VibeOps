@@ -341,6 +341,7 @@ export function validateDraftClient(draft: Draft): ValidationIssue[] {
       issues.push({ level: 'error', code: 'label_required', elementId: element.id, message: '元素名称不能为空' });
     }
     if (!element.candidateKey.trim()) issues.push({ level: 'error', code: 'candidate_key_required', elementId: element.id, message: '候选键不能为空' });
+    if (!element.elementType && element.reviewStatus !== 'rejected') issues.push({ level: 'error', code: 'element_type_required', elementId: element.id, message: '元素类型未识别，请由 AI 重新识别或人工补齐' });
     const b = element.bbox;
     if (b.x < 0 || b.y < 0 || b.width <= 0 || b.height <= 0 || b.x + b.width > 1 || b.y + b.height > 1) {
       issues.push({ level: 'error', code: 'bbox_invalid', elementId: element.id, message: '元素边框必须位于截图范围内' });

@@ -16,16 +16,18 @@ interface PageGraphProps {
   onChangeEnd: () => void;
 }
 
-const nodeWidth = 210;
-const nodeHeight = 184;
-const columnGap = 54;
-const rowGap = 56;
+const nodeWidth = 180;
+const nodeHeight = 190;
+const columnGap = 22;
+const rowGap = 22;
+const boardColumns = 5;
+const boardPadding = 18;
 const showPageBboxesStorageKey = 'uikg-workbench.page-graph.show-element-bboxes';
 
 function pagePosition(index: number, columns: number) {
   return {
-    x: (index % columns) * (nodeWidth + columnGap) + 24,
-    y: Math.floor(index / columns) * (nodeHeight + rowGap) + 24,
+    x: (index % columns) * (nodeWidth + columnGap) + boardPadding,
+    y: Math.floor(index / columns) * (nodeHeight + rowGap) + boardPadding,
   };
 }
 
@@ -83,7 +85,7 @@ function PageEditor({ page, status, onUpdate, onChangeEnd }: { page: DraftPage; 
 
   return (
     <div className={`graph-editor-form ${pendingRecognition ? 'page-editor-pending' : ''}`}>
-      <div className="graph-editor-title"><div><strong>Page 属性</strong><span className={`page-status page-status-${status}`}>{pageWorkflowStatusLabels[status]}</span><code>{page.key}</code></div></div>
+      <div className="graph-editor-title"><div><strong>Page 属性</strong><code>{page.key}</code></div></div>
       <label className="field"><span>Page ID</span><input value={page.id} readOnly /></label>
       <label className="field"><span>页面名称</span><input value={displayPage.name} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ name: event.target.value }, 'page:name')} /></label>
       <label className="field"><span>稳定键</span><input value={page.key} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ key: event.target.value }, 'page:key')} /></label>
@@ -110,13 +112,14 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
     return window.localStorage.getItem(showPageBboxesStorageKey) === 'true';
   });
   const nodeCount = draft.pages.length + 1;
-  const columns = Math.min(3, Math.max(1, nodeCount));
+  const columns = boardColumns;
   const rows = Math.max(1, Math.ceil(nodeCount / columns));
-  const width = columns * nodeWidth + (columns - 1) * columnGap + 48;
-  const height = rows * nodeHeight + (rows - 1) * rowGap + 48;
+  const width = columns * nodeWidth + (columns - 1) * columnGap + boardPadding * 2;
+  const height = rows * nodeHeight + (rows - 1) * rowGap + boardPadding * 2;
   const selectedPage = selectedPageId ? draft.pages.find((page) => page.id === selectedPageId) : undefined;
   const selectedFrameId = selectedPage?.frameIds.at(-1);
   const selectedPageElements = selectedPage ? draft.elements.filter((element) => elementAvailableOnPage(element, selectedPage.id, draft.elements)) : [];
+  const selectedPageStatus = selectedPage ? pageWorkflowStatus(draft, selectedPage) : null;
 
   useEffect(() => {
     window.localStorage.setItem(showPageBboxesStorageKey, String(showElementBboxes));
@@ -170,16 +173,22 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
                 <span className={`page-status page-status-${status}`}>{pageWorkflowStatusLabels[status]}</span>
                 <span className="page-node-preview">{latestFrameId ? <img src={absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(latestFrameId)}/image`)} alt={`${page.name || '待识别页面'}截图`} loading="lazy" /> : <span>暂无截图</span>}</span>
                 <span className="page-node-content"><strong>{page.name}</strong><span className="page-node-meta">{page.functionRef || '待归类功能'} · {page.implementationType || '待确认'} · {page.frameIds.length} 帧</span><code>{page.key}</code></span>
-                <button type="button" className={`page-node-action page-node-delete-action ${deleting ? 'confirming' : ''}`} title={deleting ? '再次点击确认删除页面及其元素' : '删除页面'} aria-label={deleting ? `确认删除 ${page.name}` : `删除 ${page.name}`} onClick={(event) => { event.stopPropagation(); if (deleting) { setDeleteConfirmPageId(null); onDeletePage(page.id); } else setDeleteConfirmPageId(page.id); }}>{deleting ? <Check size={15} /> : <Trash2 size={15} />}</button>
-                <button type="button" className="page-node-action page-node-open-action" disabled={!latestFrameId} title={latestFrameId ? '在新标签页标注' : '暂无截图，无法标注'} aria-label={`在新标签页标注 ${page.name}`} onClick={(event) => { event.stopPropagation(); onOpenPage(page.id); }}><PanelTopOpen size={15} /></button>
+                <button type="button" className={`page-node-action page-node-delete-action ${deleting ? 'confirming' : ''}`} title={deleting ? '再次点击确认删除页面及其元素' : '删除页面'} aria-label={deleting ? `确认删除 ${page.name}` : `删除 ${page.name}`} onClick={(event) => { event.stopPropagation(); if (deleting) { setDeleteConfirmPageId(null); onDeletePage(page.id); } else setDeleteConfirmPageId(page.id); }}>{deleting ? <Check size={13} /> : <Trash2 size={13} />}</button>
+                <button type="button" className="page-node-action page-node-open-action" disabled={!latestFrameId} title={latestFrameId ? '在新标签页标注' : '暂无截图，无法标注'} aria-label={`在新标签页标注 ${page.name}`} onClick={(event) => { event.stopPropagation(); onOpenPage(page.id); }}><PanelTopOpen size={13} /></button>
               </div>;
             })}
           </div>
         </div>
         <section className="page-detail-preview" aria-label="选中页面大图">
           <header>
-            <div><strong>{selectedPage?.name || '未选择 Page'}</strong><span>{selectedFrameId ? `最新截图 · ${selectedPageElements.length} 个页面元素` : selectedPage ? '暂无截图' : '未选择页面'}</span></div>
-            <label><input type="checkbox" checked={showElementBboxes} onChange={(event) => setShowElementBboxes(event.target.checked)} /><span>显示元素 bbox</span></label>
+            <div className="page-detail-header-copy">
+              <strong>{selectedPage?.name || '未选择 Page'}</strong>
+              <span>{selectedFrameId ? `最新截图 · ${selectedPageElements.length} 个页面元素` : selectedPage ? '暂无截图' : '未选择页面'}</span>
+            </div>
+            <div className="page-detail-header-actions">
+              {selectedPageStatus && <span className={`page-status page-status-${selectedPageStatus}`}>{pageWorkflowStatusLabels[selectedPageStatus]}</span>}
+              <label><input type="checkbox" checked={showElementBboxes} onChange={(event) => setShowElementBboxes(event.target.checked)} /><span>显示元素 bbox</span></label>
+            </div>
           </header>
           {selectedPage && selectedFrameId ? <PageDetailImage frameId={selectedFrameId} page={selectedPage} elements={selectedPageElements} showElementBboxes={showElementBboxes} /> : <div className="page-detail-image"><div className="page-detail-empty">{selectedPage ? '该页面暂无截图' : '请选择一个页面卡片'}</div></div>}
         </section>

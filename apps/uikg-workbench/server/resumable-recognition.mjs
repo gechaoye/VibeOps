@@ -190,6 +190,7 @@ export async function runResumableRecognition({
       continuation = summarizeRecognitionCheckpoint(rawResult).completedCandidates.length > 0;
       onRetry({
         attempt: consecutiveFailures,
+        totalAttempt: retryAttempts.length,
         retryLimit,
         checkpoint: summarizeRecognitionCheckpoint(rawResult),
         error: message,

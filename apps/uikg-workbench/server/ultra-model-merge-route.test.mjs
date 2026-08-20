@@ -140,6 +140,27 @@ test('Ultra 双模型 合并路由按字段选择两份答卷', async () => {
     const independentlyApplied = await independentApplyResponse.json();
     assert.deepEqual(independentlyApplied.draft.elements.map((element) => element.candidateKey), ['header.title', 'header.title.ultra_b']);
     assert.deepEqual(independentlyApplied.draft.elements.map((element) => element.label), ['消息', '消息中心']);
+
+    const replacementResult = structuredClone(modelAResult);
+    replacementResult.elements[0].candidateKey = 'header.title';
+    replacementResult.elements[0].label = '新识别标题';
+    draft.elementEditRecords.push({ elementId: draft.elements[0].id, kind: 'updated', fields: ['label'], editedAt: new Date().toISOString() });
+    const replacementResponse = await fetch(`${baseUrl}/workbench/api/recognition/apply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        frameId: frame.frameId,
+        pageId: independentlyApplied.draft.currentPageId,
+        recognitionResult: replacementResult,
+        modelResultRef: 'replacement-model.json',
+        model: 'replacement-model',
+      }),
+    });
+    assert.equal(replacementResponse.status, 200);
+    const replacement = await replacementResponse.json();
+    assert.deepEqual(replacement.draft.elements.map((element) => element.candidateKey), ['header.title']);
+    assert.equal(replacement.draft.elements[0].label, '新识别标题');
+    assert.equal(replacement.draft.rawModelResultRef, 'replacement-model.json');
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     modelServer.close();

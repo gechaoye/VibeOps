@@ -12,7 +12,22 @@ export interface RecognitionActivity {
   outputContent: string;
   modelAReasoningContent?: string;
   modelAOutputContent?: string;
+  modelAPhaseMessage?: string;
+  modelBPhaseMessage?: string;
   errorMessage?: string;
+  errorDetails?: string[];
+  modelAErrorMessage?: string;
+  modelAErrorDetails?: string[];
+  modelBErrorMessage?: string;
+  modelBErrorDetails?: string[];
+  startedAt?: string;
+  completedAt?: string;
+  modelAStartedAt?: string;
+  modelACompletedAt?: string;
+  modelBStartedAt?: string;
+  modelBCompletedAt?: string;
+  retryAttempt?: number;
+  retryLimit?: number;
   resumeSessionId?: string;
   resumeKind?: 'manual' | 'ultra_a' | 'ultra_b';
   completedCandidates?: number;
@@ -106,12 +121,44 @@ function useStreamFollow(content: string, enabled: boolean) {
   return { elementRef, trackScroll, scrollToBottom, atBottom };
 }
 
-function displayModelError(message?: string) {
+function displayModelError(message?: string, modelTitle?: string) {
   if (!message) return '';
   if (message.includes('524 status code') || message.includes('Error 524')) {
-    return 'Model B 模型响应超时（524）：上游服务在代理时限内没有开始返回内容，请重新识别';
+    return `${modelTitle || 'Model B'} 模型响应超时（524）：上游服务在代理时限内没有开始返回内容，请重新识别`;
   }
   return message;
+}
+
+function RecognitionErrorBlock({ title, message, details }: { title?: string; message?: string; details?: string[] }) {
+  const visibleDetails = (details || []).filter(Boolean);
+  if (!message && visibleDetails.length === 0) return null;
+  return <div className="recognition-progress-error">
+    <CircleAlert size={15} aria-hidden="true" />
+    <div className="recognition-progress-error-content">
+      {title && <strong>{title}</strong>}
+      {message && <span>{displayModelError(message, title)}</span>}
+      {visibleDetails.length > 0 && <ul>{visibleDetails.map((detail, index) => <li key={`${detail}-${index}`}>{detail}</li>)}</ul>}
+    </div>
+  </div>;
+}
+
+function formatDuration(milliseconds: number) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return hours > 0
+    ? `${hours}小时${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`
+    : `${String(minutes).padStart(2, '0')}分${String(seconds).padStart(2, '0')}秒`;
+}
+
+function ModelOutputContent({ content, pending, label }: { content?: string; pending: boolean; label: string }) {
+  if (content?.trim()) return <ModelMarkdown content={content} label={label} />;
+  return <div className="recognition-empty-output" role="status">
+    <Bot size={28} aria-hidden="true" />
+    <strong>{pending ? '等待模型输出' : '没有可展示的模型输出'}</strong>
+    <span>{pending ? '模型正在生成识别结果' : '当前分析没有返回可展示内容'}</span>
+  </div>;
 }
 
 export function RecognitionProgressPanel({ activity, modelName, modelBModel, ultraMode, onCancel, onRetry, onCancelModel, onRetryModel, onResumeModel, recognitionControlBusy = null, onClose, sessions, acceptedSessionId = null }: RecognitionProgressPanelProps) {
@@ -119,12 +166,29 @@ export function RecognitionProgressPanel({ activity, modelName, modelBModel, ult
   const modelBActive = activity.phase.startsWith('ultra_b');
   const modelAStatus = activity.modelAStatus || (ultraMode ? (active ? 'running' : activity.status) : activity.status);
   const modelBStatus = activity.modelBStatus || (ultraMode ? (active ? 'running' : activity.status) : activity.status);
+  const [, setClock] = useState(() => Date.now());
+  useEffect(() => {
+    if (!active) return undefined;
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [active]);
+  const now = Date.now();
+  const elapsedFor = (startedAt?: string, completedAt?: string) => {
+    const started = startedAt ? Date.parse(startedAt) : NaN;
+    if (!Number.isFinite(started)) return 0;
+    const ended = completedAt ? Date.parse(completedAt) : now;
+    return Math.max(0, (Number.isFinite(ended) ? ended : now) - started);
+  };
+  const totalElapsed = elapsedFor(activity.startedAt, activity.completedAt);
   const hasReasoning = Boolean(activity.reasoningContent.trim());
   const hasOutput = Boolean(activity.outputContent.trim());
+  const hasUltraOutput = Boolean(activity.modelAOutputContent?.trim() || activity.outputContent.trim());
   const [reasoningExpanded, setReasoningExpanded] = useState(false);
   const [outputExpanded, setOutputExpanded] = useState(true);
   const [showHistory, setShowHistory] = useState(activity.phase === 'history');
-  const sortedSessions = useMemo(() => [...sessions].sort((left, right) => String(right.updatedAt || right.startedAt).localeCompare(String(left.updatedAt || left.startedAt))), [sessions]);
+  const sortedSessions = useMemo(() => sessions
+    .filter((session) => ultraMode ? session.kind === 'ultra_a' || session.kind === 'ultra_b' : session.kind === 'manual')
+    .sort((left, right) => String(right.updatedAt || right.startedAt).localeCompare(String(left.updatedAt || left.startedAt))), [sessions, ultraMode]);
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(activity.phase === 'history' ? sortedSessions[0]?.id || null : null);
   const [windowPosition, setWindowPosition] = useState({ x: 0, y: 0 });
   const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(null);
@@ -142,11 +206,30 @@ export function RecognitionProgressPanel({ activity, modelName, modelBModel, ult
   };
   const stopDragging = () => { dragRef.current = null; };
   const historySession = activity.phase === 'history' ? sortedSessions.find((session) => session.id === selectedHistoryId) || sortedSessions[0] : undefined;
+  const historyOutputSessions = useMemo(() => {
+    if (!historySession) return [];
+    const kinds = ultraMode ? (['ultra_a', 'ultra_b'] as const) : (['manual'] as const);
+    const selectedStartedAt = Date.parse(historySession.startedAt);
+    return kinds.map((kind) => {
+      if (kind === historySession.kind) return historySession;
+      return sortedSessions
+        .filter((session) => session.kind === kind
+          && session.frameId === historySession.frameId
+          && (session.pageId || null) === (historySession.pageId || null))
+        .sort((left, right) => Math.abs(Date.parse(left.startedAt) - selectedStartedAt) - Math.abs(Date.parse(right.startedAt) - selectedStartedAt))[0] || null;
+    });
+  }, [historySession, sortedSessions, ultraMode]);
   const modelBStage = modelBActive || historySession?.kind === 'ultra_b';
   const modelAStepDone = modelBStage || activity.phase === 'compare' || activity.phase === 'complete' || historySession?.kind === 'ultra_a' && historySession.status === 'completed';
   const modelBStepDone = activity.phase === 'compare' || activity.phase === 'complete' || historySession?.kind === 'ultra_b' && historySession.status === 'completed';
   const modelAStepState = ultraMode ? modelAStatus === 'completed' ? 'done' : modelAStatus === 'running' || modelAStatus === 'cancelling' ? 'active' : modelAStatus === 'error' ? 'failed' : modelAStatus === 'paused' || modelAStatus === 'cancelled' ? 'paused' : '' : modelAStepDone ? 'done' : !modelBStage && activity.status === 'error' ? 'failed' : !modelBStage && (activity.status === 'cancelled' || activity.status === 'paused') ? 'paused' : !modelBStage && active ? 'active' : '';
   const modelBStepState = ultraMode ? modelBStatus === 'completed' ? 'done' : modelBStatus === 'running' || modelBStatus === 'cancelling' ? 'active' : modelBStatus === 'error' ? 'failed' : modelBStatus === 'paused' || modelBStatus === 'cancelled' ? 'paused' : '' : modelBStepDone ? 'done' : activity.phase === 'ultra-b-error' || historySession?.kind === 'ultra_b' && historySession.status === 'failed' ? 'failed' : activity.phase === 'ultra-b-cancelled' || activity.phase === 'ultra-b-paused' || historySession?.kind === 'ultra_b' && historySession.status === 'cancelled' ? 'paused' : modelBStage && active ? 'active' : '';
+
+  const stageIcon = (status: RecognitionActivity['status']) => status === 'running' || status === 'cancelling'
+    ? <LoaderCircle className="spin" size={16} />
+    : status === 'completed'
+      ? <CircleCheck size={16} />
+      : <CircleAlert size={16} />;
 
   useEffect(() => {
     if (hasReasoning && !hasOutput) setReasoningExpanded(true);
@@ -167,10 +250,10 @@ export function RecognitionProgressPanel({ activity, modelName, modelBModel, ult
         <header className="recognition-progress-header" onPointerDown={startDragging} onPointerMove={dragWindow} onPointerUp={stopDragging} onPointerCancel={stopDragging}>
           <div>
             <strong>{ultraMode ? 'Ultra 模式' : 'Manual 模式'}</strong>
-            <span className={`analysis-status ${activity.status}`}>{statusLabels[activity.status]} · {ultraMode ? `${modelName || 'Model A 未配置'} + ${modelBModel || 'Model B 未配置'}` : modelName || '页面识别模型未配置'}</span>
+            <span className={`analysis-status ${activity.status}`}>{statusLabels[activity.status]}{activity.phase === 'retry' && activity.retryAttempt ? ` · 第 ${activity.retryAttempt} 次重试` : ''} · {ultraMode ? `${modelName || 'Model A 未配置'} + ${modelBModel || 'Model B 未配置'}` : modelName || '页面识别模型未配置'} · 分析用时 {formatDuration(totalElapsed)}</span>
           </div>
           <div className="analysis-header-actions">
-            <button type="button" className={showHistory ? 'icon-button active' : 'icon-button'} title="页面识别历史" onClick={() => setShowHistory((visible) => !visible)}><History size={16} /><span>{sessions.length}</span></button>
+            <button type="button" className={showHistory ? 'icon-button active' : 'icon-button'} title="页面识别历史" onClick={() => setShowHistory((visible) => !visible)}><History size={16} /><span>{sortedSessions.length}</span></button>
             {!active && <button type="button" className="icon-button" title="关闭分析记录" onClick={onClose}><X size={16} /></button>}
           </div>
         </header>
@@ -182,10 +265,13 @@ export function RecognitionProgressPanel({ activity, modelName, modelBModel, ult
           </div>
         </div>}
 
-        {!showHistory && <div className={`recognition-progress-stage ${activity.status === 'error' ? 'failed' : ''}`}>
-          {active ? <LoaderCircle className="spin" size={16} /> : activity.status === 'completed' ? <CircleCheck size={16} /> : <CircleAlert size={16} />}
+        {!showHistory && (ultraMode ? <div className="recognition-progress-stage recognition-progress-stage-ultra">
+          <div className={modelAStatus === 'error' ? 'failed' : ''}>{stageIcon(modelAStatus)}<span>{activity.modelAPhaseMessage || '等待返回'}</span></div>
+          <div className={modelBStatus === 'error' ? 'failed' : ''}>{stageIcon(modelBStatus)}<span>{activity.modelBPhaseMessage || '等待返回'}</span></div>
+        </div> : <div className={`recognition-progress-stage ${activity.status === 'error' ? 'failed' : ''}`}>
+          {stageIcon(activity.status)}
           <span>{activity.phaseMessage || '等待模型返回'}</span>
-        </div>}
+        </div>)}
 
         <div className="recognition-progress-body">
           {showHistory && <section className={`analysis-session-history ${ultraMode ? 'ultra-history' : ''}`} aria-label="页面识别历史">
@@ -194,26 +280,36 @@ export function RecognitionProgressPanel({ activity, modelName, modelBModel, ult
               <div className="history-model-columns">
                 {(ultraMode ? (['ultra_a', 'ultra_b'] as const) : (['manual'] as const)).map((kind) => <section key={kind} className="history-model-column">
                   <header><strong>{kind === 'manual' ? 'Manual 页面识别' : kind === 'ultra_a' ? 'Model A' : 'Model B'}</strong><span>{sortedSessions.filter((session) => session.kind === kind).length} 条</span></header>
-                  <div>{sortedSessions.filter((session) => session.kind === kind).map((session) => <button type="button" key={session.id} className={`history-session-item ${session.id === selectedHistoryId ? 'selected' : ''}`} onClick={() => setSelectedHistoryId(session.id)}><i className={session.status} /><span><strong>{new Date(session.startedAt).toLocaleString('zh-CN')}</strong><small>{session.model || '未配置模型'} · {session.status === 'completed' ? '成功' : session.status === 'failed' ? '失败' : session.status === 'cancelled' ? '已中断' : '运行中'}</small></span>{acceptedSessionId === session.id && <Check className="history-accepted" size={15} aria-label="最终采用" />}</button>)}</div>
+                  <div>{sortedSessions.filter((session) => session.kind === kind).map((session) => { const durationMs = session.durationMs ?? Math.max(0, Date.parse(session.updatedAt || session.startedAt) - Date.parse(session.startedAt)); return <button type="button" key={session.id} className={`history-session-item ${session.id === selectedHistoryId ? 'selected' : ''}`} onClick={() => setSelectedHistoryId(session.id)}><i className={session.status} /><span><strong>{new Date(session.startedAt).toLocaleString('zh-CN')}</strong><small>{session.model || '未配置模型'} · {session.status === 'completed' ? '成功' : session.status === 'failed' ? '失败' : session.status === 'cancelled' ? '已中断' : '运行中'} · 用时 {formatDuration(durationMs)}</small></span>{acceptedSessionId === session.id && <Check className="history-accepted" size={15} aria-label="最终采用" />}</button>; })}</div>
                 </section>)}
               </div>
-              {historySession && <article className="history-session-output"><header><strong>{historySession.kind === 'manual' ? 'Manual 页面识别' : historySession.kind === 'ultra_a' ? 'Model A' : 'Model B'} 输出</strong>{acceptedSessionId === historySession.id && <span><Check size={13} />最终采用</span>}</header><div className="model-markdown-scroll"><ModelMarkdown content={historySession.outputContent || '没有可展示的模型输出'} label="页面识别历史模型输出" /></div></article>}
+              {historySession && <div className={`history-session-outputs ${ultraMode ? 'ultra-history-outputs' : ''}`}>
+                {historyOutputSessions.map((session, index) => {
+                  if (!session) return null;
+                  const hasOutputContent = Boolean(session.outputContent?.trim());
+                  const outputTitle = ultraMode ? index === 0 ? 'Model A' : 'Model B' : 'Manual';
+                  return <article className={`history-session-output ${hasOutputContent ? '' : 'empty'}`} key={session.id} aria-label={`${outputTitle} 历史输出`}>
+                    <div className="history-output-label">{outputTitle} 输出</div>
+                    <div className="model-markdown-scroll"><ModelOutputContent content={session.outputContent} pending={session.status === 'running'} label="页面识别历史模型输出" /></div>
+                  </article>;
+                })}
+              </div>}
             </>}
           </section>}
 
-          {!showHistory && ultraMode ? <div className="recognition-progress-streams ultra-output-layout">
+          {!showHistory && ultraMode ? !hasUltraOutput && !active ? <ModelOutputContent pending={false} label="页面识别输出" /> : <div className="recognition-progress-streams ultra-output-layout">
             <article className="recognition-output-stream expanded">
-              <div className="recognition-stream-toggle"><strong>Model A 输出</strong><span>{activity.modelAOutputContent ? '流式更新' : '等待输出'}</span></div>
-              <div className="recognition-stream-scroll"><div ref={modelAOutputStream.elementRef} className="model-markdown-scroll" onScroll={modelAOutputStream.trackScroll}><ModelMarkdown content={activity.modelAOutputContent || (modelAStatus === 'running' || modelAStatus === 'cancelling' ? '等待 Model A 输出…' : '没有可展示的 Model A 输出')} label="Model A 输出流" /></div>{!modelAOutputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={modelAOutputStream.scrollToBottom}><ArrowDown size={14} /></button>}</div>
+              <div className="recognition-stream-toggle"><strong>Model A 输出</strong>{!activity.modelAOutputContent && <span>等待输出</span>}</div>
+              <div className="recognition-stream-scroll"><div ref={modelAOutputStream.elementRef} className="model-markdown-scroll" onScroll={modelAOutputStream.trackScroll}><ModelOutputContent content={activity.modelAOutputContent} pending={modelAStatus === 'running' || modelAStatus === 'cancelling'} label="Model A 输出流" /></div>{!modelAOutputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={modelAOutputStream.scrollToBottom}><ArrowDown size={14} /></button>}</div>
               <div className="recognition-card-actions">
-                {modelAStatus === 'running' || modelAStatus === 'cancelling' ? <button type="button" className="button danger-button" disabled={modelAStatus === 'cancelling' || recognitionControlBusy === 'ultra-a'} onClick={() => onCancelModel?.('ultra_a')}><Square size={12} fill="currentColor" />{modelAStatus === 'cancelling' ? '中断中' : '中断'}</button> : modelAStatus === 'paused' && activity.modelAResumeSessionId ? <button type="button" className="button retry-button" disabled={recognitionControlBusy === 'ultra-a'} onClick={() => onResumeModel?.('ultra_a')}><RefreshCw size={12} />从断点重试</button> : <button type="button" className="button retry-button" disabled={recognitionControlBusy === 'ultra-a'} onClick={() => onRetryModel?.('ultra_a')}><RefreshCw size={12} />重新识别</button>}
+                {modelAStatus === 'running' || modelAStatus === 'cancelling' ? <button type="button" className="button danger-button" disabled={modelAStatus === 'cancelling'} onClick={() => onCancelModel?.('ultra_a')}><Square size={12} fill="currentColor" />{modelAStatus === 'cancelling' ? '中断中' : '中断'}</button> : modelAStatus === 'paused' && activity.modelAResumeSessionId ? <button type="button" className="button retry-button" disabled={recognitionControlBusy === 'ultra-a'} onClick={() => onResumeModel?.('ultra_a')}><RefreshCw size={12} />从断点重试</button> : <button type="button" className="button retry-button" disabled={recognitionControlBusy === 'ultra-a'} onClick={() => onRetryModel?.('ultra_a')}><RefreshCw size={12} />重新识别</button>}
               </div>
             </article>
             <article className="recognition-output-stream expanded">
-              <div className="recognition-stream-toggle"><strong>Model B 输出</strong><span>{activity.outputContent ? '流式更新' : '等待输出'}</span></div>
-              <div className="recognition-stream-scroll"><div ref={outputStream.elementRef} className="model-markdown-scroll" onScroll={outputStream.trackScroll}><ModelMarkdown content={activity.outputContent || (modelBStatus === 'running' || modelBStatus === 'cancelling' ? '等待 Model B 输出…' : '没有可展示的 Model B 输出')} label="Model B 输出流" /></div>{!outputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={outputStream.scrollToBottom}><ArrowDown size={14} /></button>}</div>
+              <div className="recognition-stream-toggle"><strong>Model B 输出</strong>{!activity.outputContent && <span>等待输出</span>}</div>
+              <div className="recognition-stream-scroll"><div ref={outputStream.elementRef} className="model-markdown-scroll" onScroll={outputStream.trackScroll}><ModelOutputContent content={activity.outputContent} pending={modelBStatus === 'running' || modelBStatus === 'cancelling'} label="Model B 输出流" /></div>{!outputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={outputStream.scrollToBottom}><ArrowDown size={14} /></button>}</div>
               <div className="recognition-card-actions">
-                {modelBStatus === 'running' || modelBStatus === 'cancelling' ? <button type="button" className="button danger-button" disabled={modelBStatus === 'cancelling' || recognitionControlBusy === 'ultra-b'} onClick={() => onCancelModel?.('ultra_b')}><Square size={12} fill="currentColor" />{modelBStatus === 'cancelling' ? '中断中' : '中断'}</button> : modelBStatus === 'paused' && activity.modelBResumeSessionId ? <button type="button" className="button retry-button" disabled={recognitionControlBusy === 'ultra-b'} onClick={() => onResumeModel?.('ultra_b')}><RefreshCw size={12} />从断点重试</button> : <button type="button" className="button retry-button" disabled={recognitionControlBusy === 'ultra-b'} onClick={() => onRetryModel?.('ultra_b')}><RefreshCw size={12} />重新识别</button>}
+                {modelBStatus === 'running' || modelBStatus === 'cancelling' ? <button type="button" className="button danger-button" disabled={modelBStatus === 'cancelling'} onClick={() => onCancelModel?.('ultra_b')}><Square size={12} fill="currentColor" />{modelBStatus === 'cancelling' ? '中断中' : '中断'}</button> : modelBStatus === 'paused' && activity.modelBResumeSessionId ? <button type="button" className="button retry-button" disabled={recognitionControlBusy === 'ultra-b'} onClick={() => onResumeModel?.('ultra_b')}><RefreshCw size={12} />从断点重试</button> : <button type="button" className="button retry-button" disabled={recognitionControlBusy === 'ultra-b'} onClick={() => onRetryModel?.('ultra_b')}><RefreshCw size={12} />重新识别</button>}
               </div>
             </article>
           </div> : !showHistory && <div className={`recognition-progress-streams ${hasReasoning ? 'has-reasoning' : 'output-only'}`}>
@@ -235,22 +331,25 @@ export function RecognitionProgressPanel({ activity, modelName, modelBModel, ult
                 <span>{outputExpanded ? '点击收起' : '点击展开'}</span>
               </button>
               {outputExpanded && <div className="recognition-stream-scroll">
-                <div ref={outputStream.elementRef} className="model-markdown-scroll" onScroll={outputStream.trackScroll}><ModelMarkdown content={activity.outputContent || (active ? '等待模型输出…' : '没有可展示的模型输出')} label="模型输出流" /></div>
+                <div ref={outputStream.elementRef} className="model-markdown-scroll" onScroll={outputStream.trackScroll}><ModelOutputContent content={activity.outputContent} pending={active} label="模型输出流" /></div>
                 {!outputStream.atBottom && <button type="button" className="stream-bottom-button" title="滚动到底部" aria-label="滚动到底部" onClick={outputStream.scrollToBottom}><ArrowDown size={14} /></button>}
               </div>}
             </article>
           </div>}
 
-          {activity.errorMessage && <div className="recognition-progress-error"><CircleAlert size={15} /><span>{displayModelError(activity.errorMessage)}</span></div>}
+          {ultraMode ? <div className="recognition-progress-errors-ultra">
+            <RecognitionErrorBlock title="Model A" message={activity.modelAErrorMessage || (modelAStatus === 'error' ? activity.modelAPhaseMessage || 'Model A 分析失败' : undefined)} details={activity.modelAErrorDetails} />
+            <RecognitionErrorBlock title="Model B" message={activity.modelBErrorMessage || (modelBStatus === 'error' ? activity.modelBPhaseMessage || 'Model B 分析失败' : undefined)} details={activity.modelBErrorDetails} />
+          </div> : <RecognitionErrorBlock message={activity.errorMessage} details={activity.errorDetails} />}
         </div>
         <footer className="recognition-progress-footer">
           <span>{activity.status === 'completed' ? '识别完成，可确认结果或重新识别' : activity.status === 'cancelled' ? '半截结果未写入草稿' : activity.status === 'paused' ? activity.resumeKind === 'ultra_b' ? '已保存 Model B 输出断点' : `已保留 ${activity.completedCandidates || 0} 个候选的断点` : modelBActive ? 'Model A 结果已保留' : ''}</span>
           <div className="recognition-progress-actions">
-            {active ? <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} fill="currentColor" />{activity.status === 'cancelling' ? '正在中断' : ultraMode ? '中断双模型' : '中断页面识别'}</button> : <>
-              {activity.status === 'paused' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />从断点重试</button>}
-              {activity.status === 'error' && <button type="button" className="button button-primary retry-button" autoFocus onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
-              {activity.status === 'completed' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
-              <button type="button" className={`button ${activity.status === 'completed' ? 'button-primary' : ''}`} autoFocus={activity.status === 'completed'} onClick={onClose}>{activity.status === 'completed' ? '确定' : '关闭'}</button>
+            {!ultraMode && active ? <button type="button" className="button danger-button" disabled={activity.status === 'cancelling'} onClick={onCancel}><Square size={14} fill="currentColor" />{activity.status === 'cancelling' ? '正在中断' : '中断页面识别'}</button> : <>
+              {!ultraMode && activity.status === 'paused' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />从断点重试</button>}
+              {!ultraMode && activity.status === 'error' && <button type="button" className="button button-primary retry-button" autoFocus onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
+              {!ultraMode && activity.status === 'completed' && <button type="button" className="button retry-button" onClick={onRetry}><RefreshCw size={14} />重新识别</button>}
+              {(!active || ultraMode) && <button type="button" className={`button ${activity.status === 'completed' ? 'button-primary' : ''}`} autoFocus={activity.status === 'completed'} onClick={onClose}>{activity.status === 'completed' ? '确定' : '关闭'}</button>}
             </>}
           </div>
         </footer>

@@ -111,14 +111,18 @@ export function KnowledgeGraph({ appKey, onGoToWorkbench, onOpenModel }: Knowled
     <button type="button" className="button button-primary" onClick={onGoToWorkbench}>前往工作台<ArrowRight size={15} /></button>
   </main>;
 
-  return <main className="kg-workspace">
+  const detailOpen = Boolean(selectedNode || selectedViewEdge);
+
+  return <main className={`kg-workspace ${detailOpen ? 'kg-workspace-detail-open' : ''}`}>
     <aside className="kg-filter-panel">
-      <header><div><img className="kg-brand-icon kg-brand-icon-filter" src="/graphrag-line-icon.svg?v=4" alt="" /><strong>知识图谱</strong></div><span>Canonical · {graph.revision || '未发布'}</span></header>
-      <div className="kg-app-summary"><div><strong>{graph.application?.label || graph.appKey}</strong><span>{graph.appKey}</span></div><span className={`kg-graph-status kg-graph-status-${graph.status}`}><i />{statusLabel(graph.status)}</span></div>
+      <header><strong>图谱概览</strong><span>Canonical · {graph.revision || '未发布'}</span></header>
+      <div className="kg-overview-summary">
+        <img className="kg-brand-icon kg-brand-icon-overview" src="/graphrag-line-icon.svg?v=4" alt="" />
+        <div className="kg-app-summary"><div><strong>{graph.application?.label || graph.appKey}</strong><span>{graph.appKey}</span></div><span className={`kg-graph-status kg-graph-status-${graph.status}`}><i />{statusLabel(graph.status)}</span></div>
+        <p>以底部导航为第一层、功能为第二层、具体页面与共享组件为第三层。</p>
+      </div>
       <div className="kg-stats"><span><strong>{view.nodes.length}</strong>节点</span><span><strong>{graph.stats.pages}</strong>页面</span><span><strong>{view.edges.length}</strong>关系</span></div>
       <label className="kg-search"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索节点、功能或页面" />{query && <button type="button" title="清空搜索" onClick={() => setQuery('')}><X size={13} /></button>}</label>
-      <section className="kg-filter-section kg-node-type-list"><h3>节点类型</h3>{(Object.keys(nodeTypeMeta) as KnowledgeGraphNodeType[]).map((type) => <div key={type}><span><i className={`kg-legend-dot ${nodeTypeMeta[type].className}`} />{nodeTypeMeta[type].label}</span><em>{view.nodes.filter((node) => node.type === type).length}</em></div>)}</section>
-      <section className="kg-filter-section kg-edge-type-list"><h3>关系类型</h3><div><span><i />入口 / 页面关系</span></div><div><span><i className="placement" />可配置收纳</span></div></section>
       <div className="kg-filter-note"><ShieldCheck size={14} /><span>总览只展示功能入口关系；页面内部状态变更、取消和返回关系不进入该层。</span></div>
       <div className="kg-filter-actions"><button type="button" className="button" onClick={onOpenModel}><Braces size={14} />打开图谱模型</button><span>维护对象、字段和关联规则</span></div>
     </aside>
@@ -132,10 +136,9 @@ export function KnowledgeGraph({ appKey, onGoToWorkbench, onOpenModel }: Knowled
       </div>
     </section>
 
-    <aside className="kg-detail-panel"><header><strong>{selectedViewEdge ? '关系详情' : selectedNode ? '节点详情' : '图谱概览'}</strong>{(selectedNode || selectedViewEdge) && <button type="button" className="icon-button" title="关闭详情" onClick={clearSelection}><X size={14} /></button>}</header>
+    {detailOpen && <aside className="kg-detail-panel"><header><strong>{selectedViewEdge ? '关系详情' : '节点详情'}</strong><button type="button" className="icon-button" title="关闭详情" onClick={clearSelection}><X size={14} /></button></header>
       {selectedNode ? <div className="kg-detail-body"><div className="kg-detail-heading"><span>{nodeTypeMeta[selectedNode.type].label}</span><h2>{selectedNode.label}</h2><code>{selectedPage?.key || selectedNode.id}</code></div><PagePreview preview={detailPreview} page={previewPage} contextLabel={activeCanonicalEdge ? '入口所在页面' : '节点对应页面'} /><p>{selectedNode.summary}</p><dl className="kg-detail-facts"><div><dt>架构层级</dt><dd>{selectedNode.layer}</dd></div><div><dt>功能路径</dt><dd>{selectedNode.featurePath.join(' / ')}</dd></div><div><dt>对应页面</dt><dd>{selectedPage?.label || '当前知识库尚未收录'}</dd></div><div><dt>直接关系</dt><dd>{directRelations.length} 条</dd></div></dl><section className="kg-detail-section"><h3>一跳关系 <span>{directRelations.length}</span></h3><div className="kg-relation-list">{directRelations.map((edge) => <ViewRelationRow key={edge.id} edge={edge} nodesById={nodesById} active={false} onClick={() => selectEdge(edge.id)} />)}</div></section></div>
-        : selectedViewEdge ? <div className="kg-detail-body"><div className="kg-detail-heading"><span>{selectedViewEdge.kind === 'placement' ? '可配置收纳' : selectedViewEdge.kind === 'navigation' ? '导航入口' : '页面关系'}</span><h2>{selectedViewEdge.label}</h2><code>{selectedCanonicalEdge?.key || selectedViewEdge.id}</code></div><PagePreview preview={detailPreview} page={previewPage} contextLabel="触发元素所在页面" /><div className="kg-edge-route"><button type="button" onClick={() => selectNode(selectedViewEdge.source)}>{nodesById.get(selectedViewEdge.source)?.label}</button><ArrowRight size={16} /><button type="button" onClick={() => selectNode(selectedViewEdge.target)}>{nodesById.get(selectedViewEdge.target)?.label}</button></div><dl className="kg-detail-facts"><div><dt>关系类型</dt><dd>{selectedViewEdge.kind}</dd></div><div><dt>触发控件</dt><dd>{selectedCanonicalEdge?.trigger?.label || '架构配置关系'}</dd></div><div><dt>动作</dt><dd>{selectedCanonicalEdge?.action || selectedViewEdge.label.split('：')[0]}</dd></div><div><dt>证据状态</dt><dd>{selectedCanonicalEdge ? statusLabel(selectedCanonicalEdge.status) : '待实际数据补充'}</dd></div></dl></div>
-          : <div className="kg-overview-body"><img className="kg-brand-icon kg-brand-icon-overview" src="/graphrag-line-icon.svg?v=4" alt="" /><strong>{graph.application?.label || graph.appKey}</strong><p>以底部导航为第一层、功能为第二层、具体页面与共享组件为第三层。</p><dl><div><dt>底部导航</dt><dd>5</dd></div><div><dt>已收录功能</dt><dd>{view.nodes.filter((node) => node.type === 'feature').length}</dd></div><div><dt>功能页面</dt><dd>{view.nodes.filter((node) => node.type === 'page').length}</dd></div><div><dt>共享组件</dt><dd>{view.nodes.filter((node) => node.type === 'shared').length}</dd></div></dl><div className="kg-overview-tip"><ShieldCheck size={15} /><span>“更多”按架构预留，未探索的入口不会被虚构为已验证功能。</span></div></div>}
-    </aside>
+        : <div className="kg-detail-body"><div className="kg-detail-heading"><span>{selectedViewEdge?.kind === 'placement' ? '可配置收纳' : selectedViewEdge?.kind === 'navigation' ? '导航入口' : '页面关系'}</span><h2>{selectedViewEdge?.label}</h2><code>{selectedCanonicalEdge?.key || selectedViewEdge?.id}</code></div><PagePreview preview={detailPreview} page={previewPage} contextLabel="触发元素所在页面" /><div className="kg-edge-route"><button type="button" onClick={() => selectedViewEdge && selectNode(selectedViewEdge.source)}>{selectedViewEdge && nodesById.get(selectedViewEdge.source)?.label}</button><ArrowRight size={16} /><button type="button" onClick={() => selectedViewEdge && selectNode(selectedViewEdge.target)}>{selectedViewEdge && nodesById.get(selectedViewEdge.target)?.label}</button></div><dl className="kg-detail-facts"><div><dt>关系类型</dt><dd>{selectedViewEdge?.kind}</dd></div><div><dt>触发控件</dt><dd>{selectedCanonicalEdge?.trigger?.label || '架构配置关系'}</dd></div><div><dt>动作</dt><dd>{selectedCanonicalEdge?.action || selectedViewEdge?.label.split('：')[0]}</dd></div><div><dt>证据状态</dt><dd>{selectedCanonicalEdge ? statusLabel(selectedCanonicalEdge.status) : '待实际数据补充'}</dd></div></dl></div>}
+    </aside>}
   </main>;
 }

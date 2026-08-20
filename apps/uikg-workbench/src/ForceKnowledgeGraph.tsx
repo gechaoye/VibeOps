@@ -268,10 +268,13 @@ function radialRadius(node: LayoutNode, width: number, height: number, compact: 
   return Math.min(limit, 28 + node.radialDepth * step);
 }
 
+function layoutCollisionRadius(label: string) {
+  return Math.max(52, Math.min(112, Array.from(label).length * 9 + 30));
+}
+
 function createSimulation(nodes: LayoutNode[], graphEdges: KnowledgeGraphViewEdge[], compact: boolean) {
   const { width, height } = layoutSize(compact);
   const links = layoutLinks(nodes, graphEdges);
-  const collisionRadius = (node: LayoutNode) => Math.max(34, Math.min(76, node.label.length * 5 + 18));
   const forceScale = compact ? 0.48 : 1;
   return forceSimulation(nodes)
     .force('link', forceLink<LayoutNode, LayoutLink>(links)
@@ -279,7 +282,7 @@ function createSimulation(nodes: LayoutNode[], graphEdges: KnowledgeGraphViewEdg
       .distance((link) => link.kind === 'nav-cluster' ? (compact ? 66 : 92) : link.kind === 'placement' ? (compact ? 104 : 142) : (compact ? 80 : 110))
       .strength((link) => link.kind === 'nav-cluster' ? 0.2 : link.kind === 'placement' ? 0.11 : 0.36))
     .force('charge', forceManyBody<LayoutNode>().strength((node) => (node.type === 'feature' ? -500 : node.type === 'entry' ? -400 : node.type === 'nav' ? -330 : -250) * forceScale))
-    .force('collide', forceCollide<LayoutNode>().radius(collisionRadius).strength(1).iterations(3))
+    .force('collide', forceCollide<LayoutNode>().radius((node) => layoutCollisionRadius(node.label)).strength(1).iterations(3))
     .force('radial', forceRadial<LayoutNode>((node) => radialRadius(node, width, height, compact), width / 2, height / 2)
       .strength((node) => node.radialDepth === 0 ? 0.42 : 0.11))
     .force('entry-orbit', forceX<LayoutNode>((node) => node.type === 'entry' ? width * (compact ? 0.16 : 0.12) : width / 2)
@@ -368,7 +371,7 @@ function pushNodesOutsideNavContainer(nodes: Node[]) {
   const pushedNodes = nodes.map((node) => {
     if (node.id === navContainerId || node.id.startsWith('nav.')) return node;
     const data = node.data as ForceNodeData;
-    const collisionRadius = Math.max(34, Math.min(76, data.node.label.length * 5 + 18));
+    const collisionRadius = layoutCollisionRadius(data.node.label);
     const centerX = node.position.x + 15;
     const centerY = node.position.y + 15;
     let deltaX = centerX - geometry.centerX;
@@ -413,7 +416,7 @@ function visibleGraphBounds(nodes: Node[], compact: boolean) {
     const data = node.data as ForceNodeData;
     const visual = nodeVisuals[data.node.type];
     const radius = visual.radius * (data.selected ? 1.48 : data.active ? 1.22 : 1);
-    const labelWidth = Math.min(150, Math.max(30, Array.from(data.node.label).length * 10));
+    const labelWidth = Math.min(180, Math.max(36, Array.from(data.node.label).length * 18));
     const centerX = node.position.x + 15;
     const centerY = node.position.y + 15;
     return {

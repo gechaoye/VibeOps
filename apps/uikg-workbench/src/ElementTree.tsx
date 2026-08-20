@@ -1,4 +1,4 @@
-import { Check, CheckCheck, CheckCircle2, CircleHelp, Combine, Container, EyeOff, PenLine, Trash2, X } from 'lucide-react';
+import { Check, CheckCheck, CheckCircle2, CircleAlert, CircleHelp, Combine, Container, EyeOff, PenLine, Trash2, X } from 'lucide-react';
 import { elementTypeLabel, reviewStatusLabels } from './model';
 import type { DraftElement } from './types';
 
@@ -24,6 +24,22 @@ function StatusIcon({ status }: { status: DraftElement['reviewStatus'] }) {
   if (status === 'edited') return <PenLine size={14} />;
   if (status === 'rejected') return <EyeOff size={14} />;
   return <CircleHelp size={14} />;
+}
+
+function hasRequiredFieldIssue(element: DraftElement) {
+  if (element.reviewStatus === 'rejected') return false;
+  const box = element.bbox;
+  const validBox = Boolean(box)
+    && [box.x, box.y, box.width, box.height].every(Number.isFinite)
+    && box.x >= 0 && box.y >= 0 && box.width > 0 && box.height > 0
+    && box.x + box.width <= 1 && box.y + box.height <= 1;
+  return !element.label.trim()
+    || !element.candidateKey.trim()
+    || !element.elementType
+    || !validBox
+    || !Number.isInteger(element.gridColumns)
+    || !Number.isInteger(element.gridRows)
+    || !Number.isInteger(element.gridRegion);
 }
 
 export function ElementTree({ elements, filterCandidateKey, selectedId, multiSelect, checkedIds, allChecked, allCheckedAccepted, onToggleAll, onCreateContainer, onToggleAccept, onDeleteChecked, onSelect, onCheck, onClearFilter }: ElementTreeProps) {
@@ -52,8 +68,8 @@ export function ElementTree({ elements, filterCandidateKey, selectedId, multiSel
               <span className="tree-row-label">{element.label}</span>
               <span className="tree-row-meta">{elementTypeLabel(element.elementType)}</span>
             </span>
-            <span className={`tree-status tree-status-${element.reviewStatus}`} title={reviewStatusLabels[element.reviewStatus]}>
-              <StatusIcon status={element.reviewStatus} />
+            <span className={`tree-status ${hasRequiredFieldIssue(element) ? 'tree-status-warning' : `tree-status-${element.reviewStatus}`}`} title={hasRequiredFieldIssue(element) ? '模型返回缺少必填属性，请补齐后再审核' : reviewStatusLabels[element.reviewStatus]}>
+              {hasRequiredFieldIssue(element) ? <CircleAlert size={14} /> : <StatusIcon status={element.reviewStatus} />}
             </span>
             </button>
           </div>

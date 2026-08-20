@@ -150,6 +150,17 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
 
   useEffect(() => { void loadSettings(); void loadModels(); }, []);
 
+  useEffect(() => {
+    if (!openModelTarget) return undefined;
+    const closeModelPickerOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('.model-picker')) return;
+      setOpenModelTarget(null);
+    };
+    document.addEventListener('pointerdown', closeModelPickerOnOutsidePointer);
+    return () => document.removeEventListener('pointerdown', closeModelPickerOnOutsidePointer);
+  }, [openModelTarget]);
+
   const customGateways = settings?.gateways.filter((gateway) => gateway.kind === 'custom') || [];
   const defaultGateways = settings?.gateways.filter((gateway) => gateway.kind === 'default') || [];
   const filteredGateways = useMemo(() => {
@@ -370,7 +381,6 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
             { id: 'mode-configuration', label: '模式配置', order: 20 },
           ]).sort((left, right) => left.order - right.order).map((section) => <button key={section.id} type="button" className={activeSection === section.id ? 'active' : ''} onClick={() => setActiveSection(section.id)}><span>{section.label}</span></button>)}
         </nav>
-        <footer><span>配置版本</span><code>v{settings.settingsSchemaVersion || 1}</code></footer>
       </aside>
 
       <div className="settings-detail">

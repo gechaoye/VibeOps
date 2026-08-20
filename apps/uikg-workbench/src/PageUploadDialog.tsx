@@ -68,6 +68,11 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
     setTasks((current) => current.map((task) => task.id === nextTask.id ? nextTask : task));
   };
 
+  const applyDraftChange = (nextDraft: Draft) => {
+    setExistingPageIds(new Set(nextDraft.pages.map((page) => page.id)));
+    onDraftChange(nextDraft);
+  };
+
   const refreshTasks = async () => {
     if (purpose === 'history') {
       const [uploadResult, draftResult] = await Promise.all([workbenchApi.pageUploads(), workbenchApi.draft()]);
@@ -136,7 +141,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
       if (offset >= file.size) {
         const result = await workbenchApi.processPageUpload(task.id);
         replaceTask(result.task);
-        if (result.draft) onDraftChange(result.draft);
+        if (result.draft) applyDraftChange(result.draft);
         return;
       }
       while (offset < file.size && !cancelledIdsRef.current.has(task.id)) {
@@ -144,7 +149,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
         task = result.task;
         offset = task.uploadedBytes;
         replaceTask(task);
-        if (result.draft) onDraftChange(result.draft);
+        if (result.draft) applyDraftChange(result.draft);
       }
     } catch (reason) {
       if (!cancelledIdsRef.current.has(initialTask.id)) {
@@ -163,7 +168,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
     try {
       const result = await workbenchApi.processPageUpload(initialTask.id);
       replaceTask(result.task);
-      if (result.draft) onDraftChange(result.draft);
+      if (result.draft) applyDraftChange(result.draft);
     } catch (reason) {
       if (!cancelledIdsRef.current.has(initialTask.id)) {
         setError(reason instanceof Error ? reason.message : String(reason));
@@ -264,7 +269,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
         localFilesRef.current.delete(id);
         currentTaskIdsRef.current.delete(id);
       });
-      if (deletePages) onDraftChange(result.draft);
+      if (deletePages) applyDraftChange(result.draft);
       setDeleteIds(null);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason));
@@ -288,7 +293,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
   const renderTask = (task: PageUploadTask) => {
     const progress = taskProgress(task);
     const isActive = activeIds.has(task.id) || task.processing === true;
-    const pageDeleted = task.status === 'completed' && Boolean(task.pageId) && !existingPageIds.has(task.pageId!);
+    const pageDeleted = purpose === 'history' && task.status === 'completed' && Boolean(task.pageId) && !existingPageIds.has(task.pageId!);
     return <article key={task.id} className={`page-upload-task page-upload-task-${task.status} ${pageDeleted ? 'page-upload-task-page-missing' : ''} ${selectionMode ? 'page-upload-task-selecting' : ''}`}>
       {selectionMode && <input type="checkbox" aria-label={`选择 ${task.name}`} checked={selectedIds.has(task.id)} onChange={(event) => setSelectedIds((current) => { const next = new Set(current); if (event.target.checked) next.add(task.id); else next.delete(task.id); return next; })} />}
       <div className="page-upload-task-icon">{task.sourceType === 'url' ? <Link2 size={16} /> : <FileImage size={16} />}</div>

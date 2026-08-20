@@ -156,7 +156,14 @@ export const workbenchApi = {
   recognitionSession: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId?: string) => request<{ session: RecognitionResumeSession | null }>(`/recognition/${target}/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
   resumeRecognitionStream: (target: 'manual' | 'ultra_a' | 'ultra_b', sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
     consumeRecognitionStream(`/recognition/${target}/resume/stream`, { sessionId, workspaceSessionId }, onEvent),
-  cancelRecognition: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId?: string) => request<{ cancelled: boolean }>(`/recognition/${target}/cancel`, { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
+  cancelRecognition: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId: string) => request<{ cancelled: boolean }>(`/recognition/${target}/cancel`, { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
+  applyRecognitionResult: (payload: {
+    frameId: string;
+    pageId: string;
+    recognitionResult: RecognitionResult;
+    modelResultRef: string;
+    model: string | null;
+  }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/apply', { method: 'POST', body: JSON.stringify(payload) }),
   mergeUltraModelResults: (payload: {
     frameId: string;
     pageId?: string;
@@ -164,6 +171,7 @@ export const workbenchApi = {
     modelBResult: RecognitionResult;
     selections: UltraModelElementMergeSelection[];
     modelResultRef: string;
+    replaceExisting?: boolean;
   }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/ultra/merge', { method: 'POST', body: JSON.stringify(payload) }),
   prepareStaging: () => request<StagingResult>('/staging', { method: 'POST', body: '{}' }),
   stagingVersions: () => request<{ versions: StagingResult[] }>('/staging'),

@@ -389,7 +389,12 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     let sessionStatus = 'running';
     let sessionError = null;
     const emitProgress = (event) => {
-      if (event.type === 'chunk') {
+      if (event.type === 'stage' && (event.phase === 'retry' || event.phase === 'resume')) {
+        // A retry/resume starts a fresh model response. Keep the visible transcript
+        // bounded to the current response instead of concatenating repeated JSON.
+        reasoningContent = '';
+        outputContent = '';
+      } else if (event.type === 'chunk') {
         reasoningContent += event.reasoningContent || '';
         outputContent += event.content || '';
       }
@@ -421,7 +426,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       emitProgress({
         type: 'stage',
         phase: resumeSession ? 'resume' : 'model',
-        message: resumeSession ? `正在从已保存断点继续 ${label}` : `${label} 正在分析画面`,
+        message: resumeSession ? `正在继续 ${label} 识别` : `${label} 正在分析画面`,
       });
       setResumable(null);
       const run = await runResumableRecognition({
@@ -462,11 +467,12 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         buildContinuationPrompt: (checkpoint, attempt) => buildRecognitionContinuationPrompt(frameId, pageContext, checkpoint, attempt),
         isComplete: (candidate) => inspectRecognitionResult(candidate).schemaValid,
         signal,
-        onRetry: ({ attempt, retryLimit, checkpoint }) => emitProgress({
+        onRetry: ({ attempt, totalAttempt, retryLimit, checkpoint }) => emitProgress({
           type: 'stage',
           phase: 'retry',
-          message: `正在重试：${attempt}/${retryLimit}`,
+          message: `正在重试第 ${totalAttempt} 次（本轮连续失败 ${attempt}/${retryLimit}） · 正在重试：${attempt}/${retryLimit}`,
           attempt,
+          totalAttempt,
           retryLimit,
           completedCandidates: checkpoint.completedCandidates.length,
         }),
@@ -625,6 +631,8 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         model,
         startedAt: sessionStartedAt,
         updatedAt: new Date().toISOString(),
+        completedAt: sessionStatus === 'running' ? null : new Date().toISOString(),
+        durationMs: sessionStatus === 'running' ? null : Math.max(0, Date.now() - Date.parse(sessionStartedAt)),
         errorMessage: sessionError,
         reasoningContent,
         outputContent,
@@ -1167,7 +1175,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     res.json({ cancelled: true });
   });
 
-  router.post('/recognition/:target', async (req, res, next) => {
+  router.post('/recognition/:target(manual|ultra_a|ultra_b)', async (req, res, next) => {
     let session;
     try {
       const target = req.params.target;
@@ -1190,12 +1198,47 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   });
 
+  router.post('/recognition/apply', async (req, res, next) => {
+    try {
+      const frameId = String(req.body?.frameId || '');
+      const pageId = String(req.body?.pageId || '');
+      const result = await queueAnnotationDraftMutation(async () => {
+        const currentDraft = await store.loadDraft();
+        const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : null;
+        if (!frameId || !pageDraft || pageDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
+        const { recognitionResult } = normalizeRecognitionOutput(req.body?.recognitionResult || {});
+        if (recognitionResult.frameId !== frameId) throw workbenchError(409, '识别结果与当前冻结帧不一致');
+        const currentPageElementIds = new Set(pageDraft.elements.filter((element) => element.pageId === pageDraft.currentPageId).map((element) => element.id));
+        const replacementBase = {
+          ...pageDraft,
+          elementEditRecords: pageDraft.elementEditRecords.filter((record) => !currentPageElementIds.has(record.elementId)),
+        };
+        const draft = mergeRecognitionIntoDraft(
+          replacementBase,
+          prepareRecognitionForDraft(recognitionResult),
+          String(req.body?.modelResultRef || 'recognition-replacement'),
+          typeof req.body?.model === 'string' ? req.body.model : null,
+        );
+        await store.saveDraft(draft);
+        return draft;
+      });
+      res.json({ draft: result, issues: validateDraft(result) });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.post('/recognition/ultra/merge', async (req, res, next) => {
     try {
       const frameId = String(req.body?.frameId || '');
       const pageId = String(req.body?.pageId || '');
       const currentDraft = await store.loadDraft();
-      const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : currentDraft;
+      const selectedPageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : currentDraft;
+      const pageElementIds = new Set(selectedPageDraft?.elements.filter((element) => element.pageId === selectedPageDraft.currentPageId).map((element) => element.id) || []);
+      const pageDraft = req.body?.replaceExisting && selectedPageDraft ? {
+        ...selectedPageDraft,
+        elementEditRecords: selectedPageDraft.elementEditRecords.filter((record) => !pageElementIds.has(record.elementId)),
+      } : selectedPageDraft;
       if (!frameId || !pageDraft || pageDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
       const selections = Array.isArray(req.body?.selections) ? req.body.selections.filter((selection) => selection && typeof selection === 'object') : [];
       const { recognitionResult: modelAResult } = normalizeRecognitionOutput(req.body?.modelAResult || {});
