@@ -154,6 +154,24 @@ test('可修正的 Model A 几何和动作矛盾进入待审核草稿', () => {
   assert.equal(proposal.actionCandidates.length, 0);
 });
 
+test('重复列表子元素自动归入每行 list-item，而不是平铺到 list', () => {
+  const result = sampleRecognition();
+  result.elements = [
+    { ...result.elements[0], candidateKey: 'todo-list', elementType: 'list' },
+    ...[1, 2].flatMap((index) => [
+      { ...result.elements[1], candidateKey: `todo-${index}-checkbox`, label: `复选框 ${index}`, elementType: 'checkbox' },
+      { ...result.elements[0], candidateKey: `todo-${index}-title`, label: `标题 ${index}`, elementType: 'static-label' },
+      { ...result.elements[0], candidateKey: `todo-${index}-description`, label: `描述 ${index}`, elementType: 'static-label' },
+    ]),
+  ];
+  result.relationships = result.elements.slice(1).map((element) => ({ fromCandidateKey: 'todo-list', type: 'contains', toCandidateKey: element.candidateKey }));
+  const prepared = prepareRecognitionForDraft(result);
+  assert.deepEqual(prepared.elements.filter((element) => element.elementType === 'list-item').map((element) => element.candidateKey), ['todo-1-item', 'todo-2-item']);
+  assert.ok(prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-list' && relation.toCandidateKey === 'todo-1-item'));
+  assert.ok(prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-1-item' && relation.toCandidateKey === 'todo-1-title'));
+  assert.ok(!prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-list' && relation.toCandidateKey === 'todo-1-title'));
+});
+
 test('旧单页草稿升级后保留 Page、Frame 和 AI 模型来源', () => {
   const legacy = mergeRecognitionIntoDraft(createEmptyDraft(), sampleRecognition(), 'model.json', 'qwen3-vl-plus');
   delete legacy.pages;

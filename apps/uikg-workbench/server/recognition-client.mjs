@@ -123,6 +123,7 @@ export async function runRecognitionModel({
   mimeType = 'image/png',
   responseSchema,
   continuation = false,
+  continuationContent = '',
   signal,
   onChunk = () => {},
 }) {
@@ -136,13 +137,17 @@ export async function runRecognitionModel({
     model: config.model,
     temperature: config.temperature,
     stream: true,
-    messages: [{ role: 'system', content: CHINESE_SYSTEM_PROMPT }, {
-      role: 'user',
-      content: [
-        { type: 'text', text: prompt },
-        { type: 'image_url', image_url: { url: `data:${mimeType};base64,${image}`, detail: 'high' } },
-      ],
-    }],
+    messages: [
+      { role: 'system', content: CHINESE_SYSTEM_PROMPT },
+      ...(continuation && continuationContent.trim() ? [{ role: 'assistant', content: continuationContent }] : []),
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${image}`, detail: 'high' } },
+        ],
+      },
+    ],
   };
   Object.assign(requestBody, chatCompletionCompatibility({
     modelName: config.model,

@@ -223,6 +223,9 @@ button { color: inherit; }
 .app-shell-annotation .panel-toolbar .view-tabs button { width: auto; padding: 0 10px; }
 .app-shell-annotation .panel-toolbar .view-tabs button > span { display: inline; }
 .toolbar-actions { grid-column: 3; min-width: 0; justify-self: end; justify-content: flex-end; }
+.freeze-runtime-toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; white-space: nowrap; cursor: pointer; }
+.freeze-runtime-toggle input { margin: 0; accent-color: var(--primary); }
+.freeze-runtime-toggle.disabled { opacity: .55; cursor: not-allowed; }
 .recognition-button, .recognition-button:hover { border-color: #087f5b; color: #fff; background: #087f5b; }
 
 .view-tabs { height: 100%; }
@@ -567,6 +570,166 @@ button { color: inherit; }
 .comparison-diff-list { display: flex; flex-direction: column; gap: 1px; background: #d9e1dd; }.comparison-diff-row { min-width: 0; background: #fff; }.comparison-diff-row-title { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 7px 11px; border-bottom: 1px solid #e5ebe8; background: #fbfcfc; }.comparison-diff-row-title code { min-width: 0; overflow: hidden; color: #40564b; font: 15px ui-monospace, SFMono-Regular, Menlo, monospace; text-overflow: ellipsis; white-space: nowrap; }.comparison-diff-row-title small { margin-left: auto; color: #8a7751; font-size: 14px; }.comparison-diff-candidates { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #d9e1dd; }.comparison-candidate { display: block; min-width: 0; padding: 8px 10px; background: #fff; cursor: pointer; }.comparison-candidate:hover { background: #f8fbf9; }.comparison-candidate.source-only { background: #f9fcff; }.comparison-candidate-needs-type { border-left: 3px solid #cf6671; background: #fff3f4; }.comparison-candidate-heading { display: flex; align-items: center; gap: 7px; min-width: 0; }.comparison-candidate-heading input { flex: 0 0 auto; margin: 0; accent-color: #176943; }.comparison-candidate-heading strong { overflow: hidden; color: #203129; font-size: 16px; text-overflow: ellipsis; white-space: nowrap; }.comparison-candidate dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 3px 8px; margin: 7px 0 0 25px; }.comparison-candidate dl > div { display: contents; }.comparison-candidate dt { color: #8a9890; font-size: 14px; }.comparison-candidate dd { min-width: 0; margin: 0; overflow: hidden; color: #526159; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }.comparison-candidate dd.field-changed { color: #785b16; font-weight: 700; }.comparison-candidate dl > div.field-changed dd { padding: 1px 3px; border-radius: 2px; background: #fff5d9; }.comparison-candidate-empty { display: flex; align-items: center; min-height: 100%; padding: 18px 10px; color: #a1aaa5; background: #fafbfb; font-size: 15px; font-style: italic; }
 .comparison-candidate-needs-type { border-color: #edc4c8; background: #fff3f4; }
 .comparison-diff-summary { padding: 8px 14px; border-bottom: 1px solid #e1e7e4; background: #fff; }
+
+/* Relationship workspace opened from the live annotation inspector. */
+.inspector-create-relation { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; padding: 0; border: 0; color: #087f5b; background: transparent; font-size: 15px; font-weight: 700; cursor: pointer; }
+.inspector-create-relation:hover { text-decoration: underline; }
+.relation-workspace-page { position: relative; display: grid; min-width: 0; min-height: 0; grid-template-rows: auto auto minmax(0, 1fr); overflow: hidden; background: #eef2f0; color: #17211d; }
+.relation-workspace-header { display: flex; min-height: 58px; align-items: center; gap: 12px; padding: 8px 14px; border-bottom: 1px solid #d7dfdb; background: #fff; }
+.relation-workspace-header > div { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.relation-workspace-header > div span, .relation-preview-note { color: #66736d; font-size: 14px; }
+.relation-workspace-header strong { font-size: 17px; }
+.relation-header-spacer { flex: 1; }
+.relation-context-strip { display: grid; grid-template-columns: minmax(240px, 1fr) 28px minmax(240px, 1fr) minmax(190px, .7fr); gap: 10px; align-items: start; padding: 12px 14px; border-bottom: 1px solid #d7dfdb; background: #f6f8f7; }
+.relation-context-block { min-width: 0; }
+.relation-context-block > span, .relation-semantic-field > span { display: block; margin-bottom: 5px; color: #66736d; font-size: 13px; }
+.relation-context-object { width: 100%; min-height: 36px; display: flex; align-items: center; gap: 8px; padding: 7px 9px; color: #17211d; text-align: left; border: 1px solid #d7dfdb; border-radius: 5px; background: #fff; }
+button.relation-context-object { cursor: pointer; }
+button.relation-context-object:hover { border-color: #087f5b; background: #e7f5ef; }
+button.relation-context-object.empty { border-style: dashed; color: #087f5b; }
+.relation-kind { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 3px; font-size: 12px; font-weight: 700; }
+.relation-kind.element { color: #087c8c; background: #e3f3f5; }
+.relation-kind.page { color: #087f5b; background: #e7f5ef; }
+.relation-context-arrow { align-self: center; margin-top: 28px; color: #66736d; }
+.relation-context-frame { display: grid; grid-template-columns: 82px minmax(0,1fr); gap: 9px; align-items: center; margin-top: 7px; padding: 7px; border: 1px solid #d7dfdb; border-radius: 5px; background: #fff; }
+.relation-context-frame > div:last-child { min-width: 0; }
+.relation-context-frame strong, .relation-context-frame span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.relation-context-frame span { margin-top: 3px; color: #66736d; font-size: 12px; }
+.relation-observation-frame { position: relative; width: 82px; height: 104px; overflow: hidden; border: 1px solid #d7dfdb; border-radius: 4px; background: #25312c; }
+.relation-observation-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.relation-observation-empty { display: grid; height: 100%; place-items: center; padding: 6px; color: #a5b1aa; font-size: 11px; text-align: center; }
+.relation-observation-bbox { position: absolute; border: 2px solid #087c8c; pointer-events: none; }
+.relation-observation-bbox span { position: absolute; left: -2px; bottom: 100%; padding: 1px 3px; color: #fff; background: #087c8c; font-size: 9px; white-space: nowrap; }
+.relation-effect-field { min-height: 76px; padding: 10px; border: 1px solid #b8cec4; border-radius: 5px; background: #edf7f2; }
+.relation-effect-field > span { display: block; margin-bottom: 7px; color: #66736d; font-size: 13px; }
+.relation-effect-field strong { display: block; color: #245442; font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
+.relation-effect-field.invalid { border-color: #e4c998; background: #fff8e9; }
+.relation-effect-field.invalid strong { color: #80540f; }
+.relation-target-empty-frame { display: grid; width: 100%; min-height: 120px; margin-top: 7px; place-items: center; padding: 12px; border: 1px dashed #b8c7c0; border-radius: 5px; color: #66736d; background: #fff; cursor: pointer; }
+.relation-target-empty-frame:hover { border-color: #087f5b; color: #087f5b; background: #f5faf7; }
+.relation-workspace-body { display: grid; min-height: 0; grid-template-columns: 290px minmax(0,1fr); }
+.relation-config-panel { min-width: 0; overflow: auto; border-right: 1px solid #d7dfdb; background: #fff; }
+.relation-config-panel > header { display: flex; min-height: 48px; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 12px; border-bottom: 1px solid #d7dfdb; background: #f6f8f7; }
+.relation-config-panel > header span { color: #66736d; font-size: 12px; }
+.relation-config-panel > section { padding: 12px; border-bottom: 1px solid #d7dfdb; }
+.relation-config-panel h3 { margin: 0 0 8px; font-size: 14px; }
+.relation-action-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.relation-action-list button { min-height: 30px; padding: 5px 9px; border: 1px solid #d7dfdb; border-radius: 4px; color: #31483d; background: #fff; cursor: pointer; }
+.relation-action-list button[aria-pressed="true"] { border-color: #087f5b; color: #087f5b; background: #e7f5ef; }
+.relation-selected-action { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 9px; padding-top: 8px; border-top: 1px solid #e5ebe8; }
+.relation-selected-action span { color: #66736d; font-size: 13px; }
+.relation-selected-action strong { max-width: 165px; text-align: right; overflow-wrap: anywhere; }
+.relation-inline-empty { margin: 0 0 9px; padding: 8px; color: #66736d; background: #f6f8f7; font-size: 12px; line-height: 1.45; }
+.relation-interface-item { display: grid; grid-template-columns: 10px minmax(0,1fr) auto; align-items: center; gap: 8px; margin-bottom: 9px; padding: 8px; border: 1px solid #d7dfdb; border-radius: 4px; background: #f6f8f7; }
+.relation-interface-dot, .relation-list-dot { width: 8px; height: 8px; border-radius: 50%; background: #b25b00; }
+.relation-interface-item strong, .relation-interface-item span { display: block; }
+.relation-interface-item span { margin-top: 2px; color: #66736d; font-size: 12px; }
+.relation-interface-item button { padding: 0; border: 0; color: #bb2d3b; background: transparent; cursor: pointer; }
+.relation-interface-actions { display: flex !important; align-items: center; gap: 7px; }
+.relation-interface-actions button:first-child { color: #087f5b; }
+.relation-config-panel .button { margin-top: 2px; }
+.relation-facts { display: grid; gap: 6px; margin: 0; }
+.relation-facts div { display: grid; grid-template-columns: 66px minmax(0,1fr); gap: 8px; }
+.relation-facts dt { color: #66736d; }
+.relation-facts dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.relation-graph-panel { position: relative; display: grid; min-width: 0; min-height: 0; grid-template-rows: auto minmax(340px,1fr) auto auto; background: #f6f8f7; }
+.relation-graph-panel > header { display: flex; min-height: 48px; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid #d7dfdb; background: #fff; }
+.relation-graph-panel > header > div:first-child { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.relation-graph-panel > header span { color: #66736d; font-size: 12px; }
+.relation-graph-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.relation-graph-canvas { position: relative; min-height: 340px; overflow: hidden; background-image: radial-gradient(circle, #d7dfdb 1px, transparent 1px); background-size: 18px 18px; }
+.relation-graph-svg { display: block; width: 100%; height: 100%; min-height: 340px; }
+.relation-page-shell { fill: #fff; stroke: #d7dfdb; stroke-width: 1.5; }
+.relation-page-node.source .relation-page-shell { stroke: #087f5b; }
+.relation-page-node.target .relation-page-shell { stroke: #087c8c; }
+.relation-page-title { fill: #17211d; font-size: 14px; font-weight: 700; }
+.relation-page-meta { fill: #66736d; font-size: 11px; }
+.relation-page-empty { fill: #7b8982; text-anchor: middle; font-size: 11px; }
+.relation-page-toggle circle { fill: #f6f8f7; stroke: #d7dfdb; }
+.relation-page-toggle text { fill: #66736d; text-anchor: middle; font-size: 13px; }
+.relation-node-dot { fill: #087c8c; stroke: #fff; stroke-width: 3; }
+.relation-node-dot.source-dot { fill: #087f5b; }
+.relation-node-label { fill: #17211d; font-size: 11px; }
+.relation-edge { fill: none; stroke-linecap: round; stroke-width: 2.2; }
+.relation-edge-page { stroke: #087c8c; stroke-dasharray: 6 4; opacity: .75; }
+.relation-edge-element { stroke: #087f5b; }
+.relation-graph-growing .relation-edge { stroke-dasharray: 620; stroke-dashoffset: 620; animation: relation-edge-growth 2s cubic-bezier(.2,.75,.25,1) forwards; }
+.relation-edge-label rect { fill: #fff; stroke: #d7dfdb; }
+.relation-edge-label text { fill: #17211d; text-anchor: middle; font-size: 11px; }
+.relation-target-placeholder { cursor: pointer; }
+.relation-target-placeholder rect { fill: #fbfcfc; stroke: #9fb3aa; stroke-width: 1.5; stroke-dasharray: 6 5; }
+.relation-target-placeholder circle { fill: #e7f5ef; stroke: #72a993; }
+.relation-target-placeholder text { fill: #087f5b; text-anchor: middle; font-size: 22px; font-weight: 700; }
+.relation-target-placeholder .placeholder-title { fill: #40564b; font-size: 13px; }
+.relation-interface-node { cursor: pointer; }
+.relation-interface-node circle { fill: #fff6e8; stroke: #b25b00; stroke-width: 2; }
+.relation-interface-node text { fill: #b25b00; text-anchor: middle; font-size: 10px; font-weight: 700; }
+.relation-collapse-all { cursor: pointer; }
+.relation-collapse-all rect { fill: #fff; stroke: #d7dfdb; }
+.relation-collapse-all text { fill: #66736d; text-anchor: middle; font-size: 10px; }
+.relation-list { border-top: 1px solid #d7dfdb; background: #fff; }
+.relation-list > header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #e5ebe8; }
+.relation-list > header span { color: #66736d; font-size: 12px; }
+.relation-list-row { position: relative; display: grid; grid-template-columns: 9px minmax(0,1fr) 30px; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; overflow: hidden; border: 0; border-bottom: 1px solid #e5ebe8; color: #17211d; text-align: left; background: #fff; }
+.relation-list-row:hover { background: #f5faf7; }
+.relation-list-row strong, .relation-list-row span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.relation-list-row span { margin-top: 2px; color: #66736d; font-size: 12px; }
+.relation-list-dot.muted { background: #aebbb4; }
+.relation-list-row.deleting { animation: relation-row-disconnect 2s ease forwards; }
+.relation-list-row.deleting::after { position: absolute; right: 42px; bottom: 0; left: 29px; height: 2px; background: #bb2d3b; transform-origin: right; animation: relation-line-disconnect 2s ease forwards; content: ''; }
+.relation-list-empty { display: grid; min-height: 58px; place-items: center; color: #66736d; font-size: 13px; }
+.relation-workspace-footer { display: flex; min-height: 48px; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid #d7dfdb; background: #fff; }
+.relation-workspace-footer > span:first-child { color: #66736d; font-size: 13px; }
+.relation-interface-popover { position: absolute; z-index: 4; top: 0; right: 0; bottom: 0; width: min(330px, 88%); display: grid; grid-template-rows: auto 1fr; border-left: 1px solid #d7dfdb; background: #fff; box-shadow: -12px 0 28px rgba(24,43,34,.18); transform: translateX(100%); visibility: hidden; pointer-events: none; transition: transform .26s ease, visibility .26s ease; }
+.relation-interface-popover.open { transform: translateX(0); visibility: visible; pointer-events: auto; }
+.relation-interface-popover header { display: flex; align-items: center; gap: 8px; padding: 12px; border-bottom: 1px solid #d7dfdb; }
+.relation-interface-popover header div { display: flex; flex-direction: column; gap: 2px; }
+.relation-interface-popover header span { color: #66736d; font-size: 12px; }
+.relation-interface-popover header button, .relation-target-drawer header button { margin-left: auto; border: 0; color: #66736d; background: transparent; cursor: pointer; }
+.relation-interface-body { padding: 14px; }
+.relation-interface-title { display: flex; align-items: center; gap: 7px; margin-bottom: 16px; color: #b25b00; }
+.relation-target-drawer-backdrop { position: absolute; z-index: 5; inset: 0; display: flex; justify-content: flex-end; background: rgba(23,33,29,.22); }
+.relation-target-drawer { display: grid; width: min(390px, 92%); grid-template-rows: auto auto minmax(0,1fr) auto; background: #fff; box-shadow: -14px 0 32px rgba(24,43,34,.2); animation: relation-drawer-in .26s ease-out both; }
+.relation-target-drawer header { display: flex; align-items: center; gap: 8px; padding: 14px; border-bottom: 1px solid #d7dfdb; }
+.relation-target-drawer header div { display: flex; flex-direction: column; gap: 2px; }
+.relation-target-drawer header span { color: #66736d; font-size: 12px; }
+.relation-target-filters { display: grid; grid-template-columns: minmax(0,1fr) 120px; gap: 7px; padding: 10px 12px; background: #f6f8f7; border-bottom: 1px solid #d7dfdb; }
+.relation-target-filters label { display: flex; min-height: 34px; align-items: center; gap: 6px; padding: 0 8px; border: 1px solid #d7dfdb; border-radius: 4px; background: #fff; }
+.relation-target-filters input { width: 100%; min-width: 0; border: 0; outline: 0; color: #17211d; background: transparent; }
+.relation-target-filters select { min-width: 0; border: 1px solid #d7dfdb; border-radius: 4px; color: #17211d; background: #fff; }
+.relation-target-list { min-height: 0; overflow: auto; padding: 8px; }
+.relation-target-list > button { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; align-items: center; gap: 9px; width: 100%; padding: 9px; border: 1px solid transparent; border-bottom-color: #e5ebe8; border-radius: 4px; color: #17211d; text-align: left; background: #fff; cursor: pointer; }
+.relation-target-list > button:hover, .relation-target-list > button[aria-selected="true"] { border-color: #087f5b; background: #e7f5ef; }
+.relation-target-list > button strong, .relation-target-list > button small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.relation-target-list > button small { margin-top: 3px; color: #66736d; font-size: 12px; }
+.relation-target-icon { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #d7dfdb; border-radius: 50%; color: #087f5b; }
+.relation-target-status { color: #66736d; font-size: 12px; }
+.relation-target-empty { padding: 30px 12px; color: #66736d; text-align: center; }
+.relation-target-drawer footer { display: flex; justify-content: flex-end; padding: 10px 12px; border-top: 1px solid #d7dfdb; }
+.relation-interface-editor { align-self: center; display: grid; width: min(520px, calc(100% - 32px)); margin: auto; grid-template-rows: auto minmax(0,1fr) auto; overflow: hidden; border: 1px solid #64776e; border-radius: 7px; background: #fff; box-shadow: 0 18px 54px rgb(20 35 28 / 28%); animation: relation-drawer-in .26s ease-out both; }
+.relation-interface-editor header { display: flex; align-items: center; gap: 8px; padding: 13px 14px; border-bottom: 1px solid #d7dfdb; }
+.relation-interface-editor header > div { display: flex; flex-direction: column; gap: 2px; }
+.relation-interface-editor header span { color: #66736d; font-size: 12px; }
+.relation-interface-editor header button { margin-left: auto; border: 0; color: #66736d; background: transparent; cursor: pointer; }
+.relation-interface-form { display: grid; grid-template-columns: 140px minmax(0,1fr); gap: 11px; padding: 14px; }
+.relation-interface-form label { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.relation-interface-form label:nth-child(n+3) { grid-column: 1 / -1; }
+.relation-interface-form label > span { color: #40564b; font-size: 13px; font-weight: 650; }
+.relation-interface-form input, .relation-interface-form select, .relation-interface-form textarea { width: 100%; min-height: 35px; padding: 6px 8px; border: 1px solid #d7dfdb; border-radius: 4px; color: #17211d; background: #fff; outline: 0; font: inherit; }
+.relation-interface-form textarea { min-height: 74px; resize: vertical; }
+.relation-interface-form :is(input, select, textarea):focus { border-color: #679989; box-shadow: 0 0 0 2px rgb(8 127 91 / 10%); }
+.relation-interface-editor footer { display: flex; justify-content: flex-end; gap: 7px; padding: 10px 14px; border-top: 1px solid #d7dfdb; background: #fbfcfc; }
+.relation-graph-growing .relation-growing-node { transform-box: fill-box; transform-origin: center; animation: relation-node-growth 2s cubic-bezier(.2,.75,.25,1) both; }
+.relation-graph-growing .relation-growing-interface { animation: relation-interface-growth 2s cubic-bezier(.2,.75,.25,1) both; }
+@keyframes relation-edge-growth { to { stroke-dashoffset: 0; } }
+@keyframes relation-drawer-in { from { transform: translateX(28px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes relation-node-growth { from { opacity: 0; transform: scale(.25); } 55% { opacity: .15; } to { opacity: 1; transform: scale(1); } }
+@keyframes relation-interface-growth { from { opacity: 0; } 58% { opacity: 0; } to { opacity: 1; } }
+@keyframes relation-line-disconnect { to { transform: scaleX(0); opacity: 0; } }
+@keyframes relation-row-disconnect { 70% { opacity: 1; } to { opacity: 0; transform: translateX(18px); } }
+@media (max-width: 900px) { .relation-context-strip { grid-template-columns: minmax(0,1fr) 24px minmax(0,1fr); } .relation-effect-field { grid-column: 1 / -1; } }
+@media (max-width: 800px) { .relation-workspace-page { grid-template-rows: auto auto auto; overflow: auto; } .relation-workspace-body { grid-template-columns: 1fr; grid-template-rows: auto auto; min-height: auto; } .relation-config-panel { max-height: none; overflow: visible; border-right: 0; border-bottom: 1px solid #d7dfdb; } .relation-graph-panel { min-height: 560px; } }
+@media (max-width: 720px) { .relation-context-strip { grid-template-columns: 1fr; } .relation-context-arrow { display: none; } .relation-workspace-header { flex-wrap: wrap; } .relation-preview-note { margin-left: auto; } .relation-interface-form { grid-template-columns: 1fr; } .relation-interface-form label { grid-column: 1 / -1; } }
 .comparison-visual-results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 10px 12px 12px; border-bottom: 1px solid #d9e1dd; background: #eef2f0; }
 .comparison-canvas { min-width: 0; overflow: hidden; border: 1px solid #cbd6d0; border-radius: 6px; background: #fff; }
 .comparison-canvas > header { display: flex; align-items: center; justify-content: space-between; min-height: 42px; gap: 8px; padding: 7px 10px; border-bottom: 1px solid #d9e1dd; background: #f8faf9; }
@@ -1271,6 +1434,19 @@ button { color: inherit; }
 .settings-save-bar { display: flex; min-height: 56px; align-items: center; justify-content: flex-end; gap: 7px; padding: 10px 0 0; }
 .settings-save-bar > span { display: flex; flex: 1; align-items: center; gap: 5px; color: #747a75; font-size: 15px; }
 .settings-save-bar > span svg { color: #247550; }
+.analysis-session-manager { width: min(620px, calc(100vw - 28px)); max-height: min(680px, calc(100vh - 40px)); overflow: hidden; border: 1px solid #cfd8d2; border-radius: 8px; background: #fff; box-shadow: 0 18px 60px rgb(24 39 31 / 24%); }
+.analysis-session-manager > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 18px 20px; border-bottom: 1px solid #e1e7e2; }
+.analysis-session-manager > header > div { display: grid; gap: 5px; }
+.analysis-session-manager > header strong { color: #24352d; font-size: 17px; }
+.analysis-session-manager > header span { color: #6e7972; font-size: 13px; }
+.analysis-session-manager-list { display: grid; gap: 8px; max-height: 500px; overflow: auto; padding: 14px; }
+.analysis-session-manager-list > p { margin: 0; padding: 28px 12px; color: #77817b; text-align: center; }
+.analysis-session-manager-list article { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 13px; border: 1px solid #e0e7e2; border-radius: 6px; background: #fbfdfb; }
+.analysis-session-manager-list article > div:first-child { display: grid; min-width: 0; gap: 3px; }
+.analysis-session-manager-list article strong { color: #294037; font-size: 14px; }
+.analysis-session-manager-list article span { overflow: hidden; color: #7c867f; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.analysis-session-manager-list article i { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #2c9a69; box-shadow: 0 0 0 3px #dcf2e6; }
+.analysis-session-manager-actions { display: flex; flex: 0 0 auto; gap: 5px; }
 
 @media (max-width: 760px) {
   .settings-page { width: 100%; grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); overflow: visible; border: 0; }

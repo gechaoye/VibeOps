@@ -57,8 +57,9 @@ test('Model B 手动中断后从输出断点继续', async () => {
         response.write(`data: ${JSON.stringify({ choices: [{ delta: { content: prefix } }] })}\n\n`);
         return;
       }
-      assert.equal(payload.messages.length, 2);
-      assert.match(payload.messages[1].content[0].text, /ultra-b\.title/);
+      assert.equal(payload.messages.length, 3);
+      assert.equal(payload.messages[1].role, 'assistant');
+      assert.match(payload.messages[2].content[0].text, /ultra-b\.title/);
       response.write(`data: ${JSON.stringify({ choices: [{ delta: { content: JSON.stringify(continuation) } }] })}\n\n`);
       response.end('data: [DONE]\n\n');
     });

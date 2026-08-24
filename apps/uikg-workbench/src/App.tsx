@@ -17,6 +17,7 @@ import {
   ListChecks,
   ListFilter,
   LoaderCircle,
+  ListRestart,
   MonitorSmartphone,
   MousePointer2,
   PanelsTopLeft,
@@ -38,6 +39,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnnotationCanvas } from './AnnotationCanvas';
+import { RelationWorkspace } from './RelationWorkspace';
 import { createAnnotationSessionId, draftForAnnotationTarget, type AnnotationTarget } from './annotation-tabs';
 import { clearUnsavedAnnotationRecoveries, readUnsavedAnnotationRecoveries, removeUnsavedAnnotationRecovery, upsertUnsavedAnnotationRecovery, type UnsavedAnnotationRecovery } from './annotation-recovery';
 import { absoluteAssetUrl, serverUrl, workbenchApi, type RecognitionStreamResult } from './api';
@@ -48,7 +50,7 @@ import { Inspector } from './Inspector';
 import { KnowledgeGraph } from './KnowledgeGraph';
 import { LiveDevicePreview } from './LiveDevicePreview';
 import { ModelSettings } from './ModelSettings';
-import { createHumanElement, elementAvailableOnPage, gridForBox, normalizeGridCount, reviewStatusLabels, validateDraftClient } from './model';
+import { createDraftTransition, createHumanElement, elementAvailableOnPage, gridForBox, normalizeGridCount, reviewStatusLabels, validateDraftClient } from './model';
 import { PageGraph } from './PageGraph';
 import { PageUploadDialog } from './PageUploadDialog';
 import { ProjectModelSettings } from './ProjectModelSettings';
@@ -60,7 +62,7 @@ import './styles.css';
 
 type ViewMode = 'live' | 'frozen' | 'review';
 type SideTab = 'elements' | 'validation' | 'history';
-type WorkspaceMode = 'annotation' | 'graph' | 'knowledge' | 'staging';
+type WorkspaceMode = 'annotation' | 'relation' | 'graph' | 'knowledge' | 'staging';
 type ExplorationMode = 'ultra' | 'manual';
 type InternalTabKind = 'knowledge' | 'workspace' | 'model' | 'settings' | 'annotation';
 type PendingRecognitionReplacement =
@@ -419,6 +421,7 @@ interface AppContentProps {
   onOpenDeviceAnnotationTab: () => void;
   onOpenSettingsTab: () => void;
   onOpenModelTab: () => void;
+  onOpenAnalysisSession: (session: AnalysisSession) => void;
   onPromoteAnnotationTab: (tabId: string, pageId: string, frameId: string, title?: string) => void;
   onRenameAnnotationTab: (tabId: string, title: string) => void;
   onPageNameChange: (pageId: string, name: string | null) => void;
@@ -431,7 +434,7 @@ interface AppContentProps {
   onRegisterSaveHandler: (tabId: string, handler: (() => Promise<boolean>) | null) => void;
 }
 
-function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSessionId, recoveryDraft, pageNameOverrides, active, tabRefreshKey, onOpenAnnotationTab, onOpenDeviceAnnotationTab, onOpenSettingsTab, onOpenModelTab, onPromoteAnnotationTab, onRenameAnnotationTab, onPageNameChange, tabs, activeTabId, dirtyTabIds, onSelectTab, onCloseTab, onTabDirtyChange, onRegisterSaveHandler }: AppContentProps) {
+function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSessionId, recoveryDraft, pageNameOverrides, active, tabRefreshKey, onOpenAnnotationTab, onOpenDeviceAnnotationTab, onOpenSettingsTab, onOpenModelTab, onOpenAnalysisSession, onPromoteAnnotationTab, onRenameAnnotationTab, onPageNameChange, tabs, activeTabId, dirtyTabIds, onSelectTab, onCloseTab, onTabDirtyChange, onRegisterSaveHandler }: AppContentProps) {
   const deviceClient = useMemo(() => new DeviceClient(serverUrl), []);
   const [status, setStatus] = useState<WorkbenchStatus | null>(null);
   const [device, setDevice] = useState<DeviceState>(emptyDevice);
@@ -441,6 +444,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const [serverIssues, setServerIssues] = useState<ValidationIssue[]>([]);
   const [frame, setFrame] = useState<FrameMetadata | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => annotationTarget ? 'review' : 'live');
+  const [collectUiTreeWithScreenshot, setCollectUiTreeWithScreenshot] = useState(true);
+  const [includeUiTreeInRecognition, setIncludeUiTreeInRecognition] = useState(false);
   const [sideTab, setSideTab] = useState<SideTab>('elements');
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(() => tabKind === 'workspace' ? 'graph' : tabKind === 'knowledge' ? 'knowledge' : 'annotation');
   const [explorationMode, setExplorationMode] = useState<ExplorationMode>(() => {
@@ -470,6 +475,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const [completedRecognitionReplacement, setCompletedRecognitionReplacement] = useState<PendingRecognitionReplacement | null>(null);
   const [recognitionReplacementBusy, setRecognitionReplacementBusy] = useState(false);
   const [analysisSessions, setAnalysisSessions] = useState<AnalysisSession[]>([]);
+  const [analysisSessionManagerOpen, setAnalysisSessionManagerOpen] = useState(false);
+  const [analysisSessionReconnectId, setAnalysisSessionReconnectId] = useState<string | null>(null);
   const [ultraModelComparison, setUltraModelComparison] = useState<{ modelAResult: RecognitionResult; modelBResult: RecognitionResult; modelResultRef: string } | null>(null);
   const [ultraModelCandidatePortal, setUltraModelCandidatePortal] = useState<HTMLDivElement | null>(null);
   const [staging, setStaging] = useState<StagingResult | null>(null);
@@ -535,6 +542,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const frameUrl = draft?.currentFrameId
     ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(draft.currentFrameId)}/image`)
     : null;
+  const uiTreeAvailable = Boolean(frame && frame.frameId === draft?.currentFrameId && frame.runtimeStructure);
   const pageGraphDraft = useMemo(() => {
     if (!draft || Object.keys(pageNameOverrides).length === 0) return draft;
     const pages = draft.pages.map((page) => Object.prototype.hasOwnProperty.call(pageNameOverrides, page.id)
@@ -563,6 +571,56 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     try {
       setAnalysisSessions((await workbenchApi.sessions()).sessions);
     } catch {}
+  };
+
+  const reconnectAnalysisSession = async (session: AnalysisSession) => {
+    if (session.status !== 'running' || analysisSessionReconnectId) return;
+    if (session.pageId && draft?.currentPageId !== session.pageId) {
+      onOpenAnalysisSession(session);
+      setAnalysisSessionManagerOpen(false);
+      return;
+    }
+    setAnalysisSessionReconnectId(session.id);
+    setRecognitionDialogOpen(true);
+    setRecognitionActivity({
+      status: 'running',
+      phase: 'reconnecting',
+      phaseMessage: '正在重新接入进行中的分析任务',
+      reasoningContent: session.reasoningContent || '',
+      outputContent: session.outputContent || '',
+      startedAt: session.startedAt,
+      ...(session.kind === 'ultra_a' ? { modelAStatus: 'running' as const, modelAPhaseMessage: '正在重新接入 Model A' } : {}),
+      ...(session.kind === 'ultra_b' ? { modelBStatus: 'running' as const, modelBPhaseMessage: '正在重新接入 Model B' } : {}),
+    });
+    const handler = session.kind === 'manual' ? handleRecognitionEvent : session.kind === 'ultra_a' ? handleUltraModelAEvent : handleUltraModelBEvent;
+    try {
+      const result = await workbenchApi.reconnectRecognitionStream(session.kind, session.id, session.lastEventId || 0, handler);
+      if (session.kind === 'manual') await finishManualRecognition(result);
+      else if (session.kind === 'ultra_a') {
+        modelAResultRef.current = result.recognitionResult;
+        setRecognitionActivity((current) => current ? { ...current, modelAStatus: 'completed', modelAPhaseMessage: 'Model A 识别完成', status: 'completed', completedAt: new Date().toISOString() } : current);
+      } else {
+        modelBResultRef.current = result.recognitionResult;
+        setRecognitionActivity((current) => current ? { ...current, modelBStatus: 'completed', modelBPhaseMessage: 'Model B 识别完成', status: 'completed', completedAt: new Date().toISOString() } : current);
+      }
+      setAnalysisSessionManagerOpen(false);
+    } catch (error) {
+      showNotice('error', error instanceof Error ? error.message : String(error));
+    } finally {
+      setAnalysisSessionReconnectId(null);
+      await refreshAnalysisSessions();
+    }
+  };
+
+  const cancelAnalysisSession = async (session: AnalysisSession) => {
+    if (session.status !== 'running') return;
+    try {
+      const result = await workbenchApi.cancelRecognition(session.kind, session.workspaceSessionId || annotationSessionId);
+      if (!result.cancelled) showNotice('info', '该分析任务已经结束');
+      await refreshAnalysisSessions();
+    } catch (error) {
+      showNotice('error', error instanceof Error ? error.message : String(error));
+    }
   };
 
   const showNotice = (type: 'info' | 'error' | 'success', text: string) => {
@@ -859,6 +917,30 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   }, [explorationMode]);
 
   useEffect(() => {
+    const frameId = draft?.currentFrameId;
+    if (!frameId) {
+      setFrame(null);
+      setIncludeUiTreeInRecognition(false);
+      return undefined;
+    }
+    let cancelled = false;
+    workbenchApi.frame(frameId)
+      .then(({ frame: loadedFrame }) => {
+        if (cancelled) return;
+        setFrame(loadedFrame);
+        setIncludeUiTreeInRecognition(Boolean(loadedFrame.runtimeStructure));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setFrame(null);
+        setIncludeUiTreeInRecognition(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [draft?.currentFrameId]);
+
+  useEffect(() => {
     window.localStorage.setItem('uikg-workbench.annotation.show-grid-guides', String(showGridGuides));
   }, [showGridGuides]);
 
@@ -895,6 +977,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     setShowRejected(false);
     setDuplicateCandidateKeyFilter(null);
     setFrame(null);
+    setIncludeUiTreeInRecognition(false);
     setUltraModelComparison(null);
   };
 
@@ -931,7 +1014,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const captureFrame = async () => {
     setBusy('freeze');
     try {
-      const result = await workbenchApi.freezeFrame(true);
+      const result = await workbenchApi.freezeFrame(true, collectUiTreeWithScreenshot);
 
       resetDraftState(result.draft);
       modelAResultRef.current = null;
@@ -941,7 +1024,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       setWorkspaceMode('annotation');
       setViewMode('frozen');
       setDrawing(false);
-      setFrame(null);
+      setFrame(result.frame);
+      setIncludeUiTreeInRecognition(Boolean(result.frame.runtimeStructure));
       showNotice('success', '画面已冻结，请确认后开始标注');
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
@@ -1002,9 +1086,9 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         ...current,
         phase: String(event.phase || current.phase),
         phaseMessage: String(event.message || current.phaseMessage),
+        retryReason: typeof event.retryReason === 'string' ? event.retryReason : current.retryReason,
         retryAttempt: typeof event.totalAttempt === 'number' ? event.totalAttempt : current.retryAttempt,
         retryLimit: typeof event.retryLimit === 'number' ? event.retryLimit : current.retryLimit,
-        ...(event.phase === 'retry' || event.phase === 'resume' ? { outputContent: '', reasoningContent: '' } : {}),
       } : current);
     }
     if (event.type === 'chunk') {
@@ -1022,10 +1106,11 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     if (event.type === 'stage') {
       setRecognitionActivity((current) => current ? {
         ...current,
+        phase: event.phase === 'retry' ? 'retry' : current.phase,
         modelAPhaseMessage: String(event.message || current.modelAPhaseMessage || 'Model A 正在分析'),
+        retryReason: typeof event.retryReason === 'string' ? event.retryReason : current.retryReason,
         retryAttempt: typeof event.totalAttempt === 'number' ? event.totalAttempt : current.retryAttempt,
         retryLimit: typeof event.retryLimit === 'number' ? event.retryLimit : current.retryLimit,
-        ...(event.phase === 'retry' || event.phase === 'resume' ? { modelAOutputContent: '', modelAReasoningContent: '' } : {}),
       } : current);
     }
     if (event.type === 'chunk') {
@@ -1044,10 +1129,11 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     if (event.type === 'stage') {
       setRecognitionActivity((current) => current ? {
         ...current,
+        phase: event.phase === 'retry' ? 'retry' : current.phase,
         modelBPhaseMessage: String(event.message || current.modelBPhaseMessage || 'Model B 正在分析'),
+        retryReason: typeof event.retryReason === 'string' ? event.retryReason : current.retryReason,
         retryAttempt: typeof event.totalAttempt === 'number' ? event.totalAttempt : current.retryAttempt,
         retryLimit: typeof event.retryLimit === 'number' ? event.retryLimit : current.retryLimit,
-        ...(event.phase === 'retry' || event.phase === 'resume' ? { outputContent: '', reasoningContent: '' } : {}),
       } : current);
     }
     if (event.type === 'chunk') {
@@ -1090,7 +1176,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     setRecognitionActivity((current) => current ? { ...current, status: 'running', modelBStatus: 'running', phase: 'ultra_b', phaseMessage: 'Model B 正在重新识别画面', modelBPhaseMessage: 'Model B 正在重新识别画面', reasoningContent: '', outputContent: '', errorMessage: undefined, errorDetails: undefined, modelBErrorMessage: undefined, modelBErrorDetails: undefined, modelBCompletedAt: undefined, resumeSessionId: undefined, resumeKind: undefined, modelBResumeSessionId: undefined } : current);
     try {
       const pageContext = [currentDraft.page.name, currentDraft.page.stateSummary].filter(Boolean).join('；');
-      const result = await workbenchApi.recognitionStream('ultra_b', currentDraft.currentFrameId, pageContext, false, handleUltraModelBEvent, currentDraft.currentPageId, annotationSessionId);
+      const result = await workbenchApi.recognitionStream('ultra_b', currentDraft.currentFrameId, pageContext, false, handleUltraModelBEvent, currentDraft.currentPageId, annotationSessionId, includeUiTreeInRecognition);
       modelBResultRef.current = result.recognitionResult;
       if (modelAResultRef.current) setUltraModelComparison({ modelAResult: modelAResultRef.current, modelBResult: result.recognitionResult, modelResultRef: result.modelResultRef });
       setStatus((current) => current ? { ...current, ultraModelBSession: null } : current);
@@ -1115,7 +1201,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     setRecognitionActivity((current) => current ? { ...current, status: 'running', modelAStatus: 'running', phase: 'ultra_a', phaseMessage: 'Model A 正在重新识别画面', modelAPhaseMessage: 'Model A 正在重新识别画面', modelAReasoningContent: '', modelAOutputContent: '', errorMessage: undefined, errorDetails: undefined, modelAErrorMessage: undefined, modelAErrorDetails: undefined, modelACompletedAt: undefined, resumeSessionId: undefined, resumeKind: undefined, modelAResumeSessionId: undefined } : current);
     try {
       const pageContext = [currentDraft.page.name, currentDraft.page.stateSummary].filter(Boolean).join('；');
-      const result = await workbenchApi.recognitionStream('ultra_a', currentDraft.currentFrameId, pageContext, false, handleUltraModelAEvent, currentDraft.currentPageId, annotationSessionId);
+      const result = await workbenchApi.recognitionStream('ultra_a', currentDraft.currentFrameId, pageContext, false, handleUltraModelAEvent, currentDraft.currentPageId, annotationSessionId, includeUiTreeInRecognition);
       modelAResultRef.current = result.recognitionResult;
       if (modelBResultRef.current) setUltraModelComparison({ modelAResult: result.recognitionResult, modelBResult: modelBResultRef.current, modelResultRef: result.modelResultRef });
       setStatus((current) => current ? { ...current, ultraModelASession: null } : current);
@@ -1284,17 +1370,17 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     try {
       const pageContext = [recognitionDraft.page.name, recognitionDraft.page.stateSummary].filter(Boolean).join('；');
       if (!ultraMode) {
-        await finishManualRecognition(await workbenchApi.recognitionStream('manual', recognitionDraft.currentFrameId, pageContext, !replacementRequired, handleRecognitionEvent, recognitionDraft.currentPageId, annotationSessionId));
+        await finishManualRecognition(await workbenchApi.recognitionStream('manual', recognitionDraft.currentFrameId, pageContext, !replacementRequired, handleRecognitionEvent, recognitionDraft.currentPageId, annotationSessionId, includeUiTreeInRecognition));
         return;
       }
-      const modelAPromise = workbenchApi.recognitionStream('ultra_a', recognitionDraft.currentFrameId, pageContext, false, handleUltraModelAEvent, recognitionDraft.currentPageId, annotationSessionId).then((result) => {
+      const modelAPromise = workbenchApi.recognitionStream('ultra_a', recognitionDraft.currentFrameId, pageContext, false, handleUltraModelAEvent, recognitionDraft.currentPageId, annotationSessionId, includeUiTreeInRecognition).then((result) => {
         modelAResultRef.current = result.recognitionResult;
         if (modelBResultRef.current) setUltraModelComparison({ modelAResult: result.recognitionResult, modelBResult: modelBResultRef.current, modelResultRef: result.modelResultRef });
         setStatus((current) => current ? { ...current, ultraModelASession: null } : current);
         setRecognitionActivity((current) => current ? { ...current, status: aggregateUltraRecognitionStatus('completed', current.modelBStatus), modelAStatus: 'completed', modelACompletedAt: new Date().toISOString(), modelAPhaseMessage: 'Model A 识别完成', modelAResumeSessionId: undefined, completedAt: current.modelBStatus && ['running', 'cancelling'].includes(current.modelBStatus) ? current.completedAt : new Date().toISOString() } : current);
         return result;
       }, (error) => { handleModelAFailure(error); throw error; });
-      const modelBPromise = workbenchApi.recognitionStream('ultra_b', recognitionDraft.currentFrameId, pageContext, false, handleUltraModelBEvent, recognitionDraft.currentPageId, annotationSessionId).then((result) => {
+      const modelBPromise = workbenchApi.recognitionStream('ultra_b', recognitionDraft.currentFrameId, pageContext, false, handleUltraModelBEvent, recognitionDraft.currentPageId, annotationSessionId, includeUiTreeInRecognition).then((result) => {
         modelBResultRef.current = result.recognitionResult;
         if (modelAResultRef.current) setUltraModelComparison({ modelAResult: modelAResultRef.current, modelBResult: result.recognitionResult, modelResultRef: result.modelResultRef });
         setStatus((current) => current ? { ...current, ultraModelBSession: null } : current);
@@ -2224,6 +2310,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
           )}
         </div>
         <div className="header-actions">
+          <button type="button" className={`icon-button ${analysisSessions.some((session) => session.status === 'running') ? 'active' : ''}`} title="进行中的分析任务" aria-label="进行中的分析任务" onClick={() => { void refreshAnalysisSessions(); setAnalysisSessionManagerOpen(true); }}><ListRestart size={16} /></button>
           <button type="button" className={`button global-model-button ${tabKind === 'settings' ? 'active' : ''}`} onClick={onOpenSettingsTab}><Settings2 size={15} />设置</button>
         </div>
       </header>
@@ -2295,6 +2382,36 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         />
       ) : tabKind === 'knowledge' ? (
         active ? <KnowledgeGraph appKey={draft?.appKey || 'zto.connect'} onGoToWorkbench={() => onSelectTab('workspace')} onOpenModel={onOpenModelTab} /> : null
+      ) : workspaceMode === 'relation' && draft && selectedElement ? (
+        <RelationWorkspace
+          sourceElement={selectedElement}
+          sourcePage={draft.pages.find((page) => page.id === draft.currentPageId) || { id: draft.currentPageId, key: draft.page.key, name: draft.page.name, surfaceType: draft.page.surfaceType, stateSummary: draft.page.stateSummary, scrollableRegions: draft.page.scrollableRegions, featurePath: draft.featurePath, frameIds: draft.currentFrameId ? [draft.currentFrameId] : [], elementIds: currentElements.map((element) => element.id) }}
+          sourceFrameId={draft.currentFrameId}
+          sourceFrameUrl={frameUrl}
+          pages={draft.pages}
+          elements={draft.elements}
+          transitions={draft.transitions}
+          frameUrlFor={(frameId) => absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(frameId)}/image`)}
+          onSaveRelation={({ targetPageId, targetFrameId, action, effect, interfaces }) => {
+            const transition = createDraftTransition(draft.currentPageId, targetPageId, selectedElement.id, draft.currentFrameId || '', targetFrameId || '');
+            updateDraft((current) => ({
+              ...current,
+              transitions: [...current.transitions, {
+                ...transition,
+                action,
+                capability: action,
+                evidence: { ...transition.evidence, semanticAssertions: [effect] },
+                triggeredInterfaces: interfaces,
+              }],
+            }), undefined, '创建关联关系');
+            showNotice('success', '关系已添加到当前页面草稿');
+          }}
+          onDeleteRelation={(transitionId) => {
+            updateDraft((current) => ({ ...current, transitions: current.transitions.filter((transition) => transition.id !== transitionId) }), undefined, '删除关联关系');
+            showNotice('success', '关系已从当前页面草稿移除');
+          }}
+          onClose={() => setWorkspaceMode('annotation')}
+        />
       ) : workspaceMode === 'annotation' ? <main className="workspace">
         <section className="device-panel">
           <div className="panel-toolbar">
@@ -2306,6 +2423,10 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
             <div className="toolbar-actions">
               {viewMode === 'live' ? (
                 <>
+                  <label className="freeze-runtime-toggle" title="冻结截图时同时获取 UI Tree">
+                    <input type="checkbox" checked={collectUiTreeWithScreenshot} onChange={(event) => setCollectUiTreeWithScreenshot(event.target.checked)} />
+                    <span>同时获取 UI Tree</span>
+                  </label>
                   <button type="button" className="button" disabled={!connected || busy === 'freeze'} onClick={() => void captureFrame()}>{busy === 'freeze' ? <LoaderCircle className="spin" size={15} /> : <Camera size={15} />}冻结画面</button>
                 </>
               ) : viewMode === 'frozen' ? (
@@ -2315,6 +2436,10 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
                 </>
               ) : (
                 <>
+                  <label className={`freeze-runtime-toggle ${uiTreeAvailable ? '' : 'disabled'}`} title={uiTreeAvailable ? '模型识别请求将附带截图时采集的 UI Tree' : '该截图未获取 UI Tree'}>
+                    <input type="checkbox" checked={uiTreeAvailable && includeUiTreeInRecognition} disabled={!uiTreeAvailable} onChange={(event) => setIncludeUiTreeInRecognition(event.target.checked)} />
+                    <span>识别时附带 UI Tree</span>
+                  </label>
                   <button type="button" className="icon-button danger-button" title="取消标注" aria-label="取消标注" disabled={busy === 'cancel-annotation' || busy === 'review-complete'} onClick={requestCancelAnnotation}><X size={16} /></button>
                   <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><span className="drawing-tool-icon" aria-hidden="true"><SquareDashed /><Feather /></span></button>
                   {modelActivity?.status === 'paused' && <button type="button" className="icon-button recognition-resume-button" title={`继续页面识别，已完成 ${modelActivity.completedCandidates || 0} 个候选`} aria-label="继续页面识别" onClick={() => setRecognitionDialogOpen(true)}><RefreshCw size={15} /></button>}
@@ -2401,6 +2526,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
               onAccept={() => selectedElement && toggleAccept(selectedElement)}
               onReject={() => selectedElement && toggleReject(selectedElement)}
               onDelete={deleteSelectedElement}
+              onCreateRelation={() => setWorkspaceMode('relation')}
             />
           ) : sideTab === 'validation' ? (
             <div className="validation-list">
@@ -2476,6 +2602,17 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       <PageUploadDialog open={transferCenterOpen} purpose="history" draftDirty={dirty} onClose={() => setTransferCenterOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
       {recognitionDialogOpen && modelActivity && frameUrl && <RecognitionProgressPanel activity={modelActivity} modelName={explorationMode === 'ultra' ? status?.ultraModelA || null : status?.manualModel || null} modelBModel={status?.ultraModelB || null} ultraMode={explorationMode === 'ultra'} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} recognitionControlBusy={recognitionControlBusy || (busy === 'ultra-a' || busy === 'ultra-b' ? busy : null)} onCancel={() => void cancelUltraModels()} onCancelModel={(kind) => void cancelUltraModel(kind)} onRetryModel={(kind) => kind === 'ultra_a' ? void retryUltraModelA() : void retryUltraModelB()} onResumeModel={(kind) => kind === 'ultra_a' ? void resumeUltraModelA() : void resumeUltraModelB()} onRetry={() => modelActivity.resumeKind === 'manual' ? void resumeManualRecognition() : modelActivity.resumeKind === 'ultra_b' ? void resumeUltraModelB() : modelActivity.resumeKind === 'ultra_a' ? void resumeUltraModelA() : modelActivity.phase === 'ultra-b-error' ? void retryUltraModelB() : void runRecognition()} onClose={closeRecognitionDialog} />}
+      {analysisSessionManagerOpen && <div className="annotation-cancel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAnalysisSessionManagerOpen(false); }}>
+        <section className="analysis-session-manager" role="dialog" aria-modal="true" aria-labelledby="analysis-session-manager-title" onMouseDown={(event) => event.stopPropagation()}>
+          <header><div><strong id="analysis-session-manager-title">进行中的分析任务</strong><span>任务在浏览器断开后仍会继续运行，可重新接入或手动中止。</span></div><button type="button" className="icon-button" title="关闭" aria-label="关闭" onClick={() => setAnalysisSessionManagerOpen(false)}><X size={16} /></button></header>
+          <div className="analysis-session-manager-list">
+            {analysisSessions.filter((session) => session.status === 'running').length === 0 ? <p>当前没有进行中的分析任务。</p> : analysisSessions.filter((session) => session.status === 'running').map((session) => <article key={session.id}>
+              <div><i className="running" /><strong>{session.kind === 'manual' ? 'Manual 页面识别' : session.kind === 'ultra_a' ? 'Model A' : 'Model B'}</strong><span>{session.model || '未配置模型'} · {new Date(session.startedAt).toLocaleString('zh-CN')}</span></div>
+              <div className="analysis-session-manager-actions"><button type="button" className="icon-button" disabled={analysisSessionReconnectId === session.id} title="回到分析任务" aria-label="回到分析任务" onClick={() => void reconnectAnalysisSession(session)}>{analysisSessionReconnectId === session.id ? <LoaderCircle className="spin" size={15} /> : <Play size={15} />}</button><button type="button" className="icon-button danger-button" title="中止分析任务" aria-label="中止分析任务" onClick={() => void cancelAnalysisSession(session)}><SquareDashed size={15} /></button></div>
+            </article>)}
+          </div>
+        </section>
+      </div>}
     </div>
   );
 }
@@ -2554,6 +2691,15 @@ export default function App() {
       annotationTarget: null,
     }]);
     selectTab(sessionId);
+  };
+
+  const openAnalysisSession = (session: AnalysisSession) => {
+    const existing = tabs.find((tab) => tab.kind === 'annotation' && tab.annotationTarget?.pageId === session.pageId);
+    if (existing) {
+      selectTab(existing.id);
+      return;
+    }
+    if (session.pageId && session.frameId) openAnnotationTab(session.pageId, session.frameId, session.kind === 'manual' ? 'Manual 分析任务' : `${session.kind === 'ultra_a' ? 'Model A' : 'Model B'} 分析任务`);
   };
 
   const openSettingsTab = () => {
@@ -2711,6 +2857,7 @@ export default function App() {
             onOpenDeviceAnnotationTab={openDeviceAnnotationTab}
             onOpenSettingsTab={openSettingsTab}
             onOpenModelTab={openModelTab}
+            onOpenAnalysisSession={openAnalysisSession}
             onPromoteAnnotationTab={promoteAnnotationTab}
             onRenameAnnotationTab={renameAnnotationTab}
             onPageNameChange={handlePageNameChange}

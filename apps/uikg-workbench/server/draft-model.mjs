@@ -644,8 +644,89 @@ function clampUnitBox(box) {
   };
 }
 
+function repeatItemParts(candidateKey) {
+  const match = String(candidateKey || '').match(/^(.+?)[._-](\d+)[._-](.+)$/);
+  return match ? { prefix: match[1], index: match[2], suffix: match[3] } : null;
+}
+
+function unionCandidateBoxes(elements) {
+  const left = Math.min(...elements.map((element) => element.approximateRegion.x));
+  const top = Math.min(...elements.map((element) => element.approximateRegion.y));
+  const right = Math.max(...elements.map((element) => element.approximateRegion.x + element.approximateRegion.width));
+  const bottom = Math.max(...elements.map((element) => element.approximateRegion.y + element.approximateRegion.height));
+  return clampUnitBox({ x: left, y: top, width: right - left, height: bottom - top });
+}
+
+function inferRepeatedListItems(proposal) {
+  const listKeys = new Set((proposal.elements || [])
+    .filter((element) => ['list', 'grouped-list', 'swipe-list', 'expandable-list'].includes(element.elementType))
+    .map((element) => element.candidateKey));
+  if (!listKeys.size) return;
+  const contains = (proposal.relationships || []).filter((relation) => relation.type === 'contains');
+  const explicitListForChild = new Map(contains
+    .filter((relation) => listKeys.has(relation.fromCandidateKey))
+    .map((relation) => [relation.toCandidateKey, relation.fromCandidateKey]));
+  const groups = new Map();
+  for (const element of proposal.elements || []) {
+    const parts = repeatItemParts(element.candidateKey);
+    if (!parts || element.elementType === 'list-item') continue;
+    const key = `${parts.prefix}:${parts.index}`;
+    if (!groups.has(key)) groups.set(key, { ...parts, elements: [] });
+    groups.get(key).elements.push(element);
+  }
+  const repeatedPrefixes = new Map();
+  for (const group of groups.values()) {
+    if (group.elements.length < 2) continue;
+    repeatedPrefixes.set(group.prefix, (repeatedPrefixes.get(group.prefix) || 0) + 1);
+  }
+  const existingKeys = new Set((proposal.elements || []).map((element) => element.candidateKey));
+  const additions = [];
+  const addedRelations = [];
+  const groupedChildren = new Map();
+  for (const group of groups.values()) {
+    if (group.elements.length < 2 || (repeatedPrefixes.get(group.prefix) || 0) < 2) continue;
+    const itemKey = `${group.prefix}-${group.index}-item`;
+    if (existingKeys.has(itemKey)) continue;
+    const relatedListKeys = [...new Set(group.elements.map((element) => explicitListForChild.get(element.candidateKey)).filter(Boolean))];
+    const listKey = relatedListKeys.length === 1 ? relatedListKeys[0] : listKeys.size === 1 ? [...listKeys][0] : null;
+    if (!listKey) continue;
+    additions.push({
+      candidateKey: itemKey,
+      label: `列表第 ${Number(group.index)} 项`,
+      visualDescription: `由同一重复行中的 ${group.elements.length} 个子元素组成的列表项`,
+      elementType: 'list-item',
+      interactive: false,
+      enabled: true,
+      state: null,
+      approximateRegion: unionCandidateBoxes(group.elements),
+      geometryKind: group.elements.some((element) => (element.riskSignals || []).includes('geometry-grounded-by-runtime')) ? 'boundary' : 'approximate',
+      geometryConfidence: Math.min(...group.elements.map((element) => Number(element.geometryConfidence) || 0.5)),
+      meaning: { status: 'known', description: '重复列表中的一个可见条目', evidence: { visibleTexts: [], visibleIcons: [], visibleStates: [], visualCues: ['重复行布局'], userContext: null, unclassified: [] } },
+      dynamicContent: true,
+      riskSignals: ['list-item-inferred-from-repeated-children'],
+      confidence: Math.min(...group.elements.map((element) => Number(element.confidence) || 0.5)),
+    });
+    existingKeys.add(itemKey);
+    addedRelations.push({ fromCandidateKey: listKey, type: 'contains', toCandidateKey: itemKey });
+    for (const child of group.elements) {
+      groupedChildren.set(child.candidateKey, listKey);
+      addedRelations.push({ fromCandidateKey: itemKey, type: 'contains', toCandidateKey: child.candidateKey });
+    }
+  }
+  if (!additions.length) return;
+  proposal.elements.push(...additions);
+  proposal.relationships = [
+    ...(proposal.relationships || []).filter((relation) => !(
+      relation.type === 'contains'
+      && groupedChildren.get(relation.toCandidateKey) === relation.fromCandidateKey
+    )),
+    ...addedRelations,
+  ];
+}
+
 export function prepareRecognitionForDraft(recognitionResult) {
   const proposal = structuredClone(recognitionResult);
+  inferRepeatedListItems(proposal);
   const byKey = new Map(proposal.elements.map((element) => [element.candidateKey, element]));
   for (const element of proposal.elements) {
     const original = element.approximateRegion;

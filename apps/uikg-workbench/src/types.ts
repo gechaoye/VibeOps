@@ -85,6 +85,14 @@ export interface DraftTransitionEvidence {
   semanticAssertions: string[];
 }
 
+export interface DraftRelationInterface {
+  id: string;
+  method: string;
+  path: string;
+  service: string;
+  description: string;
+}
+
 export interface DraftTransition {
   id: string;
   key: string;
@@ -98,6 +106,7 @@ export interface DraftTransition {
   reversible: boolean;
   risk: 'safe' | 'low' | 'medium' | 'high' | 'critical';
   evidence: DraftTransitionEvidence;
+  triggeredInterfaces?: DraftRelationInterface[];
 }
 
 export interface ElementEditRecord {
@@ -234,6 +243,7 @@ export interface FrameMetadata {
   bytes: number;
   capturedAt: string;
   imageUrl: string;
+  runtimeStructure?: Record<string, unknown> | null;
 }
 
 export type PageUploadStatus = 'queued' | 'uploading' | 'completed' | 'failed';
@@ -279,10 +289,11 @@ export interface WorkbenchStatus {
 
 export interface RecognitionResumeSession {
   id: string;
-  status: 'paused';
+  status: 'paused' | 'running';
   frameId: string;
   pageId?: string | null;
   pageContext: string;
+  includeUiTree?: boolean;
   model: string | null;
   completedCandidates: number;
   retryAttempts: Array<{
@@ -305,6 +316,7 @@ export interface AnalysisSession {
   status: 'running' | 'completed' | 'failed' | 'cancelled';
   frameId: string | null;
   pageId?: string | null;
+  workspaceSessionId?: string;
   model: string | null;
   startedAt: string;
   updatedAt: string;
@@ -314,6 +326,7 @@ export interface AnalysisSession {
   reasoningContent: string;
   outputContent: string;
   retryAttempts?: RecognitionResumeSession['retryAttempts'];
+  lastEventId?: number;
 }
 
 export interface RecognitionElementCandidate {

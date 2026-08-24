@@ -39,6 +39,14 @@ export class DraftStore {
       errorReason: '上传进程已中断，请重试以从断点继续',
       updatedAt: new Date().toISOString(),
     })));
+    const interruptedSessions = (await this.listAnalysisSessions()).filter((session) => session.status === 'running');
+    await Promise.all(interruptedSessions.map((session) => this.saveAnalysisSession({
+      ...session,
+      status: 'failed',
+      errorMessage: '分析服务已重启，原模型连接无法继续',
+      completedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    })));
   }
 
   async loadDraft() {
@@ -75,11 +83,17 @@ export class DraftStore {
       height: frame.height,
       bytes: frame.buffer.length,
       capturedAt: frame.capturedAt,
+      runtimeStructure: frame.runtimeStructure || null,
       imagePath,
     };
     const metadataPath = this.frameMetadataPath(frame.frameId);
     if (!(await exists(metadataPath))) {
       await writeFile(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`, 'utf8');
+    } else if (metadata.runtimeStructure) {
+      const existingMetadata = await this.loadFrame(frame.frameId);
+      if (!existingMetadata.runtimeStructure) {
+        await writeFile(metadataPath, `${JSON.stringify({ ...existingMetadata, runtimeStructure: metadata.runtimeStructure }, null, 2)}\n`, 'utf8');
+      }
     }
     return metadata;
   }

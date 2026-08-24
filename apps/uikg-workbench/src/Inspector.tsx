@@ -17,6 +17,7 @@ interface InspectorProps {
   onAccept: () => void;
   onReject: () => void;
   onDelete: () => void;
+  onCreateRelation: () => void;
 }
 
 function decimal(value: number) {
@@ -42,7 +43,7 @@ function fieldValuesEqual(field: keyof DraftElement, current: unknown, initial: 
   return JSON.stringify(current) === JSON.stringify(initial);
 }
 
-export function Inspector({ element, initialElement, elements, pages, currentPageId, showGridGuides, canRestoreCurrent, onChange, onChangeEnd, onShowGridGuidesChange, onRestoreCurrent, onAccept, onReject, onDelete }: InspectorProps) {
+export function Inspector({ element, initialElement, elements, pages, currentPageId, showGridGuides, canRestoreCurrent, onChange, onChangeEnd, onShowGridGuidesChange, onRestoreCurrent, onAccept, onReject, onDelete, onCreateRelation }: InspectorProps) {
   if (!element) return <div className="inspector-empty-state"><div className="inspector-empty"><CircleSelection /></div></div>;
   const possibleParents = elements.filter((candidate) => candidate.id !== element.id && candidate.reviewStatus !== 'rejected');
   const updateField = (field: keyof DraftElement, value: unknown, group = false) => onChange({ [field]: value } as Partial<DraftElement>, group ? `field:${field}` : undefined);
@@ -108,6 +109,7 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
         <div className="action-effect-list">
           {displayedActionEffects.map((item) => <label key={item.action}><span>{capabilityLabel(item.action)}</span><input value={item.effect} onBlur={onChangeEnd} onChange={(event) => updateActionEffect(item.action, event.target.value)} /></label>)}
         </div>
+        {displayedActionEffects.length > 0 && <button type="button" className="inspector-create-relation" onClick={onCreateRelation}>创建关联关系 <span aria-hidden="true">→</span></button>}
       </fieldset>
 
       <label className={fieldClass('state')}><span>当前状态</span><input value={element.state} placeholder="例如：开启、关闭、选中" onBlur={onChangeEnd} onChange={(event) => updateField('state', event.target.value, true)} /></label>

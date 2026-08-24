@@ -104,7 +104,7 @@ test('模型错误重试从已收到的断点继续并最终合并草稿', async
     });
     const streamText = await streamResponse.text();
     assert.equal(modelCalls, 2);
-    assert.match(streamText, /正在重试：1\/5/);
+    assert.match(streamText, /event: stage[\s\S]*正在重试 · 原因：/);
     const resultEvent = eventPayload(streamText, 'result');
     assert.equal(resultEvent.draft.elements.length, 2);
     assert.match(prompts[1], /header\.title/);

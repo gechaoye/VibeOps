@@ -15,14 +15,14 @@ test('未连接设备时 Model A 直接识别页面卡片的持久化截图', as
   const frameId = 'sha256:persisted-page-card';
   const imagePath = '/persisted/page-card.png';
   let draft = beginFrameCapture(createEmptyDraft(), frameId);
-  let modelInput = null;
+  const modelInputs = [];
   let savedResult = null;
   const server = {
     app,
     agent: null,
     getSessionState: () => null,
     async runRecognitionModel(input) {
-      modelInput = input;
+      modelInputs.push(input);
       return {
         frameId,
         page: { name: '离线页面', surfaceType: 'page', stateSummary: '来自页面卡片', scrollableRegions: [] },
@@ -37,7 +37,12 @@ test('未连接设备时 Model A 直接识别页面卡片的持久化截图', as
   const store = {
     async loadFrame(requestedFrameId) {
       assert.equal(requestedFrameId, frameId);
-      return { frameId, imagePath, mimeType: 'image/png' };
+      return {
+        frameId,
+        imagePath,
+        mimeType: 'image/png',
+        runtimeStructure: { hierarchy: { marker: 'ROUTE_UI_TREE_MARKER_72A6' } },
+      };
     },
     async loadDraft() { return structuredClone(draft); },
     async saveDraft(value) { draft = structuredClone(value); },
@@ -62,16 +67,142 @@ test('未连接设备时 Model A 直接识别页面卡片的持久化截图', as
     const response = await fetch(`${baseUrl}/workbench/api/recognition/manual/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ frameId, pageId: draft.currentPageId, pageContext: '待识别页面', mergeIntoDraft: true }),
+      body: JSON.stringify({ frameId, pageId: draft.currentPageId, pageContext: '待识别页面', mergeIntoDraft: true, includeUiTree: false }),
     });
     const streamText = await response.text();
     assert.equal(response.status, 200);
     assert.match(streamText, /event: result/);
+    assert.match(streamText, /AI 正在分析画面/);
+    assert.doesNotMatch(streamText, /Manual 页面识别模型 正在分析画面/);
     assert.doesNotMatch(streamText, /请先连接 Android 设备|冻结上下文/);
-    assert.equal(modelInput.imagePath, imagePath);
-    assert.equal(modelInput.mimeType, 'image/png');
+    assert.equal(modelInputs[0].imagePath, imagePath);
+    assert.equal(modelInputs[0].mimeType, 'image/png');
+    assert.doesNotMatch(modelInputs[0].prompt, /ROUTE_UI_TREE_MARKER_72A6/);
     assert.equal(savedResult.frameIntegrity, true);
     assert.equal(draft.page.name, '离线页面');
+
+    const responseWithUiTree = await fetch(`${baseUrl}/workbench/api/recognition/manual/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ frameId, pageId: draft.currentPageId, pageContext: '待识别页面', includeUiTree: true }),
+    });
+    assert.equal(responseWithUiTree.status, 200);
+    assert.match(await responseWithUiTree.text(), /event: result/);
+    assert.match(modelInputs[1].prompt, /ROUTE_UI_TREE_MARKER_72A6/);
+
+    const metadataResponse = await fetch(`${baseUrl}/workbench/api/frames/${encodeURIComponent(frameId)}`);
+    const metadata = await metadataResponse.json();
+    assert.equal(metadataResponse.status, 200);
+    assert.equal(metadata.frame.imagePath, undefined);
+    assert.equal(metadata.frame.runtimeStructure.hierarchy.marker, 'ROUTE_UI_TREE_MARKER_72A6');
+  } finally {
+    await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
+    clearModelRuntime('manual');
+  }
+});
+
+test('SSE 客户端断开不会取消模型，并可按事件序号重连回放缺失内容', async () => {
+  setModelRuntime('manual', { modelName: 'test-ultra-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
+  const app = express();
+  const frameId = 'sha256:disconnect-reconnect';
+  const pageId = 'page-disconnect-reconnect';
+  const result = {
+    frameId,
+    page: { name: '重连页面', surfaceType: 'page', stateSummary: '重连测试', scrollableRegions: [] },
+    elements: [],
+    relationships: [],
+    actionCandidates: [],
+    comparison: { basisFrameId: null, status: 'not-requested', changes: [] },
+    uncertainties: [],
+  };
+  let draft = beginFrameCapture(createEmptyDraft(), frameId, { forceNewPage: true });
+  let modelAborted = false;
+  let modelFinished = false;
+  const server = {
+    app,
+    agent: null,
+    getSessionState: () => null,
+    async runRecognitionModel({ onChunk, signal }) {
+      onChunk({ content: '{"frameId":"sha256:disconnect-reconnect",', reasoning_content: '', accumulated: '{"frameId":"sha256:disconnect-reconnect",' });
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(resolve, 45);
+        signal?.addEventListener('abort', () => {
+          clearTimeout(timer);
+          modelAborted = true;
+          reject(new Error('aborted'));
+        }, { once: true });
+      });
+      onChunk({ content: '"elements":[]}', reasoning_content: '', accumulated: '{"frameId":"sha256:disconnect-reconnect","elements":[]}' });
+      modelFinished = true;
+      return result;
+    },
+  };
+  const store = {
+    async loadFrame(requestedFrameId) {
+      assert.equal(requestedFrameId, frameId);
+      return { frameId, imagePath: '/tmp/disconnect-reconnect.png', mimeType: 'image/png' };
+    },
+    async loadDraft() { return structuredClone(draft); },
+    async saveDraft(value) { draft = structuredClone(value); },
+    async saveModelResult() { return '/tmp/disconnect-reconnect-result.json'; },
+  };
+  await registerWorkbenchRoutes({
+    server,
+    store,
+    graphWorkflow: {},
+    workbenchRoot: process.cwd(),
+    spec: { version: 'test', schemaVersion: 'test', contentHash: 'test', index: 'test' },
+  });
+
+  const httpServer = createServer(app);
+  await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
+  const address = httpServer.address();
+  const baseUrl = `http://127.0.0.1:${address.port}`;
+  try {
+    const firstResponse = await fetch(`${baseUrl}/workbench/api/recognition/manual/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ frameId, pageId, workspaceSessionId: 'disconnect-tab' }),
+    });
+    const analysisSessionId = firstResponse.headers.get('x-analysis-session-id');
+    assert.ok(analysisSessionId);
+    const firstReader = firstResponse.body.getReader();
+    const firstDecoder = new TextDecoder();
+    let firstText = '';
+    let firstEventId = 0;
+    while (!firstText.includes('event: chunk')) {
+      const { value, done } = await firstReader.read();
+      assert.equal(done, false);
+      firstText += firstDecoder.decode(value, { stream: true });
+    }
+    firstEventId = Number(firstText.match(/event: chunk\nid: (\d+)/)?.[1] || 0);
+    assert.ok(firstEventId > 0);
+    await firstReader.cancel();
+
+    const reconnectResponse = await fetch(`${baseUrl}/workbench/api/recognition/manual/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Last-Event-ID': String(firstEventId) },
+      body: JSON.stringify({ analysisSessionId, lastEventId: firstEventId }),
+    });
+    const reconnectText = await reconnectResponse.text();
+    assert.equal(modelAborted, false);
+    assert.equal(modelFinished, true);
+    assert.match(reconnectText, /event: result/);
+    assert.match(reconnectText, /"elements":\[\]/);
+    const replayedChunk = reconnectText.split(/\r?\n\r?\n/).map((block) => {
+      if (!block.includes('event: chunk')) return null;
+      return JSON.parse(block.match(/data: (.+)/)?.[1] || '{}');
+    }).find(Boolean);
+    assert.equal(replayedChunk.content, '"elements":[]}');
+
+    // A stale reconnect token must not be treated as a fresh recognition.
+    const staleReconnectResponse = await fetch(`${baseUrl}/workbench/api/recognition/manual/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ analysisSessionId: 'expired-recognition-session', lastEventId: 0 }),
+    });
+    assert.equal(staleReconnectResponse.status, 410);
+    assert.match((await staleReconnectResponse.json()).error, /会话已结束或已过期/);
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     clearModelRuntime('manual');

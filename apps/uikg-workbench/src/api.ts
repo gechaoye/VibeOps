@@ -44,6 +44,7 @@ export type RecognitionStreamResult = {
   outputContent?: string;
   draft?: Draft;
   issues?: ValidationIssue[];
+  analysisSessionId?: string;
 };
 
 async function consumeRecognitionStream(
@@ -51,38 +52,34 @@ async function consumeRecognitionStream(
   body: Record<string, unknown>,
   onEvent: (event: { type: string; [key: string]: unknown }) => void,
 ): Promise<RecognitionStreamResult> {
-  const response = await fetch(`${serverUrl}/workbench/api${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) {
-    const responseBody = await response.json().catch(() => ({}));
-    throw new Error(responseBody.error || `请求失败：${response.status}`);
-  }
-  if (!response.body) throw new Error('模型流式响应不可用');
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
   let result: RecognitionStreamResult | null = null;
+  let analysisSessionId = typeof body.analysisSessionId === 'string' ? body.analysisSessionId : '';
+  let lastEventId = Number(body.lastEventId || 0) || 0;
+  let reconnectAttempts = 0;
+  let terminalError = false;
   const consume = (block: string) => {
     let eventType = 'message';
     let data = '';
+    let eventId = 0;
     for (const line of block.split(/\r?\n/)) {
+      if (line.startsWith('id:')) eventId = Number(line.slice(3).trim()) || 0;
       if (line.startsWith('event:')) eventType = line.slice(6).trim();
       if (line.startsWith('data:')) data += line.slice(5).trim();
     }
     if (!data) return;
     const payload = JSON.parse(data) as Record<string, unknown>;
+    if (eventId) lastEventId = Math.max(lastEventId, eventId);
+    if (typeof payload.analysisSessionId === 'string') analysisSessionId = payload.analysisSessionId;
     onEvent({ type: eventType, ...payload });
     if (eventType === 'result') result = payload as RecognitionStreamResult;
     if (eventType === 'error') {
+      terminalError = true;
       const error = new Error(String(payload.message || '模型分析失败')) as Error & { details?: Record<string, unknown> };
       error.details = payload;
       throw error;
     }
     if (eventType === 'cancelled') {
+      terminalError = true;
       const error = new Error(String(payload.message || '模型分析已中断')) as Error & { name: string; details?: Record<string, unknown> };
       error.name = 'AnalysisCancelledError';
       error.details = payload;
@@ -90,18 +87,50 @@ async function consumeRecognitionStream(
     }
   };
 
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
-      const blocks = buffer.split(/\r?\n\r?\n/);
-      buffer = blocks.pop() || '';
-      for (const block of blocks) consume(block);
-      if (done) break;
+  while (!result) {
+    try {
+      const response = await fetch(`${serverUrl}/workbench/api${path}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
+          ...(lastEventId ? { 'Last-Event-ID': String(lastEventId) } : {}),
+        },
+        body: JSON.stringify({ ...body, ...(analysisSessionId ? { analysisSessionId } : {}), ...(lastEventId ? { lastEventId } : {}) }),
+      });
+      if (!response.ok) {
+        const responseBody = await response.json().catch(() => ({}));
+        // A stale reconnect token is terminal. Retrying it only creates a
+        // noisy request loop after the server has already ended the session.
+        if (response.status === 404 || response.status === 409 || response.status === 410) terminalError = true;
+        throw new Error(responseBody.error || `请求失败：${response.status}`);
+      }
+      analysisSessionId = response.headers.get('X-Analysis-Session-Id') || analysisSessionId;
+      if (!response.body) throw new Error('模型流式响应不可用');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+          const blocks = buffer.split(/\r?\n\r?\n/);
+          buffer = blocks.pop() || '';
+          for (const block of blocks) consume(block);
+          if (done) break;
+        }
+        if (buffer.trim()) consume(buffer);
+      } finally {
+        reader.releaseLock();
+      }
+      if (result) break;
+      throw new Error('模型流连接提前结束');
+    } catch (error) {
+      if (result || terminalError || reconnectAttempts >= 5 || !analysisSessionId) throw error;
+      reconnectAttempts += 1;
+      onEvent({ type: 'stage', phase: 'reconnecting', message: `流连接中断，正在重新连接（${reconnectAttempts}/5）`, analysisSessionId });
+      await new Promise((resolve) => window.setTimeout(resolve, Math.min(3000, reconnectAttempts * 500)));
     }
-    if (buffer.trim()) consume(buffer);
-  } finally {
-    reader.releaseLock();
   }
   if (!result) throw new Error('模型流结束但未返回结果');
   return result;
@@ -143,7 +172,8 @@ export const workbenchApi = {
   }),
   processPageUpload: (taskId: string) => request<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/process`, { method: 'POST', body: '{}' }),
   deletePageUploads: (ids: string[], deletePages: boolean) => request<{ deletedIds: string[]; draft: Draft }>('/page-uploads', { method: 'DELETE', body: JSON.stringify({ ids, deletePages }) }),
-  freezeFrame: (forceNewPage = false) => request<{ frame: FrameMetadata; draft: Draft }>('/frames', { method: 'POST', body: JSON.stringify({ forceNewPage }) }),
+  freezeFrame: (forceNewPage = false, collectRuntimeStructure = true) => request<{ frame: FrameMetadata; draft: Draft }>('/frames', { method: 'POST', body: JSON.stringify({ forceNewPage, collectRuntimeStructure }) }),
+  frame: (frameId: string) => request<{ frame: FrameMetadata }>(`/frames/${encodeURIComponent(frameId)}`),
   recognitionStream: (
     target: 'manual' | 'ultra_a' | 'ultra_b',
     frameId: string,
@@ -152,8 +182,11 @@ export const workbenchApi = {
     onEvent: (event: { type: string; [key: string]: unknown }) => void,
     pageId?: string,
     workspaceSessionId?: string,
-  ) => consumeRecognitionStream(`/recognition/${target}/stream`, { frameId, pageId, pageContext, mergeIntoDraft, workspaceSessionId }, onEvent),
+    includeUiTree = true,
+  ) => consumeRecognitionStream(`/recognition/${target}/stream`, { frameId, pageId, pageContext, mergeIntoDraft, workspaceSessionId, includeUiTree }, onEvent),
   recognitionSession: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId?: string) => request<{ session: RecognitionResumeSession | null }>(`/recognition/${target}/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
+  reconnectRecognitionStream: (target: 'manual' | 'ultra_a' | 'ultra_b', analysisSessionId: string, lastEventId: number, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+    consumeRecognitionStream(`/recognition/${target}/stream`, { analysisSessionId, lastEventId }, onEvent),
   resumeRecognitionStream: (target: 'manual' | 'ultra_a' | 'ultra_b', sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
     consumeRecognitionStream(`/recognition/${target}/resume/stream`, { sessionId, workspaceSessionId }, onEvent),
   cancelRecognition: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId: string) => request<{ cancelled: boolean }>(`/recognition/${target}/cancel`, { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),

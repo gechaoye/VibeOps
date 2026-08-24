@@ -28,6 +28,7 @@ export interface RecognitionActivity {
   modelBCompletedAt?: string;
   retryAttempt?: number;
   retryLimit?: number;
+  retryReason?: string;
   resumeSessionId?: string;
   resumeKind?: 'manual' | 'ultra_a' | 'ultra_b';
   completedCandidates?: number;
@@ -250,7 +251,7 @@ export function RecognitionProgressPanel({ activity, modelName, modelBModel, ult
         <header className="recognition-progress-header" onPointerDown={startDragging} onPointerMove={dragWindow} onPointerUp={stopDragging} onPointerCancel={stopDragging}>
           <div>
             <strong>{ultraMode ? 'Ultra 模式' : 'Manual 模式'}</strong>
-            <span className={`analysis-status ${activity.status}`}>{statusLabels[activity.status]}{activity.phase === 'retry' && activity.retryAttempt ? ` · 第 ${activity.retryAttempt} 次重试` : ''} · {ultraMode ? `${modelName || 'Model A 未配置'} + ${modelBModel || 'Model B 未配置'}` : modelName || '页面识别模型未配置'} · 分析用时 {formatDuration(totalElapsed)}</span>
+            <span className={`analysis-status ${activity.status}`}>{statusLabels[activity.status]}{activity.phase === 'retry' && activity.retryAttempt ? ` · 重试 ${activity.retryAttempt}/${activity.retryLimit || '?'}` : ''} · {ultraMode ? `${modelName || 'Model A 未配置'} + ${modelBModel || 'Model B 未配置'}` : modelName || '页面识别模型未配置'} · 分析用时 {formatDuration(totalElapsed)}</span>
           </div>
           <div className="analysis-header-actions">
             <button type="button" className={showHistory ? 'icon-button active' : 'icon-button'} title="页面识别历史" onClick={() => setShowHistory((visible) => !visible)}><History size={16} /><span>{sortedSessions.length}</span></button>
