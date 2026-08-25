@@ -65,6 +65,16 @@ const MODE_TARGETS: Record<WorkbenchMode, ModelTarget[]> = {
 const MODE_LABELS: Record<WorkbenchMode, string> = { manual: 'Manual', auto: 'Auto' };
 const CUSTOM_GATEWAY_LIMIT = 5;
 
+function StructuredOutputIcon() {
+  return <svg width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" focusable="false">
+    <path d="M309.5 656a45 46.3 0 1 0 90 0 45 46.3 0 1 0-90 0Z" />
+    <path d="M242 604.6c0-51.1-26.1-89.4-67.5-89.4 41.4 0 67.5-44.6 67.5-95.8v-243h82.5V107H242c-41.4 0-67.5 33.1-67.5 84.2v185.1c0 51.1-26.1 101-67.5 101H62v69.4h45c19.9 0 42.2 17.3 56.2 34.7 12.1 14.9 11.7 39.7 11.4 62-0.1 3.6-0.1 7.2-0.1 10.6v185.1c0 50.9 33.8 77.8 67.5 77.8h82.5v-69.4H242V604.6z" />
+    <path d="M467 656a45 46.3 0 1 0 90 0 45 46.3 0 1 0-90 0Z" />
+    <path d="M624.5 656a45 46.3 0 1 0 90 0 45 46.3 0 1 0-90 0Z" />
+    <path d="M928.2 477.3c-41.4 0-78.8-49.8-78.8-101V191.2c0-51.1-33.6-84.2-75-84.2h-75v69.4H782v243c0 24.6 0.4 51.3 14.5 68.6 14.1 17.4 33.1 27.1 53 27.1-19.9 0-39 9.8-53 27.1-14.1 17.5-14.5 37.8-14.5 62.4v243h-82.5V917H782c41.4 0 67.5-4.2 67.5-55.3V654c0-3.4-0.1-7-0.1-10.6-0.3-22.3-0.7-47 11.4-62 14.1-17.4 36.4-34.7 56.2-34.7h45v-69.4h-33.8z" />
+  </svg>;
+}
+
 function familyForModel(modelName: string) {
   const name = modelName.toLowerCase();
   if (name.includes('qwen2.5-vl')) return 'qwen2.5-vl';
@@ -399,7 +409,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     try {
       const result = await workbenchApi.testGatewayModelCapabilities(gatewayId);
       await loadModels();
-      setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'success', detail: `原生 ${result.native} · 本地 ${result.local} · 不可用 ${result.unavailable}` } }));
+      setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'success', detail: `原生结构化输出 ${result.native} · 本地结构化输出 ${result.local} · 不支持结构化输出 ${result.unavailable}` } }));
     } catch (error) {
       setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'error', detail: error instanceof Error ? error.message : String(error) } }));
     }
@@ -438,7 +448,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     const displayValue = form.modelName ? `${selectedGateway?.label || '未选择网关'}：${form.modelName}` : '未配置';
     const capability = catalog?.gateways.find((gateway) => gateway.id === form.gatewayId)?.capabilities[form.modelName]
       || slotForTarget(settings, target).capability;
-    const capabilityLabel = capability?.mode === 'native' ? '原生结构化' : capability?.mode === 'local' ? '本地校验' : capability?.mode === 'unavailable' ? '不可用' : '未检测';
+    const capabilityLabel = capability?.mode === 'native' ? '原生结构化输出' : capability?.mode === 'local' ? '本地结构化输出' : capability?.mode === 'unavailable' ? '不支持结构化输出' : '未检测';
     return <div className={`setting-row model-setting-row ${disabled ? 'disabled' : ''}`}>
       <div className="setting-copy"><strong>{label}</strong><span>{description}</span></div>
       <div className="model-setting-control">
@@ -468,7 +478,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
         <div className="gateway-catalog-actions">
           {test && <small className={`gateway-test-result ${test.status}`} title={test.detail}>{test.status === 'testing' ? '测试中' : test.detail}</small>}
           <button type="button" className="icon-button" aria-label={`测试 ${gateway.label} 连通性`} title="测试连通性" disabled={test?.status === 'testing' || gatewayDeleting} onClick={() => void testGateway(gateway.id)}>{test?.status === 'testing' ? <LoaderCircle className="spin" size={14} /> : <PlugZap size={14} />}</button>
-          <button type="button" className="icon-button" aria-label={`检测 ${gateway.label} 所有模型能力`} title="检测所有模型能力" disabled={test?.status === 'testing' || gatewayDeleting} onClick={() => void testGatewayCapabilities(gateway.id)}>{test?.status === 'testing' ? <LoaderCircle className="spin" size={14} /> : <Check size={14} />}</button>
+          <button type="button" className="icon-button" aria-label={`检测 ${gateway.label} 模型结构化输出能力`} title="检测模型结构化输出能力" disabled={test?.status === 'testing' || gatewayDeleting} onClick={() => void testGatewayCapabilities(gateway.id)}>{test?.status === 'testing' ? <LoaderCircle className="spin" size={14} /> : <StructuredOutputIcon />}</button>
           <button type="button" className="icon-button" aria-label={`刷新 ${gateway.label} 模型列表`} title="刷新模型列表" disabled={modelsLoading || gatewayDeleting} onClick={() => void loadModels()}><RefreshCw className={modelsLoading ? 'spin' : ''} size={14} /></button>
           <button type="button" className="icon-button" aria-label={`编辑 ${gateway.label}`} title="编辑网关" disabled={gatewayDeleting} onClick={() => openGatewayDialog(stored)}><Pencil size={14} /></button>
           <button type="button" className="icon-button danger-icon" aria-label={`删除 ${gateway.label}`} title="删除网关" disabled={gatewayDeleting} onClick={() => void deleteGateway(gateway.id, gateway.label)}><Trash2 size={14} /></button>
@@ -477,7 +487,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
       {gateway.error ? <div className="model-list-error"><CircleAlert size={14} /><span title={gateway.error}>{gateway.error}</span></div> : <div className="model-gateway-models" aria-label={`${gateway.label} 模型`}>
         {gateway.models.map((modelName) => {
           const capability = gateway.capabilities[modelName];
-          const label = capability?.mode === 'native' ? '原生' : capability?.mode === 'local' ? '本地' : capability?.mode === 'unavailable' ? '不可用' : '未检测';
+          const label = capability?.mode === 'native' ? '原生结构化输出' : capability?.mode === 'local' ? '本地结构化输出' : capability?.mode === 'unavailable' ? '不支持结构化输出' : '未检测';
           return <div key={modelName} className="gateway-model-row"><i className={capability?.mode || 'unverified'} aria-hidden="true" /><strong title={modelName}>{modelName}</strong><code>{gateway.modelFamilies[modelName] || familyForModel(modelName)}</code><span className={`model-capability-badge ${capability?.mode || 'unverified'}`} title={capability?.detail}>{label}</span></div>;
         })}
         {!gateway.models.length && <div className="model-list-empty">没有可用模型</div>}
