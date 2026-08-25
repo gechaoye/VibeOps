@@ -1,6 +1,7 @@
 import {
   Check,
   ChevronDown,
+  Clipboard,
   CircleAlert,
   Gauge,
   KeyRound,
@@ -14,9 +15,11 @@ import {
   Search,
   Server,
   Settings,
+  FileText,
   Trash2,
   X,
 } from 'lucide-react';
+import { App as AntdApp } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { workbenchApi } from './api';
 import type {
@@ -51,14 +54,15 @@ interface GatewayForm {
 
 type ModelForms = Record<ModelTarget, ModelForm>;
 type GatewayTestState = { status: 'testing' | 'success' | 'error'; detail?: string };
+type EditableRuleSource = 'element-universal' | 'custom';
+type PromptRule = { key: string; title: string; description: string; source: 'builtin' | EditableRuleSource };
 
-const TARGETS: ModelTarget[] = ['manual', 'auto', 'ultra_a', 'ultra_b', 'midscene'];
+const TARGETS: ModelTarget[] = ['manual', 'auto', 'midscene'];
 const MODE_TARGETS: Record<WorkbenchMode, ModelTarget[]> = {
   manual: ['manual'],
-  ultra: ['ultra_a', 'ultra_b'],
   auto: ['auto', 'midscene'],
 };
-const MODE_LABELS: Record<WorkbenchMode, string> = { manual: 'Manual', ultra: 'Ultra', auto: 'Auto' };
+const MODE_LABELS: Record<WorkbenchMode, string> = { manual: 'Manual', auto: 'Auto' };
 const CUSTOM_GATEWAY_LIMIT = 5;
 
 function familyForModel(modelName: string) {
@@ -79,8 +83,6 @@ function familyForModel(modelName: string) {
 function slotForTarget(settings: ModelSettingsData, target: ModelTarget) {
   if (target === 'manual') return settings.manual;
   if (target === 'auto') return settings.auto;
-  if (target === 'ultra_a') return settings.ultraModelA;
-  if (target === 'ultra_b') return settings.ultraModelB;
   if (target === 'midscene') return settings.midscene;
   return settings.manual;
 }
@@ -110,11 +112,12 @@ function formChanged(form: ModelForm, slot: ModelSlotSettings) {
 }
 
 export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
+  const { modal } = AntdApp.useApp();
   const [settings, setSettings] = useState<ModelSettingsData | null>(null);
   const [catalog, setCatalog] = useState<AvailableModels | null>(null);
   const [query, setQuery] = useState('');
   const [forms, setForms] = useState<ModelForms | null>(null);
-  const [mode, setMode] = useState<WorkbenchMode>('ultra');
+  const [mode, setMode] = useState<WorkbenchMode>('manual');
   const [pendingMode, setPendingMode] = useState<WorkbenchMode | null>(null);
   const [loading, setLoading] = useState(true);
   const [modelsLoading, setModelsLoading] = useState(true);
@@ -127,11 +130,18 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
   const [activeSection, setActiveSection] = useState('model-gateways');
   const [openModelTarget, setOpenModelTarget] = useState<ModelTarget | null>(null);
   const [modelQueries, setModelQueries] = useState<Partial<Record<ModelTarget, string>>>({});
+  const [promptData, setPromptData] = useState<{ frameId: string; prompt: string; rules: PromptRule[] } | null>(null);
+  const [promptLoading, setPromptLoading] = useState(false);
+  const [promptExpanded, setPromptExpanded] = useState(false);
+  const [editingRuleKey, setEditingRuleKey] = useState<string | null>(null);
+  const [editingRuleCategory, setEditingRuleCategory] = useState<EditableRuleSource | null>(null);
+  const [draftRule, setDraftRule] = useState({ title: '', description: '' });
+  const [ruleSaving, setRuleSaving] = useState(false);
 
   const applySettings = (result: ModelSettingsData, syncMode = true) => {
     setSettings(result);
     setForms(formsFromSettings(result));
-    if (syncMode) setMode(result.modeConfiguration?.mode || 'ultra');
+    if (syncMode) setMode(result.modeConfiguration?.mode === 'auto' ? 'auto' : 'manual');
   };
 
   const loadSettings = async () => {
@@ -148,7 +158,87 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     finally { setModelsLoading(false); }
   };
 
+  const loadPrompt = async () => {
+    setPromptLoading(true);
+    try { setPromptData(await workbenchApi.recognitionPrompt()); }
+    catch (error) { onNotice('error', error instanceof Error ? error.message : String(error)); }
+    finally { setPromptLoading(false); }
+  };
+
+  const copyPrompt = async () => {
+    if (!promptData?.prompt || !navigator.clipboard) return;
+    try {
+      await navigator.clipboard.writeText(promptData.prompt);
+      onNotice('success', '复制成功');
+    } catch {
+      onNotice('error', '提示词复制失败，请手动选择文本复制');
+    }
+  };
+
+  const resizeRuleTextarea = (element: HTMLTextAreaElement | null) => {
+    if (!element) return;
+    element.style.height = 'auto';
+    const borderHeight = element.offsetHeight - element.clientHeight;
+    element.style.height = `${element.scrollHeight + borderHeight}px`;
+  };
+
+  const beginAddRule = (category: EditableRuleSource) => {
+    setEditingRuleKey('__new__');
+    setEditingRuleCategory(category);
+    setDraftRule({ title: '', description: '' });
+  };
+
+  const beginEditRule = (rule: PromptRule) => {
+    if (rule.source === 'builtin') return;
+    setEditingRuleKey(rule.key);
+    setEditingRuleCategory(rule.source);
+    setDraftRule({ title: rule.title, description: rule.description });
+  };
+
+  const cancelRuleEditing = () => {
+    setEditingRuleKey(null);
+    setEditingRuleCategory(null);
+    setDraftRule({ title: '', description: '' });
+  };
+
+  const saveRule = async () => {
+    if (!draftRule.title.trim() || !draftRule.description.trim()) return;
+    setRuleSaving(true);
+    try {
+      if (editingRuleKey === '__new__' && editingRuleCategory) await workbenchApi.createRecognitionPromptRule({ ...draftRule, category: editingRuleCategory });
+      else if (editingRuleKey) await workbenchApi.saveRecognitionPromptRule(editingRuleKey, draftRule);
+      const categoryLabel = editingRuleCategory === 'custom' ? '自定义规则' : '元素共相规则';
+      cancelRuleEditing();
+      await loadPrompt();
+      onNotice('success', `${categoryLabel}已保存并应用`);
+    } catch (error) { onNotice('error', error instanceof Error ? error.message : String(error)); }
+    finally { setRuleSaving(false); }
+  };
+
+  const deleteRule = (key: string, category: EditableRuleSource) => {
+    const categoryLabel = category === 'custom' ? '自定义规则' : '元素共相规则';
+    modal.confirm({
+      title: `删除这条${categoryLabel}？`,
+      content: '删除后将立即从识别提示词中移除。',
+      okText: '确认删除',
+      cancelText: '取消',
+      centered: true,
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        setRuleSaving(true);
+        try {
+          await workbenchApi.deleteRecognitionPromptRule(key);
+          await loadPrompt();
+          onNotice('success', `${categoryLabel}已删除`);
+        } catch (error) { onNotice('error', error instanceof Error ? error.message : String(error)); }
+        finally { setRuleSaving(false); }
+      },
+    });
+  };
+
   useEffect(() => { void loadSettings(); void loadModels(); }, []);
+
+  useEffect(() => { if (activeSection === 'recognition-prompt' && !promptData) void loadPrompt(); }, [activeSection, promptData]);
 
   useEffect(() => {
     if (!openModelTarget) return undefined;
@@ -248,8 +338,6 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     const labels: Record<ModelTarget, string> = {
       manual: 'Manual 页面识别模型',
       auto: 'Auto 页面识别模型',
-      ultra_a: 'Ultra Model A',
-      ultra_b: 'Ultra Model B',
       midscene: 'Auto Midscene 模型',
     };
     return TARGETS.filter((target) => slotForTarget(settings, target).config.gatewayId === editingGatewayId).map((target) => labels[target]);
@@ -274,17 +362,26 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     finally { setGatewaySaving(false); }
   };
 
-  const deleteGateway = async (gatewayId: string, gatewayLabel: string) => {
-    if (!window.confirm(`确定删除“${gatewayLabel}”网关？`)) return;
-    setGatewayDeleting(true);
-    try {
-      const result = await workbenchApi.deleteModelGateway(gatewayId);
-      applySettings(result);
-      await loadModels();
-      onSaved(result);
-      onNotice('success', `${gatewayLabel} 已移除`);
-    } catch (error) { onNotice('error', error instanceof Error ? error.message : String(error)); }
-    finally { setGatewayDeleting(false); }
+  const deleteGateway = (gatewayId: string, gatewayLabel: string) => {
+    modal.confirm({
+      title: `删除“${gatewayLabel}”网关？`,
+      content: '删除后无法恢复，请确认该网关已不再使用。',
+      okText: '删除网关',
+      cancelText: '取消',
+      centered: true,
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        setGatewayDeleting(true);
+        try {
+          const result = await workbenchApi.deleteModelGateway(gatewayId);
+          applySettings(result);
+          await loadModels();
+          onSaved(result);
+          onNotice('success', `${gatewayLabel} 已移除`);
+        } catch (error) { onNotice('error', error instanceof Error ? error.message : String(error)); }
+        finally { setGatewayDeleting(false); }
+      },
+    });
   };
 
   const testGateway = async (gatewayId: string) => {
@@ -297,14 +394,23 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     }
   };
 
+  const testGatewayCapabilities = async (gatewayId: string) => {
+    setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'testing', detail: '正在检测模型能力' } }));
+    try {
+      const result = await workbenchApi.testGatewayModelCapabilities(gatewayId);
+      await loadModels();
+      setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'success', detail: `原生 ${result.native} · 本地 ${result.local} · 不可用 ${result.unavailable}` } }));
+    } catch (error) {
+      setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'error', detail: error instanceof Error ? error.message : String(error) } }));
+    }
+  };
+
   if (loading && !settings) return <main className="settings-page"><div className="settings-state"><LoaderCircle className="spin" size={20} />正在读取设置</div></main>;
   if (!settings || !forms) return <main className="settings-page"><div className="settings-state"><CircleAlert size={20} />设置读取失败<button type="button" className="button" onClick={() => void loadSettings()}><RefreshCw size={14} />重试</button></div></main>;
 
   const targetLabels: Record<ModelTarget, string> = {
     manual: 'Manual 页面识别模型',
     auto: 'Auto 页面识别模型',
-    ultra_a: 'Model A',
-    ultra_b: 'Model B',
     midscene: 'Midscene 模型',
   };
 
@@ -330,6 +436,9 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
       models: gateway.models.filter((modelName) => !needle || `${gateway.label} ${modelName}`.toLowerCase().includes(needle)),
     })).filter((gateway) => gateway.models.length > 0);
     const displayValue = form.modelName ? `${selectedGateway?.label || '未选择网关'}：${form.modelName}` : '未配置';
+    const capability = catalog?.gateways.find((gateway) => gateway.id === form.gatewayId)?.capabilities[form.modelName]
+      || slotForTarget(settings, target).capability;
+    const capabilityLabel = capability?.mode === 'native' ? '原生结构化' : capability?.mode === 'local' ? '本地校验' : capability?.mode === 'unavailable' ? '不可用' : '未检测';
     return <div className={`setting-row model-setting-row ${disabled ? 'disabled' : ''}`}>
       <div className="setting-copy"><strong>{label}</strong><span>{description}</span></div>
       <div className="model-setting-control">
@@ -343,6 +452,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
             </div>
           </div>}
         </div>
+        {form.modelName && <small className={`model-capability-status ${capability?.mode || 'unverified'}`} title={capability?.detail}>{capabilityLabel}</small>}
       </div>
       {renderModelParameters(target, disabled)}
     </div>;
@@ -358,41 +468,74 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
         <div className="gateway-catalog-actions">
           {test && <small className={`gateway-test-result ${test.status}`} title={test.detail}>{test.status === 'testing' ? '测试中' : test.detail}</small>}
           <button type="button" className="icon-button" aria-label={`测试 ${gateway.label} 连通性`} title="测试连通性" disabled={test?.status === 'testing' || gatewayDeleting} onClick={() => void testGateway(gateway.id)}>{test?.status === 'testing' ? <LoaderCircle className="spin" size={14} /> : <PlugZap size={14} />}</button>
+          <button type="button" className="icon-button" aria-label={`检测 ${gateway.label} 所有模型能力`} title="检测所有模型能力" disabled={test?.status === 'testing' || gatewayDeleting} onClick={() => void testGatewayCapabilities(gateway.id)}>{test?.status === 'testing' ? <LoaderCircle className="spin" size={14} /> : <Check size={14} />}</button>
           <button type="button" className="icon-button" aria-label={`刷新 ${gateway.label} 模型列表`} title="刷新模型列表" disabled={modelsLoading || gatewayDeleting} onClick={() => void loadModels()}><RefreshCw className={modelsLoading ? 'spin' : ''} size={14} /></button>
           <button type="button" className="icon-button" aria-label={`编辑 ${gateway.label}`} title="编辑网关" disabled={gatewayDeleting} onClick={() => openGatewayDialog(stored)}><Pencil size={14} /></button>
           <button type="button" className="icon-button danger-icon" aria-label={`删除 ${gateway.label}`} title="删除网关" disabled={gatewayDeleting} onClick={() => void deleteGateway(gateway.id, gateway.label)}><Trash2 size={14} /></button>
         </div>
       </header>
       {gateway.error ? <div className="model-list-error"><CircleAlert size={14} /><span title={gateway.error}>{gateway.error}</span></div> : <div className="model-gateway-models" aria-label={`${gateway.label} 模型`}>
-        {gateway.models.map((modelName) => <div key={modelName} className="gateway-model-row"><i aria-hidden="true" /><strong title={modelName}>{modelName}</strong><code>{gateway.modelFamilies[modelName] || familyForModel(modelName)}</code></div>)}
+        {gateway.models.map((modelName) => {
+          const capability = gateway.capabilities[modelName];
+          const label = capability?.mode === 'native' ? '原生' : capability?.mode === 'local' ? '本地' : capability?.mode === 'unavailable' ? '不可用' : '未检测';
+          return <div key={modelName} className="gateway-model-row"><i className={capability?.mode || 'unverified'} aria-hidden="true" /><strong title={modelName}>{modelName}</strong><code>{gateway.modelFamilies[modelName] || familyForModel(modelName)}</code><span className={`model-capability-badge ${capability?.mode || 'unverified'}`} title={capability?.detail}>{label}</span></div>;
+        })}
         {!gateway.models.length && <div className="model-list-empty">没有可用模型</div>}
       </div>}
     </section>;
   };
 
-  const sectionTitle = activeSection === 'model-gateways' ? '模型网关' : '模式配置';
+  const sectionTitle = activeSection === 'model-gateways' ? '模型网关' : activeSection === 'mode-configuration' ? '模式配置' : '识别提示词';
+  const sectionDescription = activeSection === 'model-gateways' ? '管理默认与自定义网关及模型连接。' : activeSection === 'mode-configuration' ? '选择工作模式并指定使用的模型。' : '查看当前识别请求使用的提示词，以及模型必须遵守的规则和约束。';
+  const settingsSections = (() => {
+    const configured = settings.sections?.length ? settings.sections : [
+      { id: 'model-gateways', label: '模型网关', order: 10 },
+      { id: 'mode-configuration', label: '模式配置', order: 20 },
+    ];
+    return configured.some((section) => section.id === 'recognition-prompt')
+      ? configured
+      : [...configured, { id: 'recognition-prompt', label: '识别提示词', order: 30 }];
+  })();
+
+  const renderRuleEditor = (key: string, autoFocus = false) => <div key={key} className="prompt-rule-editor">
+    <input autoFocus={autoFocus} value={draftRule.title} placeholder="规则名称" onChange={(event) => setDraftRule({ ...draftRule, title: event.target.value })} />
+    <textarea ref={resizeRuleTextarea} value={draftRule.description} placeholder="规则内容" onChange={(event) => { setDraftRule({ ...draftRule, description: event.target.value }); resizeRuleTextarea(event.currentTarget); }} />
+    <div><button type="button" className="icon-button" title="保存规则" aria-label="保存规则" disabled={ruleSaving || !draftRule.title.trim() || !draftRule.description.trim()} onClick={() => void saveRule()}>{ruleSaving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}</button><button type="button" className="icon-button" title="取消编辑" aria-label="取消编辑" disabled={ruleSaving} onClick={cancelRuleEditing}><X size={14} /></button></div>
+  </div>;
+
+  const renderEditableRuleGroup = (category: EditableRuleSource, title: string, emptyMessage: string) => {
+    const rules = promptData?.rules.filter((rule) => rule.source === category) || [];
+    const addingHere = editingRuleKey === '__new__' && editingRuleCategory === category;
+    return <section className="prompt-rule-group" aria-labelledby={`${category}-rules-title`}>
+      <header><h3 id={`${category}-rules-title`}>{title}</h3>{rules.length > 0 && <button type="button" className="button" disabled={ruleSaving || editingRuleKey !== null} onClick={() => beginAddRule(category)}><Plus size={13} />新增规则</button>}</header>
+      {category === 'element-universal' && rules.length > 0 && <p className="prompt-rule-group-description">元素共相是从多个同构元素中归纳出的共有结构、属性与交互行为，不代表某一个具体元素实例。</p>}
+      <div className="prompt-rules-list">
+        {rules.map((rule) => editingRuleKey === rule.key ? renderRuleEditor(rule.key) : <article key={rule.key} className="prompt-rule-card"><div><strong>{rule.title}</strong></div><p>{rule.description}</p><span className="prompt-rule-actions"><button type="button" className="icon-button" title="编辑规则" aria-label={`编辑${rule.title}`} disabled={ruleSaving} onClick={() => beginEditRule(rule)}><Pencil size={13} /></button><button type="button" className="icon-button danger-icon" title="删除规则" aria-label={`删除${rule.title}`} disabled={ruleSaving} onClick={() => void deleteRule(rule.key, category)}><Trash2 size={13} /></button></span></article>)}
+        {rules.length === 0 && !addingHere && <div className="prompt-rules-empty"><span>{emptyMessage}</span><button type="button" className="prompt-empty-add" disabled={ruleSaving || editingRuleKey !== null} onClick={() => beginAddRule(category)}>新增规则</button></div>}
+        {addingHere && renderRuleEditor(`new-${category}`, true)}
+      </div>
+    </section>;
+  };
+
   return (
     <main className="settings-page">
       <aside className="settings-sidebar">
         <header><Settings size={18} /><strong>设置</strong></header>
         <nav aria-label="设置分类">
-          {(settings.sections?.length ? settings.sections : [
-            { id: 'model-gateways', label: '模型网关', order: 10 },
-            { id: 'mode-configuration', label: '模式配置', order: 20 },
-          ]).sort((left, right) => left.order - right.order).map((section) => <button key={section.id} type="button" className={activeSection === section.id ? 'active' : ''} onClick={() => setActiveSection(section.id)}><span>{section.label}</span></button>)}
+          {settingsSections.sort((left, right) => left.order - right.order).map((section) => <button key={section.id} type="button" className={activeSection === section.id ? 'active' : ''} onClick={() => setActiveSection(section.id)}><span>{section.label}</span></button>)}
         </nav>
       </aside>
 
       <div className="settings-detail">
-        <header className="settings-detail-header"><h1>{sectionTitle}</h1><p>{activeSection === 'model-gateways' ? '管理默认与自定义网关及模型连接。' : '选择工作模式并指定使用的模型。'}</p></header>
+        <header className="settings-detail-header"><h1>{sectionTitle}</h1><p>{sectionDescription}</p></header>
 
         {activeSection === 'model-gateways' ? <section className="gateway-detail-page" aria-label="模型网关详情">
           <label className="model-search"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索模型" /></label>
           <div className="gateway-catalog-group"><h3><span>默认网关 <small>{defaultGateways.length}</small></span></h3>{filteredGateways.filter((gateway) => gateway.kind === 'default').map(renderGateway)}{!defaultGateways.length && <div className="settings-empty"><span>暂无默认网关</span></div>}</div>
           <div className="gateway-catalog-group"><h3><span>自定义网关 <small>{customGateways.length} / {CUSTOM_GATEWAY_LIMIT}</small>{customGateways.length > 0 && customGateways.length < CUSTOM_GATEWAY_LIMIT && <button type="button" className="button gateway-inline-add" disabled={gatewaySaving} onClick={() => openGatewayDialog()}><Plus size={13} />添加网关</button>}</span></h3>{filteredGateways.filter((gateway) => gateway.kind === 'custom').map(renderGateway)}{!customGateways.length && <div className="settings-empty gateway-empty-state"><span>尚未添加自定义网关</span>{customGateways.length < CUSTOM_GATEWAY_LIMIT && <button type="button" className="button" disabled={gatewaySaving} onClick={() => openGatewayDialog()}><Plus size={13} />添加网关</button>}</div>}</div>
-        </section> : <section className="mode-detail-page" aria-labelledby="mode-settings-title">
-          <div className="settings-group-heading"><div><Gauge size={17} /><span><h2 id="mode-settings-title">工作模式</h2><p>每种模式独立配置；Model A / B 只属于 Ultra，且两者地位对等。</p></span></div></div>
-          <div className="setting-row mode-setting-row"><div className="setting-copy"><strong>工作模式</strong><span>Auto 模式暂未开放。</span></div><div className="mode-segment" role="radiogroup" aria-label="工作模式">{(['manual', 'ultra', 'auto'] as WorkbenchMode[]).map((value) => <button key={value} type="button" role="radio" aria-checked={mode === value} className={mode === value ? 'active' : ''} disabled={value === 'auto'} onClick={() => changeConfigurationMode(value)}>{MODE_LABELS[value]}{value === 'auto' && <small>待开发</small>}</button>)}</div></div>
+        </section> : activeSection === 'mode-configuration' ? <section className="mode-detail-page" aria-labelledby="mode-settings-title">
+          <div className="settings-group-heading"><div><Gauge size={17} /><span><h2 id="mode-settings-title">工作模式</h2><p>页面识别使用单模型；Auto 保留为后续自动探索配置。</p></span></div></div>
+          <div className="setting-row mode-setting-row"><div className="setting-copy"><strong>工作模式</strong><span>页面识别使用单模型配置。</span></div><div className="mode-segment" role="radiogroup" aria-label="工作模式">{(['manual', 'auto'] as WorkbenchMode[]).map((value) => <button key={value} type="button" role="radio" aria-checked={mode === value} className={mode === value ? 'active' : ''} disabled={value === 'auto'} onClick={() => changeConfigurationMode(value)}>{MODE_LABELS[value]}{value === 'auto' && <small>开发中</small>}</button>)}</div></div>
           {mode === 'manual' && <>
             <div className="settings-group-heading"><div><span><h2>Manual</h2><p>人工触发页面识别，识别后进入人工维护与审核。</p></span></div></div>
             {renderModelSelect('manual', '页面识别模型', '仅供 Manual 模式使用。')}
@@ -402,18 +545,27 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
             {renderModelSelect('auto', '页面识别模型', '仅供 Auto 模式使用，不与 Manual 共用。')}
             {renderModelSelect('midscene', 'Midscene 模型', 'Auto 模式用于理解并操作设备。')}
           </>}
-          {mode === 'ultra' && <>
-            <div className="settings-group-heading"><div><span><h2>Ultra</h2><p>Model A 与 Model B 对同一设备帧并行识别，完成后由用户合并结果。</p></span></div></div>
-            {renderModelSelect('ultra_a', 'Model A', 'Ultra 模式的并列识别模型。')}
-            {renderModelSelect('ultra_b', 'Model B', 'Ultra 模式的并列识别模型。')}
-          </>}
           <footer className="settings-save-bar"><span>{dirty ? '有未保存的更改' : <><Check size={13} />设置已同步</>}</span><button type="button" className="button" disabled={!dirty || saving} onClick={resetCurrentConfiguration}><RotateCcw size={14} />还原</button><button type="button" className="button button-primary" disabled={!dirty || saving} onClick={() => void saveConfiguration()}>{saving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}保存设置</button></footer>
+        </section> : <section className="prompt-detail-page" aria-labelledby="recognition-prompt-title">
+            <div className="settings-group-heading"><div><FileText size={17} /><span><h2 id="recognition-prompt-title">当前识别提示词</h2></span></div></div>
+          {promptLoading && !promptData ? <div className="settings-empty"><LoaderCircle className="spin" size={17} />正在读取提示词</div> : promptData ? <>
+            <div className="prompt-rules-toolbar"><strong>规则与约束</strong></div>
+            <section className="prompt-rule-group" aria-labelledby="builtin-rules-title">
+              <h3 id="builtin-rules-title">内置规则</h3>
+              <div className="prompt-rules-list">
+                {promptData.rules.filter((rule) => rule.source === 'builtin').map((rule) => <article key={rule.key} className="prompt-rule-card"><div><strong>{rule.title}</strong></div><p>{rule.description}</p></article>)}
+              </div>
+            </section>
+            {renderEditableRuleGroup('element-universal', '元素共相', '暂无元素共相规则。可新增规则定义多个同构元素共有的结构、属性与交互。')}
+            {renderEditableRuleGroup('custom', '自定义规则', '暂无自定义规则。')}
+            <div className={`prompt-preview ${promptExpanded ? 'expanded' : ''}`}><div className="prompt-preview-heading"><span>完整提示词</span><div className="prompt-text-actions"><button type="button" className="prompt-text-action" disabled={promptLoading} onClick={() => void loadPrompt()}>{promptLoading ? '刷新中' : '刷新'}</button><button type="button" className="prompt-text-action" disabled={!promptData?.prompt || !navigator.clipboard} onClick={() => void copyPrompt()}>复制提示词</button></div></div><pre aria-label="完整提示词">{promptData.prompt}</pre><button type="button" className="prompt-expand-button" onClick={() => setPromptExpanded((current) => !current)}><ChevronDown size={12} className={promptExpanded ? 'rotated' : ''} />{promptExpanded ? '收起提示词' : '展开提示词'}</button></div>
+          </> : <div className="settings-empty"><span>提示词读取失败</span><button type="button" className="button" onClick={() => void loadPrompt()}><RefreshCw size={13} />重试</button></div>}
         </section>}
       </div>
 
       {gatewayForm && <div className="gateway-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !gatewaySaving && !gatewayDeleting) setGatewayForm(null); }}>
         <form className="gateway-dialog" role="dialog" aria-modal="true" aria-labelledby="gateway-dialog-title" autoComplete="off" onSubmit={(event) => { event.preventDefault(); if (!gatewaySaving && !gatewayDeleting) void saveGateway(); }} onMouseDown={(event) => event.stopPropagation()}>
-          <header><div><strong id="gateway-dialog-title">{editingGatewayId ? '编辑模型网关' : '添加自定义网关'}</strong><span>保存后可用于 Manual、Auto、Ultra 和 Midscene 的模型配置。</span></div><button type="button" className="icon-button" aria-label="关闭" title="关闭" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}><X size={16} /></button></header>
+          <header><div><strong id="gateway-dialog-title">{editingGatewayId ? '编辑模型网关' : '添加自定义网关'}</strong><span>保存后可用于单模型页面识别、Auto 和 Midscene 配置。</span></div><button type="button" className="icon-button" aria-label="关闭" title="关闭" disabled={gatewaySaving || gatewayDeleting} onClick={() => setGatewayForm(null)}><X size={16} /></button></header>
           <div className="gateway-dialog-fields">
             <label className="settings-field settings-field-wide"><span>显示名称</span><input required value={gatewayForm.label} placeholder="例如 Internal API" onChange={(event) => setGatewayForm({ ...gatewayForm, label: event.target.value })} /></label>
             <label className="settings-field settings-field-wide"><span>Base URL</span><input required type="url" value={gatewayForm.baseUrl} placeholder="https://gateway.example.com/v1" onChange={(event) => setGatewayForm({ ...gatewayForm, baseUrl: event.target.value })} /></label>

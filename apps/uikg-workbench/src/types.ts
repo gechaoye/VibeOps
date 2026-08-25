@@ -10,6 +10,29 @@ export interface BBox {
   height: number;
 }
 
+export interface AbstractElementField {
+  key: string;
+  label: string;
+  elementType: string;
+  description: string;
+  displayCondition: string;
+  capabilities: string[];
+  interactionBoundary: string;
+  actionEffects: Array<{ action: string; effect: string }>;
+  parentId: string | null;
+  required: boolean;
+  instanceRegions: BBox[];
+}
+
+export interface AbstractElementDefinition {
+  kind: 'repeated-template' | 'dynamic-template';
+  templateKey: string;
+  instanceCount: number;
+  fields: AbstractElementField[];
+  instanceRegions: BBox[];
+  bboxStyle: 'abstract';
+}
+
 export interface MeaningEvidence {
   visibleTexts: string[];
   visibleIcons: string[];
@@ -35,6 +58,7 @@ export interface DraftElement {
   enabled: boolean | null;
   state: string;
   dynamicContent: boolean;
+  abstraction: AbstractElementDefinition | null;
   bbox: BBox;
   gridColumns: number;
   gridRows: number;
@@ -271,13 +295,9 @@ export interface WorkbenchStatus {
   recognitionRunning: boolean;
   manualModelConfigured: boolean;
   manualModel: string | null;
-  ultraModelAConfigured: boolean;
-  ultraModelA: string | null;
-  ultraModelBConfigured: boolean;
-  ultraModelB: string | null;
+  manualGatewayLabel: string | null;
+  manualReasoningEffort: ReasoningEffort | null;
   manualSession: RecognitionResumeSession | null;
-  ultraModelASession: RecognitionResumeSession | null;
-  ultraModelBSession: RecognitionResumeSession | null;
   spec: {
     version: string;
     schemaVersion: string;
@@ -312,7 +332,7 @@ export interface RecognitionResumeSession {
 
 export interface AnalysisSession {
   id: string;
-  kind: 'manual' | 'ultra_a' | 'ultra_b';
+  kind: 'manual';
   status: 'running' | 'completed' | 'failed' | 'cancelled';
   frameId: string | null;
   pageId?: string | null;
@@ -323,6 +343,9 @@ export interface AnalysisSession {
   completedAt?: string | null;
   durationMs?: number | null;
   errorMessage?: string | null;
+  schemaErrors?: unknown[];
+  consistencyIssues?: unknown[];
+  normalizationIssues?: unknown[];
   reasoningContent: string;
   outputContent: string;
   retryAttempts?: RecognitionResumeSession['retryAttempts'];
@@ -351,16 +374,6 @@ export interface RecognitionResult {
   [key: string]: unknown;
 }
 
-export type UltraModelMergeSource = 'modelA' | 'modelB';
-
-export interface UltraModelElementMergeSelection {
-  candidateKey: string;
-  modelACandidateKey?: string;
-  modelBCandidateKey?: string;
-  baseSource: UltraModelMergeSource;
-  fieldSources: Record<string, UltraModelMergeSource>;
-}
-
 export interface ModelPreset {
   id: string;
   name: string;
@@ -373,8 +386,16 @@ export interface ModelPreset {
 }
 
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
-export type ModelTarget = 'manual' | 'auto' | 'ultra_a' | 'ultra_b' | 'midscene';
-export type WorkbenchMode = 'manual' | 'ultra' | 'auto';
+export type ModelTarget = 'manual' | 'auto' | 'midscene';
+export type WorkbenchMode = 'manual' | 'auto';
+export type ModelCapabilityMode = 'native' | 'local' | 'unavailable';
+
+export interface ModelCapability {
+  mode: ModelCapabilityMode;
+  checkedAt: string;
+  detail: string;
+  gatewayUpdatedAt?: string;
+}
 
 export interface ModelGatewaySettings {
   id: string;
@@ -390,6 +411,7 @@ export interface ModelGatewayCatalog extends ModelGatewaySettings {
   sourceUrl: string;
   models: string[];
   modelFamilies: Record<string, string>;
+  capabilities: Record<string, ModelCapability | null>;
   error?: string;
 }
 
@@ -403,8 +425,6 @@ export interface ModelSettingsData {
   sections?: Array<{ id: string; label: string; order: number }>;
   manual: ModelSlotSettings;
   auto: ModelSlotSettings;
-  ultraModelA: ModelSlotSettings;
-  ultraModelB: ModelSlotSettings;
   midscene: ModelSlotSettings;
   gateways: ModelGatewaySettings[];
   runtimeReloaded?: boolean;
@@ -487,6 +507,7 @@ export interface ModelSlotSettings {
   modelFamilies: string[];
   runtimeModel: string | null;
   runtimeSynced: boolean;
+  capability: ModelCapability | null;
 }
 
 export interface StagingDiffItem {

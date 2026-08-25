@@ -1,4 +1,4 @@
-import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelTarget, PageUploadTask, ProjectModelData, ProjectModelDefinition, ReasoningEffort, WorkbenchMode, AvailableModels, UltraModelElementMergeSelection, ModelSettingsData, RecognitionResult, RecognitionResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelTarget, PageUploadTask, ProjectModelData, ProjectModelDefinition, ReasoningEffort, WorkbenchMode, AvailableModels, ModelSettingsData, RecognitionResult, RecognitionResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
@@ -36,7 +36,7 @@ async function binaryRequest<T>(path: string, options: RequestInit): Promise<T> 
 
 export type RecognitionStreamResult = {
   frameId: string;
-  target: 'manual' | 'ultra_a' | 'ultra_b';
+  target: 'manual';
   recognitionResult: RecognitionResult;
   modelResultRef: string;
   model: string | null;
@@ -143,6 +143,10 @@ export const workbenchApi = {
   saveProjectModel: (model: ProjectModelDefinition, projectKey = 'baohe') => request<ProjectModelData>(`/project-model?project=${encodeURIComponent(projectKey)}`, { method: 'PUT', body: JSON.stringify({ model }) }),
   modelSettings: () => request<ModelSettingsData>('/model-settings'),
   availableModels: () => request<AvailableModels>('/model-settings/models'),
+  recognitionPrompt: () => request<{ frameId: string; prompt: string; rules: Array<{ key: string; title: string; description: string; source: 'builtin' | 'element-universal' | 'custom' }> }>('/recognition-prompt'),
+  createRecognitionPromptRule: (rule: { title: string; description: string; category: 'element-universal' | 'custom' }) => request<{ saved: true }>('/recognition-prompt/rules', { method: 'POST', body: JSON.stringify(rule) }),
+  saveRecognitionPromptRule: (key: string, rule: { title: string; description: string }) => request<{ saved: true }>(`/recognition-prompt/rules/${encodeURIComponent(key)}`, { method: 'PUT', body: JSON.stringify(rule) }),
+  deleteRecognitionPromptRule: (key: string) => request<{ deleted: true }>(`/recognition-prompt/rules/${encodeURIComponent(key)}`, { method: 'DELETE' }),
   saveModelSettings: (config: {
     target: ModelTarget;
     gatewayId: string;
@@ -156,6 +160,7 @@ export const workbenchApi = {
   saveModelGateway: (gatewayId: string, gateway: { label: string; baseUrl: string; apiKey: string }) => request<ModelSettingsData>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}`, { method: 'PUT', body: JSON.stringify(gateway) }),
   resetDefaultModelGateway: () => request<ModelSettingsData>('/model-settings/gateways/zto-newapi/reset', { method: 'POST' }),
   testModelGateway: (gatewayId: string) => request<{ gatewayId: string; ok: boolean; latencyMs: number; modelCount: number }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}/test`, { method: 'POST' }),
+  testGatewayModelCapabilities: (gatewayId: string) => request<{ gatewayId: string; native: number; local: number; unavailable: number }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}/capabilities`, { method: 'POST' }),
   saveModelMode: (mode: WorkbenchMode) => request<ModelSettingsData>('/model-settings/mode', { method: 'PUT', body: JSON.stringify({ mode }) }),
   deleteModelGateway: (gatewayId: string) => request<ModelSettingsData & { deleted: true; gatewayId: string; clearedTargets: ModelTarget[] }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}`, { method: 'DELETE' }),
   sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),
@@ -175,7 +180,7 @@ export const workbenchApi = {
   freezeFrame: (forceNewPage = false, collectRuntimeStructure = true) => request<{ frame: FrameMetadata; draft: Draft }>('/frames', { method: 'POST', body: JSON.stringify({ forceNewPage, collectRuntimeStructure }) }),
   frame: (frameId: string) => request<{ frame: FrameMetadata }>(`/frames/${encodeURIComponent(frameId)}`),
   recognitionStream: (
-    target: 'manual' | 'ultra_a' | 'ultra_b',
+    target: 'manual',
     frameId: string,
     pageContext: string,
     mergeIntoDraft: boolean,
@@ -184,12 +189,12 @@ export const workbenchApi = {
     workspaceSessionId?: string,
     includeUiTree = true,
   ) => consumeRecognitionStream(`/recognition/${target}/stream`, { frameId, pageId, pageContext, mergeIntoDraft, workspaceSessionId, includeUiTree }, onEvent),
-  recognitionSession: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId?: string) => request<{ session: RecognitionResumeSession | null }>(`/recognition/${target}/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
-  reconnectRecognitionStream: (target: 'manual' | 'ultra_a' | 'ultra_b', analysisSessionId: string, lastEventId: number, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+  recognitionSession: (target: 'manual', workspaceSessionId?: string) => request<{ session: RecognitionResumeSession | null }>(`/recognition/${target}/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
+  reconnectRecognitionStream: (target: 'manual', analysisSessionId: string, lastEventId: number, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
     consumeRecognitionStream(`/recognition/${target}/stream`, { analysisSessionId, lastEventId }, onEvent),
-  resumeRecognitionStream: (target: 'manual' | 'ultra_a' | 'ultra_b', sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
+  resumeRecognitionStream: (target: 'manual', sessionId: string, workspaceSessionId: string, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
     consumeRecognitionStream(`/recognition/${target}/resume/stream`, { sessionId, workspaceSessionId }, onEvent),
-  cancelRecognition: (target: 'manual' | 'ultra_a' | 'ultra_b', workspaceSessionId: string) => request<{ cancelled: boolean }>(`/recognition/${target}/cancel`, { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
+  cancelRecognition: (target: 'manual', workspaceSessionId: string) => request<{ cancelled: boolean }>(`/recognition/${target}/cancel`, { method: 'POST', body: JSON.stringify({ workspaceSessionId }) }),
   applyRecognitionResult: (payload: {
     frameId: string;
     pageId: string;
@@ -197,15 +202,6 @@ export const workbenchApi = {
     modelResultRef: string;
     model: string | null;
   }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/apply', { method: 'POST', body: JSON.stringify(payload) }),
-  mergeUltraModelResults: (payload: {
-    frameId: string;
-    pageId?: string;
-    modelAResult: RecognitionResult;
-    modelBResult: RecognitionResult;
-    selections: UltraModelElementMergeSelection[];
-    modelResultRef: string;
-    replaceExisting?: boolean;
-  }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/ultra/merge', { method: 'POST', body: JSON.stringify(payload) }),
   prepareStaging: () => request<StagingResult>('/staging', { method: 'POST', body: '{}' }),
   stagingVersions: () => request<{ versions: StagingResult[] }>('/staging'),
   staging: (stageId: string) => request<StagingResult>(`/staging/${encodeURIComponent(stageId)}`),

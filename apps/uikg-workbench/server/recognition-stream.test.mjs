@@ -9,8 +9,8 @@ import { clearModelRuntime, setModelRuntime } from './model-runtime.mjs';
 
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
 
-test('未连接设备时 Model A 直接识别页面卡片的持久化截图', async () => {
-  setModelRuntime('manual', { modelName: 'test-ultra-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
+test('未连接设备时 单模型直接识别页面卡片的持久化截图', async () => {
+  setModelRuntime('manual', { modelName: 'test-recognition-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
   const app = express();
   const frameId = 'sha256:persisted-page-card';
   const imagePath = '/persisted/page-card.png';
@@ -102,7 +102,7 @@ test('未连接设备时 Model A 直接识别页面卡片的持久化截图', as
 });
 
 test('SSE 客户端断开不会取消模型，并可按事件序号重连回放缺失内容', async () => {
-  setModelRuntime('manual', { modelName: 'test-ultra-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
+  setModelRuntime('manual', { modelName: 'test-recognition-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
   const app = express();
   const frameId = 'sha256:disconnect-reconnect';
   const pageId = 'page-disconnect-reconnect';
@@ -209,8 +209,8 @@ test('SSE 客户端断开不会取消模型，并可按事件序号重连回放�
   }
 });
 
-test('Model A 手动中断后保留断点并从断点继续', async () => {
-  setModelRuntime('manual', { modelName: 'test-ultra-a-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
+test('单模型手动中断后保留断点并从断点继续', async () => {
+  setModelRuntime('manual', { modelName: 'test-recognition-model', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1', apiKey: 'test', temperature: 0, reasoningEffort: 'medium' });
   const app = express();
   let draft = createEmptyDraft();
   let modelAborted = false;
@@ -307,7 +307,7 @@ test('Model A 手动中断后保留断点并从断点继续', async () => {
     assert.match(streamText, /正在识别页面/);
     assert.match(streamText, /event: cancelled/);
     assert.equal(modelAborted, true);
-    assert.equal(draftSaveCount, 1, '只有冻结帧创建空白 Page，不应保存 Model A 半截结果');
+    assert.equal(draftSaveCount, 1, '只有冻结帧创建空白 Page，不应保存 单模型半截结果');
     const cancelled = streamText.split(/\r?\n\r?\n/).map((block) => ({
       event: block.match(/^event:\s*(.+)$/m)?.[1],
       data: JSON.parse(block.match(/^data:\s*(.+)$/m)?.[1] || '{}'),

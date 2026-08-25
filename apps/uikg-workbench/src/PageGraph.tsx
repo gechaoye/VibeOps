@@ -63,7 +63,15 @@ function PageDetailImage({ frameId, page, elements, showElementBboxes }: { frame
   return <div ref={viewportRef} className="page-detail-image">
     <div className={`page-detail-canvas ${canvasSize ? '' : 'page-detail-canvas-loading'}`} style={canvasSize || undefined}>
       <img src={imageUrl} alt={`${page.name}大图`} onLoad={(event) => { naturalSizeRef.current = { width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight }; fitCanvas(); }} />
-      {canvasSize && showElementBboxes && elements.map((element) => <span key={element.id} className={`page-detail-bbox page-detail-bbox-${element.reviewStatus}`} style={{ left: `${element.bbox.x * 100}%`, top: `${element.bbox.y * 100}%`, width: `${element.bbox.width * 100}%`, height: `${element.bbox.height * 100}%` }} title={`${element.label} · ${element.candidateKey}`} aria-label={`${element.label} bbox`} />)}
+      {canvasSize && showElementBboxes && elements.flatMap((element) => {
+        const regions = element.abstraction?.instanceRegions || [];
+        if (regions.length > 0) {
+          return regions.map((region, index) => (
+            <span key={`${element.id}-instance-${index}`} className="page-detail-bbox page-detail-bbox-abstract" style={{ left: `${region.x * 100}%`, top: `${region.y * 100}%`, width: `${region.width * 100}%`, height: `${region.height * 100}%` }} title={`${element.label} · 第 ${index + 1} 项实例`} aria-label={`${element.label} 实例 bbox`} />
+          ));
+        }
+        return [<span key={element.id} className={`page-detail-bbox page-detail-bbox-${element.reviewStatus}`} style={{ left: `${element.bbox.x * 100}%`, top: `${element.bbox.y * 100}%`, width: `${element.bbox.width * 100}%`, height: `${element.bbox.height * 100}%` }} title={`${element.label} · ${element.candidateKey}`} aria-label={`${element.label} bbox`} />];
+      })}
     </div>
   </div>;
 }

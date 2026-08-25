@@ -1,17 +1,21 @@
 import { strict as assert } from 'node:assert';
 import test from 'node:test';
-import { openAIStructuredOutputSchema, supportsStructuredOutput } from './structured-output-schema.mjs';
+import { openAIStructuredOutputSchema } from './structured-output-schema.mjs';
 
-test('GPT-5 和两个 Qwen3.7 模型启用结构化输出', () => {
-  assert.equal(supportsStructuredOutput('gpt-5.6-sol', 'gpt-5'), true);
-  assert.equal(supportsStructuredOutput('qwen3.7-flash', 'qwen3'), true);
-  assert.equal(supportsStructuredOutput('qwen3.7-plus', 'qwen3'), true);
-  assert.equal(supportsStructuredOutput('qwen3.7-max', 'qwen3'), false);
-  assert.equal(supportsStructuredOutput('MiniMax-M3', 'gpt-5'), false);
-  assert.equal(supportsStructuredOutput('qwen3-vl-plus', 'qwen3-vl'), false);
+test('结构化输出 Schema 展开内部引用', () => {
+  const source = {
+    type: 'object',
+    properties: {
+      region: { type: 'object', properties: { x: { type: 'number' } } },
+      regions: { type: 'array', items: { $ref: '#/properties/region' } },
+    },
+  };
+  const schema = openAIStructuredOutputSchema(source);
+  assert.equal(schema.properties.regions.items.$ref, undefined);
+  assert.deepEqual(schema.properties.regions.items.required, ['x']);
 });
 
-test('Model A 断点续写 Schema 包含严格 done 字段', () => {
+test('单模型断点续写 Schema 包含严格 done 字段', () => {
   const schema = openAIStructuredOutputSchema({
     $schema: 'https://json-schema.org/draft/2020-12/schema',
     type: 'object',

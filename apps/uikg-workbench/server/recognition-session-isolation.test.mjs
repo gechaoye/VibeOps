@@ -9,7 +9,7 @@ import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 
 test('不同标签页的识别会话可并发运行并独立取消与查询断点', async () => {
   setModelRuntime('manual', {
-    modelName: 'test-ultra-a', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1',
+    modelName: 'test-recognition', modelFamily: 'gpt-5', baseUrl: 'https://test.invalid/v1',
     apiKey: 'test', temperature: 0, reasoningEffort: 'medium',
   });
   const app = express();

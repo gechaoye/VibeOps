@@ -19,8 +19,8 @@ const responseSchema = {
   },
 };
 
-test('Model A client sends a frozen image and repairs streamed JSON', async () => {
-  const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'vibeops-ultra-a-'));
+test('Recognition client sends a frozen image and repairs streamed JSON', async () => {
+  const tempRoot = await mkdtemp(path.join(os.tmpdir(), 'vibeops-recognition-'));
   const imagePath = path.join(tempRoot, 'frame.png');
   await writeFile(imagePath, Buffer.from([137, 80, 78, 71]));
 
@@ -49,15 +49,16 @@ test('Model A client sends a frozen image and repairs streamed JSON', async () =
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
-  setModelRuntime('ultra_a', {
+  setModelRuntime('manual', {
     baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'qwen3.7-flash',
     modelFamily: 'qwen3', temperature: 0, reasoningEffort: 'low',
+    structuredOutputMode: 'native',
   });
   const chunks = [];
 
   try {
     const result = await runRecognitionModel({
-      target: 'ultra_a',
+      target: 'manual',
       prompt: 'inventory this frame',
       imagePath,
       responseSchema,
@@ -66,7 +67,7 @@ test('Model A client sends a frozen image and repairs streamed JSON', async () =
     assert.deepEqual(result, { frameId: 'f', elements: [] });
     assert.deepEqual(chunks, ['{"frameId":"f",', '"elements":[]}']);
   } finally {
-    clearModelRuntime('ultra_a');
+    clearModelRuntime('manual');
     server.close();
     await rm(tempRoot, { recursive: true, force: true });
   }
@@ -85,27 +86,60 @@ test('Recognition client separates MiniMax think tags from streamed model output
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
-  setModelRuntime('ultra_a', {
+  setModelRuntime('manual', {
     baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'MiniMax-M3',
     modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'low',
+    structuredOutputMode: 'local',
   });
   const chunks = [];
 
   try {
     const result = await runRecognitionModel({
-      target: 'ultra_a', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
+      target: 'manual', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
       onChunk: (chunk) => chunks.push(chunk),
     });
     assert.deepEqual(result, { frameId: 'f', elements: [] });
     assert.equal(chunks.map((chunk) => chunk.reasoning_content).join(''), '检查页面结构');
     assert.equal(chunks.map((chunk) => chunk.content).join(''), '{"frameId":"f","elements":[]}');
   } finally {
-    clearModelRuntime('ultra_a');
+    clearModelRuntime('manual');
     server.close();
   }
 });
 
-test('Model B client sends the configured reasoning effort', async () => {
+test('Recognition client preserves reasoning aliases and split analysis tags', async () => {
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { 'content-type': 'text/event-stream' });
+    response.write(`data: ${JSON.stringify({ choices: [{ delta: { content: '<ana' } }] })}\n\n`);
+    response.write(`data: ${JSON.stringify({ choices: [{ delta: { content: 'lysis>先' } }] })}\n\n`);
+    response.write(`data: ${JSON.stringify({ choices: [{ delta: { thinking: '检查页面结构' } }] })}\n\n`);
+    response.write(`data: ${JSON.stringify({ choices: [{ delta: { content: '后续</analysis>{"frameId":"f","elements":[]}' } }] })}\n\n`);
+    response.end('data: [DONE]\n\n');
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  setModelRuntime('manual', {
+    baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'gpt-5.6-terra',
+    modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'medium', structuredOutputMode: 'local',
+  });
+  const chunks = [];
+
+  try {
+    const result = await runRecognitionModel({
+      target: 'manual', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
+      onChunk: (chunk) => chunks.push(chunk),
+    });
+    assert.deepEqual(result, { frameId: 'f', elements: [] });
+    assert.equal(chunks.map((chunk) => chunk.reasoning_content).join(''), '先检查页面结构后续');
+    assert.equal(chunks.map((chunk) => chunk.content).join(''), '{"frameId":"f","elements":[]}');
+  } finally {
+    clearModelRuntime('manual');
+    server.close();
+  }
+});
+
+test('Recognition client sends the configured reasoning effort', async () => {
   const server = createServer((request, response) => {
     let body = '';
     request.on('data', (chunk) => { body += chunk; });
@@ -121,20 +155,48 @@ test('Model B client sends the configured reasoning effort', async () => {
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
-  setModelRuntime('ultra_b', {
+  setModelRuntime('manual', {
     baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'gpt-5.6-sol',
     modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'high',
+    structuredOutputMode: 'local',
   });
 
   try {
     const result = await runRecognitionModel({
-      target: 'ultra_b',
+      target: 'manual',
       prompt: 'review this frame',
       imageBuffer: Buffer.from([137, 80, 78, 71]),
     });
     assert.deepEqual(result, { ok: true });
   } finally {
-    clearModelRuntime('ultra_b');
+    clearModelRuntime('manual');
+    server.close();
+  }
+});
+
+test('Recognition client provider errors start with 模型请求失败', async () => {
+  const server = createServer((_request, response) => {
+    response.writeHead(400, { 'content-type': 'application/json' });
+    response.end(JSON.stringify({ error: { message: 'Invalid schema' } }));
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  setModelRuntime('manual', {
+    baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'gpt-5.6-terra',
+    modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'medium',
+    structuredOutputMode: 'local',
+  });
+
+  try {
+    await assert.rejects(
+      runRecognitionModel({
+        target: 'manual', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]),
+      }),
+      { message: '模型请求失败（400）：Invalid schema' },
+    );
+  } finally {
+    clearModelRuntime('manual');
     server.close();
   }
 });
@@ -162,11 +224,11 @@ test('Recognition 为 Qwen、Doubao 和 MiniMax 构造兼容请求', async () =>
 
   try {
     for (const model of models) {
-      setModelRuntime('ultra_a', {
-        baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', temperature: 0, ...model,
+      setModelRuntime('manual', {
+        baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', temperature: 0, structuredOutputMode: 'local', ...model,
       });
       await runRecognitionModel({
-        target: 'ultra_a', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
+        target: 'manual', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
       });
     }
     assert.equal(received[0].enable_thinking, true);
@@ -178,7 +240,7 @@ test('Recognition 为 Qwen、Doubao 和 MiniMax 构造兼容请求', async () =>
     assert.equal(received[2].reasoning_effort, 'low');
     assert.equal(received[2].response_format, undefined);
   } finally {
-    clearModelRuntime('ultra_a');
+    clearModelRuntime('manual');
     server.close();
   }
 });

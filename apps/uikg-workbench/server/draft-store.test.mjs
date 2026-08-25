@@ -11,16 +11,32 @@ test('成功和失败的模型会话都会持久化到历史', async () => {
   try {
     await store.initialize();
     await store.saveAnalysisSession({
-      id: 'modelA-1', kind: 'ultra_a', status: 'completed', frameId: 'frame-1', model: 'modelA',
+      id: 'recognition-1', kind: 'manual', status: 'completed', frameId: 'frame-1', model: 'recognition-model',
       startedAt: '2026-08-15T01:00:00.000Z', updatedAt: '2026-08-15T01:01:00.000Z', reasoningContent: '', outputContent: '{}',
     });
     await store.saveAnalysisSession({
-      id: 'review-1', kind: 'review', status: 'failed', frameId: 'frame-1', model: 'modelB',
-      startedAt: '2026-08-15T01:02:00.000Z', updatedAt: '2026-08-15T01:03:00.000Z', errorMessage: '上游错误', reasoningContent: '检查画面', outputContent: '',
+      id: 'recognition-2', kind: 'manual', status: 'failed', frameId: 'frame-1', model: 'recognition-model',
+      startedAt: '2026-08-15T01:02:00.000Z', updatedAt: '2026-08-15T01:03:00.000Z', errorMessage: '上游错误',
+      schemaErrors: [{ instancePath: '/elements', keyword: 'required', params: { missingProperty: 'elements' } }],
+      reasoningContent: '检查画面', outputContent: '',
+    });
+    await store.saveModelResult('recognition-2', {
+      schemaErrors: [{ instancePath: '/actionCandidates/18', keyword: 'additionalProperties', params: { additionalProperty: 'expectedBasis' }, message: 'must NOT have additional properties' }],
+    });
+    await store.saveAnalysisSession({
+      id: 'recognition-3', kind: 'manual', status: 'failed', frameId: 'frame-1', model: 'recognition-model',
+      startedAt: '2026-08-15T01:04:00.000Z', updatedAt: '2026-08-15T01:05:00.000Z', errorMessage: 'Manual 页面识别模型 输出结果未通过结构检查，原始结果已保留', reasoningContent: '', outputContent: '',
+    });
+    await store.saveModelResult('recognition-3', {
+      schemaErrors: [{ instancePath: '/actionCandidates/18', keyword: 'additionalProperties', params: { additionalProperty: 'expectedBasis' }, message: 'must NOT have additional properties' }],
     });
     const sessions = await store.listAnalysisSessions();
-    assert.deepEqual(sessions.map((session) => session.status), ['failed', 'completed']);
-    assert.equal(sessions[0].errorMessage, '上游错误');
+    assert.deepEqual(sessions.map((session) => session.status), ['failed', 'failed', 'completed']);
+    assert.equal(sessions[0].id, 'recognition-3');
+    assert.equal(sessions[0].errorMessage, '输出结果未通过结构检查');
+    assert.equal(sessions[0].schemaErrors[0].params.additionalProperty, 'expectedBasis');
+    assert.equal(sessions[1].errorMessage, '上游错误');
+    assert.equal(sessions[1].schemaErrors[0].params.missingProperty, 'elements');
   } finally {
     await rm(root, { recursive: true, force: true });
   }

@@ -76,7 +76,7 @@ test('草稿归一化保留人工分块并根据最新边框重算区域', () =>
   assert.ok(validateDraft(normalized).some((issue) => issue.code === 'grid_region_invalid'));
 });
 
-test('Model A 候选转换为带 owner 的可编辑草稿', () => {
+test('单模型候选转换为带 owner 的可编辑草稿', () => {
   const recognitionResult = sampleRecognition();
   const draft = mergeRecognitionIntoDraft(createEmptyDraft(), recognitionResult, 'model.json');
   assert.equal(draft.elements.length, 2);
@@ -92,7 +92,7 @@ test('Model A 候选转换为带 owner 的可编辑草稿', () => {
   assert.deepEqual(validateRecognitionConsistency(recognitionResult), []);
 });
 
-test('人工审核结果不会被后续 Model A 覆盖', () => {
+test('人工审核结果不会被后续 单模型覆盖', () => {
   const recognitionResult = sampleRecognition();
   const first = mergeRecognitionIntoDraft(createEmptyDraft(), recognitionResult, 'first.json');
   first.elements[0].label = '人工名称';
@@ -143,7 +143,7 @@ test('草稿校验区分同页和跨页候选键重复，并标记全部冲突�
   assert.ok(crossPageIssues.every((issue) => issue.message.includes('其他页面')));
 });
 
-test('可修正的 Model A 几何和动作矛盾进入待审核草稿', () => {
+test('可修正的 单模型几何和动作矛盾进入待审核草稿', () => {
   const recognitionResult = sampleRecognition();
   recognitionResult.elements[1].interactive = false;
   recognitionResult.elements[1].approximateRegion = { x: 0.9, y: 0.95, width: 0.2, height: 0.1 };
@@ -154,22 +154,161 @@ test('可修正的 Model A 几何和动作矛盾进入待审核草稿', () => {
   assert.equal(proposal.actionCandidates.length, 0);
 });
 
-test('重复列表子元素自动归入每行 list-item，而不是平铺到 list', () => {
+test('重复列表子元素归纳为一个抽象模板，而不是逐行进入元素树', () => {
   const result = sampleRecognition();
   result.elements = [
     { ...result.elements[0], candidateKey: 'todo-list', elementType: 'list' },
+    ...[1, 2].map((index) => ({
+      ...result.elements[0], candidateKey: `todo-${index}`, label: `具体列表项 ${index}`, elementType: 'list-item',
+      approximateRegion: { x: 0.1, y: 0.2 + index * 0.15, width: 0.8, height: 0.12 },
+    })),
     ...[1, 2].flatMap((index) => [
       { ...result.elements[1], candidateKey: `todo-${index}-checkbox`, label: `复选框 ${index}`, elementType: 'checkbox' },
       { ...result.elements[0], candidateKey: `todo-${index}-title`, label: `标题 ${index}`, elementType: 'static-label' },
       { ...result.elements[0], candidateKey: `todo-${index}-description`, label: `描述 ${index}`, elementType: 'static-label' },
     ]),
   ];
-  result.relationships = result.elements.slice(1).map((element) => ({ fromCandidateKey: 'todo-list', type: 'contains', toCandidateKey: element.candidateKey }));
+  result.relationships = [1, 2].flatMap((index) => [
+    { fromCandidateKey: 'todo-list', type: 'contains', toCandidateKey: `todo-${index}` },
+    ...['checkbox', 'title', 'description'].map((suffix) => ({ fromCandidateKey: `todo-${index}`, type: 'contains', toCandidateKey: `todo-${index}-${suffix}` })),
+  ]);
   const prepared = prepareRecognitionForDraft(result);
-  assert.deepEqual(prepared.elements.filter((element) => element.elementType === 'list-item').map((element) => element.candidateKey), ['todo-1-item', 'todo-2-item']);
-  assert.ok(prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-list' && relation.toCandidateKey === 'todo-1-item'));
-  assert.ok(prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-1-item' && relation.toCandidateKey === 'todo-1-title'));
-  assert.ok(!prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-list' && relation.toCandidateKey === 'todo-1-title'));
+  const templates = prepared.elements.filter((element) => element.abstraction?.kind === 'repeated-template');
+  assert.deepEqual(templates.map((element) => element.candidateKey), ['todo-item-template']);
+  assert.equal(templates[0].abstraction.instanceCount, 2);
+  assert.equal(templates[0].abstraction.instanceRegions.length, 2);
+  assert.deepEqual(templates[0].abstraction.fields.map((field) => field.key), ['checkbox', 'title', 'description']);
+  assert.ok(templates[0].abstraction.fields.every((field) => field.instanceRegions.length === 2));
+  assert.ok(prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-list' && relation.toCandidateKey === 'todo-item-template'));
+  assert.ok(prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-item-template' && relation.toCandidateKey === 'todo-1-title'));
+  assert.ok(prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-item-template' && relation.toCandidateKey === 'todo-1'));
+  assert.ok(!prepared.relationships.some((relation) => relation.fromCandidateKey === 'todo-list' && relation.toCandidateKey === 'todo-1'));
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), prepared, 'abstract-inferred.json');
+  assert.deepEqual(draft.elements.map((element) => element.candidateKey).sort(), ['todo-item-template', 'todo-list']);
+});
+
+test('重复列表可投影为抽象模板并隐藏具体行元素', () => {
+  const result = sampleRecognition();
+  result.elements = [
+    { ...result.elements[0], candidateKey: 'message-list', elementType: 'list', approximateRegion: { x: 0.04, y: 0.12, width: 0.92, height: 0.72 } },
+    { ...result.elements[0], candidateKey: 'message-item', label: '消息列表项', elementType: 'list-item', approximateRegion: { x: 0.2, y: 0.22, width: 0.5, height: 0.08 }, abstraction: {
+      kind: 'repeated-template', templateKey: 'message.item', instanceCount: 3,
+      fields: [{ key: 'title', label: '主标题', elementType: 'static-label', description: '每个列表项中的主标题', required: true }],
+      instanceRegions: [{ x: 0.1, y: 0.2, width: 0.8, height: 0.1 }, { x: 0.1, y: 0.31, width: 0.8, height: 0.1 }, { x: 0.1, y: 0.42, width: 0.8, height: 0.1 }], bboxStyle: 'abstract',
+    } },
+    { ...result.elements[0], candidateKey: 'message-1-title', label: '具体文字', elementType: 'static-label' },
+  ];
+  result.relationships = [
+    { fromCandidateKey: 'message-list', type: 'contains', toCandidateKey: 'message-item' },
+    { fromCandidateKey: 'message-item', type: 'contains', toCandidateKey: 'message-1-title' },
+  ];
+  result.actionCandidates = [];
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), result, 'abstract.json');
+  assert.equal(draft.elements.some((element) => element.candidateKey === 'message-item'), true);
+  assert.equal(draft.elements.some((element) => element.candidateKey === 'message-1-title'), false);
+  const template = draft.elements.find((element) => element.candidateKey === 'message-item');
+  assert.equal(template.abstraction?.instanceCount, 3);
+  assert.equal(template.abstraction?.bboxStyle, 'abstract');
+  assert.deepEqual(template.bbox, draft.elements.find((element) => element.candidateKey === 'message-list').bbox);
+  assert.deepEqual([template.gridColumns, template.gridRows, template.gridRegion], [
+    draft.elements.find((element) => element.candidateKey === 'message-list').gridColumns,
+    draft.elements.find((element) => element.candidateKey === 'message-list').gridRows,
+    draft.elements.find((element) => element.candidateKey === 'message-list').gridRegion,
+  ]);
+});
+
+test('当前用户头像和身份信息归纳为单实例动态模板', () => {
+  const result = sampleRecognition();
+  result.elements = [
+    { ...result.elements[0], candidateKey: 'self_avatar', label: null, visualDescription: '当前登录用户头像', elementType: 'avatar', interactive: true, dynamicContent: false, approximateRegion: { x: 0.03, y: 0.04, width: 0.11, height: 0.08 }, meaning: { ...result.elements[0].meaning, description: '当前登录账号的头像入口' } },
+    { ...result.elements[0], candidateKey: 'self_name_title', label: '示例姓名', elementType: 'title', dynamicContent: false, approximateRegion: { x: 0.18, y: 0.05, width: 0.3, height: 0.03 }, meaning: { ...result.elements[0].meaning, description: '当前账号的显示名称' } },
+    { ...result.elements[0], candidateKey: 'self_org_subtitle', label: '示例组织', elementType: 'subtitle', dynamicContent: false, approximateRegion: { x: 0.18, y: 0.085, width: 0.3, height: 0.02 }, meaning: { ...result.elements[0].meaning, description: '当前账号所属组织' } },
+  ];
+  result.relationships = [];
+  result.actionCandidates = [{ ...sampleRecognition().actionCandidates[0], triggerCandidateKey: 'self_avatar', expectedOutcome: '打开个人资料' }];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const template = prepared.elements.find((element) => element.abstraction?.kind === 'dynamic-template');
+  assert.equal(template.candidateKey, 'current-user-profile-template');
+  assert.equal(template.dynamicContent, true);
+  assert.equal(template.abstraction.instanceCount, 1);
+  assert.deepEqual(template.abstraction.fields.map((field) => field.key), ['avatar', 'display-name', 'organization']);
+  assert.ok(template.abstraction.fields.every((field) => field.instanceRegions.length === 1));
+
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), prepared, 'dynamic-profile.json');
+  assert.deepEqual(draft.elements.map((element) => element.candidateKey), ['current-user-profile-template']);
+  assert.equal(draft.elements[0].abstraction?.kind, 'dynamic-template');
+  assert.deepEqual(draft.elements[0].capabilities, ['tap']);
+});
+
+test('轮播无需独立规则即可归纳为动态元素共相', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'home-carousel',
+    label: '今日推荐',
+    elementType: 'carousel',
+    dynamicContent: true,
+    approximateRegion: { x: 0.05, y: 0.2, width: 0.9, height: 0.25 },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const carousel = prepared.elements[0];
+  assert.equal(carousel.abstraction?.kind, 'dynamic-template');
+  assert.equal(carousel.abstraction?.instanceCount, 1);
+  assert.equal(carousel.abstraction?.fields[0].elementType, 'carousel');
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), prepared, 'dynamic-carousel.json');
+  assert.equal(draft.elements.length, 1);
+  assert.equal(draft.elements[0].abstraction?.kind, 'dynamic-template');
+});
+
+test('旧抽象结果中过滤无 bbox 的头像字段但保留有 bbox 的真实头像', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'people-list-item',
+    label: '列表项元素共相',
+    abstraction: {
+      kind: 'repeated-template',
+      templateKey: 'people.item',
+      instanceCount: 2,
+      fields: [
+        { key: 'title', label: '主标题', elementType: 'title', description: '每项标题', required: true, instanceRegions: [{ x: 0.2, y: 0.2, width: 0.4, height: 0.04 }, { x: 0.2, y: 0.3, width: 0.4, height: 0.04 }] },
+        { key: 'avatar', label: '头像占位', elementType: 'avatar', description: '不存在的头像', required: false, instanceRegions: [] },
+        { key: 'avatar', label: '头像', elementType: 'avatar', description: '实际头像', required: false, instanceRegions: [{ x: 0.1, y: 0.2, width: 0.08, height: 0.08 }] },
+      ],
+      instanceRegions: [{ x: 0.1, y: 0.2, width: 0.8, height: 0.08 }, { x: 0.1, y: 0.3, width: 0.8, height: 0.08 }],
+      bboxStyle: 'abstract',
+    },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const normalized = normalizeRecognitionOutput(result).recognitionResult;
+  const fields = normalized.elements[0].abstraction.fields;
+  assert.equal(fields.length, 2);
+  assert.equal(fields.filter((field) => field.key === 'avatar').length, 1);
+  assert.equal(fields.find((field) => field.key === 'avatar')?.description, '实际头像');
+});
+
+test('模型把 abstraction 错放到 meaning 时仍恢复为顶层抽象模板', () => {
+  const result = sampleRecognition();
+  result.elements[0].elementType = 'list-item';
+  result.elements[0].meaning.abstraction = {
+    kind: 'repeated-template',
+    templateKey: 'todo.item',
+    instanceCount: 2,
+    fields: [{ key: 'title', label: '主标题', elementType: 'static-label', description: '每项标题', required: true, instanceRegions: [{ x: 0.2, y: 0.2, width: 0.4, height: 0.04 }, { x: 0.2, y: 0.3, width: 0.4, height: 0.04 }] }],
+    instanceRegions: [{ x: 0.1, y: 0.2, width: 0.8, height: 0.08 }, { x: 0.1, y: 0.3, width: 0.8, height: 0.08 }],
+    bboxStyle: 'abstract',
+  };
+
+  const { recognitionResult, normalizationIssues } = normalizeRecognitionOutput(result);
+  assert.equal(recognitionResult.elements[0].abstraction?.kind, 'repeated-template');
+  assert.equal(recognitionResult.elements[0].meaning.evidence.unclassified.some((item) => item.type === 'meaning.abstraction'), false);
+  assert.ok(normalizationIssues[0].messages.includes('meaning.abstraction 已上提到元素顶层'));
 });
 
 test('旧单页草稿升级后保留 Page、Frame 和 AI 模型来源', () => {
@@ -307,7 +446,7 @@ test('批量删除 Page 时同步清理元素、跳转关系和当前页面', ()
   assert.equal(removed.revision, second.revision + 1);
 });
 
-test('没有人工编辑记录的 Model A 元素始终恢复为初始化状态', () => {
+test('没有人工编辑记录的 单模型元素始终恢复为初始化状态', () => {
   const draft = mergeRecognitionIntoDraft(createEmptyDraft(), sampleRecognition(), 'model.json', 'qwen3-vl-plus');
   const row = draft.elements.find((element) => element.candidateKey === 'settings.row');
   row.reviewStatus = 'edited';
@@ -330,7 +469,7 @@ test('存在人工编辑记录时保留人工修订状态', () => {
   assert.equal(preserved.source, 'mixed');
 });
 
-test('Model A 归一化保留原始输出，并仅降级含未知证据的元素', () => {
+test('单模型归一化保留原始输出，并仅降级含未知证据的元素', () => {
   const raw = sampleRecognition();
   raw.elements[0].meaning = { status: 'known', description: '设置容器', basis: 'visible-icon' };
   const original = structuredClone(raw);
@@ -348,7 +487,7 @@ test('Model A 归一化保留原始输出，并仅降级含未知证据的元素
   assert.equal(normalizationIssues[0].candidateKey, 'settings.row');
 });
 
-test('未来模型证据字段进入待归类证据，归一化结果通过 Model A Schema', async () => {
+test('未来模型证据字段进入待归类证据，归一化结果通过 单模型Schema', async () => {
   const raw = sampleRecognition();
   raw.elements[0].meaning.evidence.glyphSignature = { family: 'search', score: 0.81 };
   const { recognitionResult } = normalizeRecognitionOutput(raw);
@@ -361,7 +500,7 @@ test('未来模型证据字段进入待归类证据，归一化结果通过 Mode
   assert.equal(validate(recognitionResult), true, JSON.stringify(validate.errors));
 });
 
-test('qwen3.7-flash 的 meaning 顶层字段和 candidate_key 可归一化并通过 Model A Schema', async () => {
+test('qwen3.7-flash 的 meaning 顶层字段和 candidate_key 可归一化并通过 单模型Schema', async () => {
   const raw = sampleRecognition();
   const element = raw.elements[0];
   element.candidate_key = element.candidateKey;
@@ -390,7 +529,7 @@ test('qwen3.7-flash 的 meaning 顶层字段和 candidate_key 可归一化并通
   assert.equal(validate(recognitionResult), true, JSON.stringify(validate.errors));
 });
 
-test('qwen3-vl-plus 的 visible-icon 动作依据可归一化并通过 Model A Schema', async () => {
+test('qwen3-vl-plus 的 visible-icon 动作依据可归一化并通过 单模型Schema', async () => {
   const raw = sampleRecognition();
   raw.elements[0].meaning = { status: 'known', description: '设置容器', basis: 'visible-icon' };
   raw.actionCandidates[0].basis = 'visible-icon';
@@ -406,7 +545,7 @@ test('qwen3-vl-plus 的 visible-icon 动作依据可归一化并通过 Model A S
   assert.equal(validate(recognitionResult), true, JSON.stringify(validate.errors));
 });
 
-test('模型误用 container 几何类型时归一化为 boundary 并通过 Model A Schema', async () => {
+test('模型误用 container 几何类型时归一化为 boundary 并通过 单模型Schema', async () => {
   const raw = sampleRecognition();
   raw.elements[0].geometryKind = 'container';
 
@@ -419,7 +558,7 @@ test('模型误用 container 几何类型时归一化为 boundary 并通过 Mode
   assert.equal(validate(recognitionResult), true, JSON.stringify(validate.errors));
 });
 
-test('模型返回未知元素类型时留空标红所需字段并通过 Model A Schema', async () => {
+test('模型返回未知元素类型时留空标红所需字段并通过 单模型Schema', async () => {
   const raw = sampleRecognition();
   raw.elements[0].elementType = 'segmented-control';
 
@@ -433,7 +572,7 @@ test('模型返回未知元素类型时留空标红所需字段并通过 Model A
   assert.equal(validate(recognitionResult), true, JSON.stringify(validate.errors));
 });
 
-test('GPT-5 在未请求比较时返回文字 changes 可归一化并通过 Model A Schema', async () => {
+test('GPT-5 在未请求比较时返回文字 changes 可归一化并通过 单模型Schema', async () => {
   const raw = sampleRecognition();
   raw.comparison.changes = ['补充了结构容器', '调整了候选区域'];
 
@@ -446,7 +585,7 @@ test('GPT-5 在未请求比较时返回文字 changes 可归一化并通过 Mode
   assert.equal(validate(recognitionResult), true, JSON.stringify(validate.errors));
 });
 
-test('Model A 支持完整操作枚举并通过 Schema', async () => {
+test('单模型支持完整操作枚举并通过 Schema', async () => {
   const raw = sampleRecognition();
   raw.actionCandidates = RECOGNITION_ACTIONS.map((action) => ({ ...raw.actionCandidates[0], action }));
 
@@ -534,7 +673,7 @@ test('进度类型仅保留进度条和 Loading', () => {
   }
 });
 
-test('Model A 操作直接转换为元素支持操作', () => {
+test('单模型操作直接转换为元素支持操作', () => {
   const recognitionResult = sampleRecognition();
   recognitionResult.actionCandidates = ['scroll_vertical', 'swipe', 'long_press', 'drag', 'zoom', 'multi_touch'].map((action) => ({
     ...recognitionResult.actionCandidates[0],

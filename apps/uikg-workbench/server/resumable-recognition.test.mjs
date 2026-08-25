@@ -29,7 +29,7 @@ function completeRecognition(elements) {
   };
 }
 
-test('Model A 续写按 candidateKey 合并元素并去重关系与动作', () => {
+test('单模型续写按 candidateKey 合并元素并去重关系与动作', () => {
   const base = {
     frameId: 'sha256:frame',
     page: { name: '消息' },
@@ -58,7 +58,7 @@ test('Model A 续写按 candidateKey 合并元素并去重关系与动作', () =
   assert.equal(summarizeRecognitionCheckpoint(merged).coveredBottom, 0.30000000000000004);
 });
 
-test('Model A 流错误后仅恢复结构完整的候选作为断点', () => {
+test('单模型流错误后仅恢复结构完整的候选作为断点', () => {
   const complete = {
     ...element('header', 0),
     visualDescription: '顶部标题',
@@ -174,4 +174,23 @@ test('首次模型错误且没有可解析输出时从画面起点重试', async
   assert.equal(result.completed, true);
   assert.equal(result.initialError, 'initial error');
   assert.deepEqual(result.rawResult.elements.map((item) => item.candidateKey), ['header']);
+});
+
+test('确定性的模型 4xx 错误不重试', async () => {
+  let calls = 0;
+  const result = await runResumableRecognition({
+    initialPrompt: 'initial',
+    callModel: async () => {
+      calls += 1;
+      const error = new Error('模型请求失败（400）：Invalid schema');
+      error.retryable = false;
+      throw error;
+    },
+    buildContinuationPrompt: () => 'continue',
+    isComplete: () => false,
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(result.retryAttempts.length, 1);
+  assert.equal(result.lastError, '模型请求失败（400）：Invalid schema');
 });
