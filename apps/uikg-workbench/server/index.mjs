@@ -74,7 +74,9 @@ async function main() {
   };
   scrcpyServer = new ScrcpyServer({ deviceListSource: sessionDeviceSource });
   const prepared = await androidPlaygroundPlatform.prepare({
-    staticDir: existsSync(distRoot) ? distRoot : undefined,
+    // Always provide a path: android-playground's ESM build falls back to
+    // CommonJS-only `__dirname` when staticDir is undefined.
+    staticDir: distRoot,
     scrcpyServer,
   });
   const targetCache = { value: null, expiresAt: 0, inFlight: null };
