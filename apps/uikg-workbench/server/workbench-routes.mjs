@@ -7,8 +7,10 @@ import addFormats from 'ajv-formats';
 import express from 'express';
 import { imageSize } from 'image-size';
 import {
+  appendFrameToPage,
   beginFrameCapture,
   mergeRecognitionIntoDraft,
+  removeFrameFromPage,
   normalizeDraftForSave,
   normalizeRecognitionOutput,
   prepareRecognitionForDraft,
@@ -333,7 +335,13 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     const draft = await queueUploadDraftMutation(async () => {
       if (deletedPageUploadIds.has(task.id)) throw workbenchError(410, '上传任务已删除');
       const currentDraft = await store.loadDraft();
-      const nextDraft = beginFrameCapture(currentDraft, frame.frameId, { forceNewPage: true });
+      const appendTargetPageId = typeof task.targetPageId === 'string' && task.targetPageId
+        && currentDraft.pages.some((page) => page.id === task.targetPageId)
+        ? task.targetPageId
+        : null;
+      const nextDraft = appendTargetPageId
+        ? appendFrameToPage(currentDraft, frame.frameId, { pageId: appendTargetPageId })
+        : beginFrameCapture(currentDraft, frame.frameId, { forceNewPage: true });
       await store.saveDraft(nextDraft);
       return nextDraft;
     });
@@ -1084,6 +1092,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           status: 'queued',
           errorReason: null,
           pageId: null,
+          targetPageId: typeof item?.targetPageId === 'string' && item.targetPageId ? item.targetPageId : null,
           frameId: null,
           createdAt: now,
           updatedAt: now,
@@ -1231,6 +1240,49 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         },
         draft: nextDraft,
       });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/frames/append', async (req, res, next) => {
+    try {
+      if (!server.agent) return res.status(409).json({ error: '请先连接 Android 设备' });
+      await syncModelRuntime();
+      const draft = await store.loadDraft();
+      const pageId = typeof req.body?.pageId === 'string' ? req.body.pageId : null;
+      const targetPageId = pageId || draft.currentPageId;
+      if (!draft.pages.some((page) => page.id === targetPageId)) {
+        return res.status(404).json({ error: '要添加观测帧的页面不存在' });
+      }
+      const frame = await freezeAndCapture(server.agent, req.body?.collectRuntimeStructure !== false);
+      const metadata = await store.saveFrame(frame);
+      const nextDraft = appendFrameToPage(draft, frame.frameId, { pageId: targetPageId });
+      await store.saveDraft(nextDraft);
+      res.json({
+        frame: {
+          ...metadata,
+          imagePath: undefined,
+          imageUrl: `/workbench/api/frames/${encodeURIComponent(frame.frameId)}/image`,
+        },
+        draft: nextDraft,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.delete('/frames/:frameId', async (req, res, next) => {
+    try {
+      const draft = await store.loadDraft();
+      const pageId = typeof req.body?.pageId === 'string' ? req.body.pageId : null;
+      const { draft: nextDraft, removed, reason } = removeFrameFromPage(draft, req.params.frameId, { pageId });
+      if (!removed) {
+        if (reason === 'last-frame') return res.status(409).json({ error: '每个页面至少需要保留一个观测帧' });
+        return res.status(404).json({ error: '要删除的观测帧不存在' });
+      }
+      await store.saveDraft(nextDraft);
+      res.json({ draft: nextDraft });
     } catch (error) {
       next(error);
     }

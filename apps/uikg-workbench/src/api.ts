@@ -168,7 +168,7 @@ export const workbenchApi = {
   saveDraft: (draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft', { method: 'PUT', body: JSON.stringify(draft) }),
   savePageDraft: (pageId: string, draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>(`/draft/pages/${encodeURIComponent(pageId)}`, { method: 'PUT', body: JSON.stringify(draft) }),
   pageUploads: () => request<{ tasks: PageUploadTask[] }>('/page-uploads'),
-  createPageUploads: (items: Array<{ sourceType: 'file' | 'url'; name: string; mimeType?: string; size?: number; url?: string }>) => request<{ tasks: PageUploadTask[] }>('/page-uploads', { method: 'POST', body: JSON.stringify({ items }) }),
+  createPageUploads: (items: Array<{ sourceType: 'file' | 'url'; name: string; mimeType?: string; size?: number; url?: string; targetPageId?: string }>) => request<{ tasks: PageUploadTask[] }>('/page-uploads', { method: 'POST', body: JSON.stringify({ items }) }),
   uploadPageChunk: (taskId: string, chunk: Blob, offset: number, signal?: AbortSignal) => binaryRequest<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/chunk`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Offset': String(offset) },
@@ -178,6 +178,8 @@ export const workbenchApi = {
   processPageUpload: (taskId: string) => request<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/process`, { method: 'POST', body: '{}' }),
   deletePageUploads: (ids: string[], deletePages: boolean) => request<{ deletedIds: string[]; draft: Draft }>('/page-uploads', { method: 'DELETE', body: JSON.stringify({ ids, deletePages }) }),
   freezeFrame: (forceNewPage = false, collectRuntimeStructure = true) => request<{ frame: FrameMetadata; draft: Draft }>('/frames', { method: 'POST', body: JSON.stringify({ forceNewPage, collectRuntimeStructure }) }),
+  appendFrame: (pageId?: string, collectRuntimeStructure = true) => request<{ frame: FrameMetadata; draft: Draft }>('/frames/append', { method: 'POST', body: JSON.stringify({ pageId, collectRuntimeStructure }) }),
+  deletePageFrame: (frameId: string, pageId?: string) => request<{ draft: Draft }>(`/frames/${encodeURIComponent(frameId)}`, { method: 'DELETE', body: JSON.stringify({ pageId }) }),
   frame: (frameId: string) => request<{ frame: FrameMetadata }>(`/frames/${encodeURIComponent(frameId)}`),
   recognitionStream: (
     target: 'manual',

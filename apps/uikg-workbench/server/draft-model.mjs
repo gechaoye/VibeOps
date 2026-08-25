@@ -464,6 +464,77 @@ export function beginFrameCapture(currentDraft, frameId, { forceNewPage = false,
   });
 }
 
+function pageSummaryFields(page) {
+  return {
+    id: page.id,
+    key: page.key,
+    name: page.name,
+    functionRef: page.functionRef,
+    implementationType: page.implementationType,
+    surfaceType: page.surfaceType,
+    stateSummary: page.stateSummary,
+    scrollableRegions: page.scrollableRegions,
+  };
+}
+
+// Append a newly captured/uploaded frame to an existing page while KEEPING its
+// annotated elements. Unlike beginFrameCapture this never discards elementIds.
+export function appendFrameToPage(currentDraft, frameId, { pageId = null } = {}) {
+  const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
+  const targetPage = previous.pages.find((page) => page.id === (pageId || previous.currentPageId));
+  if (!targetPage) {
+    // No such page to append to — fall back to creating a fresh capture page.
+    return beginFrameCapture(previous, frameId, { forceNewPage: true });
+  }
+  const frameIds = targetPage.frameIds.includes(frameId)
+    ? [...targetPage.frameIds]
+    : [...targetPage.frameIds, frameId];
+  const nextPage = { ...targetPage, frameIds, publishedAt: null };
+  const pages = previous.pages.map((page) => (page.id === nextPage.id ? nextPage : page));
+  return normalizeDraftShape({
+    ...previous,
+    revision: previous.revision + 1,
+    currentPageId: nextPage.id,
+    currentFrameId: frameId,
+    rawModelResultRef: null,
+    page: pageSummaryFields(nextPage),
+    pages,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+// Remove a single observation frame from a page. Refuses to remove the last
+// remaining frame (a page must always keep at least one frame). Returns a flag
+// so the route layer can surface a 4xx when the removal is rejected.
+export function removeFrameFromPage(currentDraft, frameId, { pageId = null } = {}) {
+  const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
+  const targetPage = previous.pages.find((page) => (pageId ? page.id === pageId : page.frameIds.includes(frameId)));
+  if (!targetPage || !targetPage.frameIds.includes(frameId)) {
+    return { draft: previous, removed: false, reason: 'not-found' };
+  }
+  if (targetPage.frameIds.length <= 1) {
+    return { draft: previous, removed: false, reason: 'last-frame' };
+  }
+  const frameIds = targetPage.frameIds.filter((id) => id !== frameId);
+  const nextPage = { ...targetPage, frameIds, publishedAt: null };
+  const pages = previous.pages.map((page) => (page.id === nextPage.id ? nextPage : page));
+  const wasCurrent = previous.currentPageId === nextPage.id;
+  const currentFrameId = wasCurrent && previous.currentFrameId === frameId
+    ? frameIds.at(-1)
+    : previous.currentFrameId;
+  return {
+    draft: normalizeDraftShape({
+      ...previous,
+      revision: previous.revision + 1,
+      currentFrameId,
+      page: wasCurrent ? pageSummaryFields(nextPage) : previous.page,
+      pages,
+      updatedAt: new Date().toISOString(),
+    }),
+    removed: true,
+  };
+}
+
 export function removePagesFromDraft(currentDraft, pageIds) {
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
   const removedPageIds = new Set(pageIds || []);
