@@ -11,12 +11,13 @@ import {
   loadTargetModelSettings,
   loadWorkbenchPreferences,
   resetDefaultModelGateway,
+  resolveTargetModelConfig,
   saveModelGateway,
   saveTargetModelSettings,
   saveWorkbenchMode,
   testModelGateway,
 } from './model-settings.mjs';
-import { ModelSettingsStore } from './model-settings-store.mjs';
+import { DEFAULT_RECOGNITION_PROMPT_RULES, ModelSettingsStore } from './model-settings-store.mjs';
 
 async function temporaryStore() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-model-settings-'));
@@ -25,11 +26,11 @@ async function temporaryStore() {
   return { root, store };
 }
 
-test('网关和五个运行目标持久化到 SQLite 且彼此独立', async () => {
+test('网关和三个运行目标持久化到 SQLite 且彼此独立', async () => {
   const { root, store } = await temporaryStore();
   try {
     store.saveGateway({ id: 'alpha', label: 'Alpha', baseUrl: 'https://alpha.example/v1', apiKey: 'alpha-secret-1234' });
-    for (const [target, modelName] of [['manual', 'manual-model'], ['auto', 'auto-model'], ['ultra_a', 'ultra-a-model'], ['ultra_b', 'ultra-b-model'], ['midscene', 'midscene-model']]) {
+    for (const [target, modelName] of [['manual', 'manual-model'], ['auto', 'auto-model'], ['midscene', 'midscene-model']]) {
       saveTargetModelSettings(store, {
         target, gatewayId: 'alpha', modelName, modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'medium',
       });
@@ -40,12 +41,71 @@ test('网关和五个运行目标持久化到 SQLite 且彼此独立', async () 
     await reopened.initialize();
     assert.equal(reopened.getAssignment('manual').modelName, 'manual-model');
     assert.equal(reopened.getAssignment('auto').modelName, 'auto-model');
-    assert.equal(reopened.getAssignment('ultra_a').modelName, 'ultra-a-model');
-    assert.equal(reopened.getAssignment('ultra_b').modelName, 'ultra-b-model');
     assert.equal(reopened.getAssignment('midscene').modelName, 'midscene-model');
     assert.equal(reopened.getGateway('alpha', { includeApiKey: true }).apiKey, 'alpha-secret-1234');
     reopened.close();
   } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('元素共相规则持久化到模型设置数据库', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    assert.deepEqual(store.listRecognitionPromptRules(), DEFAULT_RECOGNITION_PROMPT_RULES);
+    const rules = [{ key: 'custom-rule', title: '自定义约束', description: '只输出可见元素。' }];
+    const normalizedRules = [{ ...rules[0], category: 'custom' }];
+    assert.deepEqual(store.saveRecognitionPromptRules(rules), normalizedRules);
+    store.close();
+    const reopened = new ModelSettingsStore(path.join(root, 'model-settings.sqlite'));
+    await reopened.initialize();
+    assert.deepEqual(reopened.listRecognitionPromptRules(), normalizedRules);
+    reopened.close();
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('删除全部元素共相规则后不会重新生成', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    store.saveRecognitionPromptRules([]);
+    store.close();
+    const reopened = new ModelSettingsStore(path.join(root, 'model-settings.sqlite'));
+    await reopened.initialize();
+    assert.deepEqual(reopened.listRecognitionPromptRules(), []);
+    reopened.close();
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('旧版三条可维护规则迁移到元素共相规则且保留人工修改', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    const oldRules = [
+      { key: 'managed-list-abstraction', title: '重复列表抽象', description: '确认存在两个及以上同构可见行时，只输出一个 elementType=list-item、abstraction.kind=repeated-template 的抽象模板，优先于逐行创建 list-item 的通用规则。模板必须提供 fields、每个字段的 instanceRegions、instanceCount、instanceRegions 和 bboxStyle=abstract；只记录截图实际可见的字段，不补造头像、图标或占位元素，也不把实例的具体文字和当前值写入模板属性。' },
+      { key: 'managed-dynamic-content', title: '人工修改后的动态规则', description: '保留这段人工修改。' },
+      { key: 'custom-visible-only', title: '仅识别可见内容', description: '保留原有自定义规则。' },
+    ];
+    store.setMeta('recognition_prompt_rules_v2', JSON.stringify(oldRules));
+    store.ensureDatabase().prepare("DELETE FROM model_settings_meta WHERE key IN ('element_universal_rules_v3', 'element_universal_rules_v4')").run();
+    store.close();
+
+    const reopened = new ModelSettingsStore(path.join(root, 'model-settings.sqlite'));
+    await reopened.initialize();
+    const migrated = reopened.listRecognitionPromptRules();
+    assert.equal(migrated[0].title, '列表项元素共相');
+    assert.equal(migrated[0].category, 'element-universal');
+    assert.equal(migrated[1].title, '人工修改后的动态规则');
+    assert.equal(migrated[1].description, '保留这段人工修改。');
+    assert.equal(migrated[1].category, 'element-universal');
+    assert.deepEqual(migrated[2], { ...oldRules[2], category: 'custom' });
+    reopened.close();
+  } finally {
+    store.close();
     await rm(root, { recursive: true, force: true });
   }
 });
@@ -61,6 +121,23 @@ test('设置响应只返回 SQLite 网关密钥掩码', async () => {
     assert.equal(settings.config.apiKeyConfigured, true);
     assert.equal(settings.storagePath, store.databasePath);
     assert.equal(JSON.stringify({ gateways, settings }).includes('private-value-5678'), false);
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('模型能力绑定网关版本并持久化', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    const gateway = store.saveGateway({ id: 'cfz', label: 'CFZ', baseUrl: 'https://gateway.example/v1', apiKey: 'secret' });
+    store.saveAssignment({ target: 'manual', gatewayId: 'cfz', modelName: 'gpt-5.6-terra', modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'medium' });
+    store.saveModelCapability('cfz', 'gpt-5.6-terra', { mode: 'native', checkedAt: '2026-08-24T09:00:00.000Z', detail: 'ok', gatewayUpdatedAt: gateway.updatedAt });
+    assert.equal(loadTargetModelSettings(store, 'manual').capability.mode, 'native');
+    assert.equal(resolveTargetModelConfig(store, 'manual').structuredOutputMode, 'native');
+    store.saveGateway({ id: 'cfz', label: 'CFZ 2', baseUrl: 'https://gateway.example/v1', apiKey: '' });
+    assert.equal(loadTargetModelSettings(store, 'manual').capability, null);
+    assert.equal(resolveTargetModelConfig(store, 'manual').structuredOutputMode, 'unverified');
   } finally {
     store.close();
     await rm(root, { recursive: true, force: true });
@@ -239,7 +316,7 @@ test('默认网关保存初始快照并可在修改后重置', async () => {
 test('模式配置持久化并拒绝未知模式', async () => {
   const { root, store } = await temporaryStore();
   try {
-    assert.deepEqual(loadWorkbenchPreferences(store), { mode: 'ultra' });
+    assert.deepEqual(loadWorkbenchPreferences(store), { mode: 'manual' });
     assert.deepEqual(saveWorkbenchMode(store, 'manual'), { mode: 'manual' });
     assert.deepEqual(loadWorkbenchPreferences(store), { mode: 'manual' });
     assert.throws(() => saveWorkbenchMode(store, 'turbo'), /受支持的工作模式/);
@@ -268,7 +345,7 @@ test('所有已保存网关均可执行连通性测试', async () => {
   }
 });
 
-test('旧数据库中的 Ultra 目标迁移为正式模式目标', async () => {
+test('旧数据库中的双模型目标只迁移主识别配置', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-model-target-migration-'));
   const databasePath = path.join(root, 'model-settings.sqlite');
   const legacy = new Database(databasePath);
@@ -285,10 +362,10 @@ test('旧数据库中的 Ultra 目标迁移为正式模式目标', async () => {
   try {
     await store.initialize();
     assert.equal(store.getAssignment('manual').modelName, 'old-a');
-    assert.equal(store.getAssignment('ultra_b').modelName, 'old-b');
     assert.equal(store.getAssignment('auto'), null);
-    assert.equal(store.getAssignment('ultra_a').modelName, 'old-a');
-    assert.deepEqual(store.listAssignments().map((assignment) => assignment.target), ['manual', 'ultra_a', 'ultra_b']);
+    assert.throws(() => store.getAssignment('ultra_a'), /未知模型目标/);
+    assert.throws(() => store.getAssignment('ultra_b'), /未知模型目标/);
+    assert.deepEqual(store.listAssignments().map((assignment) => assignment.target), ['manual']);
   } finally {
     store.close();
     await rm(root, { recursive: true, force: true });

@@ -7,8 +7,10 @@ import addFormats from 'ajv-formats';
 import express from 'express';
 import { imageSize } from 'image-size';
 import {
+  appendFrameToPage,
   beginFrameCapture,
   mergeRecognitionIntoDraft,
+  removeFrameFromPage,
   normalizeDraftForSave,
   normalizeRecognitionOutput,
   prepareRecognitionForDraft,
@@ -16,7 +18,7 @@ import {
   validateDraft,
   validateRecognitionConsistency,
 } from './draft-model.mjs';
-import { deleteModelGateway, fetchAvailableModelsByGateway, loadModelGateways, loadTargetModelSettings, loadWorkbenchPreferences, MODEL_TARGETS, resolveTargetModelConfig, resetDefaultModelGateway, saveModelGateway, saveTargetModelSettings, saveWorkbenchMode, testModelGateway } from './model-settings.mjs';
+import { deleteModelGateway, fetchAvailableModelsByGateway, loadModelGateways, loadTargetModelSettings, loadWorkbenchPreferences, MODEL_TARGETS, resolveTargetModelConfig, resetDefaultModelGateway, saveModelGateway, saveTargetModelSettings, saveWorkbenchMode, testGatewayModelCapabilities, testModelCapability, testModelGateway, verifyTargetModelSettings } from './model-settings.mjs';
 import { reasoningBudgetForModel } from './model-compatibility.mjs';
 import { clearModelRuntime, getModelRuntime, setModelRuntime } from './model-runtime.mjs';
 import { recoverRecognitionCheckpointFromStream, runResumableRecognition, RECOGNITION_ERROR_RETRY_LIMIT } from './resumable-recognition.mjs';
@@ -112,13 +114,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   const validateRecognitionSchema = ajv.compile(schema);
   const activeRecognitionSessions = new Map([
     ['manual', new Map()],
-    ['ultra_a', new Map()],
-    ['ultra_b', new Map()],
   ]);
   const resumableRecognitionSessions = new Map([
     ['manual', new Map()],
-    ['ultra_a', new Map()],
-    ['ultra_b', new Map()],
   ]);
   const terminalRecognitionSessions = new Map();
   let loadedModelRuntimeSignature = null;
@@ -264,8 +262,6 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     ],
     manual: loadTargetModelSettings(modelStore, 'manual'),
     auto: loadTargetModelSettings(modelStore, 'auto'),
-    ultraModelA: loadTargetModelSettings(modelStore, 'ultra_a'),
-    ultraModelB: loadTargetModelSettings(modelStore, 'ultra_b'),
     midscene: loadTargetModelSettings(modelStore, 'midscene'),
     gateways: loadModelGateways(modelStore),
     modeConfiguration: loadWorkbenchPreferences(modelStore),
@@ -339,7 +335,13 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     const draft = await queueUploadDraftMutation(async () => {
       if (deletedPageUploadIds.has(task.id)) throw workbenchError(410, '上传任务已删除');
       const currentDraft = await store.loadDraft();
-      const nextDraft = beginFrameCapture(currentDraft, frame.frameId, { forceNewPage: true });
+      const appendTargetPageId = typeof task.targetPageId === 'string' && task.targetPageId
+        && currentDraft.pages.some((page) => page.id === task.targetPageId)
+        ? task.targetPageId
+        : null;
+      const nextDraft = appendTargetPageId
+        ? appendFrameToPage(currentDraft, frame.frameId, { pageId: appendTargetPageId })
+        : beginFrameCapture(currentDraft, frame.frameId, { forceNewPage: true });
       await store.saveDraft(nextDraft);
       return nextDraft;
     });
@@ -385,7 +387,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     retryAttempts: session.retryAttempts,
     createdAt: session.createdAt,
     updatedAt: session.updatedAt,
-    errorMessage: session.errorMessage,
+    errorMessage: /输出(?:结果)?未通过结构检查/.test(String(session.errorMessage || '')) ? '输出结果未通过结构检查' : session.errorMessage,
     ...(includeStreams ? {
       reasoningContent: session.reasoningContent,
       outputContent: session.outputContent,
@@ -395,13 +397,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
 
   const recognitionLabels = {
     manual: 'Manual 页面识别模型',
-    ultra_a: 'Model A',
-    ultra_b: 'Model B',
   };
   const recognitionAnalysisMessages = {
     manual: 'AI 正在分析画面',
-    ultra_a: 'Model A 正在分析画面',
-    ultra_b: 'Model B 正在分析画面',
   };
   const recognitionRetryReason = (error) => {
     const detail = error instanceof Error ? error.message : String(error || '未知错误');
@@ -433,6 +431,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     let continuationContent = resumeSession?.outputContent || '';
     let sessionStatus = 'running';
     let sessionError = null;
+    let sessionSchemaErrors = [];
+    let sessionConsistencyIssues = [];
+    let sessionNormalizationIssues = [];
     const emitProgress = (event) => {
       if (event.type === 'chunk') {
         reasoningContent += event.reasoningContent || '';
@@ -463,6 +464,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       const promptRuntimeStructure = includeUiTree && frozenFrame.runtimeStructure
         ? frozenFrame.runtimeStructure
         : null;
+      const managedPromptRules = modelStore?.listRecognitionPromptRules?.() || [];
       signal?.throwIfAborted();
 
       const startedAt = sessionStartedAt;
@@ -474,7 +476,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       });
       setResumable(null);
       const run = await runResumableRecognition({
-        initialPrompt: buildRecognitionPrompt(frameId, pageContext, promptRuntimeStructure),
+        initialPrompt: buildRecognitionPrompt(frameId, pageContext, promptRuntimeStructure, managedPromptRules),
         initialResult: resumeSession?.rawResult,
         initialFallback: { frameId, elements: [] },
         callModel: async (prompt, attempt) => {
@@ -511,7 +513,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
             throw error;
           }
         },
-        buildContinuationPrompt: (checkpoint, attempt) => buildRecognitionContinuationPrompt(frameId, pageContext, checkpoint, attempt, promptRuntimeStructure),
+        buildContinuationPrompt: (checkpoint, attempt) => buildRecognitionContinuationPrompt(frameId, pageContext, checkpoint, attempt, promptRuntimeStructure, managedPromptRules),
         isComplete: (candidate) => inspectRecognitionResult(candidate).schemaValid,
         signal,
         onRetry: ({ attempt, totalAttempt, retryLimit, checkpoint, error }) => emitProgress({
@@ -588,15 +590,16 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         });
       }
       if (!schemaValid || !run.completed || blockingConsistencyIssues.length > 0) {
-        throw workbenchError(422, `${label} 输出未通过结构检查，原始结果已保留`, {
+        throw workbenchError(422, '输出结果未通过结构检查', {
           modelResultRef,
           schemaErrors,
           consistencyIssues,
+          normalizationIssues,
         });
       }
       setResumable(null);
       if (normalizedResult.frameId !== frameId) {
-        throw workbenchError(422, `${label} 返回的 frameId 与冻结帧不一致`, { modelResultRef });
+        throw workbenchError(422, '输出结果的 frameId 与冻结帧不一致', { modelResultRef });
       }
       signal?.throwIfAborted();
 
@@ -621,6 +624,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       if (signal?.aborted && (!error || typeof error !== 'object')) error = new Error(`用户中断 ${label}`);
       sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
       sessionError = signal?.aborted ? `用户中断 ${label}` : error instanceof Error ? error.message : String(error);
+      const errorDetails = error && typeof error === 'object' && error.details && typeof error.details === 'object' ? error.details : {};
+      sessionSchemaErrors = Array.isArray(errorDetails.schemaErrors) ? structuredClone(errorDetails.schemaErrors) : [];
+      sessionConsistencyIssues = Array.isArray(errorDetails.consistencyIssues) ? structuredClone(errorDetails.consistencyIssues) : [];
+      sessionNormalizationIssues = Array.isArray(errorDetails.normalizationIssues) ? structuredClone(errorDetails.normalizationIssues) : [];
       if (signal?.aborted) {
         const rawCheckpoint = error && typeof error === 'object'
           ? error.recognitionRawResult || recoverRecognitionCheckpointFromStream(outputContent)
@@ -690,6 +697,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         reasoningContent,
         outputContent,
         retryAttempts,
+        ...(sessionSchemaErrors.length ? { schemaErrors: sessionSchemaErrors } : {}),
+        ...(sessionConsistencyIssues.length ? { consistencyIssues: sessionConsistencyIssues } : {}),
+        ...(sessionNormalizationIssues.length ? { normalizationIssues: sessionNormalizationIssues } : {}),
       });
     }
   }
@@ -739,13 +749,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         recognitionRunning: recognitionInProgress(),
         manualModelConfigured: Boolean(getModelRuntime('manual')?.modelName),
         manualModel: getModelRuntime('manual')?.modelName || null,
-        ultraModelAConfigured: Boolean(getModelRuntime('ultra_a')?.modelName),
-        ultraModelA: getModelRuntime('ultra_a')?.modelName || null,
-        ultraModelBConfigured: Boolean(getModelRuntime('ultra_b')?.modelName),
-        ultraModelB: getModelRuntime('ultra_b')?.modelName || null,
+        manualGatewayLabel: getModelRuntime('manual')?.gatewayLabel || null,
+        manualReasoningEffort: getModelRuntime('manual')?.reasoningEffort || null,
         manualSession: publicRecognitionSession(resumableRecognitionSessions.get('manual').get(workspaceSessionKey(req.query.workspaceSessionId))),
-        ultraModelASession: publicRecognitionSession(resumableRecognitionSessions.get('ultra_a').get(workspaceSessionKey(req.query.workspaceSessionId))),
-        ultraModelBSession: publicRecognitionSession(resumableRecognitionSessions.get('ultra_b').get(workspaceSessionKey(req.query.workspaceSessionId))),
         spec,
         session,
       });
@@ -818,9 +824,66 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   });
 
+  router.get('/recognition-prompt', async (_req, res, next) => {
+    try {
+      const editableRules = modelStore?.listRecognitionPromptRules?.() || [];
+      res.json({
+        frameId: 'settings-preview',
+        prompt: buildRecognitionPrompt('settings-preview', '', null, editableRules),
+        rules: [
+          { key: 'taxonomy', title: '元素类型枚举', description: '只能使用当前分类中的具体 elementType；业务用途写入描述，不新增业务类型。', source: 'builtin' },
+          { key: 'geometry', title: '几何与证据', description: 'bbox 使用完整截图归一化坐标；优先使用运行时 bounds，证据只记录截图可见事实。', source: 'builtin' },
+          { key: 'output', title: '结构化输出', description: '必须返回完整 JSON、稳定 ASCII candidateKey、元素关系、动作候选和 uncertainties。', source: 'builtin' },
+          ...editableRules.map((rule) => ({ ...rule, source: rule.category })),
+        ],
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/recognition-prompt/rules', async (req, res, next) => {
+    try {
+      const title = String(req.body?.title || '').trim();
+      const description = String(req.body?.description || '').trim();
+      const category = req.body?.category;
+      if (!title || !description) throw workbenchError(400, '规则名称和内容不能为空');
+      if (category !== 'element-universal' && category !== 'custom') throw workbenchError(400, '规则分类无效');
+      const rules = modelStore.listRecognitionPromptRules();
+      rules.push({ key: `${category}-${randomUUID()}`, category, title: title.slice(0, 100), description: description.slice(0, 4000) });
+      modelStore.saveRecognitionPromptRules(rules);
+      res.status(201).json({ saved: true });
+    } catch (error) { next(error); }
+  });
+
+  router.put('/recognition-prompt/rules/:ruleKey', async (req, res, next) => {
+    try {
+      const title = String(req.body?.title || '').trim();
+      const description = String(req.body?.description || '').trim();
+      if (!title || !description) throw workbenchError(400, '规则名称和内容不能为空');
+      const rules = modelStore.listRecognitionPromptRules();
+      const index = rules.findIndex((rule) => rule.key === req.params.ruleKey);
+      if (index < 0) throw workbenchError(404, '规则不存在');
+      rules[index] = { ...rules[index], title: title.slice(0, 100), description: description.slice(0, 4000) };
+      modelStore.saveRecognitionPromptRules(rules);
+      res.json({ saved: true });
+    } catch (error) { next(error); }
+  });
+
+  router.delete('/recognition-prompt/rules/:ruleKey', async (req, res, next) => {
+    try {
+      const rules = modelStore.listRecognitionPromptRules();
+      const nextRules = rules.filter((rule) => rule.key !== req.params.ruleKey);
+      if (nextRules.length === rules.length) throw workbenchError(404, '规则不存在');
+      modelStore.saveRecognitionPromptRules(nextRules);
+      res.json({ deleted: true });
+    } catch (error) { next(error); }
+  });
+
   router.put('/model-settings', async (req, res, next) => {
     try {
       if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
+      await verifyTargetModelSettings(modelStore, req.body);
       saveTargetModelSettings(modelStore, req.body);
       let runtimeReloaded = true;
       try {
@@ -859,6 +922,24 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   router.post('/model-settings/gateways/:gatewayId/test', async (req, res, next) => {
     try {
       res.json(await testModelGateway(modelStore, req.params.gatewayId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/model-settings/gateways/:gatewayId/capabilities', async (req, res, next) => {
+    try {
+      if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能检测模型能力' });
+      res.json(await testGatewayModelCapabilities(modelStore, req.params.gatewayId));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.post('/model-settings/gateways/:gatewayId/models/:modelName/capability', async (req, res, next) => {
+    try {
+      if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能检测模型能力' });
+      res.json(await testModelCapability(modelStore, req.params.gatewayId, req.params.modelName));
     } catch (error) {
       next(error);
     }
@@ -1011,6 +1092,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           status: 'queued',
           errorReason: null,
           pageId: null,
+          targetPageId: typeof item?.targetPageId === 'string' && item.targetPageId ? item.targetPageId : null,
           frameId: null,
           createdAt: now,
           updatedAt: now,
@@ -1163,6 +1245,49 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   });
 
+  router.post('/frames/append', async (req, res, next) => {
+    try {
+      if (!server.agent) return res.status(409).json({ error: '请先连接 Android 设备' });
+      await syncModelRuntime();
+      const draft = await store.loadDraft();
+      const pageId = typeof req.body?.pageId === 'string' ? req.body.pageId : null;
+      const targetPageId = pageId || draft.currentPageId;
+      if (!draft.pages.some((page) => page.id === targetPageId)) {
+        return res.status(404).json({ error: '要添加观测帧的页面不存在' });
+      }
+      const frame = await freezeAndCapture(server.agent, req.body?.collectRuntimeStructure !== false);
+      const metadata = await store.saveFrame(frame);
+      const nextDraft = appendFrameToPage(draft, frame.frameId, { pageId: targetPageId });
+      await store.saveDraft(nextDraft);
+      res.json({
+        frame: {
+          ...metadata,
+          imagePath: undefined,
+          imageUrl: `/workbench/api/frames/${encodeURIComponent(frame.frameId)}/image`,
+        },
+        draft: nextDraft,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.delete('/frames/:frameId', async (req, res, next) => {
+    try {
+      const draft = await store.loadDraft();
+      const pageId = typeof req.body?.pageId === 'string' ? req.body.pageId : null;
+      const { draft: nextDraft, removed, reason } = removeFrameFromPage(draft, req.params.frameId, { pageId });
+      if (!removed) {
+        if (reason === 'last-frame') return res.status(409).json({ error: '每个页面至少需要保留一个观测帧' });
+        return res.status(404).json({ error: '要删除的观测帧不存在' });
+      }
+      await store.saveDraft(nextDraft);
+      res.json({ draft: nextDraft });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.get('/frames/:frameId/image', async (req, res, next) => {
     try {
       const frame = await store.loadFrame(req.params.frameId);
@@ -1232,12 +1357,16 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       'X-Accel-Buffering': 'no',
       'X-Analysis-Session-Id': session.id,
     });
+    // Keep recognition chunks observable immediately through Node/proxies.
+    // Without this, small SSE writes can be coalesced until the model finishes.
+    res.socket?.setNoDelay?.(true);
     res.flushHeaders();
     const lastEventId = Number(req.headers['last-event-id'] || req.body?.lastEventId || 0) || 0;
     let closed = false;
     const send = (event, data, id = null) => {
       if (res.writableEnded || res.destroyed) return;
       res.write(`event: ${event}\n${id !== null ? `id: ${id}\n` : ''}data: ${JSON.stringify(data)}\n\n`);
+      res.flush?.();
     };
     const subscriber = { send };
     session.subscribers.add(subscriber);
@@ -1325,7 +1454,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     res.json({ cancelled: true });
   });
 
-  router.post('/recognition/:target(manual|ultra_a|ultra_b)', async (req, res, next) => {
+  router.post('/recognition/:target(manual)', async (req, res, next) => {
     let session;
     try {
       const target = req.params.target;
@@ -1374,85 +1503,6 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         return draft;
       });
       res.json({ draft: result, issues: validateDraft(result) });
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  router.post('/recognition/ultra/merge', async (req, res, next) => {
-    try {
-      const frameId = String(req.body?.frameId || '');
-      const pageId = String(req.body?.pageId || '');
-      const currentDraft = await store.loadDraft();
-      const selectedPageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : currentDraft;
-      const pageElementIds = new Set(selectedPageDraft?.elements.filter((element) => element.pageId === selectedPageDraft.currentPageId).map((element) => element.id) || []);
-      const pageDraft = req.body?.replaceExisting && selectedPageDraft ? {
-        ...selectedPageDraft,
-        elementEditRecords: selectedPageDraft.elementEditRecords.filter((record) => !pageElementIds.has(record.elementId)),
-      } : selectedPageDraft;
-      if (!frameId || !pageDraft || pageDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
-      const selections = Array.isArray(req.body?.selections) ? req.body.selections.filter((selection) => selection && typeof selection === 'object') : [];
-      const { recognitionResult: modelAResult } = normalizeRecognitionOutput(req.body?.modelAResult || {});
-      const { recognitionResult: modelBResult } = normalizeRecognitionOutput(req.body?.modelBResult || {});
-      const modelAByKey = new Map((modelAResult.elements || []).map((element) => [element.candidateKey, element]));
-      const modelBByKey = new Map((modelBResult.elements || []).map((element) => [element.candidateKey, element]));
-      const candidateByKey = new Map();
-      const actionSourceByKey = new Map();
-      const modelAKeyToMergedKey = new Map();
-      const modelBKeyToMergedKey = new Map();
-      for (const selection of selections) {
-        const candidateKey = String(selection.candidateKey || '');
-        const modelACandidateKey = String(selection.modelACandidateKey || candidateKey);
-        const modelBCandidateKey = String(selection.modelBCandidateKey || candidateKey);
-        const modelA = modelAByKey.get(modelACandidateKey);
-        const modelB = modelBByKey.get(modelBCandidateKey);
-        const baseSource = selection.baseSource === 'modelB' && modelB ? 'modelB' : modelA ? 'modelA' : modelB ? 'modelB' : null;
-        if (!candidateKey || !baseSource) continue;
-        const base = structuredClone(baseSource === 'modelB' ? modelB : modelA);
-        for (const [field, source] of Object.entries(selection.fieldSources || {})) {
-          if (field === 'actions') continue;
-          const sourceCandidate = source === 'modelB' ? modelB : modelA;
-          if (sourceCandidate && Object.hasOwn(sourceCandidate, field)) base[field] = structuredClone(sourceCandidate[field]);
-        }
-        let mergedKey = String(base.candidateKey || candidateKey);
-        if (candidateByKey.has(mergedKey)) {
-          const suffix = baseSource === 'modelA' ? 'ultra_a' : 'ultra_b';
-          let sequence = 1;
-          let uniqueKey = `${mergedKey}.${suffix}`;
-          while (candidateByKey.has(uniqueKey)) uniqueKey = `${mergedKey}.${suffix}.${sequence++}`;
-          mergedKey = uniqueKey;
-          base.candidateKey = mergedKey;
-        }
-        candidateByKey.set(mergedKey, base);
-        actionSourceByKey.set(mergedKey, selection.fieldSources?.actions === 'modelB' ? 'modelB' : baseSource);
-        if (modelA) modelAKeyToMergedKey.set(modelACandidateKey, mergedKey);
-        if (modelB) modelBKeyToMergedKey.set(modelBCandidateKey, mergedKey);
-      }
-      const modelBActions = (modelBResult.actionCandidates || []).flatMap((action) => {
-        const mergedKey = modelBKeyToMergedKey.get(action.triggerCandidateKey);
-        return mergedKey && actionSourceByKey.get(mergedKey) === 'modelB' ? [{ ...action, triggerCandidateKey: mergedKey }] : [];
-      });
-      const modelAActions = (modelAResult.actionCandidates || []).flatMap((action) => {
-        const mergedKey = modelAKeyToMergedKey.get(action.triggerCandidateKey);
-        return mergedKey && actionSourceByKey.get(mergedKey) === 'modelA' ? [{ ...action, triggerCandidateKey: mergedKey }] : [];
-      });
-      const remapRelationships = (relationships, keyMap) => (relationships || []).flatMap((relationship) => {
-        const fromCandidateKey = keyMap.get(relationship.fromCandidateKey);
-        const toCandidateKey = keyMap.get(relationship.toCandidateKey);
-        return fromCandidateKey && toCandidateKey ? [{ ...relationship, fromCandidateKey, toCandidateKey }] : [];
-      });
-      const combinedResult = {
-        ...(modelAResult.page ? modelAResult : modelBResult),
-        frameId,
-        elements: [...candidateByKey.values()],
-        relationships: [...remapRelationships(modelAResult.relationships, modelAKeyToMergedKey), ...remapRelationships(modelBResult.relationships, modelBKeyToMergedKey)],
-        actionCandidates: [...modelBActions, ...modelAActions],
-      };
-      const frozenFrame = await store.loadFrame(frameId);
-      const groundedResult = groundRecognitionGeometry(combinedResult, frozenFrame.runtimeStructure);
-      const draft = mergeRecognitionIntoDraft(pageDraft, prepareRecognitionForDraft(groundedResult), String(req.body?.modelResultRef || 'ultra-model-merge'), null);
-      await store.saveDraft(draft);
-      res.json({ draft, issues: validateDraft(draft) });
     } catch (error) {
       next(error);
     }

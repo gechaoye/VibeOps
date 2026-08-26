@@ -176,6 +176,16 @@ export async function runResumableRecognition({
         error: message,
       });
 
+      if (error && typeof error === 'object' && error.retryable === false) {
+        return {
+          rawResult,
+          completed: false,
+          retryAttempts,
+          initialError,
+          lastError,
+        };
+      }
+
       if (consecutiveFailures >= retryLimit) {
         return {
           rawResult,

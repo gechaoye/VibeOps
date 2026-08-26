@@ -65,8 +65,8 @@ export function ElementTree({ elements, filterCandidateKey, selectedId, multiSel
             <button type="button" className="tree-row-content" onClick={() => onSelect(element.id)}>
             <Container size={14} className="tree-control-icon" />
             <span className="tree-row-main">
-              <span className="tree-row-label">{element.label}</span>
-              <span className="tree-row-meta">{elementTypeLabel(element.elementType)}</span>
+              <span className="tree-row-label">{element.abstraction ? `${element.label}（元素共相）` : element.label}</span>
+              <span className="tree-row-meta">{elementTypeLabel(element.elementType)}{element.abstraction ? element.abstraction.kind === 'dynamic-template' ? ' · 动态元素共相' : ` · ${element.abstraction.instanceCount} 个实例` : ''}</span>
             </span>
             <span className={`tree-status ${hasRequiredFieldIssue(element) ? 'tree-status-warning' : `tree-status-${element.reviewStatus}`}`} title={hasRequiredFieldIssue(element) ? '模型返回缺少必填属性，请补齐后再审核' : reviewStatusLabels[element.reviewStatus]}>
               {hasRequiredFieldIssue(element) ? <CircleAlert size={14} /> : <StatusIcon status={element.reviewStatus} />}

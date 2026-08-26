@@ -34,4 +34,4 @@ pnpm graph:query -- --from messages.root --to messages.special_follow.settings -
 
 ## Workbench
 
-`apps/uikg-workbench/` maintains graph drafts from a connected Android device. It supports live device interaction, frozen-frame recognition evidence, editable annotations, consistency validation, AI review, staging, and publication. Manual and Auto use independent page-recognition models; Ultra uses two peer models for parallel recognition.
+`apps/uikg-workbench/` maintains graph drafts from a connected Android device. It supports live device interaction, frozen-frame recognition evidence, editable annotations, consistency validation, AI review, staging, and publication. Page recognition uses the configured single model. Repeated list rows are projected as abstract templates with stable field roles and per-frame instance regions; concrete row values remain observation evidence rather than page elements.

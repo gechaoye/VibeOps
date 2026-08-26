@@ -121,7 +121,28 @@ export class DraftStore {
     const entries = await readdir(this.sessionsRoot, { withFileTypes: true });
     const sessions = await Promise.all(entries
       .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
-      .map(async (entry) => JSON.parse(await readFile(path.join(this.sessionsRoot, entry.name), 'utf8'))));
+      .map(async (entry) => {
+        const session = JSON.parse(await readFile(path.join(this.sessionsRoot, entry.name), 'utf8'));
+        if (session.status !== 'failed') return session;
+        const resultPath = path.join(this.modelResultsRoot, `${String(session.id).replace(/[^a-zA-Z0-9._-]/g, '-')}.json`);
+        try {
+          const result = JSON.parse(await readFile(resultPath, 'utf8'));
+          const normalizedMessage = /输出(?:结果)?未通过结构检查/.test(String(session.errorMessage || ''))
+            ? '输出结果未通过结构检查'
+            : session.errorMessage;
+          return {
+            ...session,
+            errorMessage: normalizedMessage,
+            ...(session.schemaErrors?.length || !Array.isArray(result.schemaErrors) ? {} : { schemaErrors: result.schemaErrors }),
+            ...(session.consistencyIssues?.length || !Array.isArray(result.consistencyIssues) ? {} : { consistencyIssues: result.consistencyIssues }),
+            ...(session.normalizationIssues?.length || !Array.isArray(result.normalizationIssues) ? {} : { normalizationIssues: result.normalizationIssues }),
+          };
+        } catch {
+          return /输出(?:结果)?未通过结构检查/.test(String(session.errorMessage || ''))
+            ? { ...session, errorMessage: '输出结果未通过结构检查' }
+            : session;
+        }
+      }));
     return sessions.sort((a, b) => String(b.updatedAt || b.startedAt).localeCompare(String(a.updatedAt || a.startedAt)));
   }
 

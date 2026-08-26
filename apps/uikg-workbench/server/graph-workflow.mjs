@@ -454,7 +454,7 @@ export class GraphWorkflow {
         },
         state: draftElement.state || 'visible',
         stateProperties: { enabled: draftElement.enabled, actionable },
-        dynamicValue: draftElement.dynamicContent ? draftElement.label : null,
+        dynamicValue: draftElement.abstraction ? null : (draftElement.dynamicContent ? draftElement.label : null),
         screenshotRef: frameAsset.explorationRef,
         redboxRef: redboxRelative,
         actionTraceRef: null,
@@ -495,6 +495,14 @@ export class GraphWorkflow {
           actionable,
           function: draftElement.interactionBoundary,
         },
+        composition: draftElement.abstraction ? {
+          kind: draftElement.abstraction.kind,
+          templateKey: draftElement.abstraction.templateKey,
+          instanceCount: draftElement.abstraction.instanceCount,
+          fields: draftElement.abstraction.fields,
+          instanceRegions: draftElement.abstraction.instanceRegions,
+          bboxStyle: draftElement.abstraction.bboxStyle,
+        } : (existing?.value.composition || undefined),
         provenance: {
           sourceType: 'workbench_ai_human_confirmed',
           materializationSpec: normalizePath(path.join('explorations', evidence.explorationId, 'scope.yaml')),

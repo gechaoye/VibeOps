@@ -105,6 +105,53 @@ function normalizeInteractionBoundary(interactionBoundary, capabilities) {
   return interactionBoundary === 'none' || !interactionBoundary ? 'candidate_bbox' : interactionBoundary;
 }
 
+const LIST_CONTAINER_TYPES = new Set(['list', 'grouped-list', 'swipe-list', 'expandable-list']);
+
+function isInheritedAbstractListItem(element, parent) {
+  return element?.abstraction?.kind === 'repeated-template' && LIST_CONTAINER_TYPES.has(parent?.elementType);
+}
+
+function normalizeAbstraction(rawAbstraction, fallbackKey = '') {
+  if (!rawAbstraction || typeof rawAbstraction !== 'object' || !['repeated-template', 'dynamic-template'].includes(rawAbstraction.kind)) return null;
+  const kind = rawAbstraction.kind;
+  const fields = Array.isArray(rawAbstraction.fields)
+    ? rawAbstraction.fields.map((field, index) => ({
+      key: typeof field?.key === 'string' && field.key.trim() ? field.key.trim() : `field-${index + 1}`,
+      label: typeof field?.label === 'string' && field.label.trim() ? field.label.trim() : '重复字段',
+      elementType: typeof field?.elementType === 'string' ? field.elementType : 'static-label',
+      description: typeof field?.description === 'string' && field.description.trim() ? field.description.trim() : '同类列表项中的稳定字段',
+      displayCondition: typeof field?.displayCondition === 'string' ? field.displayCondition : '',
+      capabilities: normalizeCapabilities(field?.capabilities),
+      interactionBoundary: normalizeInteractionBoundary(field?.interactionBoundary, normalizeCapabilities(field?.capabilities)),
+      actionEffects: normalizeActionEffects(field?.actionEffects, typeof field?.elementType === 'string' && field.elementType ? field.elementType : 'static-label', normalizeCapabilities(field?.capabilities)),
+      parentId: typeof field?.parentId === 'string' && field.parentId.trim() ? field.parentId.trim() : null,
+      required: Boolean(field?.required),
+      instanceRegions: Array.isArray(field?.instanceRegions)
+        ? field.instanceRegions.filter((region) => region && typeof region === 'object').map(clampUnitBox)
+        : [],
+    })).filter((field) => {
+      // Legacy recognition sometimes hallucinated an avatar role without any visual evidence.
+      // Keep real avatars when the model supplied at least one field-level bbox.
+      const key = field.key.toLowerCase();
+      return !(field.instanceRegions.length === 0 && (key === 'avatar' || key === 'avatar-placeholder' || key === 'avatar-placeholder-icon'));
+    })
+    : [];
+  const instanceRegions = Array.isArray(rawAbstraction.instanceRegions)
+    ? rawAbstraction.instanceRegions.filter((region) => region && typeof region === 'object').map(clampUnitBox)
+    : [];
+  const instanceCount = kind === 'dynamic-template'
+    ? 1
+    : Math.max(2, Math.round(Number(rawAbstraction.instanceCount) || instanceRegions.length || 2));
+  return {
+    kind,
+    templateKey: typeof rawAbstraction.templateKey === 'string' && rawAbstraction.templateKey.trim() ? rawAbstraction.templateKey.trim() : fallbackKey,
+    instanceCount,
+    fields,
+    instanceRegions,
+    bboxStyle: 'abstract',
+  };
+}
+
 function evidenceDetail(value) {
   if (value === null || value === undefined) return null;
   if (typeof value === 'string') return value;
@@ -229,6 +276,12 @@ export function normalizeRecognitionOutput(rawRecognitionResult) {
       : {};
     const meaningInput = { ...rawMeaning };
 
+    if (!normalizedElement.abstraction && rawMeaning.abstraction && typeof rawMeaning.abstraction === 'object' && !Array.isArray(rawMeaning.abstraction)) {
+      normalizedElement.abstraction = rawMeaning.abstraction;
+      delete meaningInput.abstraction;
+      repairIssues.push('meaning.abstraction 已上提到元素顶层');
+    }
+
     if (Object.hasOwn(normalizedElement, 'candidate_key')) {
       if ((!normalizedElement.candidateKey || typeof normalizedElement.candidateKey !== 'string')
         && typeof normalizedElement.candidate_key === 'string'
@@ -299,6 +352,7 @@ export function normalizeRecognitionOutput(rawRecognitionResult) {
         'meaning-evidence-needs-review',
       ])];
     }
+    normalizedElement.abstraction = normalizeAbstraction(normalizedElement.abstraction, candidateKey);
     return { ...normalizedElement, meaning };
   });
   if (Array.isArray(recognitionResult.actionCandidates)) {
@@ -410,6 +464,77 @@ export function beginFrameCapture(currentDraft, frameId, { forceNewPage = false,
   });
 }
 
+function pageSummaryFields(page) {
+  return {
+    id: page.id,
+    key: page.key,
+    name: page.name,
+    functionRef: page.functionRef,
+    implementationType: page.implementationType,
+    surfaceType: page.surfaceType,
+    stateSummary: page.stateSummary,
+    scrollableRegions: page.scrollableRegions,
+  };
+}
+
+// Append a newly captured/uploaded frame to an existing page while KEEPING its
+// annotated elements. Unlike beginFrameCapture this never discards elementIds.
+export function appendFrameToPage(currentDraft, frameId, { pageId = null } = {}) {
+  const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
+  const targetPage = previous.pages.find((page) => page.id === (pageId || previous.currentPageId));
+  if (!targetPage) {
+    // No such page to append to — fall back to creating a fresh capture page.
+    return beginFrameCapture(previous, frameId, { forceNewPage: true });
+  }
+  const frameIds = targetPage.frameIds.includes(frameId)
+    ? [...targetPage.frameIds]
+    : [...targetPage.frameIds, frameId];
+  const nextPage = { ...targetPage, frameIds, publishedAt: null };
+  const pages = previous.pages.map((page) => (page.id === nextPage.id ? nextPage : page));
+  return normalizeDraftShape({
+    ...previous,
+    revision: previous.revision + 1,
+    currentPageId: nextPage.id,
+    currentFrameId: frameId,
+    rawModelResultRef: null,
+    page: pageSummaryFields(nextPage),
+    pages,
+    updatedAt: new Date().toISOString(),
+  });
+}
+
+// Remove a single observation frame from a page. Refuses to remove the last
+// remaining frame (a page must always keep at least one frame). Returns a flag
+// so the route layer can surface a 4xx when the removal is rejected.
+export function removeFrameFromPage(currentDraft, frameId, { pageId = null } = {}) {
+  const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
+  const targetPage = previous.pages.find((page) => (pageId ? page.id === pageId : page.frameIds.includes(frameId)));
+  if (!targetPage || !targetPage.frameIds.includes(frameId)) {
+    return { draft: previous, removed: false, reason: 'not-found' };
+  }
+  if (targetPage.frameIds.length <= 1) {
+    return { draft: previous, removed: false, reason: 'last-frame' };
+  }
+  const frameIds = targetPage.frameIds.filter((id) => id !== frameId);
+  const nextPage = { ...targetPage, frameIds, publishedAt: null };
+  const pages = previous.pages.map((page) => (page.id === nextPage.id ? nextPage : page));
+  const wasCurrent = previous.currentPageId === nextPage.id;
+  const currentFrameId = wasCurrent && previous.currentFrameId === frameId
+    ? frameIds.at(-1)
+    : previous.currentFrameId;
+  return {
+    draft: normalizeDraftShape({
+      ...previous,
+      revision: previous.revision + 1,
+      currentFrameId,
+      page: wasCurrent ? pageSummaryFields(nextPage) : previous.page,
+      pages,
+      updatedAt: new Date().toISOString(),
+    }),
+    removed: true,
+  };
+}
+
 export function removePagesFromDraft(currentDraft, pageIds) {
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
   const removedPageIds = new Set(pageIds || []);
@@ -509,6 +634,7 @@ export function normalizeDraftShape(value) {
     return {
       ...elementFields,
       displayCondition: typeof element.displayCondition === 'string' ? element.displayCondition : '',
+      abstraction: normalizeAbstraction(element.abstraction, element.candidateKey),
       elementType,
       capabilities,
       actionEffects: normalizeActionEffects(element.actionEffects, elementType, capabilities),
@@ -520,6 +646,20 @@ export function normalizeDraftShape(value) {
       pageId: element.pageId ?? (['application', 'shared_component'].includes(element.ownerKind) ? null : draft.currentPageId),
       availableOnPageIds: [...(element.availableOnPageIds || (element.ownerKind === 'application' ? [draft.currentPageId] : []))],
       aiModel: element.aiModel || draft.lastAiModel || null,
+    };
+  });
+  // A repeated list-item template represents many rows, so its editable region is
+  // the containing list's region rather than any one concrete instance.
+  const elementsById = new Map(draft.elements.map((element) => [element.id, element]));
+  draft.elements = draft.elements.map((element) => {
+    const parent = element.parentId ? elementsById.get(element.parentId) : null;
+    if (!isInheritedAbstractListItem(element, parent)) return element;
+    return {
+      ...element,
+      bbox: { ...parent.bbox },
+      gridColumns: parent.gridColumns,
+      gridRows: parent.gridRows,
+      gridRegion: parent.gridRegion,
     };
   });
   draft.elementEditRecords = Array.isArray(draft.elementEditRecords)
@@ -597,7 +737,7 @@ function nextElementFromRecognition(element, actions, pageId, model) {
     candidateKey: element.candidateKey,
     label: element.label || element.visualDescription,
     visualDescription: element.visualDescription,
-    displayCondition: '',
+    displayCondition: typeof element.displayCondition === 'string' ? element.displayCondition : '',
     elementType: element.elementType,
     role: inferRole(element),
     capabilities,
@@ -605,6 +745,7 @@ function nextElementFromRecognition(element, actions, pageId, model) {
     enabled: element.enabled ?? null,
     state: element.state || '',
     dynamicContent: element.dynamicContent,
+    abstraction: normalizeAbstraction(element.abstraction, element.candidateKey),
     bbox: { ...element.approximateRegion },
     gridColumns: grid.columns,
     gridRows: grid.rows,
@@ -657,6 +798,198 @@ function unionCandidateBoxes(elements) {
   return clampUnitBox({ x: left, y: top, width: right - left, height: bottom - top });
 }
 
+function currentUserFieldRole(element) {
+  const key = String(element?.candidateKey || '').toLowerCase();
+  const description = [element?.label, element?.visualDescription, element?.meaning?.description].filter(Boolean).join(' ');
+  const scoped = /(^|[._-])(?:self|current[._-]?(?:user|account)|user[._-]?profile)([._-]|$)/.test(key)
+    || /当前(?:登录)?(?:用户|账号)|登录(?:用户|账号)|个人(?:头像|资料|信息)/.test(description);
+  if (!scoped) return null;
+  const source = `${key} ${description}`.toLowerCase();
+  if (element.elementType === 'avatar' || /avatar|头像/.test(source)) return { key: 'avatar', label: '用户头像', required: true };
+  if (/display[._-]?name|user[._-]?name|姓名|显示名称|用户名称|账号名称/.test(source)) return { key: 'display-name', label: '用户名称', required: true };
+  if (/organization|company|department|[._-]org(?:[._-]|$)|所属组织|组织名称|企业名称|公司名称|部门名称/.test(source)) return { key: 'organization', label: '组织信息', required: false };
+  if (/position|job[._-]?title|职位|岗位|职务/.test(source)) return { key: 'position', label: '职位信息', required: false };
+  return null;
+}
+
+function inferDynamicUserProfile(proposal) {
+  if ((proposal.elements || []).some((element) => element?.abstraction?.kind === 'dynamic-template')) return;
+  const profileFields = (proposal.elements || []).map((element) => ({ element, role: currentUserFieldRole(element) })).filter((item) => item.role);
+  if (profileFields.length < 2 || !profileFields.some((item) => item.role.key === 'avatar')) return;
+
+  const candidateKey = 'current-user-profile-template';
+  if ((proposal.elements || []).some((element) => element.candidateKey === candidateKey)) return;
+  const elements = profileFields.map((item) => item.element);
+  const instanceRegion = unionCandidateBoxes(elements);
+  const fields = profileFields.map(({ element, role }) => {
+    const actions = (proposal.actionCandidates || []).filter((action) => action.triggerCandidateKey === element.candidateKey);
+    const capabilities = [...new Set(actions.map((action) => action.action).filter((action) => RECOGNITION_ACTIONS.includes(action)))];
+    const normalizedCapabilities = capabilities.length > 0 ? capabilities : ['none'];
+    return {
+      ...role,
+      elementType: element.elementType || 'static-label',
+      description: `${role.label}随当前登录用户变化`,
+      displayCondition: typeof element.displayCondition === 'string' ? element.displayCondition : '',
+      capabilities: normalizedCapabilities,
+      interactionBoundary: normalizedCapabilities.some((action) => action !== 'none') ? 'candidate_bbox' : 'none',
+      actionEffects: normalizedCapabilities.map((action) => ({
+        action,
+        effect: actions.find((candidate) => candidate.action === action)?.expectedOutcome || defaultActionEffect(element.elementType || 'static-label', action),
+      })),
+      parentId: candidateKey,
+      instanceRegions: [element.approximateRegion],
+    };
+  });
+  proposal.elements.push({
+    candidateKey,
+    label: '当前用户资料共相',
+    visualDescription: '由当前登录用户的头像和身份信息组成的单实例动态区域',
+    elementType: 'section',
+    interactive: elements.some((element) => element.interactive),
+    enabled: elements.some((element) => element.enabled === true) ? true : null,
+    state: null,
+    approximateRegion: instanceRegion,
+    geometryKind: elements.some((element) => element.geometryKind === 'boundary') ? 'boundary' : 'approximate',
+    geometryConfidence: Math.min(...elements.map((element) => Number(element.geometryConfidence) || 0.5)),
+    meaning: { status: 'known', description: '结构固定、内容随当前登录用户变化的个人资料区域', evidence: { visibleTexts: [], visibleIcons: [], visibleStates: [], visualCues: ['头像与身份信息相邻排列'], userContext: null, unclassified: [] } },
+    dynamicContent: true,
+    abstraction: {
+      kind: 'dynamic-template',
+      templateKey: 'current-user.profile',
+      instanceCount: 1,
+      fields,
+      instanceRegions: [instanceRegion],
+      bboxStyle: 'abstract',
+    },
+    riskSignals: [],
+    confidence: Math.min(...elements.map((element) => Number(element.confidence) || 0.5)),
+  });
+  proposal.relationships = [
+    ...(proposal.relationships || []),
+    ...elements.map((element) => ({ fromCandidateKey: candidateKey, type: 'contains', toCandidateKey: element.candidateKey })),
+  ];
+}
+
+function dynamicFieldForElement(element, parentId, actionCandidates = []) {
+  const elementType = element.elementType || 'section';
+  const fieldLabels = {
+    carousel: '轮播内容', banner: '横幅内容', image: '图片内容', thumbnail: '缩略图内容', preview: '预览内容',
+    avatar: '头像内容', 'avatar-group': '头像集合', badge: '状态角标', 'progress-bar': '进度值', loading: '加载状态',
+    card: '卡片内容', panel: '面板内容', section: '动态区域', 'floating-card': '浮层内容', toast: '提示内容',
+  };
+  const capabilities = [...new Set(actionCandidates
+    .filter((action) => action.triggerCandidateKey === element.candidateKey)
+    .map((action) => action.action)
+    .filter((action) => RECOGNITION_ACTIONS.includes(action)))];
+  const normalizedCapabilities = capabilities.length > 0 ? capabilities : ['none'];
+  return {
+    key: `dynamic-${elementType}`,
+    label: fieldLabels[elementType] || '动态字段',
+    elementType,
+    description: '内容可随运行时数据变化',
+    displayCondition: typeof element.displayCondition === 'string' ? element.displayCondition : '',
+    capabilities: normalizedCapabilities,
+    interactionBoundary: normalizedCapabilities.some((action) => action !== 'none') ? 'candidate_bbox' : 'none',
+    actionEffects: normalizeActionEffects(element.actionEffects, elementType, normalizedCapabilities),
+    parentId,
+    required: false,
+    instanceRegions: [element.approximateRegion],
+};
+}
+
+function inferDynamicElements(proposal) {
+  const listKeys = new Set((proposal.elements || [])
+    .filter((element) => LIST_CONTAINER_TYPES.has(element.elementType))
+    .map((element) => element.candidateKey));
+  const listDescendants = new Set();
+  const pending = [...listKeys];
+  const contains = (proposal.relationships || []).filter((relation) => relation.type === 'contains');
+  while (pending.length > 0) {
+    const parent = pending.pop();
+    for (const relation of contains) {
+      if (relation.fromCandidateKey !== parent || listDescendants.has(relation.toCandidateKey)) continue;
+      listDescendants.add(relation.toCandidateKey);
+      pending.push(relation.toCandidateKey);
+    }
+  }
+  const candidates = (proposal.elements || []).filter((element) => element.dynamicContent === true
+    && !element.abstraction && !listDescendants.has(element.candidateKey));
+  if (candidates.length === 0) return;
+
+  // A single stable dynamic slot is already a valid dynamic-element共相. Preserve its
+  // concrete element type (carousel/banner/progress/etc.) and only abstract its payload.
+  if (candidates.length === 1) {
+    const element = candidates[0];
+    const field = dynamicFieldForElement(element, element.candidateKey, proposal.actionCandidates || []);
+    element.abstraction = {
+      kind: 'dynamic-template',
+      templateKey: `${element.candidateKey}.dynamic`,
+      instanceCount: 1,
+      fields: [field],
+      instanceRegions: [element.approximateRegion],
+      bboxStyle: 'abstract',
+    };
+    element.visualDescription = element.visualDescription || '结构稳定、内容随运行时数据变化的动态元素共相';
+    return;
+  }
+
+  // Each explicitly dynamic candidate is an independent stable slot unless the
+  // model already supplied a multi-field dynamic template or the dedicated user
+  // profile inference above provided stronger grouping evidence.
+  for (const element of candidates) {
+    element.abstraction = {
+      kind: 'dynamic-template',
+      templateKey: `${element.candidateKey}.dynamic`,
+      instanceCount: 1,
+      fields: [dynamicFieldForElement(element, element.candidateKey, proposal.actionCandidates || [])],
+      instanceRegions: [element.approximateRegion],
+      bboxStyle: 'abstract',
+    };
+    element.visualDescription = element.visualDescription || '结构稳定、内容随运行时数据变化的动态元素共相';
+  }
+}
+
+function abstractFieldForElement(element, suffix, actionCandidates = []) {
+  const labels = {
+    title: '主标题',
+    description: '辅助描述',
+    subtitle: '辅助描述',
+    checkbox: '尾部复选框',
+    switch: '尾部开关',
+    time: '时间信息',
+    badge: '状态角标',
+    icon: '图标',
+  };
+  const key = String(suffix || element.elementType || 'field').replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+  const actions = actionCandidates.filter((action) => action.triggerCandidateKey === element.candidateKey);
+  const capabilities = [...new Set(actions.map((action) => action.action).filter((action) => RECOGNITION_ACTIONS.includes(action)))];
+  const normalizedCapabilities = capabilities.length > 0 ? capabilities : ['none'];
+  return {
+    key,
+    label: labels[key] || '重复字段',
+    elementType: element.elementType || 'static-label',
+    description: labels[key] ? `每个列表项中的${labels[key]}` : '每个列表项中重复出现的同类字段',
+    displayCondition: typeof element.displayCondition === 'string' ? element.displayCondition : '',
+    capabilities: normalizedCapabilities,
+    interactionBoundary: normalizedCapabilities.some((action) => action !== 'none') ? 'candidate_bbox' : 'none',
+    actionEffects: normalizedCapabilities.map((action) => ({
+      action,
+      effect: actions.find((candidate) => candidate.action === action)?.expectedOutcome || defaultActionEffect(element.elementType || 'static-label', action),
+    })),
+    parentId: null,
+    required: key === 'title',
+  };
+}
+
+function concreteListItemForGroup(elementsByKey, group) {
+  const separators = ['_', '-', '.'];
+  const candidateKeys = separators.flatMap((separator) => [
+    `${group.prefix}${separator}${group.index}`,
+    `${group.prefix}${separator}${group.index}${separator}item`,
+  ]);
+  return candidateKeys.map((key) => elementsByKey.get(key)).find((element) => element?.elementType === 'list-item') || null;
+}
+
 function inferRepeatedListItems(proposal) {
   const listKeys = new Set((proposal.elements || [])
     .filter((element) => ['list', 'grouped-list', 'swipe-list', 'expandable-list'].includes(element.elementType))
@@ -674,41 +1007,65 @@ function inferRepeatedListItems(proposal) {
     if (!groups.has(key)) groups.set(key, { ...parts, elements: [] });
     groups.get(key).elements.push(element);
   }
-  const repeatedPrefixes = new Map();
+  const prefixGroups = new Map();
   for (const group of groups.values()) {
     if (group.elements.length < 2) continue;
-    repeatedPrefixes.set(group.prefix, (repeatedPrefixes.get(group.prefix) || 0) + 1);
+    if (!prefixGroups.has(group.prefix)) prefixGroups.set(group.prefix, []);
+    prefixGroups.get(group.prefix).push(group);
   }
   const existingKeys = new Set((proposal.elements || []).map((element) => element.candidateKey));
+  const elementsByKey = new Map((proposal.elements || []).map((element) => [element.candidateKey, element]));
   const additions = [];
   const addedRelations = [];
   const groupedChildren = new Map();
-  for (const group of groups.values()) {
-    if (group.elements.length < 2 || (repeatedPrefixes.get(group.prefix) || 0) < 2) continue;
-    const itemKey = `${group.prefix}-${group.index}-item`;
+  for (const [prefix, repeatedGroups] of prefixGroups) {
+    if (repeatedGroups.length < 2) continue;
+    const orderedGroups = [...repeatedGroups].sort((left, right) => Number(left.index) - Number(right.index));
+    const allElements = orderedGroups.flatMap((group) => group.elements);
+    const concreteItems = orderedGroups.map((group) => concreteListItemForGroup(elementsByKey, group)).filter(Boolean);
+    const itemKey = `${prefix}-item-template`;
     if (existingKeys.has(itemKey)) continue;
-    const relatedListKeys = [...new Set(group.elements.map((element) => explicitListForChild.get(element.candidateKey)).filter(Boolean))];
+    const relatedListKeys = [...new Set([...allElements, ...concreteItems].map((element) => explicitListForChild.get(element.candidateKey)).filter(Boolean))];
     const listKey = relatedListKeys.length === 1 ? relatedListKeys[0] : listKeys.size === 1 ? [...listKeys][0] : null;
     if (!listKey) continue;
+    const fieldBuckets = new Map();
+    orderedGroups.forEach((group) => {
+      group.elements.forEach((element) => {
+        const field = abstractFieldForElement(element, repeatItemParts(element.candidateKey)?.suffix || element.elementType, proposal.actionCandidates || []);
+        const bucket = fieldBuckets.get(field.key) || { field, instanceRegions: [] };
+        bucket.instanceRegions.push(element.approximateRegion);
+        fieldBuckets.set(field.key, bucket);
+      });
+    });
+    const fields = [...fieldBuckets.values()].map(({ field, instanceRegions }) => ({ ...field, parentId: itemKey, instanceRegions }));
+    const instanceRegions = orderedGroups.map((group) => concreteListItemForGroup(elementsByKey, group)?.approximateRegion || unionCandidateBoxes(group.elements));
     additions.push({
       candidateKey: itemKey,
-      label: `列表第 ${Number(group.index)} 项`,
-      visualDescription: `由同一重复行中的 ${group.elements.length} 个子元素组成的列表项`,
+      label: '列表项元素共相',
+      visualDescription: `由 ${orderedGroups.length} 个同构可见行归纳出的列表项元素共相`,
       elementType: 'list-item',
       interactive: false,
       enabled: true,
       state: null,
-      approximateRegion: unionCandidateBoxes(group.elements),
-      geometryKind: group.elements.some((element) => (element.riskSignals || []).includes('geometry-grounded-by-runtime')) ? 'boundary' : 'approximate',
-      geometryConfidence: Math.min(...group.elements.map((element) => Number(element.geometryConfidence) || 0.5)),
-      meaning: { status: 'known', description: '重复列表中的一个可见条目', evidence: { visibleTexts: [], visibleIcons: [], visibleStates: [], visualCues: ['重复行布局'], userContext: null, unclassified: [] } },
+      approximateRegion: unionCandidateBoxes(instanceRegions.map((approximateRegion) => ({ approximateRegion }))),
+      geometryKind: allElements.some((element) => (element.riskSignals || []).includes('geometry-grounded-by-runtime')) ? 'boundary' : 'approximate',
+      geometryConfidence: Math.min(...allElements.map((element) => Number(element.geometryConfidence) || 0.5)),
+      meaning: { status: 'known', description: '重复列表中同构条目的列表项元素共相', evidence: { visibleTexts: [], visibleIcons: [], visibleStates: [], visualCues: ['重复行布局'], userContext: null, unclassified: [] } },
       dynamicContent: true,
+      abstraction: {
+        kind: 'repeated-template',
+        templateKey: `${prefix}.item`,
+        instanceCount: orderedGroups.length,
+        fields,
+        instanceRegions,
+        bboxStyle: 'abstract',
+      },
       riskSignals: ['list-item-inferred-from-repeated-children'],
-      confidence: Math.min(...group.elements.map((element) => Number(element.confidence) || 0.5)),
+      confidence: Math.min(...allElements.map((element) => Number(element.confidence) || 0.5)),
     });
     existingKeys.add(itemKey);
     addedRelations.push({ fromCandidateKey: listKey, type: 'contains', toCandidateKey: itemKey });
-    for (const child of group.elements) {
+    for (const child of [...concreteItems, ...allElements]) {
       groupedChildren.set(child.candidateKey, listKey);
       addedRelations.push({ fromCandidateKey: itemKey, type: 'contains', toCandidateKey: child.candidateKey });
     }
@@ -726,6 +1083,8 @@ function inferRepeatedListItems(proposal) {
 
 export function prepareRecognitionForDraft(recognitionResult) {
   const proposal = structuredClone(recognitionResult);
+  inferDynamicUserProfile(proposal);
+  inferDynamicElements(proposal);
   inferRepeatedListItems(proposal);
   const byKey = new Map(proposal.elements.map((element) => [element.candidateKey, element]));
   for (const element of proposal.elements) {
@@ -745,7 +1104,34 @@ export function prepareRecognitionForDraft(recognitionResult) {
   return proposal;
 }
 
+function projectAbstractRecognition(recognitionResult) {
+  const proposal = structuredClone(recognitionResult);
+  const abstractKeys = new Set((proposal.elements || [])
+    .filter((element) => ['repeated-template', 'dynamic-template'].includes(element?.abstraction?.kind))
+    .map((element) => element.candidateKey));
+  if (!abstractKeys.size) return proposal;
+  const childKeys = new Set((proposal.relationships || [])
+    .filter((relation) => relation.type === 'contains' && abstractKeys.has(relation.fromCandidateKey))
+    .map((relation) => relation.toCandidateKey));
+  const abstractParentByChild = new Map((proposal.relationships || [])
+    .filter((relation) => relation.type === 'contains' && abstractKeys.has(relation.fromCandidateKey))
+    .map((relation) => [relation.toCandidateKey, relation.fromCandidateKey]));
+  const keepKeys = new Set((proposal.elements || []).map((element) => element.candidateKey));
+  for (const key of childKeys) {
+    if (!abstractKeys.has(key)) keepKeys.delete(key);
+  }
+  proposal.elements = (proposal.elements || []).filter((element) => keepKeys.has(element.candidateKey));
+  proposal.relationships = (proposal.relationships || []).filter((relation) => keepKeys.has(relation.fromCandidateKey) && keepKeys.has(relation.toCandidateKey));
+  proposal.actionCandidates = (proposal.actionCandidates || []).map((action) => {
+    const parentKey = abstractParentByChild.get(action.triggerCandidateKey);
+    return parentKey ? { ...action, triggerCandidateKey: parentKey } : action;
+  }).filter((action, index, actions) => keepKeys.has(action.triggerCandidateKey)
+    && actions.findIndex((candidate) => candidate.triggerCandidateKey === action.triggerCandidateKey && candidate.action === action.action) === index);
+  return proposal;
+}
+
 export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, modelResultRef, model = null) {
+  recognitionResult = projectAbstractRecognition(recognitionResult);
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
   const editedElementIds = new Set(previous.elementEditRecords.map((record) => record.elementId));
   const currentPageHasElements = previous.elements.some((item) => item.pageId === previous.currentPageId);

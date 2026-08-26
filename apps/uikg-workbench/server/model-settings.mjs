@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { getModelRuntime } from './model-runtime.mjs';
+import { probeModelCapability } from './model-capability.mjs';
 import { modelFamilyForName, ZTO_NEWAPI_VISIBLE_MODELS } from './model-compatibility.mjs';
 
-export const MODEL_TARGETS = ['manual', 'auto', 'ultra_a', 'ultra_b', 'midscene'];
+export const MODEL_TARGETS = ['manual', 'auto', 'midscene'];
 export const DEFAULT_MODEL_GATEWAY_ID = 'zto-newapi';
 export const MODEL_FAMILIES = [
   'gpt-5',
@@ -20,7 +21,7 @@ export const MODEL_FAMILIES = [
   'xiaomi-mimo',
 ];
 export const REASONING_EFFORTS = ['low', 'medium', 'high'];
-export const WORKBENCH_MODES = ['manual', 'ultra', 'auto'];
+export const WORKBENCH_MODES = ['manual', 'auto'];
 
 const DASHSCOPE_VISIBLE_MODELS = new Set([
   'qwen3.7-flash',
@@ -52,6 +53,11 @@ function publicGateway(gateway) {
   };
 }
 
+function currentCapability(modelStore, gateway, modelName) {
+  const capability = modelStore.getModelCapability?.(gateway.id, modelName);
+  return capability?.gatewayUpdatedAt === gateway.updatedAt ? capability : null;
+}
+
 export function resolveTargetModelConfig(modelStore, target) {
   const assignment = modelStore.getAssignment(target);
   if (!assignment) return null;
@@ -62,6 +68,7 @@ export function resolveTargetModelConfig(modelStore, target) {
     baseUrl: gateway.baseUrl,
     apiKey: gateway.apiKey,
     gatewayLabel: gateway.label,
+    structuredOutputMode: currentCapability(modelStore, gateway, assignment.modelName)?.mode || 'unverified',
   };
 }
 
@@ -71,7 +78,7 @@ export function loadModelGateways(modelStore) {
 
 export function loadWorkbenchPreferences(modelStore) {
   return {
-    mode: modelStore.getWorkbenchPreferences?.().mode || 'ultra',
+    mode: modelStore.getWorkbenchPreferences?.().mode || 'manual',
   };
 }
 
@@ -104,6 +111,7 @@ export function loadTargetModelSettings(modelStore, target) {
     modelFamilies: MODEL_FAMILIES,
     runtimeModel: runtime?.modelName || null,
     runtimeSynced: Boolean(runtime?.modelName && runtime.modelName === config.modelName && runtime.gatewayId === config.gatewayId),
+    capability: gateway && assignment ? currentCapability(modelStore, gateway, assignment.modelName) : null,
   };
 }
 
@@ -163,6 +171,7 @@ export async function fetchAvailableModelsByGateway(modelStore, request = fetch)
         sourceUrl: modelsEndpoint(gateway.baseUrl),
         models,
         modelFamilies: Object.fromEntries(models.map((model) => [model, modelFamilyForName(model)])),
+        capabilities: Object.fromEntries(models.map((model) => [model, currentCapability(modelStore, gateway, model)])),
       };
     } catch (error) {
       return {
@@ -170,6 +179,7 @@ export async function fetchAvailableModelsByGateway(modelStore, request = fetch)
         sourceUrl: modelsEndpoint(gateway.baseUrl),
         models: [],
         modelFamilies: {},
+        capabilities: {},
         error: error instanceof Error ? error.message : String(error),
       };
     }
@@ -178,6 +188,42 @@ export async function fetchAvailableModelsByGateway(modelStore, request = fetch)
     gateways: groups,
     totalModels: groups.reduce((total, gateway) => total + gateway.models.length, 0),
   };
+}
+
+export async function testModelCapability(modelStore, gatewayId, modelName, request = fetch) {
+  const id = String(gatewayId || '').trim().toLowerCase();
+  const name = String(modelName || '').trim();
+  const gateway = modelStore.getGateway(id, { includeApiKey: true });
+  if (!gateway) throw settingsError('模型网关不存在', 404);
+  if (!name || !/^[a-zA-Z0-9._:/-]+$/.test(name)) throw settingsError('模型名称包含无效字符');
+  const result = await probeModelCapability({ ...gateway, modelName: name }, request);
+  return modelStore.saveModelCapability(id, name, { ...result, gatewayUpdatedAt: gateway.updatedAt });
+}
+
+export async function testGatewayModelCapabilities(modelStore, gatewayId, request = fetch) {
+  const id = String(gatewayId || '').trim().toLowerCase();
+  const gateway = modelStore.getGateway(id, { includeApiKey: true });
+  if (!gateway) throw settingsError('模型网关不存在', 404);
+  const models = await fetchGatewayModels(gateway, request);
+  const results = [];
+  for (const modelName of models) {
+    const capability = await testModelCapability(modelStore, id, modelName, request);
+    results.push({ modelName, ...capability });
+  }
+  return {
+    gatewayId: id,
+    results,
+    native: results.filter((result) => result.mode === 'native').length,
+    local: results.filter((result) => result.mode === 'local').length,
+    unavailable: results.filter((result) => result.mode === 'unavailable').length,
+  };
+}
+
+export async function verifyTargetModelSettings(modelStore, payload, request = fetch) {
+  const next = normalizePayload(payload);
+  const capability = await testModelCapability(modelStore, next.gatewayId, next.modelName, request);
+  if (capability.mode === 'unavailable') throw settingsError(`模型能力检测失败：${capability.detail}`, 422, { capability });
+  return capability;
 }
 
 export async function testModelGateway(modelStore, gatewayId, request = fetch) {

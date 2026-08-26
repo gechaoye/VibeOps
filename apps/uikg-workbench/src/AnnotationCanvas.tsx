@@ -6,10 +6,12 @@ interface AnnotationCanvasProps {
   imageUrl: string;
   elements: DraftElement[];
   selectedId: string | null;
+  selectedAbstractFieldKey: string | null;
   drawing: boolean;
   showRejected: boolean;
   showGridGuides: boolean;
   onSelect: (id: string | null) => void;
+  onSelectAbstractField: (fieldKey: string | null) => void;
   onAdd: (box: BBox) => void;
   onBoxChange: (id: string, box: BBox) => void;
   onBoxChangeEnd: () => void;
@@ -46,7 +48,7 @@ function elementAtPoint(elements: DraftElement[], selectedId: string | null, x: 
   return hits[(selectedIndex + 1) % hits.length];
 }
 
-export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, showRejected, showGridGuides, onSelect, onAdd, onBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
+export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstractFieldKey, drawing, showRejected, showGridGuides, onSelect, onSelectAbstractField, onAdd, onBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
@@ -123,8 +125,12 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
       }
     : null;
   const visibleElements = elements.filter((element) => showRejected || element.reviewStatus !== 'rejected');
-  const renderedElements = [...visibleElements].sort((left, right) => Number(left.id === selectedId) - Number(right.id === selectedId));
+  // Abstract templates are represented by their instance regions; their inherited
+  // parent/list bbox must never become a single selection rectangle.
+  const renderedElements = [...visibleElements.filter((element) => !element.abstraction || element.abstraction.instanceRegions.length === 0)]
+    .sort((left, right) => Number(left.id === selectedId) - Number(right.id === selectedId));
   const selectedElement = visibleElements.find((element) => element.id === selectedId) || null;
+  const selectedInheritsListRegion = Boolean(selectedElement?.abstraction?.kind === 'repeated-template' && visibleElements.some((candidate) => candidate.id === selectedElement.parentId && ['list', 'grouped-list', 'swipe-list', 'expandable-list'].includes(candidate.elementType)));
 
   return (
     <div
@@ -136,6 +142,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
         if (!stageRef.current || !isBackground) return;
         if (!drawing) {
           onSelect(null);
+          onSelectAbstractField(null);
           return;
         }
         const start = point(event, stageRef.current);
@@ -153,7 +160,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
         draggable={false}
         onLoad={(event) => setImageSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
       />
-      {showGridGuides && selectedElement && (
+      {showGridGuides && selectedElement && !selectedInheritsListRegion && (
         <div
           className="annotation-grid"
           aria-hidden="true"
@@ -169,12 +176,33 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
           ))}
         </div>
       )}
+      {visibleElements.flatMap((element) => element.abstraction?.instanceRegions.map((region, index) => ({ element, region, index })) || []).map(({ element, region, index }) => (
+        <div
+          key={`${element.id}-instance-${index}`}
+          className={`bbox bbox-abstract bbox-abstract-instance ${element.id === selectedId ? 'bbox-abstract-instance-selected' : ''}`}
+          style={{ left: `${region.x * 100}%`, top: `${region.y * 100}%`, width: `${region.width * 100}%`, height: `${region.height * 100}%` }}
+          title={`${element.label} · 第 ${index + 1} 项实例`}
+          onPointerDown={(event) => { event.stopPropagation(); onSelect(element.id); onSelectAbstractField(null); }}
+        />
+      ))}
+      {selectedElement?.abstraction?.fields.find((field) => field.key === selectedAbstractFieldKey)?.instanceRegions.map((region, index) => {
+        const field = selectedElement.abstraction?.fields.find((candidate) => candidate.key === selectedAbstractFieldKey);
+        return (
+          <div
+            key={`${selectedElement.id}-field-${selectedAbstractFieldKey}-${index}`}
+            className="bbox-abstract-field-instance"
+            style={{ left: `${region.x * 100}%`, top: `${region.y * 100}%`, width: `${region.width * 100}%`, height: `${region.height * 100}%` }}
+            title={`${field?.label || '共相字段'} · 第 ${index + 1} 项实例`}
+            aria-label={`${field?.label || '共相字段'} 第 ${index + 1} 项实例 bbox`}
+          />
+        );
+      })}
       {renderedElements.map((element) => {
         const selected = element.id === selectedId;
         return (
           <div
             key={element.id}
-            className={`bbox bbox-${element.reviewStatus} ${selected ? 'bbox-selected' : ''}`}
+            className={`bbox bbox-${element.reviewStatus} ${element.abstraction ? 'bbox-abstract' : ''} ${selected ? 'bbox-selected' : ''}`}
             style={{ left: `${element.bbox.x * 100}%`, top: `${element.bbox.y * 100}%`, width: `${element.bbox.width * 100}%`, height: `${element.bbox.height * 100}%` }}
             onPointerDown={(event) => {
               if (drawing) return;
@@ -185,13 +213,16 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
               if (!hit) return;
               event.currentTarget.setPointerCapture(event.pointerId);
               onSelect(hit.id);
-              setGesture({ type: 'move', id: hit.id, startX: start.x, startY: start.y, initial: { ...hit.bbox } });
+              onSelectAbstractField(null);
+              if (!hit.abstraction) {
+                setGesture({ type: 'move', id: hit.id, startX: start.x, startY: start.y, initial: { ...hit.bbox } });
+              }
             }}
-            title={`${element.label} · ${reviewStatusLabels[element.reviewStatus]}`}
+            title={`${element.abstraction ? element.abstraction.kind === 'dynamic-template' ? '动态元素共相' : '列表项元素共相' : element.label} · ${reviewStatusLabels[element.reviewStatus]}`}
           >
-            <span className="bbox-label">{element.label}</span>
+            <span className="bbox-label">{element.abstraction ? element.abstraction.kind === 'dynamic-template' ? `${element.label} · 动态元素共相` : `${element.label} · ${element.abstraction.instanceCount} 个实例` : element.label}</span>
             <span className="bbox-center" />
-            {selected && (
+            {selected && !element.abstraction && !selectedInheritsListRegion && (
               <span className={`bbox-detail ${element.bbox.y > 0.72 ? 'bbox-detail-above' : ''}`}>
                 <strong>{element.meaning.description || element.visualDescription || '含义待确认'}</strong>
                 <span>可信度 {Math.round(element.confidence * 100)}%</span>
@@ -199,7 +230,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, drawing, show
                 <span>中心点 ({Math.round((element.bbox.x + element.bbox.width / 2) * imageSize.width)}, {Math.round((element.bbox.y + element.bbox.height / 2) * imageSize.height)})</span>
               </span>
             )}
-            {selected && ['nw', 'ne', 'sw', 'se'].map((handle) => (
+            {selected && !element.abstraction && ['nw', 'ne', 'sw', 'se'].map((handle) => (
               <button
                 key={handle}
                 type="button"

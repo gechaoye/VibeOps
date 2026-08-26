@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { jsonrepair } from 'jsonrepair';
 import { chatCompletionCompatibility } from './model-compatibility.mjs';
-import { openAIStructuredOutputSchema, supportsStructuredOutput } from './structured-output-schema.mjs';
+import { openAIStructuredOutputSchema } from './structured-output-schema.mjs';
 import { getModelRuntime } from './model-runtime.mjs';
 
 const CHINESE_SYSTEM_PROMPT = '你必须始终使用简体中文进行思考和回答。所有可见的思考过程、推理内容、说明和最终输出中的自然语言都必须是简体中文；JSON 的键名和约定枚举值保持 Schema 要求。';
@@ -9,8 +9,6 @@ const CHINESE_SYSTEM_PROMPT = '你必须始终使用简体中文进行思考和�
 const RECOGNITION_TARGETS = {
   manual: { label: 'Manual 页面识别模型', modelTarget: 'manual' },
   auto: { label: 'Auto 页面识别模型', modelTarget: 'auto' },
-  ultra_a: { label: 'Model A', modelTarget: 'ultra_a' },
-  ultra_b: { label: 'Model B', modelTarget: 'ultra_b' },
 };
 
 function recognitionConfig(target) {
@@ -28,6 +26,7 @@ function recognitionConfig(target) {
     temperature: Number(runtime.temperature || 0),
     reasoningEffort,
     reasoningEnabled: true,
+    structuredOutputMode: runtime.structuredOutputMode || 'unverified',
   };
 }
 
@@ -37,10 +36,10 @@ function endpointFor(config) {
   return value.endsWith('/chat/completions') ? value : `${value}/chat/completions`;
 }
 
-function parseObject(source, label) {
+function parseObject(source) {
   const text = String(source || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
   const start = text.indexOf('{');
-  if (start < 0) throw new Error(`${label} 模型未返回 JSON 对象`);
+  if (start < 0) throw new Error('模型未返回 JSON 对象');
   try {
     return JSON.parse(text.slice(start));
   } catch {
@@ -48,20 +47,51 @@ function parseObject(source, label) {
   }
 }
 
+function textFromPart(value) {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(textFromPart).join('');
+  if (!value || typeof value !== 'object') return '';
+  for (const key of ['text', 'content', 'value']) {
+    const text = textFromPart(value[key]);
+    if (text) return text;
+  }
+  return '';
+}
+
 function extractDelta(payload) {
-  const choice = payload?.choices?.[0];
-  const delta = choice?.delta || choice?.message || {};
-  return {
-    content: typeof delta.content === 'string' ? delta.content : '',
-    reasoningContent: typeof delta.reasoning_content === 'string'
-      ? delta.reasoning_content
-      : typeof delta.reasoningContent === 'string' ? delta.reasoningContent : '',
+  const choice = payload?.choices?.[0] || {};
+  // Merge message and delta because gateways may put reasoning in one and
+  // visible output in the other, including on the final streamed chunk.
+  const delta = {
+    ...(choice.message && typeof choice.message === 'object' ? choice.message : {}),
+    ...(choice.delta && typeof choice.delta === 'object' ? choice.delta : {}),
+    ...choice,
   };
+  const content = textFromPart(delta.content ?? choice.text);
+  const reasoningKeys = [
+    'reasoning_content', 'reasoningContent', 'reasoning',
+    'reasoning_details', 'reasoningDetails',
+    'thinking_content', 'thinkingContent', 'thinking',
+    'analysis_content', 'analysisContent', 'analysis',
+  ];
+  const reasoningContent = reasoningKeys.reduce((result, key) => result || textFromPart(delta[key]), '');
+  return { content, reasoningContent };
 }
 
 function createThinkingContentSplitter() {
   let pending = '';
   let thinking = false;
+
+  const markersForState = () => (thinking
+    ? ['</think>', '</analysis>', '</thinking>', '</reasoning>']
+    : ['<think>', '<analysis>', '<thinking>', '<reasoning>']);
+  const findMarker = (source) => {
+    const pattern = thinking
+      ? /<\/(?:think|analysis|thinking|reasoning)\s*>/i
+      : /<(?:think|analysis|thinking|reasoning)\s*>/i;
+    const match = source.match(pattern);
+    return match ? { index: match.index ?? -1, marker: match[0] } : null;
+  };
 
   const split = (chunk, flush = false) => {
     let source = pending + String(chunk || '');
@@ -69,21 +99,22 @@ function createThinkingContentSplitter() {
     let reasoningContent = '';
     pending = '';
     while (source) {
-      const marker = thinking ? '</think>' : '<think>';
-      const markerIndex = source.indexOf(marker);
-      if (markerIndex >= 0) {
-        const text = source.slice(0, markerIndex);
+      const found = findMarker(source);
+      if (found) {
+        const text = source.slice(0, found.index);
         if (thinking) reasoningContent += text;
         else content += text;
-        source = source.slice(markerIndex + marker.length);
+        source = source.slice(found.index + found.marker.length);
         thinking = !thinking;
         continue;
       }
       let retainedLength = 0;
       if (!flush) {
-        const limit = Math.min(marker.length - 1, source.length);
+        const markers = markersForState();
+        const limit = Math.min(Math.max(...markers.map((marker) => marker.length)) - 1, source.length);
         for (let length = limit; length > 0; length -= 1) {
-          if (marker.startsWith(source.slice(-length))) {
+          const suffix = source.slice(-length).toLowerCase();
+          if (markers.some((marker) => marker.toLowerCase().startsWith(suffix))) {
             retainedLength = length;
             break;
           }
@@ -104,7 +135,7 @@ function createThinkingContentSplitter() {
   };
 }
 
-function providerError(config, status, detail) {
+function providerError(status, detail) {
   let message = '';
   try {
     const body = JSON.parse(detail);
@@ -112,7 +143,10 @@ function providerError(config, status, detail) {
   } catch {
     message = String(detail || '').trim();
   }
-  return new Error(`${config.label} 模型请求失败（${status}）${message ? `：${message.slice(0, 500)}` : ''}`);
+  const error = new Error(`模型请求失败（${status}）${message ? `：${message.slice(0, 500)}` : ''}`);
+  error.status = status;
+  error.retryable = status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
+  return error;
 }
 
 export async function runRecognitionModel({
@@ -130,6 +164,8 @@ export async function runRecognitionModel({
   const config = recognitionConfig(target);
   if (!config.model) throw new Error(`未配置 ${config.label} 模型`);
   if (!config.apiKey) throw new Error(`未配置 ${config.label} 模型网关凭据`);
+  if (config.structuredOutputMode === 'unverified') throw new Error('模型能力尚未检测，请在模型设置中完成检测');
+  if (config.structuredOutputMode === 'unavailable') throw new Error('模型能力检测未通过，请在模型设置中重新检测或更换模型');
 
   const bytes = imageBuffer ? Buffer.from(imageBuffer) : await readFile(imagePath);
   const image = bytes.toString('base64');
@@ -154,7 +190,7 @@ export async function runRecognitionModel({
     reasoningEffort: config.reasoningEffort,
     reasoningEnabled: config.reasoningEnabled,
   }));
-  if (responseSchema && supportsStructuredOutput(config.model, config.modelFamily)) {
+  if (responseSchema && config.structuredOutputMode === 'native') {
     requestBody.response_format = {
       type: 'json_schema',
       json_schema: {
@@ -171,12 +207,14 @@ export async function runRecognitionModel({
     headers: {
       authorization: `Bearer ${config.apiKey}`,
       'content-type': 'application/json',
+      accept: 'text/event-stream',
+      'cache-control': 'no-cache',
     },
     body: JSON.stringify(requestBody),
   });
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
-    throw providerError(config, response.status, detail);
+    throw providerError(response.status, detail);
   }
   if (!response.body) throw new Error(`${config.label} 模型没有返回可读取的响应流`);
 
@@ -220,5 +258,5 @@ export async function runRecognitionModel({
   if (buffer) consumeLine(buffer);
   const trailing = thinkingContent.flush();
   emitDelta(trailing.content, trailing.reasoningContent);
-  return parseObject(accumulated, config.label);
+  return parseObject(accumulated);
 }

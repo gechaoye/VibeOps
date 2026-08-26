@@ -38,11 +38,11 @@ export const elementTypeGroups: readonly OptionGroup[] = [
   ] },
   { label: '展示 Display', options: [
     ['text', '文本'], ['static-label', '静态标签'], ['title', '标题'], ['subtitle', '副标题'], ['caption', '辅助说明'], ['badge', '角标'],
-    ['avatar', '头像'], ['avatar-group', '头像组'], ['image', '图片'], ['banner', '横幅'],
+    ['avatar', '头像'], ['image', '图片'], ['banner', '横幅'],
     ['thumbnail', '缩略图'], ['preview', '预览图'], ['carousel', '轮播图'],
   ] },
   { label: '容器 Container', options: [
-    ['list', '列表'], ['list-item', '列表项'], ['grouped-list', '分组列表'], ['swipe-list', '侧滑列表'], ['expandable-list', '可展开列表'],
+    ['avatar-group', '头像组'], ['list', '列表'], ['list-item', '列表项'], ['grouped-list', '分组列表'], ['swipe-list', '侧滑列表'], ['expandable-list', '可展开列表'],
     ['card', '卡片'], ['panel', '面板'], ['section', '页面区域'], ['form', '表单'], ['table', '表格'], ['chart', '图表'],
     ['audio', '音频播放器'], ['video', '视频播放器'], ['image-viewer', '图片查看器'], ['file-preview', '文件预览器'],
   ] },
@@ -122,7 +122,7 @@ export function defaultDescriptionForElementType(value: string) {
 }
 
 const noActionGroups = new Set(['展示 Display', '进度 Progress', '系统 System']);
-const noActionTypes = new Set(['card', 'panel', 'section', 'form', 'table', 'chart', 'dialog', 'confirm-dialog', 'bottom-sheet', 'popover', 'floating-card', 'toast']);
+const noActionTypes = new Set(['avatar-group', 'card', 'panel', 'section', 'form', 'table', 'chart', 'dialog', 'confirm-dialog', 'bottom-sheet', 'popover', 'floating-card', 'toast']);
 const inputTypes = new Set(['input', 'text-area', 'rich-text-input']);
 
 export function recommendedActionsForElementType(value: string): string[] {
@@ -228,6 +228,7 @@ export function createHumanElement(bbox: BBox, pageId: string): DraftElement {
     enabled: null,
     state: '',
     dynamicContent: false,
+    abstraction: null,
     bbox,
     gridColumns: grid.columns,
     gridRows: grid.rows,
