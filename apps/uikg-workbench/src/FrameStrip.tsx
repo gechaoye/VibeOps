@@ -6,9 +6,9 @@ interface FrameStripProps {
   currentFrameId: string | null;
   frameUrlFor: (frameId: string) => string;
   busy?: boolean;
-  deviceOnline?: boolean;
-  onSelect: (frameId: string) => void;
-  onDelete: (frameId: string) => void;
+  deviceConnected?: boolean;
+  onSelectFrame: (frameId: string) => void;
+  onDeleteFrame: (frameId: string) => void;
   onAddFromDevice: () => void;
   onAddFromUpload: () => void;
 }
@@ -18,9 +18,9 @@ export function FrameStrip({
   currentFrameId,
   frameUrlFor,
   busy = false,
-  deviceOnline = true,
-  onSelect,
-  onDelete,
+  deviceConnected = true,
+  onSelectFrame,
+  onDeleteFrame,
   onAddFromDevice,
   onAddFromUpload,
 }: FrameStripProps) {
@@ -60,7 +60,7 @@ export function FrameStrip({
               className="frame-strip-thumb"
               aria-pressed={active}
               aria-label={`观测帧 ${index + 1}${active ? '（当前）' : ''}`}
-              onClick={() => onSelect(frameId)}
+              onClick={() => onSelectFrame(frameId)}
             >
               <img src={frameUrlFor(frameId)} alt={`观测帧 ${index + 1} 缩略图`} loading="lazy" />
               <span className="frame-strip-index">{index + 1}</span>
@@ -71,7 +71,7 @@ export function FrameStrip({
                 className="frame-strip-delete"
                 aria-label={`删除观测帧 ${index + 1}`}
                 disabled={busy}
-                onClick={() => onDelete(frameId)}
+                onClick={() => onDeleteFrame(frameId)}
               >
                 <Trash2 size={12} />
               </button>
@@ -97,8 +97,8 @@ export function FrameStrip({
             <button
               type="button"
               role="menuitem"
-              disabled={busy || !deviceOnline}
-              title={deviceOnline ? undefined : '设备未连接，无法冻结画面'}
+              disabled={busy || !deviceConnected}
+              title={deviceConnected ? undefined : '设备未连接，无法冻结画面'}
               onClick={() => { setMenuOpen(false); onAddFromDevice(); }}
             >
               <Monitor size={15} />冻结设备画面

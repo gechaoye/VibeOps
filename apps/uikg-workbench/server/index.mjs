@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
+import http from 'node:http';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -124,6 +125,30 @@ async function main() {
         workbenchRoot,
         spec,
       });
+
+      // Dev-only: when the built frontend is absent, the playground server has no
+      // `dist/index.html` to serve and every HTML/asset request 500s. Forward those
+      // requests to the Vite dev server (5173) so the preview renders regardless of
+      // which port it targets. API routes are already handled above and skipped here.
+      if (!existsSync(distRoot)) {
+        const viteTarget = { host: '127.0.0.1', port: 5173 };
+        server.app.use((req, res, next) => {
+          if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+          if (req.path.startsWith('/workbench/api') || req.path.startsWith('/session')) return next();
+          const proxyReq = http.request({
+            host: viteTarget.host,
+            port: viteTarget.port,
+            method: req.method,
+            path: req.originalUrl,
+            headers: { ...req.headers, host: `${viteTarget.host}:${viteTarget.port}` },
+          }, (proxyRes) => {
+            res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+            proxyRes.pipe(res);
+          });
+          proxyReq.on('error', () => next());
+          req.pipe(proxyReq);
+        });
+      }
     },
   });
 

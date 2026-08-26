@@ -46,6 +46,7 @@ import { absoluteAssetUrl, serverUrl, workbenchApi, type RecognitionStreamResult
 import { DeviceClient } from './device-client';
 import { EditHistoryPanel } from './EditHistoryPanel';
 import { ElementTree } from './ElementTree';
+import { FrameStrip } from './FrameStrip';
 import { Inspector } from './Inspector';
 import { KnowledgeGraph } from './KnowledgeGraph';
 import { LiveDevicePreview } from './LiveDevicePreview';
@@ -437,6 +438,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const [autoSaveState, setAutoSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [pageUploadOpen, setPageUploadOpen] = useState(false);
+  const [uploadDialog, setUploadDialog] = useState<{ open: boolean; targetPageId: string | null }>({ open: false, targetPageId: null });
   const [transferCenterOpen, setTransferCenterOpen] = useState(false);
   const [notice, setNotice] = useState<{ type: 'info' | 'error' | 'success'; text: string } | null>(null);
   const [modelActivity, setRecognitionActivity] = useState<RecognitionActivity | null>(null);
@@ -951,6 +953,67 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     }
   };
 
+  const addFrameFromDevice = async (targetPageId: string) => {
+    const targetPage = draftRef.current?.pages.find((item) => item.id === targetPageId);
+    if (!targetPage) return;
+    if (!connected) {
+      showNotice('error', '设备未连接，无法采集设备画面。请先连接设备或改用上传图片。');
+      return;
+    }
+    setBusy('append-frame');
+    try {
+      const result = await workbenchApi.appendFrame(targetPageId, collectUiTreeWithScreenshot);
+      resetDraftState(result.draft, false, true);
+      setSelectedId(null);
+      setCheckedIds(new Set());
+      setWorkspaceMode('annotation');
+      setViewMode('review');
+      if (result.frame) {
+        setFrame(result.frame);
+        setIncludeUiTreeInRecognition(Boolean(result.frame.runtimeStructure));
+      }
+      showNotice('success', '已为当前页面新增观测帧');
+    } catch (error) {
+      showNotice('error', `新增观测帧失败：${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const selectFrame = (frameId: string) => {
+    if (!draft || frameId === draft.currentFrameId) return;
+    const page = draft.pages.find((item) => item.id === draft.currentPageId);
+    if (!page || !page.frameIds.includes(frameId)) return;
+    commitDraft((current) => ({ ...current, currentFrameId: frameId }));
+    setSelectedId(null);
+    setCheckedIds(new Set());
+    setViewMode('review');
+  };
+
+  const deleteFrame = async (frameId: string) => {
+    const current = draftRef.current;
+    const pageId = current?.currentPageId;
+    const page = current?.pages.find((item) => item.id === pageId);
+    if (!current || !pageId || !page) return;
+    if (page.frameIds.length <= 1) {
+      showNotice('error', '每个页面至少需要保留一个观测帧');
+      return;
+    }
+    setBusy('delete-frame');
+    try {
+      const result = await workbenchApi.deletePageFrame(frameId, pageId);
+      resetDraftState(result.draft, false, true);
+      setServerIssues(validateDraftClient(result.draft));
+      setSelectedId(null);
+      setCheckedIds(new Set());
+      showNotice('success', '已删除该观测帧');
+    } catch (error) {
+      showNotice('error', `删除观测帧失败：${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const discardFrozenCapture = async () => {
     const beforeDiscard = draftRef.current;
     const pageId = beforeDiscard?.currentPageId;
@@ -1156,7 +1219,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     setRecognitionActivity((current) => current ? { ...current, status: "cancelling", phaseMessage: "正在中断模型请求" } : current);
     try {
       const result = await workbenchApi.cancelRecognition("manual", annotationSessionId);
-      if (!result.cancelled) setRecognitionActivity((current) => current ? { ...current, phaseMessage: "模型已结束，正在接收最终结果" } : current);
+      if (!result.cancelled) setRecognitionActivity((current) => current ? { ...current, phaseMessage: "模型已结束，正在接收���终结果" } : current);
     } catch (error) {
       showNotice("error", error instanceof Error ? error.message : String(error));
     }
@@ -2043,6 +2106,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
                   <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><span className="drawing-tool-icon" aria-hidden="true"><SquareDashed /><Feather /></span></button>
                   {modelActivity?.status === 'paused' && <button type="button" className="icon-button recognition-resume-button" title={`继续页面识别，已完成 ${modelActivity.completedCandidates || 0} 个候选`} aria-label="继续页面识别" onClick={() => setRecognitionDialogOpen(true)}><RefreshCw size={15} /></button>}
                   <button type="button" className="icon-button" title="页面识别历史" disabled={pageHistorySessions.length === 0} onClick={openRecognitionHistory}><History size={15} /></button>
+                  <button type="button" className="icon-button" title={connected ? '添加观测帧（冻结当前设备画面并追加到本页面）' : '设备未连接，无法采集设备画面'} aria-label="添加观测帧" disabled={!connected || busy === 'append-frame'} onClick={() => draft && void addFrameFromDevice(draft.currentPageId)}>{busy === 'append-frame' ? <LoaderCircle className="spin" size={15} /> : <Plus size={15} />}</button>
                   <button type="button" className="icon-button recognition-button" title={hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'} aria-label={hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'} disabled={!draft?.currentFrameId || busy === 'recognition' || modelActivity?.status === 'paused' || !status?.manualModelConfigured} onClick={() => void runRecognition()}>{busy === 'recognition' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}</button>
                 </>
               )}
@@ -2070,6 +2134,23 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
               <div className="device-empty"><MonitorSmartphone size={42} /><strong>暂无冻结画面</strong><span>请先在实时操作中冻结设备画面</span></div>
             )}
           </div>
+          {viewMode === 'review' && draft ? (() => {
+            const currentPage = draft.pages.find((page) => page.id === draft.currentPageId);
+            if (!currentPage || currentPage.frameIds.length === 0) return null;
+            return (
+              <FrameStrip
+                frameIds={currentPage.frameIds}
+                currentFrameId={draft.currentFrameId}
+                frameUrlFor={(frameId) => absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(frameId)}/image`)}
+                busy={busy === 'append-frame' || busy === 'delete-frame'}
+                deviceConnected={connected}
+                onSelectFrame={selectFrame}
+                onDeleteFrame={(frameId) => void deleteFrame(frameId)}
+                onAddFromDevice={() => void addFrameFromDevice(draft.currentPageId)}
+                onAddFromUpload={() => setUploadDialog({ open: true, targetPageId: draft.currentPageId })}
+              />
+            );
+          })() : null}
           <div className="frame-status">
             <span>{viewMode === 'live' ? connected ? 'LIVE' : 'OFFLINE' : viewMode === 'frozen' ? 'FROZEN' : draft?.currentFrameId ? 'ANNOTATING' : 'EMPTY'}</span>
             <code>{draft?.currentFrameId ? `${draft.currentFrameId.slice(0, 22)}...` : '暂无 frameId'}</code>
@@ -2162,7 +2243,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
           )}
         </section>
       </main> : workspaceMode === 'graph' && draft ? (
-        <PageGraph draft={pageGraphDraft || draft} draftDirty={dirty} onOpenPage={openPageInNewTab} onCreateFromDevice={onOpenDeviceAnnotationTab} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={(pageId, patch, historyKey) => { updatePage(pageId, patch, historyKey); if (patch.name !== undefined) onPageNameChange(pageId, patch.name); }} onDeletePage={(pageId) => { onPageNameChange(pageId, null); void deletePage(pageId); }} onChangeEnd={endHistoryGroup} />
+        <PageGraph draft={pageGraphDraft || draft} draftDirty={dirty} onOpenPage={openPageInNewTab} onCreateFromDevice={onOpenDeviceAnnotationTab} deviceConnected={connected} onAddFrameFromDevice={(pageId) => void addFrameFromDevice(pageId)} onAddFrameFromUpload={(pageId) => setUploadDialog({ open: true, targetPageId: pageId })} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={(pageId, patch, historyKey) => { updatePage(pageId, patch, historyKey); if (patch.name !== undefined) onPageNameChange(pageId, patch.name); }} onDeletePage={(pageId) => { onPageNameChange(pageId, null); void deletePage(pageId); }} onChangeEnd={endHistoryGroup} />
       ) : workspaceMode === 'staging' ? (
         <StagingPanel versions={stagingVersions} staging={staging} busy={busy} dirty={dirty} onPrepare={() => void prepareStaging()} onSelect={setStaging} onMerge={(stageIds) => void mergeStaging(stageIds)} onPublish={(stageId) => void publishStaging(stageId)} onDelete={(stageId) => void deleteStaging(stageId)} onRollback={(stageId) => void rollbackStaging(stageId)} onArchive={(stageId) => void archiveStaging(stageId)} />
       ) : (
@@ -2195,6 +2276,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         </section>
       </div>}
       <PageUploadDialog open={pageUploadOpen} draftDirty={dirty} onClose={() => setPageUploadOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
+      <PageUploadDialog open={uploadDialog.open} targetPageId={uploadDialog.targetPageId} draftDirty={dirty} onClose={() => setUploadDialog({ open: false, targetPageId: null })} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
       <PageUploadDialog open={transferCenterOpen} purpose="history" draftDirty={dirty} onClose={() => setTransferCenterOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
       {recognitionDialogOpen && modelActivity && frameUrl && <RecognitionProgressPanel activity={modelActivity} gatewayName={status?.manualGatewayLabel || null} modelName={status?.manualModel || null} reasoningEffort={status?.manualReasoningEffort || null} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} onCancel={() => void cancelRecognition()} onRetry={() => modelActivity.resumeKind === 'manual' ? void resumeManualRecognition() : void runRecognition()} onClose={closeRecognitionDialog} />}

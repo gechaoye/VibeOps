@@ -7,6 +7,7 @@ interface PageUploadDialogProps {
   open: boolean;
   draftDirty: boolean;
   purpose?: 'create' | 'history';
+  targetPageId?: string | null;
   onClose: () => void;
   onDraftChange: (draft: Draft) => void;
 }
@@ -34,7 +35,7 @@ function taskProgress(task: PageUploadTask) {
   return Math.min(100, Math.round((task.uploadedBytes / task.totalBytes) * 100));
 }
 
-export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose, onDraftChange }: PageUploadDialogProps) {
+export function PageUploadDialog({ open, draftDirty, purpose = 'create', targetPageId = null, onClose, onDraftChange }: PageUploadDialogProps) {
   const [mode, setMode] = useState<'file' | 'url'>('file');
   const [historyTab, setHistoryTab] = useState<'uploading' | 'completed' | 'incomplete'>('uploading');
   const [tasks, setTasks] = useState<PageUploadTask[]>([]);
@@ -200,7 +201,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
     setLoading(true);
     setError(null);
     try {
-      const result = await workbenchApi.createPageUploads(images.map((file) => ({ sourceType: 'file', name: file.name, mimeType: file.type, size: file.size })));
+      const result = await workbenchApi.createPageUploads(images.map((file) => ({ sourceType: 'file', name: file.name, mimeType: file.type, size: file.size })), targetPageId);
       result.tasks.forEach((task) => currentTaskIdsRef.current.add(task.id));
       setTasks((current) => [...result.tasks, ...current]);
       result.tasks.forEach((task, index) => localFilesRef.current.set(task.id, images[index]));
@@ -222,7 +223,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', onClose
     setLoading(true);
     setError(null);
     try {
-      const result = await workbenchApi.createPageUploads(urls.map((url) => ({ sourceType: 'url', name: decodeURIComponent(new URL(url).pathname.split('/').pop() || '') || '链接图片', url })));
+      const result = await workbenchApi.createPageUploads(urls.map((url) => ({ sourceType: 'url', name: decodeURIComponent(new URL(url).pathname.split('/').pop() || '') || '链接图片', url })), targetPageId);
       result.tasks.forEach((task) => currentTaskIdsRef.current.add(task.id));
       setTasks((current) => [...result.tasks, ...current]);
       setUrlText('');

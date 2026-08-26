@@ -10,6 +10,9 @@ interface PageGraphProps {
   draftDirty: boolean;
   onOpenPage: (pageId: string) => void;
   onCreateFromDevice: () => void;
+  onAddFrameFromDevice: (pageId: string) => void;
+  onAddFrameFromUpload: (pageId: string) => void;
+  deviceConnected: boolean;
   onUploadDraftChange: (draft: Draft) => void;
   onUpdatePage: (pageId: string, patch: Partial<DraftPage>, historyKey?: string) => void;
   onDeletePage: (pageId: string) => void;
@@ -96,7 +99,7 @@ function PageEditor({ page, status, onUpdate, onChangeEnd }: { page: DraftPage; 
       <label className="field field-textarea"><span>页面说明</span><textarea value={displayPage.stateSummary} readOnly={pendingRecognition} onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ stateSummary: event.target.value }, 'page:summary')} /></label>
       <label className="field field-textarea"><span>滚动区域</span><textarea value={displayPage.scrollableRegions.join('\n')} readOnly={pendingRecognition} placeholder="每行一个区域" onBlur={pendingRecognition ? undefined : onChangeEnd} onChange={pendingRecognition ? undefined : (event) => onUpdate({ scrollableRegions: event.target.value.split('\n').map((item) => item.trim()).filter(Boolean) }, 'page:scrollable-regions')} /></label>
       <label className="field field-textarea page-reference-field"><span>Frame IDs</span><textarea value={page.frameIds.join('\n')} readOnly /></label>
-      <label className="field field-textarea page-reference-field"><span>Element IDs</span><textarea value={displayPage.elementIds.length ? displayPage.elementIds.join('\n') : '暂无元素'} readOnly /></label>
+      <label className="field field-textarea page-reference-field"><span>Element IDs</span><textarea value={displayPage.elementIds.length ? displayPage.elementIds.join('\n') : '暂��元素'} readOnly /></label>
       <label className="field"><span>发布时间</span><input value={displayPage.publishedAt || '未发布'} readOnly /></label>
       <div className="page-meta-grid"><span>画面证据<strong>{page.frameIds.length}</strong></span><span>直接元素<strong>{displayPage.elementIds.length}</strong></span></div>
     </div>
@@ -108,6 +111,7 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [deleteConfirmPageId, setDeleteConfirmPageId] = useState<string | null>(null);
+  const [addFrameMenuPageId, setAddFrameMenuPageId] = useState<string | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewPinned, setPreviewPinned] = useState(false);
   const [previewPosition, setPreviewPosition] = useState<{ x: number; y: number } | null>(null);
@@ -273,7 +277,7 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
         <div className="graph-board-scroll" onClick={(event) => { if (event.target === event.currentTarget) { setSelectedPageId(null); setCreateMenuOpen(false); } }}>
           <div className="graph-board" onClick={(event) => { if (event.target === event.currentTarget) { setSelectedPageId(null); setCreateMenuOpen(false); } }}>
             <div className={`page-node page-node-create ${createMenuOpen ? 'create-menu-open' : ''}`}>
-              <button type="button" className="page-node-create-action" aria-label="创建页面对象" title="创建页面对象" onClick={() => setCreateMenuOpen((value) => !value)}><Plus size={28} /><span>创建页面对象</span></button>
+              <button type="button" className="page-node-create-action" aria-label="创建页面��象" title="创建页面对象" onClick={() => setCreateMenuOpen((value) => !value)}><Plus size={28} /><span>创建页面对象</span></button>
               {createMenuOpen && <div className="page-node-create-menu" role="menu" aria-label="创建页面对象方式">
                 <button type="button" title="上传图片" aria-label="上传图片" onClick={() => { setCreateMenuOpen(false); setUploadOpen(true); }}><ImageUp size={16} /></button>
                 <button type="button" title="使用设备帧" aria-label="使用设备帧" onClick={() => { setCreateMenuOpen(false); onCreateFromDevice(); }}><Smartphone size={16} /></button>
@@ -290,6 +294,13 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
                 <span className="page-node-content"><strong>{page.name}</strong><span className="page-node-meta">{page.functionRef || '待归类功能'} · {page.implementationType || '待确认'} · {page.frameIds.length} 帧</span><code>{page.key}</code></span>
                 <button type="button" className={`page-node-action page-node-delete-action ${deleting ? 'confirming' : ''}`} title={deleting ? '再次点击确认删除页面及其元素' : '删除页面'} aria-label={deleting ? `确认删除 ${page.name}` : `删除 ${page.name}`} onClick={(event) => { event.stopPropagation(); if (deleting) { setDeleteConfirmPageId(null); onDeletePage(page.id); } else setDeleteConfirmPageId(page.id); }}>{deleting ? <Check size={13} /> : <Trash2 size={13} />}</button>
                 <button type="button" className="page-node-action page-node-open-action" disabled={!latestFrameId} title={latestFrameId ? '在新标签页标注' : '暂无截图，无法标注'} aria-label={`在新标签页标注 ${page.name}`} onClick={(event) => { event.stopPropagation(); onOpenPage(page.id); }}><PanelTopOpen size={13} /></button>
+                <div className="page-node-addframe">
+                  <button type="button" className={`page-node-action page-node-addframe-action ${addFrameMenuPageId === page.id ? 'active' : ''}`} title="为该页面添加观测帧" aria-label={`为 ${page.name} 添加观测帧`} aria-haspopup="menu" aria-expanded={addFrameMenuPageId === page.id} onClick={(event) => { event.stopPropagation(); setAddFrameMenuPageId((value) => (value === page.id ? null : page.id)); }}><Plus size={13} /></button>
+                  {addFrameMenuPageId === page.id && <div className="page-node-addframe-menu" role="menu" aria-label="添加观测帧方式" onClick={(event) => event.stopPropagation()}>
+                    <button type="button" role="menuitem" disabled={!deviceConnected} title={deviceConnected ? '冻结当前设备画面并追加到该页面' : '设备未连接'} onClick={() => { setAddFrameMenuPageId(null); onAddFrameFromDevice(page.id); }}><Smartphone size={15} />冻结设备画面</button>
+                    <button type="button" role="menuitem" onClick={() => { setAddFrameMenuPageId(null); onAddFrameFromUpload(page.id); }}><ImageUp size={15} />上传图片</button>
+                  </div>}
+                </div>
               </div>;
             })}
           </div>
