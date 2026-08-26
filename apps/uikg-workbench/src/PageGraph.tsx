@@ -106,7 +106,7 @@ function PageEditor({ page, status, onUpdate, onChangeEnd }: { page: DraftPage; 
   );
 }
 
-export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, onUploadDraftChange, onUpdatePage, onDeletePage, onChangeEnd }: PageGraphProps) {
+export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, onAddFrameFromDevice, onAddFrameFromUpload, deviceConnected, onUploadDraftChange, onUpdatePage, onDeletePage, onChangeEnd }: PageGraphProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
