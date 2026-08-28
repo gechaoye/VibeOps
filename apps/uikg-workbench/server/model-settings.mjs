@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { getModelRuntime } from './model-runtime.mjs';
-import { probeModelCapability } from './model-capability.mjs';
+import { probeModelCapability, probeModelConnectivity } from './model-capability.mjs';
 import { modelFamilyForName, ZTO_NEWAPI_VISIBLE_MODELS } from './model-compatibility.mjs';
 
-export const MODEL_TARGETS = ['manual', 'auto', 'midscene'];
+export const MODEL_TARGETS = ['manual', 'auto', 'midscene', 'self_heal'];
 export const DEFAULT_MODEL_GATEWAY_ID = 'zto-newapi';
 export const MODEL_FAMILIES = [
   'gpt-5',
@@ -29,6 +29,7 @@ const DASHSCOPE_VISIBLE_MODELS = new Set([
   'qwen3-vl-flash',
   'qwen3-vl-plus',
 ]);
+const MODEL_TEST_BATCH_SIZE = 10;
 
 function settingsError(message, status = 400, details = {}) {
   const error = new Error(message);
@@ -200,15 +201,29 @@ export async function testModelCapability(modelStore, gatewayId, modelName, requ
   return modelStore.saveModelCapability(id, name, { ...result, gatewayUpdatedAt: gateway.updatedAt });
 }
 
+export async function testModelConnectivity(modelStore, gatewayId, modelName, request = fetch) {
+  const id = String(gatewayId || '').trim().toLowerCase();
+  const name = String(modelName || '').trim();
+  const gateway = modelStore.getGateway(id, { includeApiKey: true });
+  if (!gateway) throw settingsError('模型网关不存在', 404);
+  if (!name || !/^[a-zA-Z0-9._:/-]+$/.test(name)) throw settingsError('模型名称包含无效字符');
+  const result = await probeModelConnectivity({ ...gateway, modelName: name }, request);
+  if (!result.ok) throw settingsError(`模型连接失败：${result.detail || '未知错误'}`, 502);
+  return { gatewayId: id, modelName: name, ok: true, latencyMs: result.latencyMs };
+}
+
 export async function testGatewayModelCapabilities(modelStore, gatewayId, request = fetch) {
   const id = String(gatewayId || '').trim().toLowerCase();
   const gateway = modelStore.getGateway(id, { includeApiKey: true });
   if (!gateway) throw settingsError('模型网关不存在', 404);
   const models = await fetchGatewayModels(gateway, request);
   const results = [];
-  for (const modelName of models) {
-    const capability = await testModelCapability(modelStore, id, modelName, request);
-    results.push({ modelName, ...capability });
+  for (let offset = 0; offset < models.length; offset += MODEL_TEST_BATCH_SIZE) {
+    const batch = models.slice(offset, offset + MODEL_TEST_BATCH_SIZE);
+    results.push(...await Promise.all(batch.map(async (modelName) => {
+      const capability = await testModelCapability(modelStore, id, modelName, request);
+      return { modelName, ...capability };
+    })));
   }
   return {
     gatewayId: id,

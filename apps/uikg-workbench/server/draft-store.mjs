@@ -136,6 +136,7 @@ export class DraftStore {
             ...(session.schemaErrors?.length || !Array.isArray(result.schemaErrors) ? {} : { schemaErrors: result.schemaErrors }),
             ...(session.consistencyIssues?.length || !Array.isArray(result.consistencyIssues) ? {} : { consistencyIssues: result.consistencyIssues }),
             ...(session.normalizationIssues?.length || !Array.isArray(result.normalizationIssues) ? {} : { normalizationIssues: result.normalizationIssues }),
+            ...(session.selfHealing || !result.selfHealing ? {} : { selfHealing: result.selfHealing }),
           };
         } catch {
           return /输出(?:结果)?未通过结构检查/.test(String(session.errorMessage || ''))

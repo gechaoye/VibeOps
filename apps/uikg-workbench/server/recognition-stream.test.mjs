@@ -41,7 +41,7 @@ test('未连接设备时 单模型直接识别页面卡片的持久化截图', a
         frameId,
         imagePath,
         mimeType: 'image/png',
-        runtimeStructure: { hierarchy: { marker: 'ROUTE_UI_TREE_MARKER_72A6' } },
+        runtimeStructure: { hierarchy: { marker: 'ROUTE_UI_TREE_MARKER_72A6', dpr: 1 } },
       };
     },
     async loadDraft() { return structuredClone(draft); },
@@ -89,6 +89,7 @@ test('未连接设备时 单模型直接识别页面卡片的持久化截图', a
     assert.equal(responseWithUiTree.status, 200);
     assert.match(await responseWithUiTree.text(), /event: result/);
     assert.match(modelInputs[1].prompt, /ROUTE_UI_TREE_MARKER_72A6/);
+    assert.doesNotMatch(modelInputs[1].prompt, /"dpr":1/);
 
     const metadataResponse = await fetch(`${baseUrl}/workbench/api/frames/${encodeURIComponent(frameId)}`);
     const metadata = await metadataResponse.json();

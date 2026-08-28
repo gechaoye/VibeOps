@@ -274,6 +274,7 @@ export function createDraftPage(frameId: string | null): DraftPage {
     scrollableRegions: [],
     featurePath: ['待归类'],
     frameIds: frameId ? [frameId] : [],
+    primaryFrameId: frameId,
     elementIds: [],
     publishedAt: null,
   };
@@ -384,7 +385,12 @@ export function validateDraftClient(draft: Draft): ValidationIssue[] {
   }
   for (const transition of draft.transitions) {
     for (const message of transitionEvidenceIssues(transition, draft)) {
-      issues.push({ level: 'error', code: 'transition_evidence_incomplete', message: `${transition.key}：${message}` });
+      issues.push({
+        level: 'error',
+        code: 'transition_evidence_incomplete',
+        pageIds: [transition.sourcePageId],
+        message: `${transition.key}：${message}`,
+      });
     }
   }
 

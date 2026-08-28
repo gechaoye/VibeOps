@@ -11,6 +11,7 @@ import { DraftStore } from './draft-store.mjs';
 import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 
 const PNG_1X1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=', 'base64');
+const PNG_1X1_ALTERNATE = Buffer.concat([PNG_1X1, Buffer.from([0])]);
 const workbenchRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 test('页面图片支持分片续传、链接失败重试及删除 Page 联动', async () => {
@@ -71,6 +72,32 @@ test('页面图片支持分片续传、链接失败重试及删除 Page 联动',
     assert.ok(resumed.task.pageId);
     assert.equal(resumed.draft.pages.length, 1);
 
+    const originalPageId = resumed.task.pageId;
+    const appendedCreated = await (await fetch(`${baseUrl}/page-uploads`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        targetPageId: originalPageId,
+        items: [{ sourceType: 'file', name: 'appended.png', mimeType: 'image/png', size: PNG_1X1_ALTERNATE.length }],
+      }),
+    })).json();
+    const appendedTask = appendedCreated.tasks[0];
+    assert.equal(appendedTask.targetPageId, originalPageId);
+    const appended = await (await fetch(`${baseUrl}/page-uploads/${appendedTask.id}/chunk`, {
+      method: 'PUT', headers: { 'content-type': 'application/octet-stream', 'x-upload-offset': '0' }, body: PNG_1X1_ALTERNATE,
+    })).json();
+    assert.equal(appended.draft.pages.length, 1);
+    assert.equal(appended.draft.pages[0].id, originalPageId);
+    assert.equal(appended.draft.pages[0].frameIds.length, 2);
+    assert.equal(appended.draft.pages[0].frameIds[0], resumed.task.frameId);
+
+    const discardedUploadFrame = await (await fetch(`${baseUrl}/frames/${encodeURIComponent(appended.task.frameId)}`, {
+      method: 'DELETE', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ pageId: originalPageId }),
+    })).json();
+    assert.equal(discardedUploadFrame.draft.pages.length, 1);
+    assert.equal(discardedUploadFrame.draft.pages[0].id, originalPageId);
+    assert.deepEqual(discardedUploadFrame.draft.pages[0].frameIds, [resumed.task.frameId]);
+
     const remoteCreated = await (await fetch(`${baseUrl}/page-uploads`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ items: [{ sourceType: 'url', name: 'remote.png', url: `http://127.0.0.1:${imageServer.address().port}/remote.png` }] }),
@@ -86,9 +113,9 @@ test('页面图片支持分片续传、链接失败重试及删除 Page 联动',
 
     const deleted = await (await fetch(`${baseUrl}/page-uploads`, {
       method: 'DELETE', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ids: [localTask.id, remoteTask.id], deletePages: true }),
+      body: JSON.stringify({ ids: [localTask.id, appendedTask.id, remoteTask.id], deletePages: true }),
     })).json();
-    assert.equal(deleted.deletedIds.length, 2);
+    assert.equal(deleted.deletedIds.length, 3);
     assert.equal(deleted.draft.pages.length, 0);
     assert.equal((await store.listPageUploadTasks()).length, 0);
   } finally {

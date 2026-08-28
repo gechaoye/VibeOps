@@ -111,7 +111,81 @@ function textResult(value) {
   return String(value ?? '');
 }
 
-export async function captureRuntimeHierarchy(agent, viewport) {
+function displaySizeFromDumpsys(value) {
+  const text = textResult(value);
+  const overrideLine = text.match(/mOverrideDisplayInfo=([^\n]+)/)?.[1] || '';
+  const baseLine = text.match(/mBaseDisplayInfo=([^\n]+)/)?.[1] || '';
+  const override = overrideLine.match(/\breal\s+(\d+)\s*x\s*(\d+)/);
+  const base = baseLine.match(/\breal\s+(\d+)\s*x\s*(\d+)/);
+  const device = text.match(/DisplayDeviceInfo\{[^\n]*?,\s*(\d+)\s*x\s*(\d+),\s*modeId\s+(\d+)/);
+  const match = override || base || device;
+  if (!match) return null;
+  return {
+    width: Number(match[1]),
+    height: Number(match[2]),
+    modeId: Number((override ? overrideLine : baseLine).match(/\bmode\s+(\d+)/)?.[1] || device?.[3]) || null,
+  };
+}
+
+function densityFromWm(value) {
+  const text = textResult(value);
+  const override = text.match(/Override density:\s*(\d+)/i);
+  const physical = text.match(/Physical density:\s*(\d+)/i);
+  return Number(override?.[1] || physical?.[1]) || null;
+}
+
+function rotationFromDumpsys(value) {
+  const match = textResult(value).match(/SurfaceOrientation:\s*(\d+)/i);
+  return Number(match?.[1]) || 0;
+}
+
+export async function captureDisplayMetrics(agent) {
+  const device = agent?.interface;
+  if (!device || typeof device.getAdb !== 'function') return null;
+  try {
+    const adb = await device.getAdb();
+    const [display, density, input] = await Promise.all([
+      adb.shell(['dumpsys', 'display']),
+      adb.shell(['wm', 'density']),
+      adb.shell(['dumpsys', 'input']),
+    ]);
+    const size = displaySizeFromDumpsys(display);
+    if (!size?.width || !size?.height) return null;
+    return {
+      coordinateSpace: 'display_px',
+      width: size.width,
+      height: size.height,
+      modeId: size.modeId,
+      density: densityFromWm(density),
+      rotation: rotationFromDumpsys(input),
+      capturedAt: new Date().toISOString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function sameDisplay(left, right) {
+  if (!left || !right) return null;
+  return left.width === right.width
+    && left.height === right.height
+    && left.rotation === right.rotation
+    && (!left.modeId || !right.modeId || left.modeId === right.modeId);
+}
+
+function screenshotTransform(display, screenshot) {
+  if (!display?.width || !display?.height || !screenshot?.width || !screenshot?.height) return null;
+  return {
+    from: 'display_px',
+    to: 'screenshot_px',
+    scaleX: screenshot.width / display.width,
+    scaleY: screenshot.height / display.height,
+    offsetX: 0,
+    offsetY: 0,
+  };
+}
+
+export async function captureRuntimeHierarchy(agent, screenshotViewport, displayBefore = null) {
   const device = agent?.interface;
   if (!device || typeof device.getAdb !== 'function') return null;
   try {
@@ -122,8 +196,18 @@ export async function captureRuntimeHierarchy(agent, viewport) {
     const rawRoot = parseUiAutomatorXml(xml);
     const flatRaw = flatten(rawRoot);
     const packageName = flatRaw.find((node) => node.package)?.package || '';
+    const displayAfter = await captureDisplayMetrics(agent);
+    const viewport = displayAfter?.width && displayAfter?.height
+      ? { width: displayAfter.width, height: displayAfter.height }
+      : screenshotViewport;
     const root = normalizeNode(rawRoot, 0, viewport, packageName);
     const nodes = flatten(root).filter((node) => node.bounds);
+    const displayStable = sameDisplay(displayBefore, displayAfter);
+    const screenshotAspect = screenshotViewport?.width / screenshotViewport?.height;
+    const displayAspect = viewport?.width / viewport?.height;
+    const aspectStable = Number.isFinite(screenshotAspect) && Number.isFinite(displayAspect)
+      ? Math.abs(screenshotAspect - displayAspect) <= 0.002
+      : null;
     return {
       source: 'uiautomator',
       hierarchySource: 'uiautomator',
@@ -133,7 +217,15 @@ export async function captureRuntimeHierarchy(agent, viewport) {
       coordinateSpace: 'display_px',
       origin: 'full_display',
       viewport: { width: viewport.width, height: viewport.height },
-      dpr: 1,
+      screenshotViewport: { width: screenshotViewport.width, height: screenshotViewport.height },
+      displayBefore,
+      displayAfter,
+      captureConsistency: {
+        stable: displayStable !== false && aspectStable !== false,
+        displayStable,
+        aspectStable,
+      },
+      transforms: [screenshotTransform(viewport, screenshotViewport)].filter(Boolean),
       nodeCount: nodes.length,
       root,
     };

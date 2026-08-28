@@ -1,10 +1,26 @@
-import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelTarget, PageUploadTask, ProjectModelData, ProjectModelDefinition, ReasoningEffort, WorkbenchMode, AvailableModels, ModelSettingsData, RecognitionResult, RecognitionResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
+import type { AnalysisSession, CanonicalGraph, Draft, FrameMetadata, ModelCapability, ModelTarget, PageUploadTask, ProjectModelData, ProjectModelDefinition, ReasoningEffort, WorkbenchMode, AvailableModels, ModelSettingsData, RecognitionResult, RecognitionResumeSession, StagingPublishResult, StagingResult, ValidationIssue, WorkbenchStatus } from './types';
 
 export const serverUrl =
   import.meta.env.VITE_PLAYGROUND_URL ||
   (window.location.port.startsWith('517')
     ? 'http://127.0.0.1:5800'
     : window.location.origin);
+
+function apiErrorMessage(body: unknown, fallback: string): string {
+  if (typeof body === 'string') return body.trim() || fallback;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return fallback;
+  const payload = body as Record<string, unknown>;
+  for (const candidate of [payload.error, payload.message, payload.errorMessage]) {
+    if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+    if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
+      const nested = candidate as Record<string, unknown>;
+      for (const nestedCandidate of [nested.message, nested.error, nested.errorMessage]) {
+        if (typeof nestedCandidate === 'string' && nestedCandidate.trim()) return nestedCandidate.trim();
+      }
+    }
+  }
+  return fallback;
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${serverUrl}/workbench/api${path}`, {
@@ -16,7 +32,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(body.error || `请求失败：${response.status}`) as Error & { details?: unknown };
+    const error = new Error(apiErrorMessage(body, `请求失败：${response.status}`)) as Error & { details?: unknown };
     error.details = body;
     throw error;
   }
@@ -27,7 +43,7 @@ async function binaryRequest<T>(path: string, options: RequestInit): Promise<T> 
   const response = await fetch(`${serverUrl}/workbench/api${path}`, options);
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(body.error || `请求失败：${response.status}`) as Error & { details?: Record<string, unknown> };
+    const error = new Error(apiErrorMessage(body, `请求失败：${response.status}`)) as Error & { details?: Record<string, unknown> };
     error.details = body;
     throw error;
   }
@@ -74,13 +90,13 @@ async function consumeRecognitionStream(
     if (eventType === 'result') result = payload as RecognitionStreamResult;
     if (eventType === 'error') {
       terminalError = true;
-      const error = new Error(String(payload.message || '模型分析失败')) as Error & { details?: Record<string, unknown> };
+      const error = new Error(apiErrorMessage(payload, '模型分析失败')) as Error & { details?: Record<string, unknown> };
       error.details = payload;
       throw error;
     }
     if (eventType === 'cancelled') {
       terminalError = true;
-      const error = new Error(String(payload.message || '模型分析已中断')) as Error & { name: string; details?: Record<string, unknown> };
+      const error = new Error(apiErrorMessage(payload, '模型分析已中断')) as Error & { name: string; details?: Record<string, unknown> };
       error.name = 'AnalysisCancelledError';
       error.details = payload;
       throw error;
@@ -103,7 +119,9 @@ async function consumeRecognitionStream(
         // A stale reconnect token is terminal. Retrying it only creates a
         // noisy request loop after the server has already ended the session.
         if (response.status === 404 || response.status === 409 || response.status === 410) terminalError = true;
-        throw new Error(responseBody.error || `请求失败：${response.status}`);
+        const error = new Error(apiErrorMessage(responseBody, `请求失败：${response.status}`)) as Error & { details?: Record<string, unknown> };
+        error.details = responseBody;
+        throw error;
       }
       analysisSessionId = response.headers.get('X-Analysis-Session-Id') || analysisSessionId;
       if (!response.body) throw new Error('模型流式响应不可用');
@@ -161,6 +179,8 @@ export const workbenchApi = {
   resetDefaultModelGateway: () => request<ModelSettingsData>('/model-settings/gateways/zto-newapi/reset', { method: 'POST' }),
   testModelGateway: (gatewayId: string) => request<{ gatewayId: string; ok: boolean; latencyMs: number; modelCount: number }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}/test`, { method: 'POST' }),
   testGatewayModelCapabilities: (gatewayId: string) => request<{ gatewayId: string; native: number; local: number; unavailable: number }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}/capabilities`, { method: 'POST' }),
+  testModelConnectivity: (gatewayId: string, modelName: string) => request<{ gatewayId: string; modelName: string; ok: true; latencyMs: number }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}/models/${encodeURIComponent(modelName)}/test`, { method: 'POST' }),
+  testModelCapability: (gatewayId: string, modelName: string) => request<ModelCapability>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}/models/${encodeURIComponent(modelName)}/capability`, { method: 'POST' }),
   saveModelMode: (mode: WorkbenchMode) => request<ModelSettingsData>('/model-settings/mode', { method: 'PUT', body: JSON.stringify({ mode }) }),
   deleteModelGateway: (gatewayId: string) => request<ModelSettingsData & { deleted: true; gatewayId: string; clearedTargets: ModelTarget[] }>(`/model-settings/gateways/${encodeURIComponent(gatewayId)}`, { method: 'DELETE' }),
   sessions: () => request<{ sessions: AnalysisSession[] }>('/sessions'),
@@ -168,7 +188,7 @@ export const workbenchApi = {
   saveDraft: (draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>('/draft', { method: 'PUT', body: JSON.stringify(draft) }),
   savePageDraft: (pageId: string, draft: Draft) => request<{ draft: Draft; issues: ValidationIssue[] }>(`/draft/pages/${encodeURIComponent(pageId)}`, { method: 'PUT', body: JSON.stringify(draft) }),
   pageUploads: () => request<{ tasks: PageUploadTask[] }>('/page-uploads'),
-  createPageUploads: (items: Array<{ sourceType: 'file' | 'url'; name: string; mimeType?: string; size?: number; url?: string }>, targetPageId?: string | null) => request<{ tasks: PageUploadTask[] }>('/page-uploads', { method: 'POST', body: JSON.stringify({ items, targetPageId: targetPageId || undefined }) }),
+  createPageUploads: (items: Array<{ sourceType: 'file' | 'url'; name: string; mimeType?: string; size?: number; url?: string; targetPageId?: string }>, targetPageId?: string | null) => request<{ tasks: PageUploadTask[] }>('/page-uploads', { method: 'POST', body: JSON.stringify({ items, targetPageId: targetPageId || undefined }) }),
   uploadPageChunk: (taskId: string, chunk: Blob, offset: number, signal?: AbortSignal) => binaryRequest<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/chunk`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Offset': String(offset) },
@@ -190,7 +210,8 @@ export const workbenchApi = {
     pageId?: string,
     workspaceSessionId?: string,
     includeUiTree = true,
-  ) => consumeRecognitionStream(`/recognition/${target}/stream`, { frameId, pageId, pageContext, mergeIntoDraft, workspaceSessionId, includeUiTree }, onEvent),
+    additionalFrameIds: string[] = [],
+  ) => consumeRecognitionStream(`/recognition/${target}/stream`, { frameId, pageId, pageContext, mergeIntoDraft, workspaceSessionId, includeUiTree, additionalFrameIds }, onEvent),
   recognitionSession: (target: 'manual', workspaceSessionId?: string) => request<{ session: RecognitionResumeSession | null }>(`/recognition/${target}/session${workspaceSessionId ? `?workspaceSessionId=${encodeURIComponent(workspaceSessionId)}` : ''}`),
   reconnectRecognitionStream: (target: 'manual', analysisSessionId: string, lastEventId: number, onEvent: (event: { type: string; [key: string]: unknown }) => void) =>
     consumeRecognitionStream(`/recognition/${target}/stream`, { analysisSessionId, lastEventId }, onEvent),
@@ -204,6 +225,25 @@ export const workbenchApi = {
     modelResultRef: string;
     model: string | null;
   }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/apply', { method: 'POST', body: JSON.stringify(payload) }),
+  previewIncrementalRecognition: (payload: {
+    frameId: string;
+    pageId: string;
+    recognitionResult: RecognitionResult;
+  }) => request<{ candidates: Array<{
+    candidateKey: string;
+    label: string;
+    confidence?: number;
+    disposition: 'duplicate' | 'common' | 'new';
+    existingElementId: string | null;
+    existingLabel: string | null;
+  }> }>('/recognition/incremental-preview', { method: 'POST', body: JSON.stringify(payload) }),
+  appendRecognitionResult: (payload: {
+    frameId: string;
+    pageId: string;
+    recognitionResult: RecognitionResult;
+    modelResultRef: string;
+    model: string | null;
+  }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/append', { method: 'POST', body: JSON.stringify(payload) }),
   prepareStaging: () => request<StagingResult>('/staging', { method: 'POST', body: '{}' }),
   stagingVersions: () => request<{ versions: StagingResult[] }>('/staging'),
   staging: (stageId: string) => request<StagingResult>(`/staging/${encodeURIComponent(stageId)}`),

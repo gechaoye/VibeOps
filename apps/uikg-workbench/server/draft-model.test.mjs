@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
-import { beginFrameCapture, createEmptyDraft, gridForBox, inferGridForBox, mergeRecognitionIntoDraft, normalizeDraftShape, normalizeRecognitionOutput, prepareRecognitionForDraft, removePagesFromDraft, validateDraft, validateRecognitionConsistency } from './draft-model.mjs';
+import { appendFrameToPage, appendRecognitionIntoDraft, beginFrameCapture, createEmptyDraft, gridForBox, inferGridForBox, mergeRecognitionIntoDraft, normalizeDraftShape, normalizeRecognitionOutput, prepareRecognitionForDraft, removeFrameFromPage, removePagesFromDraft, validateDraft, validateRecognitionConsistency } from './draft-model.mjs';
 import { ELEMENT_TYPES, RECOGNITION_ACTIONS } from './element-taxonomy.mjs';
 
 function meaningEvidence(overrides = {}) {
@@ -76,6 +76,33 @@ test('草稿归一化保留人工分块并根据最新边框重算区域', () =>
   assert.ok(validateDraft(normalized).some((issue) => issue.code === 'grid_region_invalid'));
 });
 
+test('旧草稿归一化时移除已经落盘的系统栏元素及其子元素', () => {
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), sampleRecognition(), 'model.json');
+  const row = draft.elements.find((element) => element.candidateKey === 'settings.row');
+  const systemBar = {
+    ...structuredClone(row),
+    id: 'system-bar-id',
+    candidateKey: 'system_status',
+    label: '系统状态栏',
+    elementType: 'status-bar',
+  };
+  const systemChild = {
+    ...structuredClone(row),
+    id: 'system-child-id',
+    candidateKey: 'system_time',
+    label: '系统时间',
+    elementType: 'text',
+    parentId: systemBar.id,
+  };
+  draft.elements.push(systemBar, systemChild);
+  draft.elementEditRecords.push({ elementId: systemChild.id, kind: 'updated', fields: ['bbox'], editedAt: new Date().toISOString() });
+
+  const normalized = normalizeDraftShape(draft);
+
+  assert.ok(!normalized.elements.some((element) => ['system-bar-id', 'system-child-id'].includes(element.id)));
+  assert.ok(!normalized.elementEditRecords.some((record) => record.elementId === systemChild.id));
+});
+
 test('单模型候选转换为带 owner 的可编辑草稿', () => {
   const recognitionResult = sampleRecognition();
   const draft = mergeRecognitionIntoDraft(createEmptyDraft(), recognitionResult, 'model.json');
@@ -104,6 +131,109 @@ test('人工审核结果不会被后续 单模型覆盖', () => {
   const second = mergeRecognitionIntoDraft(first, secondRecognition, 'second.json');
   assert.equal(second.elements[0].label, '人工名称');
   assert.equal(second.elements[0].lastModelProposal.label, '模型新名称');
+});
+
+test('增量识别跳过重复候选并仅追加新元素', () => {
+  const first = mergeRecognitionIntoDraft(createEmptyDraft(), sampleRecognition(), 'first.json');
+  const originalToggle = structuredClone(first.elements.find((element) => element.candidateKey === 'settings.toggle'));
+  const incremental = sampleRecognition();
+  incremental.frameId = 'sha256:new-frame';
+  incremental.elements.find((element) => element.candidateKey === 'settings.toggle').label = '模型重复开关';
+  incremental.elements.push({
+    candidateKey: 'settings.help', label: '帮助入口', visualDescription: '新增帮助按钮', elementType: 'button', interactive: true, enabled: true, state: null,
+    approximateRegion: { x: 0.8, y: 0.82, width: 0.12, height: 0.08 }, geometryKind: 'tap-target', geometryConfidence: 0.82,
+    meaning: { status: 'known', description: '进入帮助页面', evidence: meaningEvidence({ visibleTexts: ['帮助'] }) }, dynamicContent: false, riskSignals: [], confidence: 0.91,
+  });
+  incremental.actionCandidates.push({ triggerCandidateKey: 'settings.help', action: 'tap', expectedOutcome: '进入帮助页面', basis: 'visible-text', riskSignals: [], confidence: 0.88 });
+
+  const next = appendRecognitionIntoDraft(first, incremental, 'incremental.json', 'test-model');
+  assert.equal(next.elements.filter((element) => element.candidateKey === 'settings.toggle').length, 1);
+  const nextToggle = next.elements.find((element) => element.candidateKey === 'settings.toggle');
+  assert.equal(nextToggle.id, originalToggle.id);
+  assert.equal(nextToggle.label, originalToggle.label);
+  assert.deepEqual(nextToggle.bbox, originalToggle.bbox);
+  assert.equal(nextToggle.reviewStatus, originalToggle.reviewStatus);
+  assert.equal(next.elements.find((element) => element.candidateKey === 'settings.help').label, '帮助入口');
+  assert.equal(next.elements.length, first.elements.length + 1);
+});
+
+test('增量识别在候选键漂移时按文字、类型和位置复用旧内部 ID', () => {
+  const first = mergeRecognitionIntoDraft(createEmptyDraft(), sampleRecognition(), 'first.json');
+  const originalToggle = first.elements.find((element) => element.candidateKey === 'settings.toggle');
+  const originalRow = first.elements.find((element) => element.candidateKey === 'settings.row');
+  const incremental = sampleRecognition();
+  incremental.frameId = 'sha256:new-frame';
+  const toggle = incremental.elements.find((element) => element.candidateKey === 'settings.toggle');
+  toggle.candidateKey = 'notification_switch';
+  incremental.relationships = [
+    { fromCandidateKey: 'settings.row', type: 'contains', toCandidateKey: 'notification_switch' },
+    { fromCandidateKey: 'settings.row', type: 'contains', toCandidateKey: 'settings.help' },
+  ];
+  incremental.actionCandidates = incremental.actionCandidates.map((action) => ({ ...action, triggerCandidateKey: 'notification_switch' }));
+  incremental.elements.push({
+    candidateKey: 'settings.help', label: '帮助入口', visualDescription: '新增帮助按钮', elementType: 'text-button', interactive: true, enabled: true, state: null,
+    approximateRegion: { x: 0.8, y: 0.82, width: 0.12, height: 0.08 }, geometryKind: 'tap-target', geometryConfidence: 0.82,
+    meaning: { status: 'known', description: '进入帮助页面', evidence: meaningEvidence({ visibleTexts: ['帮助'] }) }, dynamicContent: false, riskSignals: [], confidence: 0.91,
+  });
+
+  const next = appendRecognitionIntoDraft(first, incremental, 'incremental.json', 'test-model');
+  assert.equal(next.elements.some((element) => element.candidateKey === 'notification_switch'), false);
+  assert.equal(next.elements.find((element) => element.candidateKey === 'settings.toggle').id, originalToggle.id);
+  assert.equal(next.elements.filter((element) => element.label === '提醒开关').length, 1);
+  const help = next.elements.find((element) => element.candidateKey === 'settings.help');
+  assert.equal(help.parentId, originalRow.id);
+  assert.equal(help.ownerRef, originalRow.id);
+});
+
+test('主帧重新识别仅替换主帧元素并保留辅助帧增量结果', () => {
+  const first = mergeRecognitionIntoDraft(createEmptyDraft(), sampleRecognition(), 'first.json');
+  const auxiliaryFrameId = 'sha256:auxiliary-frame';
+  const withAuxiliaryFrame = appendFrameToPage(first, auxiliaryFrameId, { pageId: first.currentPageId });
+  const auxiliaryRecognition = sampleRecognition();
+  auxiliaryRecognition.frameId = auxiliaryFrameId;
+  auxiliaryRecognition.elements = [{
+    candidateKey: 'settings.conditional-tip', label: '条件提示', visualDescription: '满足条件后出现的提示', elementType: 'static-label', interactive: false, enabled: true, state: null,
+    approximateRegion: { x: 0.12, y: 0.72, width: 0.76, height: 0.08 }, geometryKind: 'boundary', geometryConfidence: 0.84,
+    meaning: { status: 'known', description: '条件满足时展示', evidence: meaningEvidence({ visibleTexts: ['条件提示'] }) }, dynamicContent: true, riskSignals: [], confidence: 0.9,
+  }];
+  auxiliaryRecognition.relationships = [];
+  auxiliaryRecognition.actionCandidates = [];
+  const withIncrement = appendRecognitionIntoDraft(withAuxiliaryFrame, auxiliaryRecognition, 'auxiliary.json', 'test-model');
+
+  const refreshedPrimary = sampleRecognition();
+  refreshedPrimary.elements[0].label = '更新后的提醒设置';
+  const refreshed = mergeRecognitionIntoDraft(withIncrement, refreshedPrimary, 'refreshed-primary.json', 'test-model');
+
+  assert.equal(refreshed.elements.find((element) => element.candidateKey === 'settings.row').label, '更新后的提醒设置');
+  assert.equal(refreshed.elements.find((element) => element.candidateKey === 'settings.conditional-tip').sourceFrameId, auxiliaryFrameId);
+  assert.equal(refreshed.pages.find((page) => page.id === first.currentPageId).primaryFrameId, first.currentFrameId);
+});
+
+test('删除观测帧同时删除该帧来源元素并保留其他帧', () => {
+  const first = mergeRecognitionIntoDraft(createEmptyDraft(), sampleRecognition(), 'first.json');
+  const firstFrame = first.currentFrameId;
+  const secondFrame = 'sha256:second-frame';
+  const withSecondFrame = appendFrameToPage(first, secondFrame, { pageId: first.currentPageId });
+  const result = removeFrameFromPage(withSecondFrame, firstFrame, { pageId: first.currentPageId });
+  assert.equal(result.removed, true);
+  assert.deepEqual(result.draft.pages.find((page) => page.id === first.currentPageId).frameIds, [secondFrame]);
+  assert.equal(result.draft.pages.find((page) => page.id === first.currentPageId).primaryFrameId, secondFrame);
+  assert.equal(result.draft.elements.length, 0);
+  assert.equal(result.draft.currentFrameId, secondFrame);
+});
+
+test('设备帧重拍只移除本次追加帧并保留页面原始观测帧', () => {
+  const original = beginFrameCapture(createEmptyDraft(), 'sha256:original', { forceNewPage: true });
+  const pageId = original.currentPageId;
+  const firstAppend = appendFrameToPage(original, 'sha256:first-append', { pageId });
+  const discarded = removeFrameFromPage(firstAppend, 'sha256:first-append', { pageId });
+  const secondAppend = appendFrameToPage(discarded.draft, 'sha256:second-append', { pageId });
+
+  assert.equal(discarded.removed, true);
+  assert.deepEqual(discarded.draft.pages.find((page) => page.id === pageId).frameIds, ['sha256:original']);
+  assert.deepEqual(secondAppend.pages.find((page) => page.id === pageId).frameIds, ['sha256:original', 'sha256:second-append']);
+  assert.equal(secondAppend.pages.find((page) => page.id === pageId).primaryFrameId, 'sha256:original');
+  assert.equal(secondAppend.currentPageId, pageId);
 });
 
 test('草稿校验发现 owner 循环和越界 bbox', () => {
@@ -187,6 +317,80 @@ test('重复列表子元素归纳为一个抽象模板，而不是逐行进入�
   assert.deepEqual(draft.elements.map((element) => element.candidateKey).sort(), ['todo-item-template', 'todo-list']);
 });
 
+test('重复表单模板吸收已表达的多行输入实例且保留模板外控件', () => {
+  const result = sampleRecognition();
+  const base = result.elements[0];
+  const inputRegions = [
+    { x: 0.08, y: 0.22, width: 0.84, height: 0.14 },
+    { x: 0.08, y: 0.46, width: 0.84, height: 0.14 },
+    { x: 0.08, y: 0.70, width: 0.84, height: 0.10 },
+  ];
+  const template = {
+    ...base,
+    candidateKey: 'daily-form-field-template',
+    label: '表单填写项模板',
+    elementType: 'section',
+    approximateRegion: { x: 0.04, y: 0.14, width: 0.92, height: 0.70 },
+    abstraction: {
+      kind: 'repeated-template', templateKey: 'daily.form-field', instanceCount: 3, bboxStyle: 'abstract',
+      instanceRegions: [
+        { x: 0.04, y: 0.14, width: 0.92, height: 0.22 },
+        { x: 0.04, y: 0.38, width: 0.92, height: 0.22 },
+        { x: 0.04, y: 0.62, width: 0.92, height: 0.22 },
+      ],
+      fields: [{
+        key: 'input', label: '多行文本输入框', elementType: 'text-area', description: '每个填写块的输入控件',
+        displayCondition: '', capabilities: ['input'], interactionBoundary: 'candidate_bbox', actionEffects: [],
+        parentId: null, required: false, instanceRegions: inputRegions,
+      }],
+    },
+  };
+  const inputs = inputRegions.map((approximateRegion, index) => ({
+    ...base,
+    candidateKey: `daily-field-${index + 1}-input`,
+    label: ['今日完成工作', '明日工作计划', '备注'][index],
+    elementType: 'text-area',
+    interactive: true,
+    approximateRegion,
+  }));
+  const externalInput = {
+    ...inputs[0], candidateKey: 'external-notes-input', label: '模板外附加说明',
+    approximateRegion: { x: 0.08, y: 0.88, width: 0.84, height: 0.08 },
+  };
+  const externalButton = {
+    ...base, candidateKey: 'submit-button', label: '提交', elementType: 'text-button', interactive: true,
+    approximateRegion: { x: 0.78, y: 0.05, width: 0.12, height: 0.04 },
+  };
+  result.elements = [template, ...inputs, externalInput, externalButton];
+  result.relationships = inputs.map((input) => ({
+    fromCandidateKey: input.candidateKey, type: 'belongs-to', toCandidateKey: template.candidateKey,
+  }));
+  result.actionCandidates = [
+    ...inputs.map((input) => ({
+      triggerCandidateKey: input.candidateKey, action: 'input', expectedOutcome: '编辑对应填写项', basis: 'visible-affordance', riskSignals: [], confidence: 0.9,
+    })),
+    { triggerCandidateKey: externalInput.candidateKey, action: 'input', expectedOutcome: '编辑附加说明', basis: 'visible-affordance', riskSignals: [], confidence: 0.9 },
+    { triggerCandidateKey: externalButton.candidateKey, action: 'tap', expectedOutcome: '提交表单', basis: 'visible-affordance', riskSignals: [], confidence: 0.9 },
+  ];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.deepEqual(prepared.elements.map((element) => element.candidateKey), [
+    'daily-form-field-template', 'external-notes-input', 'submit-button',
+  ]);
+  assert.deepEqual(prepared.elements[0].abstraction.fields[0].instanceRegions, inputRegions);
+  assert.deepEqual(new Set(prepared.elements[0].abstraction.fields[0].capabilities), new Set(['tap', 'input']));
+  assert.ok(prepared.elements[0].abstraction.fields[0].actionEffects.some((effect) => effect.action === 'input'));
+  assert.deepEqual(prepared.actionCandidates.map((action) => action.triggerCandidateKey), [
+    'external-notes-input', 'submit-button',
+  ]);
+  assert.ok(prepared.elements[0].riskSignals.includes('concrete-inputs-absorbed-into-template'));
+
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), prepared, 'form-template.json');
+  assert.deepEqual(draft.elements.map((element) => element.candidateKey), [
+    'daily-form-field-template', 'external-notes-input', 'submit-button',
+  ]);
+});
+
 test('重复列表可投影为抽象模板并隐藏具体行元素', () => {
   const result = sampleRecognition();
   result.elements = [
@@ -264,6 +468,39 @@ test('轮播无需独立规则即可归纳为动态元素共相', () => {
   assert.equal(draft.elements[0].abstraction?.kind, 'dynamic-template');
 });
 
+test('录入表单不会因 dynamicContent 自动升级为动态模板', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0], candidateKey: 'entry-form', elementType: 'form', dynamicContent: true,
+    approximateRegion: { x: 0, y: 0.2, width: 1, height: 0.8 },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.equal(prepared.elements[0].abstraction ?? null, null);
+});
+
+test('模型误把录入表单归为 dynamic-template 时归一化为普通录入结构', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0], candidateKey: 'entry-form', elementType: 'form', dynamicContent: true,
+    abstraction: {
+      kind: 'dynamic-template', templateKey: 'entry-form.dynamic', instanceCount: 1,
+      fields: [{ key: 'payload', label: '录入内容', elementType: 'form', description: '用户填写内容', required: false }],
+      instanceRegions: [{ x: 0, y: 0.2, width: 1, height: 0.8 }], bboxStyle: 'abstract',
+    },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const { recognitionResult, normalizationIssues } = normalizeRecognitionOutput(result);
+  assert.equal(recognitionResult.elements[0].abstraction, null);
+  assert.equal(recognitionResult.elements[0].dynamicContent, false);
+  assert.ok(recognitionResult.elements[0].riskSignals.includes('data-entry-cannot-be-dynamic-template'));
+  assert.ok(normalizationIssues[0].messages.some((message) => message.includes('不能作为 dynamic-template')));
+});
+
 test('旧抽象结果中过滤无 bbox 的头像字段但保留有 bbox 的真实头像', () => {
   const result = sampleRecognition();
   result.elements = [{
@@ -319,6 +556,7 @@ test('旧单页草稿升级后保留 Page、Frame 和 AI 模型来源', () => {
   const upgraded = normalizeDraftShape(legacy);
   assert.equal(upgraded.pages.length, 1);
   assert.deepEqual(upgraded.pages[0].frameIds, ['sha256:abc']);
+  assert.equal(upgraded.pages[0].primaryFrameId, 'sha256:abc');
   assert.equal(upgraded.elements[0].pageId, upgraded.currentPageId);
   assert.equal(upgraded.elements[0].aiModel, 'qwen3-vl-plus');
 });
@@ -485,6 +723,33 @@ test('单模型归一化保留原始输出，并仅降级含未知证据的元�
   assert.ok(!recognitionResult.elements[1].riskSignals.includes('meaning-evidence-needs-review'));
   assert.equal(normalizationIssues.length, 1);
   assert.equal(normalizationIssues[0].candidateKey, 'settings.row');
+});
+
+test('单模型归一化强制排除系统栏、子元素及其关系和动作', () => {
+  const raw = sampleRecognition();
+  raw.elements.unshift({
+    ...structuredClone(raw.elements[0]),
+    candidateKey: 'system_status',
+    label: '系统状态栏',
+    elementType: 'status-bar',
+  }, {
+    ...structuredClone(raw.elements[1]),
+    candidateKey: 'system_wifi',
+    label: 'Wi-Fi 图标',
+    elementType: 'image',
+  });
+  raw.relationships.unshift(
+    { fromCandidateKey: 'system_status', type: 'contains', toCandidateKey: 'system_wifi' },
+    { fromCandidateKey: 'settings.row', type: 'adjacent-to', toCandidateKey: 'system_status' },
+  );
+  raw.actionCandidates.unshift({ ...raw.actionCandidates[0], triggerCandidateKey: 'system_wifi' });
+
+  const { recognitionResult, normalizationIssues } = normalizeRecognitionOutput(raw);
+
+  assert.deepEqual(recognitionResult.elements.map((element) => element.candidateKey), ['settings.row', 'settings.toggle']);
+  assert.deepEqual(recognitionResult.relationships, [{ fromCandidateKey: 'settings.row', type: 'contains', toCandidateKey: 'settings.toggle' }]);
+  assert.deepEqual(recognitionResult.actionCandidates.map((action) => action.triggerCandidateKey), ['settings.toggle']);
+  assert.ok(normalizationIssues.some((issue) => issue.messages.includes('已排除 2 个系统状态栏、系统导航栏或其子元素')));
 });
 
 test('未来模型证据字段进入待归类证据，归一化结果通过 单模型Schema', async () => {

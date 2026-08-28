@@ -20,6 +20,29 @@ test('识别 prompt 只在请求附带 UI Tree 时包含结构数据', () => {
   assert.match(withUiTree, /UI_TREE_MARKER_72A6/);
 });
 
+test('识别 prompt 明确限制 interactionBoundary 的 Schema 枚举', () => {
+  const prompts = [
+    buildRecognitionPrompt(frameId),
+    buildRecognitionContinuationPrompt(frameId, '', { completedCandidates: [], coveredBottom: 0 }, 1),
+  ];
+  for (const prompt of prompts) {
+    assert.match(prompt, /interactionBoundary:"none"\|"candidate_bbox"\|"whole_element"\|"trailing_control"\|"point_only"\|"unresolved"/);
+    assert.match(prompt, /不得返回 tap-target、自然语言或 geometryKind 的值/);
+  }
+});
+
+test('初次识别与断点续写都排除系统状态栏和系统导航栏', () => {
+  const prompts = [
+    buildRecognitionPrompt(frameId),
+    buildRecognitionContinuationPrompt(frameId, '', { completedCandidates: [], coveredBottom: 0 }, 1),
+  ];
+  for (const prompt of prompts) {
+    assert.match(prompt, /系统状态栏和系统导航栏只作为完整截图坐标基准/);
+    assert.match(prompt, /不得在 elements 中输出 elementType=status-bar 或 elementType=system-navigation-bar/);
+    assert.match(prompt, /页面自身的 navigation-bar、返回、标题和操作按钮仍须正常识别/);
+  }
+});
+
 test('续写 prompt 沿用相同的 UI Tree 附带策略', () => {
   const checkpoint = { completedCandidates: [], coveredBottom: 0.5 };
   const withoutUiTree = buildRecognitionContinuationPrompt(frameId, '', checkpoint, 1, null);
@@ -33,8 +56,36 @@ test('列表项元素共相 prompt 只描述截图可见字段并禁止补造头
   const prompt = buildRecognitionPrompt(frameId, '测试页面', null, DEFAULT_RECOGNITION_PROMPT_RULES);
 
   assert.match(prompt, /只记录截图实际可见/);
-  assert.match(prompt, /不补造头像、图标或占位元素/);
+  assert.match(prompt, /不补造字段/);
   assert.match(prompt, /abstraction\.kind=repeated-template/);
+});
+
+test('识别 prompt 按视觉结构归纳表单字段块并识别分隔带边界', () => {
+  const prompts = [
+    buildRecognitionPrompt(frameId, '测试页面', null, DEFAULT_RECOGNITION_PROMPT_RULES),
+    buildRecognitionContinuationPrompt(frameId, '', { completedCandidates: [], coveredBottom: 0.5 }, 1, null, DEFAULT_RECOGNITION_PROMPT_RULES),
+  ];
+  for (const prompt of prompts) {
+    assert.match(prompt, /业务字段含义与结构共相是两个维度/);
+    assert.match(prompt, /业务标签不同不是排除理由/);
+    assert.match(prompt, /跨实例共享且连续的视觉分隔边界/);
+    assert.doesNotMatch(prompt, /横向浅灰分隔带/);
+    assert.match(prompt, /序号、必填标记、字段标签必须作为职责不同的独立 fields/);
+    assert.match(prompt, /占位提示语也必须作为独立 placeholder field/);
+    assert.match(prompt, /不可见的占位语、标记或标题不补造 bbox/);
+    assert.match(prompt, /表单字段块共相使用 section/);
+    assert.match(prompt, /整体数据录入集合使用 form/);
+    assert.match(prompt, /每个实例必须对应截图中一个视觉上独立的可填写块/);
+    assert.match(prompt, /背景或其他分隔带/);
+    assert.match(prompt, /包括可编辑的 input、text-area 或 rich-text-input 槽位/);
+    assert.match(prompt, /不得在 elements 中重复输出/);
+    assert.match(prompt, /只在对应 field 中记录 capabilities、actionEffects 和 instanceRegions/);
+    assert.doesNotMatch(prompt, /每个可点击或可输入控件仍必须拥有独立的顶层 candidateKey/);
+    assert.match(prompt, /未看到结束边框，必须直接判定为部分可见/);
+    assert.match(prompt, /不再讨论、估计或补全屏幕外高度/);
+    assert.match(prompt, /不得仅因用户将来会填写不同内容就标记为 dynamic-template/);
+    assert.doesNotMatch(prompt, /不要将“导入上篇”归入任何共相/);
+  }
 });
 
 test('识别 prompt 将动态槽位定义为单实例动态元素共相', () => {

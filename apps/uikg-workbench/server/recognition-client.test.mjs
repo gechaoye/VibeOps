@@ -38,7 +38,8 @@ test('Recognition client sends a frozen image and repairs streamed JSON', async 
       assert.equal(payload.response_format.json_schema.strict, true);
       assert.equal(payload.response_format.json_schema.schema.properties.elements.uniqueItems, undefined);
       assert.equal(payload.messages[0].role, 'system');
-      assert.match(payload.messages[0].content, /思考过程.*简体中文/);
+      assert.match(payload.messages[0].content, /只返回请求 Schema 对应的 JSON 对象/);
+      assert.match(payload.messages[0].content, /只记录截图内实际可见区域/);
       assert.match(payload.messages[1].content[1].image_url.url, /^data:image\/png;base64,/);
       response.writeHead(200, { 'content-type': 'text/event-stream' });
       response.write('data: {"choices":[{"delta":{"content":"{\\"frameId\\":\\"f\\","}}]}\n\n');
@@ -101,6 +102,38 @@ test('Recognition client separates MiniMax think tags from streamed model output
     assert.deepEqual(result, { frameId: 'f', elements: [] });
     assert.equal(chunks.map((chunk) => chunk.reasoning_content).join(''), '检查页面结构');
     assert.equal(chunks.map((chunk) => chunk.content).join(''), '{"frameId":"f","elements":[]}');
+  } finally {
+    clearModelRuntime('manual');
+    server.close();
+  }
+});
+
+test('Recognition client ignores a final message snapshot already received through deltas', async () => {
+  const content = '{"frameId":"f","elements":[]}';
+  const reasoning = '分析空白图像';
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { 'content-type': 'text/event-stream' });
+    response.write(`data: ${JSON.stringify({ object: 'chat.completion.chunk', choices: [{ delta: { reasoning_content: reasoning } }] })}\n\n`);
+    response.write(`data: ${JSON.stringify({ object: 'chat.completion.chunk', choices: [{ finish_reason: 'stop', delta: { content } }] })}\n\n`);
+    response.write(`data: ${JSON.stringify({ object: 'chat.completion', choices: [{ finish_reason: 'stop', message: { content, reasoning_content: reasoning } }] })}\n\n`);
+    response.end('data: [DONE]\n\n');
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  setModelRuntime('manual', {
+    baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'MiniMax-M3',
+    modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'low', structuredOutputMode: 'local',
+  });
+  const chunks = [];
+  try {
+    const result = await runRecognitionModel({
+      target: 'manual', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
+      onChunk: (chunk) => chunks.push(chunk),
+    });
+    assert.deepEqual(result, { frameId: 'f', elements: [] });
+    assert.equal(chunks.map((chunk) => chunk.content).join(''), content);
+    assert.equal(chunks.map((chunk) => chunk.reasoning_content).join(''), reasoning);
   } finally {
     clearModelRuntime('manual');
     server.close();

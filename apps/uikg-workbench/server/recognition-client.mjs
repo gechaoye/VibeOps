@@ -4,7 +4,7 @@ import { chatCompletionCompatibility } from './model-compatibility.mjs';
 import { openAIStructuredOutputSchema } from './structured-output-schema.mjs';
 import { getModelRuntime } from './model-runtime.mjs';
 
-const CHINESE_SYSTEM_PROMPT = '你必须始终使用简体中文进行思考和回答。所有可见的思考过程、推理内容、说明和最终输出中的自然语言都必须是简体中文；JSON 的键名和约定枚举值保持 Schema 要求。';
+const RECOGNITION_SYSTEM_PROMPT = '你是界面结构提取器。只返回请求 Schema 对应的 JSON 对象，不在最终内容中输出思考过程、方案比较、Markdown 或额外说明；JSON 自然语言值使用简体中文，键名与枚举值保持 Schema 约定。遇到边界不完整的控件，只记录截图内实际可见区域，不判断或补全屏幕外部分。';
 
 const RECOGNITION_TARGETS = {
   manual: { label: 'Manual 页面识别模型', modelTarget: 'manual' },
@@ -60,22 +60,34 @@ function textFromPart(value) {
 
 function extractDelta(payload) {
   const choice = payload?.choices?.[0] || {};
-  // Merge message and delta because gateways may put reasoning in one and
-  // visible output in the other, including on the final streamed chunk.
+  const choiceDelta = choice.delta && typeof choice.delta === 'object' ? choice.delta : null;
+  const choiceMessage = choice.message && typeof choice.message === 'object' ? choice.message : null;
+  // Some gateways end an SSE stream with a complete message snapshot after
+  // already sending the same content through deltas. Track each source so the
+  // caller can use snapshots only as a fallback.
   const delta = {
-    ...(choice.message && typeof choice.message === 'object' ? choice.message : {}),
-    ...(choice.delta && typeof choice.delta === 'object' ? choice.delta : {}),
+    ...(choiceMessage || {}),
+    ...(choiceDelta || {}),
     ...choice,
   };
-  const content = textFromPart(delta.content ?? choice.text);
+  const deltaContent = textFromPart(choiceDelta?.content ?? choice.text);
+  const messageContent = textFromPart(choiceMessage?.content);
+  const content = deltaContent || messageContent;
   const reasoningKeys = [
     'reasoning_content', 'reasoningContent', 'reasoning',
     'reasoning_details', 'reasoningDetails',
     'thinking_content', 'thinkingContent', 'thinking',
     'analysis_content', 'analysisContent', 'analysis',
   ];
-  const reasoningContent = reasoningKeys.reduce((result, key) => result || textFromPart(delta[key]), '');
-  return { content, reasoningContent };
+  const deltaReasoningContent = reasoningKeys.reduce((result, key) => result || textFromPart(choiceDelta?.[key]), '');
+  const messageReasoningContent = reasoningKeys.reduce((result, key) => result || textFromPart(choiceMessage?.[key]), '');
+  const reasoningContent = deltaReasoningContent || messageReasoningContent || reasoningKeys.reduce((result, key) => result || textFromPart(delta[key]), '');
+  return {
+    content,
+    reasoningContent,
+    contentSnapshot: !deltaContent && Boolean(messageContent),
+    reasoningSnapshot: !deltaReasoningContent && Boolean(messageReasoningContent),
+  };
 }
 
 function createThinkingContentSplitter() {
@@ -153,6 +165,7 @@ export async function runRecognitionModel({
   target,
   prompt,
   imagePath,
+  imagePaths = [],
   imageBuffer,
   mimeType = 'image/png',
   responseSchema,
@@ -167,20 +180,22 @@ export async function runRecognitionModel({
   if (config.structuredOutputMode === 'unverified') throw new Error('模型能力尚未检测，请在模型设置中完成检测');
   if (config.structuredOutputMode === 'unavailable') throw new Error('模型能力检测未通过，请在模型设置中重新检测或更换模型');
 
-  const bytes = imageBuffer ? Buffer.from(imageBuffer) : await readFile(imagePath);
-  const image = bytes.toString('base64');
+  const sourcePaths = [imagePath, ...imagePaths].filter((value, index, values) => typeof value === 'string' && value && values.indexOf(value) === index);
+  const images = imageBuffer
+    ? [{ mimeType, data: Buffer.from(imageBuffer).toString('base64') }]
+    : await Promise.all(sourcePaths.map(async (sourcePath) => ({ mimeType, data: (await readFile(sourcePath)).toString('base64') })));
   const requestBody = {
     model: config.model,
     temperature: config.temperature,
     stream: true,
     messages: [
-      { role: 'system', content: CHINESE_SYSTEM_PROMPT },
+      { role: 'system', content: RECOGNITION_SYSTEM_PROMPT },
       ...(continuation && continuationContent.trim() ? [{ role: 'assistant', content: continuationContent }] : []),
       {
         role: 'user',
         content: [
           { type: 'text', text: prompt },
-          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${image}`, detail: 'high' } },
+          ...images.map((image) => ({ type: 'image_url', image_url: { url: `data:${image.mimeType};base64,${image.data}`, detail: 'high' } })),
         ],
       },
     ],
@@ -222,10 +237,12 @@ export async function runRecognitionModel({
   const decoder = new TextDecoder();
   let buffer = '';
   let accumulated = '';
+  let accumulatedReasoning = '';
   let done = false;
   const thinkingContent = createThinkingContentSplitter();
   const emitDelta = (content, reasoningContent) => {
     if (content) accumulated += content;
+    if (reasoningContent) accumulatedReasoning += reasoningContent;
     if (content || reasoningContent) {
       onChunk({ content, reasoning_content: reasoningContent, accumulated });
     }
@@ -240,8 +257,10 @@ export async function runRecognitionModel({
     }
     try {
       const delta = extractDelta(JSON.parse(payload));
-      const separated = thinkingContent.push(delta.content);
-      emitDelta(separated.content, delta.reasoningContent + separated.reasoningContent);
+      const content = delta.contentSnapshot && accumulated ? '' : delta.content;
+      const reasoningContent = delta.reasoningSnapshot && accumulatedReasoning ? '' : delta.reasoningContent;
+      const separated = thinkingContent.push(content);
+      emitDelta(separated.content, reasoningContent + separated.reasoningContent);
     } catch {
       // Providers occasionally emit non-JSON keepalive chunks.
     }

@@ -33,6 +33,7 @@ import {
   Settings2,
   Smartphone,
   SquareDashed,
+  Trash2,
   Undo2,
   Unplug,
   X,
@@ -46,8 +47,9 @@ import { absoluteAssetUrl, serverUrl, workbenchApi, type RecognitionStreamResult
 import { DeviceClient } from './device-client';
 import { EditHistoryPanel } from './EditHistoryPanel';
 import { ElementTree } from './ElementTree';
-import { FrameStrip } from './FrameStrip';
+import { AddFrameButton, FrameStrip } from './FrameStrip';
 import { Inspector } from './Inspector';
+import { IncrementalRecognitionPanel, type IncrementalCandidate } from './IncrementalRecognitionPanel';
 import { KnowledgeGraph } from './KnowledgeGraph';
 import { LiveDevicePreview } from './LiveDevicePreview';
 import { ModelSettings } from './ModelSettings';
@@ -66,6 +68,23 @@ type WorkspaceMode = 'annotation' | 'relation' | 'graph' | 'knowledge' | 'stagin
 type InternalTabKind = 'knowledge' | 'workspace' | 'model' | 'settings' | 'annotation';
 type PendingRecognitionReplacement =
   { kind: 'manual'; result: RecognitionStreamResult };
+type IncrementalSession = {
+  pageId: string;
+  frameId: string;
+  baseElementIds: string[];
+  candidates: IncrementalCandidate[];
+  recognitionResult?: RecognitionResult;
+  modelResultRef?: string;
+  model?: string | null;
+  status: 'pending' | 'recognizing' | 'review' | 'committing';
+};
+type PendingFrameDeletion = {
+  frameId: string;
+  pageId: string;
+  frameNumber: number;
+  elementCount: number;
+  elementLabels: string[];
+};
 
 const MAX_PAGE_TABS = 10;
 
@@ -137,7 +156,7 @@ function removePageFromDraft(current: Draft, pageId: string): Draft {
   return {
     ...current,
     currentPageId: nextPage?.id || emptyPage.id,
-    currentFrameId: nextPage?.frameIds.at(-1) || null,
+    currentFrameId: nextPage?.primaryFrameId || nextPage?.frameIds[0] || null,
     page: nextPage
       ? { id: nextPage.id, key: nextPage.key, name: nextPage.name, functionRef: nextPage.functionRef, implementationType: nextPage.implementationType, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions }
       : emptyPage,
@@ -180,6 +199,7 @@ function createEmptyWorkingPage(): DraftPage {
     scrollableRegions: [],
     featurePath: [],
     frameIds: [],
+    primaryFrameId: null,
     elementIds: [],
     publishedAt: null,
   };
@@ -252,7 +272,9 @@ function formatRecognitionSchemaError(error: unknown): string | null {
 function recognitionErrorInfo(error: unknown): { message: string; details: string[] } {
   const rawMessage = error instanceof Error
     ? error.message
-    : isRecord(error) && typeof error.errorMessage === 'string' ? error.errorMessage : String(error);
+    : isRecord(error) && typeof error.errorMessage === 'string' ? error.errorMessage
+      : isRecord(error) && typeof error.message === 'string' ? error.message
+        : '页面分析失败';
   const message = /输出(?:结果)?未通过结构检查/.test(rawMessage) ? '输出结果未通过结构检查' : rawMessage;
   const payload = error instanceof Error && isRecord((error as Error & { details?: unknown }).details)
     ? (error as Error & { details: Record<string, unknown> }).details
@@ -261,8 +283,18 @@ function recognitionErrorInfo(error: unknown): { message: string; details: strin
   const schemaErrors = Array.isArray(payload.schemaErrors) ? payload.schemaErrors : Array.isArray(nested.schemaErrors) ? nested.schemaErrors : [];
   const consistencyIssues = Array.isArray(payload.consistencyIssues) ? payload.consistencyIssues : Array.isArray(nested.consistencyIssues) ? nested.consistencyIssues : [];
   const normalizationIssues = Array.isArray(payload.normalizationIssues) ? payload.normalizationIssues : Array.isArray(nested.normalizationIssues) ? nested.normalizationIssues : [];
+  const selfHealing = isRecord(payload.selfHealing) ? payload.selfHealing : isRecord(nested.selfHealing) ? nested.selfHealing : null;
+  const selfHealingIssues = selfHealing
+    ? [
+        selfHealing.attempted === false && selfHealing.reason === 'not-configured' ? '自愈模型：未配置，未执行自动修复' : null,
+        typeof selfHealing.error === 'string' && selfHealing.error ? `自愈模型：${selfHealing.error}` : null,
+      ].filter((item): item is string => Boolean(item))
+    : [];
+  const schemaReportedInvalid = payload.schemaValid === false
+    || nested.schemaValid === false
+    || /输出(?:结果)?未通过结构检查/.test(rawMessage);
   const completionIssues = [
-    !payload.schemaValid && !schemaErrors.length ? 'Schema 校验未通过（未返回具体校验项）' : null,
+    schemaReportedInvalid && !schemaErrors.length ? 'Schema 校验未通过（未返回具体校验项）' : null,
     payload.continuationCompleted === false ? '模型输出未完成' : null,
     typeof payload.completedCandidates === 'number' && payload.completedCandidates === 0 && payload.continuationCompleted === false ? '未识别到结构完整的候选元素' : null,
   ].filter((item): item is string => Boolean(item));
@@ -273,6 +305,7 @@ function recognitionErrorInfo(error: unknown): { message: string; details: strin
     }),
     ...consistencyIssues.map((item) => typeof item === 'string' && item.trim() ? `一致性检查：${item.trim()}` : null),
     ...normalizationIssues.map((item) => typeof item === 'string' && item.trim() ? `归一化检查：${item.trim()}` : null),
+    ...selfHealingIssues,
     ...completionIssues,
   ].filter((item): item is string => Boolean(item));
   return { message, details: [...new Set(details)] };
@@ -425,6 +458,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(() => tabKind === 'workspace' ? 'graph' : tabKind === 'knowledge' ? 'knowledge' : 'annotation');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedAbstractFieldKey, setSelectedAbstractFieldKey] = useState<string | null>(null);
+  const [selectedAbstractFieldInstanceIndex, setSelectedAbstractFieldInstanceIndex] = useState<number | null>(null);
   const [multiSelect, setMultiSelect] = useState(false);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [drawing, setDrawing] = useState(false);
@@ -446,6 +480,13 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const [pendingRecognitionReplacement, setPendingRecognitionReplacement] = useState<PendingRecognitionReplacement | null>(null);
   const [completedRecognitionReplacement, setCompletedRecognitionReplacement] = useState<PendingRecognitionReplacement | null>(null);
   const [recognitionReplacementBusy, setRecognitionReplacementBusy] = useState(false);
+  const [pendingFrameDeletion, setPendingFrameDeletion] = useState<PendingFrameDeletion | null>(null);
+  const [deviceFrameTargetPageId, setDeviceFrameTargetPageId] = useState<string | null>(null);
+  const [pendingAppendedFrame, setPendingAppendedFrame] = useState<{ pageId: string; frameId: string } | null>(null);
+  const [viewedFrameId, setViewedFrameId] = useState<string | null>(null);
+  const [incrementalSession, setIncrementalSession] = useState<IncrementalSession | null>(null);
+  const [incrementalPanelOpen, setIncrementalPanelOpen] = useState(false);
+  const [incrementalManualElements, setIncrementalManualElements] = useState<DraftElement[]>([]);
   const [analysisSessions, setAnalysisSessions] = useState<AnalysisSession[]>([]);
   const [analysisSessionManagerOpen, setAnalysisSessionManagerOpen] = useState(false);
   const [analysisSessionReconnectId, setAnalysisSessionReconnectId] = useState<string | null>(null);
@@ -473,15 +514,28 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const lastSavedDraftRef = useRef<Draft | null>(null);
   const recoveryStorageErrorShownRef = useRef(false);
   const saveCurrentPageRef = useRef<() => Promise<boolean>>(async () => false);
+  const recognitionModeRef = useRef<'full' | 'incremental'>('full');
 
   useEffect(() => {
     if (tabKind === 'annotation') onTabDirtyChange(tabId, dirty);
   }, [dirty, onTabDirtyChange, tabId, tabKind]);
 
   const issues = useMemo(() => draft ? validateDraftClient(draft) : serverIssues, [draft, serverIssues]);
+  const currentPageIssues = useMemo(() => {
+    if (!draft) return issues;
+    const pageId = draft.currentPageId;
+    return issues.filter((issue) => {
+      if (issue.elementId) {
+        const element = draft.elements.find((candidate) => candidate.id === issue.elementId);
+        return Boolean(element && elementAvailableOnPage(element, pageId, draft.elements));
+      }
+      if (issue.pageIds?.length) return issue.pageIds.includes(pageId);
+      return true;
+    });
+  }, [draft, issues]);
   const validationIssueGroups = useMemo(() => {
     const grouped = new Map<string, { code: string; level: ValidationIssue['level']; issues: ValidationIssue[] }>();
-    for (const issue of issues) {
+    for (const issue of currentPageIssues) {
       const key = `${issue.level}:${issue.code}`;
       const group = grouped.get(key);
       if (group) group.issues.push(issue);
@@ -491,7 +545,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       if (left.level !== right.level) return left.level === 'error' ? -1 : 1;
       return right.issues.length - left.issues.length || left.code.localeCompare(right.code);
     });
-  }, [issues]);
+  }, [currentPageIssues]);
   const selectedElement = draft?.elements.find((element) => element.id === selectedId) || null;
   useEffect(() => {
     setSelectedAbstractFieldKey(null);
@@ -499,19 +553,41 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const initialSelectedElement = selectedId ? initialElementsRef.current.get(selectedId) || null : null;
   const canRestoreSelectedElement = Boolean(selectedElement && initialSelectedElement && JSON.stringify(selectedElement) !== JSON.stringify(initialSelectedElement));
   const canRestoreAllElements = Boolean(draft && JSON.stringify(draft.elements) !== JSON.stringify(initialAllElementsRef.current));
-  const currentElements = useMemo(() => draft ? draft.elements.filter((element) => elementAvailableOnPage(element, draft.currentPageId, draft.elements)) : [], [draft]);
+  const viewedPage = draft?.pages.find((page) => page.id === draft.currentPageId);
+  const primaryFrameId = viewedPage?.primaryFrameId && viewedPage.frameIds.includes(viewedPage.primaryFrameId)
+    ? viewedPage.primaryFrameId
+    : viewedPage?.frameIds[0] || null;
+  const activeFrameId = viewedPage?.frameIds.includes(viewedFrameId || '')
+    ? viewedFrameId
+    : primaryFrameId;
+  const isPrimaryFrame = Boolean(activeFrameId && activeFrameId === primaryFrameId);
+  const currentElements = useMemo(() => draft
+    ? draft.elements.filter((element) => elementAvailableOnPage(element, draft.currentPageId, draft.elements) && element.sourceFrameId === activeFrameId)
+    : [], [activeFrameId, draft]);
+  const currentPageActivities = useMemo(() => {
+    if (!draft) return elementActivities;
+    return elementActivities.filter((record) => {
+      if (record.pageIds) return record.pageIds.includes(draft.currentPageId);
+      return record.elementIds.some((elementId) => {
+        const element = draft.elements.find((candidate) => candidate.id === elementId);
+        return Boolean(element && elementAvailableOnPage(element, draft.currentPageId, draft.elements));
+      });
+    });
+  }, [draft, elementActivities]);
+  const annotationCanvasElements = useMemo(() => [...currentElements, ...incrementalManualElements], [currentElements, incrementalManualElements]);
   const treeElements = useMemo(() => duplicateCandidateKeyFilter
     ? currentElements.filter((element) => element.candidateKey.trim() === duplicateCandidateKeyFilter)
     : currentElements, [currentElements, duplicateCandidateKeyFilter]);
   const currentPageHasPrivateElements = Boolean(draft?.elements.some((element) => element.pageId === draft.currentPageId));
-  const historyBlockedForPendingPage = Boolean(draft?.currentFrameId && !currentPageHasPrivateElements && draft.pages.find((page) => page.id === draft.currentPageId)?.frameIds.includes(draft.currentFrameId));
+  const historyBlockedForPendingPage = Boolean(activeFrameId && !currentPageHasPrivateElements && draft?.pages.find((page) => page.id === draft.currentPageId)?.frameIds.includes(activeFrameId));
   const allCurrentChecked = treeElements.length > 0 && treeElements.every((element) => checkedIds.has(element.id));
   const checkedCurrentElements = treeElements.filter((element) => checkedIds.has(element.id));
   const allCheckedAccepted = checkedCurrentElements.length > 0 && checkedCurrentElements.every((element) => element.reviewStatus === 'accepted');
-  const frameUrl = draft?.currentFrameId
-    ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(draft.currentFrameId)}/image`)
+  const frameUrl = activeFrameId
+    ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(activeFrameId)}/image`)
     : null;
-  const uiTreeAvailable = Boolean(frame && frame.frameId === draft?.currentFrameId && frame.runtimeStructure);
+  const incrementalAdditions = incrementalSession?.candidates.filter((candidate) => candidate.kind === 'new' || candidate.kind === 'manual').length || 0;
+  const uiTreeAvailable = Boolean(frame && frame.frameId === activeFrameId && frame.runtimeStructure);
   const pageGraphDraft = useMemo(() => {
     if (!draft || Object.keys(pageNameOverrides).length === 0) return draft;
     const pages = draft.pages.map((page) => Object.prototype.hasOwnProperty.call(pageNameOverrides, page.id)
@@ -530,7 +606,17 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     // from different pages appear in the current page's history.
     return analysisSessions.filter((session) => session.pageId === draft.currentPageId);
   }, [analysisSessions, draft]);
-  const hasAnalyzedCurrentFrame = Boolean(draft?.currentFrameId && pageHistorySessions.some((session) => session.frameId === draft.currentFrameId && session.status !== 'running'));
+  const recognizedFrameIds = useMemo(() => {
+    const result = new Set<string>();
+    if (!draft) return result;
+    for (const element of draft.elements) {
+      if (element.sourceFrameId && elementAvailableOnPage(element, draft.currentPageId, draft.elements)) {
+        result.add(element.sourceFrameId);
+      }
+    }
+    return result;
+  }, [draft]);
+  const hasAnalyzedCurrentFrame = Boolean(activeFrameId && recognizedFrameIds.has(activeFrameId));
   const acceptedHistorySessionId = useMemo(() => {
     if (!draft?.rawModelResultRef) return null;
     return pageHistorySessions.find((session) => draft.rawModelResultRef?.includes(session.id))?.id || null;
@@ -638,6 +724,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const resetDraftState = (nextDraft: Draft, markDirty = false, preserveActivities = false) => {
     draftRef.current = nextDraft;
     setDraft(nextDraft);
+    const nextPage = nextDraft.pages.find((page) => page.id === nextDraft.currentPageId);
+    setViewedFrameId((current) => nextPage?.frameIds.includes(current || '') ? current : nextPage?.primaryFrameId || nextPage?.frameIds[0] || null);
     setDirty(markDirty);
     if (!annotationEntryDraftRef.current
       || annotationEntryDraftRef.current.currentPageId !== nextDraft.currentPageId
@@ -661,6 +749,9 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
           elementIds: [record.elementId],
           elementLabels: element ? [element.label] : [],
           fields: record.fields,
+          pageIds: element
+            ? nextDraft.pages.filter((page) => elementAvailableOnPage(element, page.id, nextDraft.elements)).map((page) => page.id)
+            : [],
         } satisfies ElementActivityRecord;
       }).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       elementActivitiesRef.current = restoredActivities;
@@ -721,13 +812,17 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const appendElementActivity = (action: string, before: Draft, after: Draft, groupKey?: string, mergeWithLatest = false) => {
     const changes = summarizeElementChanges(before, after);
     if (changes.elementIds.length === 0) return;
+    const pageIds = [...new Set([before, after].flatMap((snapshot) => changes.elementIds.flatMap((elementId) => {
+      const element = snapshot.elements.find((candidate) => candidate.id === elementId);
+      return element ? snapshot.pages.filter((page) => elementAvailableOnPage(element, page.id, snapshot.elements)).map((page) => page.id) : [];
+    })))];
     const now = new Date().toISOString();
     const previousActivities = elementActivitiesRef.current;
     let nextActivities: ElementActivityRecord[];
     if (mergeWithLatest && groupKey && previousActivities[0]?.groupKey === groupKey && previousActivities[0]?.action === action) {
-      nextActivities = [{ ...previousActivities[0], createdAt: now, elementIds: changes.elementIds, elementLabels: changes.elementLabels, fields: changes.fields }, ...previousActivities.slice(1)];
+      nextActivities = [{ ...previousActivities[0], createdAt: now, elementIds: changes.elementIds, elementLabels: changes.elementLabels, fields: changes.fields, pageIds }, ...previousActivities.slice(1)];
     } else {
-      nextActivities = [{ id: `activity-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, action, createdAt: now, ...changes, ...(groupKey ? { groupKey } : {}) }, ...previousActivities].slice(0, 500);
+      nextActivities = [{ id: `activity-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, action, createdAt: now, ...changes, pageIds, ...(groupKey ? { groupKey } : {}) }, ...previousActivities].slice(0, 500);
     }
     elementActivitiesRef.current = nextActivities;
     setElementActivities(nextActivities);
@@ -849,7 +944,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   }, [recoveryDraft, refreshConnection]);
 
   useEffect(() => {
-    const frameId = draft?.currentFrameId;
+    const frameId = activeFrameId;
     if (!frameId) {
       setFrame(null);
       setIncludeUiTreeInRecognition(false);
@@ -870,7 +965,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     return () => {
       cancelled = true;
     };
-  }, [draft?.currentFrameId]);
+  }, [activeFrameId]);
 
   useEffect(() => {
     window.localStorage.setItem('uikg-workbench.annotation.show-grid-guides', String(showGridGuides));
@@ -892,6 +987,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
 
   const showInitialLiveView = () => {
     endHistoryGroup();
+    setDeviceFrameTargetPageId(null);
     setViewMode('live');
     setSelectedId(null);
     setCheckedIds(new Set());
@@ -905,11 +1001,12 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
 
   const connectDevice = async () => {
     if (!selectedDevice) return;
+    const shouldStayOnAnnotation = Boolean(draftRef.current?.currentFrameId && workspaceMode === 'annotation' && viewMode !== 'live');
     setBusy('connect');
     try {
       const result = await deviceClient.createSession(selectedDevice);
       setDevice((current) => ({ ...current, session: result.session, runtimeInfo: result.runtimeInfo }));
-      setViewMode('live');
+      if (!shouldStayOnAnnotation) setViewMode('live');
       await refreshConnection();
       showNotice('success', 'Android 设备已连接');
     } catch (error) {
@@ -924,6 +1021,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     try {
       await deviceClient.destroySession();
       setDevice((current) => ({ ...current, session: null, runtimeInfo: null }));
+      setDeviceFrameTargetPageId(null);
       setViewMode('review');
       await refreshConnection();
     } catch (error) {
@@ -936,7 +1034,10 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const captureFrame = async () => {
     setBusy('freeze');
     try {
-      const result = await workbenchApi.freezeFrame(true, collectUiTreeWithScreenshot);
+      const appendTargetPageId = deviceFrameTargetPageId;
+      const result = appendTargetPageId
+        ? await workbenchApi.appendFrame(appendTargetPageId, collectUiTreeWithScreenshot)
+        : await workbenchApi.freezeFrame(true, collectUiTreeWithScreenshot);
 
       resetDraftState(result.draft);
       setSelectedId(null);
@@ -944,8 +1045,13 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       setViewMode('frozen');
       setDrawing(false);
       setFrame(result.frame);
+      setViewedFrameId(result.frame.frameId);
       setIncludeUiTreeInRecognition(Boolean(result.frame.runtimeStructure));
-      showNotice('success', '画面已冻结，请确认后开始标注');
+      setDeviceFrameTargetPageId(null);
+      setPendingAppendedFrame(appendTargetPageId ? { pageId: appendTargetPageId, frameId: result.frame.frameId } : null);
+      setIncrementalSession(null);
+      setIncrementalManualElements([]);
+      showNotice('success', appendTargetPageId ? '设备帧已添加，请确认后开始标注' : '画面已冻结，请确认后开始标注');
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
@@ -960,41 +1066,91 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       showNotice('error', '设备未连接，无法采集设备画面。请先连接设备或改用上传图片。');
       return;
     }
-    setBusy('append-frame');
-    try {
-      const result = await workbenchApi.appendFrame(targetPageId, collectUiTreeWithScreenshot);
-      resetDraftState(result.draft, false, true);
-      setSelectedId(null);
-      setCheckedIds(new Set());
-      setWorkspaceMode('annotation');
-      setViewMode('review');
-      if (result.frame) {
-        setFrame(result.frame);
-        setIncludeUiTreeInRecognition(Boolean(result.frame.runtimeStructure));
-      }
-      showNotice('success', '已为当前页面新增观测帧');
-    } catch (error) {
-      showNotice('error', `新增观测帧失败：${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      setBusy(null);
-    }
+    setDeviceFrameTargetPageId(targetPageId);
+    setWorkspaceMode('annotation');
+    setViewMode('live');
+    setDrawing(false);
+    showNotice('info', '已进入实时操作，请点击“冻结画面”使用当前设备帧');
+  };
+
+  const handleAddedFrameDraft = (nextDraft: Draft, targetPageId: string | null) => {
+    const previousFrameId = draftRef.current?.currentFrameId;
+    resetDraftState(nextDraft, false, true);
+    setServerIssues(validateDraftClient(nextDraft));
+    if (!targetPageId || !nextDraft.currentFrameId || nextDraft.currentFrameId === previousFrameId) return;
+    const pageElements = nextDraft.elements.filter((element) => elementAvailableOnPage(element, targetPageId, nextDraft.elements));
+    setUploadDialog({ open: false, targetPageId: null });
+    setPendingAppendedFrame({ pageId: targetPageId, frameId: nextDraft.currentFrameId });
+    setViewedFrameId(nextDraft.currentFrameId);
+    setWorkspaceMode('annotation');
+    setViewMode('review');
+    setIncrementalSession(pageElements.length > 0
+      ? { pageId: targetPageId, frameId: nextDraft.currentFrameId, baseElementIds: pageElements.map((element) => element.id), candidates: [], status: 'pending' }
+      : null);
+    setIncrementalManualElements([]);
+    setIncrementalPanelOpen(false);
+    const addedPage = nextDraft.pages.find((page) => page.id === targetPageId);
+    const recognitionAction = addedPage?.primaryFrameId === nextDraft.currentFrameId ? '识别分析' : '增量识别';
+    showNotice('success', `图片已作为新观测帧添加，请点击“${recognitionAction}”开始识别`);
   };
 
   const selectFrame = (frameId: string) => {
-    if (!draft || frameId === draft.currentFrameId) return;
+    if (!draft || frameId === activeFrameId) return;
     const page = draft.pages.find((item) => item.id === draft.currentPageId);
     if (!page || !page.frameIds.includes(frameId)) return;
-    commitDraft((current) => ({ ...current, currentFrameId: frameId }));
+    setViewedFrameId(frameId);
     setSelectedId(null);
     setCheckedIds(new Set());
+    setIncrementalSession(null);
+    setIncrementalManualElements([]);
+    setIncrementalPanelOpen(false);
     setViewMode('review');
   };
 
-  const deleteFrame = async (frameId: string) => {
+  const setPrimaryFrame = (frameId: string) => {
     const current = draftRef.current;
-    const pageId = current?.currentPageId;
+    const page = current?.pages.find((item) => item.id === current.currentPageId);
+    if (!current || !page || !page.frameIds.includes(frameId) || page.primaryFrameId === frameId) return;
+    const previousPrimaryFrameId = page.primaryFrameId || page.frameIds[0] || null;
+    const recognizedPrimaryElements = current.elements.filter((element) => (
+      elementAvailableOnPage(element, page.id, current.elements)
+      && element.sourceFrameId === previousPrimaryFrameId
+      && element.source !== 'human'
+    ));
+    const apply = () => {
+      updateDraft((value) => ({
+        ...value,
+        currentFrameId: frameId,
+        pages: value.pages.map((item) => item.id === page.id
+          ? { ...item, primaryFrameId: frameId, publishedAt: null }
+          : item),
+      }), undefined, '设置主帧');
+      setViewedFrameId(frameId);
+      setSelectedId(null);
+      setCheckedIds(new Set());
+      setIncrementalSession(null);
+      setIncrementalManualElements([]);
+      setIncrementalPanelOpen(false);
+      showNotice('success', '已设置新的主帧');
+    };
+    if (recognizedPrimaryElements.length === 0) {
+      apply();
+      return;
+    }
+    modal.confirm({
+      title: '重设主帧？',
+      content: `当前主帧已有 ${recognizedPrimaryElements.length} 个识别元素。重设后这些元素会保留在原观测帧，新主帧后续将使用完整识别。`,
+      okText: '设为主帧',
+      cancelText: '取消',
+      centered: true,
+      onOk: apply,
+    });
+  };
+
+  const executeDeleteFrame = async (frameId: string, pageId: string) => {
+    const current = draftRef.current;
     const page = current?.pages.find((item) => item.id === pageId);
-    if (!current || !pageId || !page) return;
+    if (!current || !page) return;
     if (page.frameIds.length <= 1) {
       showNotice('error', '每个页面至少需要保留一个观测帧');
       return;
@@ -1006,12 +1162,45 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       setServerIssues(validateDraftClient(result.draft));
       setSelectedId(null);
       setCheckedIds(new Set());
+      setIncrementalSession(null);
+      setIncrementalManualElements([]);
+      setIncrementalPanelOpen(false);
       showNotice('success', '已删除该观测帧');
     } catch (error) {
       showNotice('error', `删除观测帧失败：${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setBusy(null);
     }
+  };
+
+  const deleteFrame = (frameId: string) => {
+    const current = draftRef.current;
+    const pageId = current?.currentPageId;
+    const page = current?.pages.find((item) => item.id === pageId);
+    if (!current || !pageId || !page) return;
+    if (page.frameIds.length <= 1) {
+      showNotice('error', '每个页面至少需要保留一个观测帧');
+      return;
+    }
+    const frameElements = current.elements.filter((element) => element.pageId === pageId && element.sourceFrameId === frameId);
+    if (frameElements.length > 0) {
+      setPendingFrameDeletion({
+        frameId,
+        pageId,
+        frameNumber: page.frameIds.indexOf(frameId) + 1,
+        elementCount: frameElements.length,
+        elementLabels: frameElements.map((element) => element.label.trim() || element.candidateKey).filter(Boolean).slice(0, 5),
+      });
+      return;
+    }
+    void executeDeleteFrame(frameId, pageId);
+  };
+
+  const confirmDeleteFrame = () => {
+    const pending = pendingFrameDeletion;
+    if (!pending) return;
+    setPendingFrameDeletion(null);
+    void executeDeleteFrame(pending.frameId, pending.pageId);
   };
 
   const discardFrozenCapture = async () => {
@@ -1023,10 +1212,22 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     }
     setBusy('discard-freeze');
     try {
-      const result = await workbenchApi.saveDraft(removePageFromDraft(beforeDiscard, pageId));
-      resetDraftState(result.draft, false, true);
-      setServerIssues(result.issues);
+      const appended = pendingAppendedFrame
+        && pendingAppendedFrame.pageId === pageId
+        && pendingAppendedFrame.frameId === beforeDiscard.currentFrameId
+        && beforeDiscard.pages.find((page) => page.id === pageId)?.frameIds.includes(pendingAppendedFrame.frameId);
+      if (appended) {
+        const result = await workbenchApi.deletePageFrame(pendingAppendedFrame.frameId, pageId);
+        resetDraftState(result.draft, false, true);
+        setServerIssues(validateDraftClient(result.draft));
+        setPendingAppendedFrame(null);
+      } else {
+        const result = await workbenchApi.saveDraft(removePageFromDraft(beforeDiscard, pageId));
+        resetDraftState(result.draft, false, true);
+        setServerIssues(result.issues);
+      }
       showInitialLiveView();
+      if (appended) setDeviceFrameTargetPageId(pageId);
       showNotice('success', '已丢弃当前截图，请重新冻结画面');
     } catch (error) {
       showNotice('error', `丢弃当前截图失败：${error instanceof Error ? error.message : String(error)}`);
@@ -1036,9 +1237,18 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   };
 
   const startAnnotation = () => {
-    if (!draft?.currentFrameId) return;
+    if (!draft || !activeFrameId) return;
     const page = draft.pages.find((candidate) => candidate.id === draft.currentPageId);
-    if (!annotationTarget && page) onPromoteAnnotationTab(tabId, page.id, draft.currentFrameId, page.name || '待识别页面');
+    if (!annotationTarget && page) onPromoteAnnotationTab(tabId, page.id, activeFrameId, page.name || '待识别页面');
+    const isAdditionalFrame = Boolean(page?.frameIds.length && (page.primaryFrameId || page.frameIds[0]) !== activeFrameId);
+    const pageElements = draft.elements.filter((element) => elementAvailableOnPage(element, draft.currentPageId, draft.elements));
+    if (isAdditionalFrame && pageElements.length > 0) {
+      setIncrementalSession({ pageId: draft.currentPageId, frameId: activeFrameId, baseElementIds: pageElements.map((element) => element.id), candidates: [], status: 'pending' });
+      setIncrementalManualElements([]);
+    } else if (isAdditionalFrame) {
+      setIncrementalSession(null);
+      setIncrementalManualElements([]);
+    }
     setViewMode('review');
   };
 
@@ -1083,7 +1293,34 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     }
   };
 
-  const finishManualRecognition = async (result: Awaited<ReturnType<typeof workbenchApi.recognitionStream>>) => {
+  const finishManualRecognition = async (result: Awaited<ReturnType<typeof workbenchApi.recognitionStream>>, mode: 'full' | 'incremental' = 'full') => {
+    if (mode === 'incremental') {
+      const currentDraft = draftRef.current;
+      if (!currentDraft) throw new Error('当前页面草稿不存在');
+      const preview = await workbenchApi.previewIncrementalRecognition({
+        frameId: result.recognitionResult.frameId,
+        pageId: currentDraft.currentPageId,
+        recognitionResult: result.recognitionResult,
+      });
+      const candidatesByKey = new Map(result.recognitionResult.elements.map((candidate) => [candidate.candidateKey, candidate]));
+      const candidates: IncrementalCandidate[] = preview.candidates.map((item) => {
+        return {
+          id: `model:${item.candidateKey}`,
+          key: item.candidateKey,
+          label: item.label,
+          kind: item.disposition,
+          confidence: item.confidence,
+          existingLabel: item.existingLabel || undefined,
+          candidate: candidatesByKey.get(item.candidateKey),
+        };
+      });
+      setIncrementalSession((current) => current ? { ...current, candidates: [...candidates, ...current.candidates.filter((item) => item.kind === 'manual')], recognitionResult: result.recognitionResult, modelResultRef: result.modelResultRef, model: result.model, status: 'review' } : current);
+      setRecognitionActivity((current) => current ? { ...current, status: 'completed', phase: 'incremental-review', phaseMessage: '识别完成，候选已完成去重与共相匹配', completedAt: new Date().toISOString() } : current);
+      setRecognitionDialogOpen(false);
+      setIncrementalPanelOpen(true);
+      await refreshAnalysisSessions();
+      return;
+    }
     if (!result.draft || !result.issues) {
       setCompletedRecognitionReplacement({ kind: 'manual', result });
       setStatus((current) => current ? { ...current, manualSession: null } : current);
@@ -1100,7 +1337,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     await refreshAnalysisSessions();
   };
 
-  const handleRecognitionFailure = (error: unknown) => {
+  const handleRecognitionFailure = (error: unknown, mode: 'full' | 'incremental' = recognitionModeRef.current) => {
     const cancelled = error instanceof Error && error.name === "AnalysisCancelledError";
     const errorInfo = recognitionErrorInfo(error);
     const details = error instanceof Error ? (error as Error & { details?: Record<string, unknown> }).details : undefined;
@@ -1120,6 +1357,11 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       showNotice('info', `页面识别已保留 ${resumeSession.completedCandidates} 个候选的断点`);
       return;
     }
+    if (mode === 'incremental') {
+      setIncrementalSession(null);
+      setIncrementalPanelOpen(false);
+      setIncrementalManualElements([]);
+    }
     setRecognitionActivity((current) => current ? {
       ...current,
       status: cancelled ? "cancelled" : "error",
@@ -1132,21 +1374,70 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     showNotice(cancelled ? "info" : "error", cancelled ? "页面识别已中断，草稿未更新" : error instanceof Error ? error.message : String(error));
   };
 
-  const runRecognition = async () => {
-    const recognitionDraft = draftRef.current || draft;
-    if (!recognitionDraft?.currentFrameId) return;
-    const replacementRequired = recognitionDraft.elements.some((element) => element.pageId === recognitionDraft.currentPageId) || Boolean(recognitionDraft.rawModelResultRef);
+  const runRecognition = async (mode: 'full' | 'incremental' = 'full', draftOverride?: Draft) => {
+    let baseDraft = draftOverride || draftRef.current || draft;
+    if (!baseDraft || !activeFrameId) return;
+    let recognitionDraft = { ...baseDraft, currentFrameId: activeFrameId };
+    // Annotation edits are intentionally excluded from the generic autosave
+    // effect. Persist them before recognition so a full run cannot merge its
+    // result into a stale server draft after the user deleted old elements.
+    if (mode === 'full' && !draftOverride && dirty) {
+      try {
+        const saved = annotationTarget
+          ? await workbenchApi.savePageDraft(annotationTarget.pageId, recognitionDraft)
+          : await workbenchApi.saveDraft(recognitionDraft);
+        lastSavedDraftRef.current = structuredClone(saved.draft);
+        draftRef.current = saved.draft;
+        setDraft(saved.draft);
+        setDirty(false);
+        setServerIssues(saved.issues);
+        baseDraft = saved.draft;
+        recognitionDraft = { ...saved.draft, currentFrameId: activeFrameId };
+      } catch (error) {
+        setAutoSaveState('error');
+        showNotice('error', `识别前保存页面失败：${error instanceof Error ? error.message : String(error)}`);
+        return;
+      }
+    }
+    recognitionModeRef.current = mode;
+    if (mode === 'incremental') {
+      setIncrementalManualElements([]);
+      setIncrementalSession({
+        pageId: recognitionDraft.currentPageId,
+        frameId: recognitionDraft.currentFrameId || '',
+        baseElementIds: recognitionDraft.elements.filter((element) => element.pageId === recognitionDraft.currentPageId && element.sourceFrameId !== recognitionDraft.currentFrameId).map((element) => element.id),
+        candidates: [],
+        status: 'recognizing',
+      });
+    }
+    const replacementRequired = mode === 'full' && recognitionDraft.elements.some((element) => (
+      element.pageId === recognitionDraft.currentPageId
+      && element.sourceFrameId === recognitionDraft.currentFrameId
+      && element.source !== 'human'
+    ));
     setBusy("recognition");
     setRecognitionDialogOpen(true);
     setPendingRecognitionReplacement(null);
     setCompletedRecognitionReplacement(null);
     setRecognitionActivity({ status: "running", phase: "starting", phaseMessage: "正在启动页面识别模型", reasoningContent: "", outputContent: "", startedAt: new Date().toISOString() });
     try {
-      const pageContext = [recognitionDraft.page.name, recognitionDraft.page.stateSummary].filter(Boolean).join("；");
-      const result = await workbenchApi.recognitionStream("manual", recognitionDraft.currentFrameId, pageContext, !replacementRequired, handleRecognitionEvent, recognitionDraft.currentPageId, annotationSessionId, includeUiTreeInRecognition);
-      await finishManualRecognition(result);
+      const existingIdentityContext = mode === 'incremental'
+        ? recognitionDraft.elements
+          .filter((element) => elementAvailableOnPage(element, recognitionDraft.currentPageId, recognitionDraft.elements))
+          .slice(0, 240)
+          .map((element) => ({ candidateKey: element.candidateKey, label: element.label, elementType: element.elementType, bbox: element.bbox }))
+        : [];
+      const pageContext = [
+        recognitionDraft.page.name,
+        recognitionDraft.page.stateSummary,
+        mode === 'incremental'
+          ? `这是同一页面的增量识别。existingElements=${JSON.stringify(existingIdentityContext)}。视觉上属于同一实体的元素必须原样复用 existingElements 中的 candidateKey；不要仅因命名风格变化创建新候选。只对本次画面真正新增的实体使用新 candidateKey。`
+          : '',
+      ].filter(Boolean).join("；");
+      const result = await workbenchApi.recognitionStream("manual", recognitionDraft.currentFrameId, pageContext, mode === 'full' ? !replacementRequired : false, handleRecognitionEvent, recognitionDraft.currentPageId, annotationSessionId, includeUiTreeInRecognition, []);
+      await finishManualRecognition(result, mode);
     } catch (error) {
-      handleRecognitionFailure(error);
+      handleRecognitionFailure(error, mode);
     } finally {
       setBusy(null);
       await refreshAnalysisSessions();
@@ -1156,11 +1447,11 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const confirmRecognitionReplacement = async () => {
     const pending = pendingRecognitionReplacement;
     const currentDraft = draftRef.current;
-    if (!pending || !currentDraft?.currentFrameId || recognitionReplacementBusy) return;
+    if (!pending || !currentDraft || !activeFrameId || recognitionReplacementBusy) return;
     setRecognitionReplacementBusy(true);
     try {
       const result = await workbenchApi.applyRecognitionResult({
-        frameId: currentDraft.currentFrameId,
+        frameId: activeFrameId,
         pageId: currentDraft.currentPageId,
         recognitionResult: pending.result.recognitionResult,
         modelResultRef: pending.result.modelResultRef,
@@ -1168,9 +1459,10 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       });
       resetDraftState(result.draft);
       setServerIssues(result.issues);
-      setSelectedId(result.draft.elements[0]?.id || null);
-      setRecognitionActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: '已使用新的页面识别结果替换原有结果' } : current);
-      showNotice('success', `已使用新结果替换，共 ${result.draft.elements.length} 个候选元素`);
+      const frameElements = result.draft.elements.filter((element) => element.sourceFrameId === activeFrameId);
+      setSelectedId(frameElements[0]?.id || null);
+      setRecognitionActivity((current) => current ? { ...current, status: 'completed', phase: 'complete', phaseMessage: '已更新主帧识别结果' } : current);
+      showNotice('success', `已更新主帧结果，共 ${frameElements.length} 个候选元素`);
       setPendingRecognitionReplacement(null);
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
@@ -1197,6 +1489,72 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     if (modelActivity?.status !== 'paused') setRecognitionActivity(null);
   };
 
+  const openIncrementalCanvas = () => {
+    setIncrementalPanelOpen(false);
+    setWorkspaceMode('annotation');
+    setViewMode('review');
+    setDrawing(true);
+  };
+
+  const removeIncrementalManual = (id: string) => {
+    setIncrementalSession((current) => current ? { ...current, candidates: current.candidates.filter((candidate) => candidate.id !== id) } : current);
+    setIncrementalManualElements((current) => current.filter((element) => element.id !== id));
+  };
+
+  const confirmIncrementalAppend = async () => {
+    const session = incrementalSession;
+    const currentDraft = draftRef.current;
+    if (!session || !currentDraft) return;
+    setIncrementalSession((current) => current ? { ...current, status: 'committing' } : current);
+    try {
+      if (!session.recognitionResult) {
+        const manualElements = incrementalManualElements.filter((element) => session.candidates.some((candidate) => candidate.id === element.id));
+        const nextDraft: Draft = {
+          ...currentDraft,
+          revision: currentDraft.revision + 1,
+          elements: [...currentDraft.elements, ...manualElements],
+          elementEditRecords: [...currentDraft.elementEditRecords, ...manualElements.map((element) => ({ elementId: element.id, kind: 'created' as const, fields: ['bbox'], editedAt: new Date().toISOString() }))],
+          pages: currentDraft.pages.map((page) => page.id === session.pageId ? { ...page, elementIds: [...new Set([...page.elementIds, ...manualElements.map((element) => element.id)])], publishedAt: null } : page),
+          updatedAt: new Date().toISOString(),
+        };
+        const result = await workbenchApi.savePageDraft(session.pageId, nextDraft);
+        resetDraftState(result.draft);
+        setServerIssues(result.issues);
+        setIncrementalSession(null);
+        setIncrementalPanelOpen(false);
+        setIncrementalManualElements([]);
+        showNotice('success', `已保存手动新增 ${manualElements.length} 项`);
+        return;
+      }
+      const result = await workbenchApi.appendRecognitionResult({
+        frameId: session.frameId,
+        pageId: session.pageId,
+        recognitionResult: session.recognitionResult,
+        modelResultRef: session.modelResultRef || 'recognition-incremental-append',
+        model: session.model || null,
+      });
+      const manualIds = new Set(session.candidates.filter((candidate) => candidate.kind === 'manual').map((candidate) => candidate.id));
+      const manualElements = incrementalManualElements.filter((element) => manualIds.has(element.id));
+      const mergedManualElements = manualElements.filter((element) => !result.draft.elements.some((candidate) => candidate.id === element.id));
+      const nextDraft = mergedManualElements.length === 0 ? result.draft : {
+        ...result.draft,
+        elements: [...result.draft.elements, ...mergedManualElements],
+        elementEditRecords: [...result.draft.elementEditRecords, ...mergedManualElements.map((element) => ({ elementId: element.id, kind: 'created' as const, fields: ['bbox'], editedAt: new Date().toISOString() }))],
+        pages: result.draft.pages.map((page) => page.id === session.pageId ? { ...page, elementIds: [...new Set([...page.elementIds, ...mergedManualElements.map((element) => element.id)])] } : page),
+      };
+      resetDraftState(nextDraft);
+      setServerIssues(validateDraftClient(nextDraft));
+      setIncrementalSession(null);
+      setIncrementalPanelOpen(false);
+      setIncrementalManualElements([]);
+      setSelectedId(null);
+      showNotice('success', `已完成增量合并，仅新增 ${session.candidates.filter((candidate) => candidate.kind === 'new' || candidate.kind === 'manual').length} 项`);
+    } catch (error) {
+      setIncrementalSession((current) => current ? { ...current, status: 'review' } : current);
+      showNotice('error', `增量合并失败：${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
   const resumeManualRecognition = async () => {
     const sessionId = modelActivity?.resumeKind === 'manual' ? modelActivity.resumeSessionId : undefined;
     if (!sessionId) return;
@@ -1209,9 +1567,9 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       errorMessage: undefined,
     } : current);
     try {
-      await finishManualRecognition(await workbenchApi.resumeRecognitionStream('manual', sessionId, annotationSessionId, handleRecognitionEvent));
+      await finishManualRecognition(await workbenchApi.resumeRecognitionStream('manual', sessionId, annotationSessionId, handleRecognitionEvent), recognitionModeRef.current);
     } catch (error) {
-      handleRecognitionFailure(error);
+      handleRecognitionFailure(error, recognitionModeRef.current);
     }
   };
 
@@ -1514,8 +1872,20 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   };
 
   const addElement = (bbox: BBox) => {
-    if (!draft) return;
-    const element = createHumanElement(bbox, draft.currentPageId);
+    if (!draft || !activeFrameId) return;
+    const element = { ...createHumanElement(bbox, draft.currentPageId), sourceFrameId: activeFrameId };
+    if (incrementalSession) {
+      setIncrementalManualElements((current) => [...current, element]);
+      setSelectedId(element.id);
+      setDrawing(false);
+      setIncrementalSession((current) => current ? {
+        ...current,
+        candidates: [...current.candidates, { id: element.id, key: element.candidateKey, label: element.label, kind: 'manual', confidence: 1 }],
+      } : current);
+      setIncrementalPanelOpen(true);
+      showNotice('info', '已加入手动画框候选，确认后才会并入页面');
+      return;
+    }
     updateDraft((current) => ({
       ...current,
       elements: [...current.elements, element],
@@ -1550,7 +1920,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   };
 
   const createContainerFromSelection = () => {
-    if (!draft || checkedIds.size === 0) return;
+    if (!draft || !activeFrameId || checkedIds.size === 0) return;
     const selected = draft.elements.filter((element) => checkedIds.has(element.id));
     if (selected.some((element) => element.ownerKind === 'application' || element.pageId === null)) {
       showNotice('error', '应用共享元素不能直接组合，请先调整为当前页面元素');
@@ -1564,6 +1934,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     const parentId = parentIds.size === 1 ? selected[0].parentId : null;
     const container = {
       ...createHumanElement({ x: left, y: top, width: right - left, height: bottom - top }, draft.currentPageId),
+      sourceFrameId: activeFrameId,
       label: '新组合容器',
       visualDescription: `由 ${selected.length} 个所选元素组成的容器`,
       elementType: 'section',
@@ -1760,9 +2131,10 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     commitDraft((current) => ({
       ...current,
       currentPageId: page.id,
-      currentFrameId: page.frameIds.at(-1) || null,
+      currentFrameId: page.primaryFrameId || page.frameIds[0] || null,
       page: { id: page.id, key: page.key, name: page.name, functionRef: page.functionRef, implementationType: page.implementationType, surfaceType: page.surfaceType, stateSummary: page.stateSummary, scrollableRegions: page.scrollableRegions },
     }));
+    setViewedFrameId(page.primaryFrameId || page.frameIds[0] || null);
     setSelectedId(null);
     setCheckedIds(new Set());
   };
@@ -1779,7 +2151,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
 
   const openPageInNewTab = (pageId: string) => {
     const page = draft?.pages.find((item) => item.id === pageId);
-    const frameId = page?.frameIds.at(-1);
+    const frameId = page?.primaryFrameId || page?.frameIds[0];
     if (!page || !frameId) return;
     onOpenAnnotationTab(page.id, frameId, page.name || '待识别页面');
   };
@@ -2047,15 +2419,15 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       ) : workspaceMode === 'relation' && draft && selectedElement ? (
         <RelationWorkspace
           sourceElement={selectedElement}
-          sourcePage={draft.pages.find((page) => page.id === draft.currentPageId) || { id: draft.currentPageId, key: draft.page.key, name: draft.page.name, surfaceType: draft.page.surfaceType, stateSummary: draft.page.stateSummary, scrollableRegions: draft.page.scrollableRegions, featurePath: draft.featurePath, frameIds: draft.currentFrameId ? [draft.currentFrameId] : [], elementIds: currentElements.map((element) => element.id) }}
-          sourceFrameId={draft.currentFrameId}
+          sourcePage={draft.pages.find((page) => page.id === draft.currentPageId) || { id: draft.currentPageId, key: draft.page.key, name: draft.page.name, surfaceType: draft.page.surfaceType, stateSummary: draft.page.stateSummary, scrollableRegions: draft.page.scrollableRegions, featurePath: draft.featurePath, frameIds: activeFrameId ? [activeFrameId] : [], primaryFrameId: activeFrameId, elementIds: currentElements.map((element) => element.id) }}
+          sourceFrameId={activeFrameId}
           sourceFrameUrl={frameUrl}
           pages={draft.pages}
           elements={draft.elements}
           transitions={draft.transitions}
           frameUrlFor={(frameId) => absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(frameId)}/image`)}
           onSaveRelation={({ targetPageId, targetFrameId, action, effect, interfaces }) => {
-            const transition = createDraftTransition(draft.currentPageId, targetPageId, selectedElement.id, draft.currentFrameId || '', targetFrameId || '');
+            const transition = createDraftTransition(draft.currentPageId, targetPageId, selectedElement.id, activeFrameId || '', targetFrameId || '');
             updateDraft((current) => ({
               ...current,
               transitions: [...current.transitions, {
@@ -2094,6 +2466,14 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
               ) : viewMode === 'frozen' ? (
                 <>
                   <button type="button" className="button" disabled={busy === 'discard-freeze'} onClick={() => void discardFrozenCapture()}>{busy === 'discard-freeze' ? <LoaderCircle className="spin" size={15} /> : <RefreshCw size={15} />}重新冻结</button>
+                  {draft?.currentPageId && <AddFrameButton
+                    variant="toolbar"
+                    placement="below"
+                    busy={Boolean(busy)}
+                    deviceConnected={connected}
+                    onAddFromDevice={() => void addFrameFromDevice(draft.currentPageId)}
+                    onAddFromUpload={() => setUploadDialog({ open: true, targetPageId: draft.currentPageId })}
+                  />}
                   <button type="button" className="button button-primary" disabled={!frameUrl || busy === 'discard-freeze'} onClick={startAnnotation}><SquareDashed size={15} />开始标注</button>
                 </>
               ) : (
@@ -2106,8 +2486,17 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
                   <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><span className="drawing-tool-icon" aria-hidden="true"><SquareDashed /><Feather /></span></button>
                   {modelActivity?.status === 'paused' && <button type="button" className="icon-button recognition-resume-button" title={`继续页面识别，已完成 ${modelActivity.completedCandidates || 0} 个候选`} aria-label="继续页面识别" onClick={() => setRecognitionDialogOpen(true)}><RefreshCw size={15} /></button>}
                   <button type="button" className="icon-button" title="页面识别历史" disabled={pageHistorySessions.length === 0} onClick={openRecognitionHistory}><History size={15} /></button>
-                  <button type="button" className="icon-button" title={connected ? '添加观测帧（冻结当前设备画面并追加到本页面）' : '设备未连接，无法采集设备画面'} aria-label="添加观测帧" disabled={!connected || busy === 'append-frame'} onClick={() => draft && void addFrameFromDevice(draft.currentPageId)}>{busy === 'append-frame' ? <LoaderCircle className="spin" size={15} /> : <Plus size={15} />}</button>
-                  <button type="button" className="icon-button recognition-button" title={hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'} aria-label={hasAnalyzedCurrentFrame ? '重新识别' : '识别分析'} disabled={!draft?.currentFrameId || busy === 'recognition' || modelActivity?.status === 'paused' || !status?.manualModelConfigured} onClick={() => void runRecognition()}>{busy === 'recognition' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}</button>
+                  {incrementalSession && <button type="button" className="button incremental-entry-status" onClick={() => setIncrementalPanelOpen(true)}><ScanSearch size={15} />{incrementalSession.status === 'pending' ? '待手动识别' : incrementalSession.status === 'recognizing' ? '正在增量识别' : `审核新增 ${incrementalAdditions}`}</button>}
+                  <button
+                    type="button"
+                    className={`button recognition-action-button ${isPrimaryFrame ? 'is-primary' : 'is-incremental'}`}
+                    title={isPrimaryFrame ? '主帧使用完整识别' : '辅助帧使用增量识别并在确认后合并'}
+                    disabled={!activeFrameId || busy === 'recognition' || modelActivity?.status === 'paused' || !status?.manualModelConfigured}
+                    onClick={() => void runRecognition(isPrimaryFrame ? 'full' : 'incremental')}
+                  >
+                    {busy === 'recognition' ? <LoaderCircle className="spin" size={15} /> : <ScanSearch size={15} />}
+                    {hasAnalyzedCurrentFrame ? '重新识别' : isPrimaryFrame ? '识别分析' : '增量识别'}
+                  </button>
                 </>
               )}
             </div>
@@ -2129,7 +2518,33 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
             ) : viewMode === 'frozen' && frameUrl ? (
               <img className="frozen-frame" src={frameUrl} alt="冻结设备画面" />
             ) : frameUrl ? (
-                <AnnotationCanvas imageUrl={frameUrl} elements={currentElements} selectedId={selectedId} selectedAbstractFieldKey={selectedAbstractFieldKey} drawing={drawing} showRejected={showRejected} showGridGuides={showGridGuides} onSelect={(id) => { setSelectedId(id); setSelectedAbstractFieldKey(null); }} onSelectAbstractField={setSelectedAbstractFieldKey} onAdd={addElement} onBoxChange={(id, bbox) => updateElement(id, { bbox }, `bbox:${id}`)} onBoxChangeEnd={endHistoryGroup} />
+                <AnnotationCanvas
+                  imageUrl={frameUrl}
+                  elements={annotationCanvasElements}
+                  selectedId={selectedId}
+                  selectedAbstractFieldKey={selectedAbstractFieldKey}
+                  selectedAbstractFieldInstanceIndex={selectedAbstractFieldInstanceIndex}
+                  drawing={drawing}
+                  showRejected={showRejected}
+                  showGridGuides={showGridGuides}
+                  onSelect={(id) => { setSelectedId(id); setSelectedAbstractFieldKey(null); setSelectedAbstractFieldInstanceIndex(null); }}
+                  onSelectAbstractField={setSelectedAbstractFieldKey}
+                  onSelectAbstractFieldInstance={setSelectedAbstractFieldInstanceIndex}
+                  onAdd={addElement}
+                  onBoxChange={(id, bbox) => incrementalManualElements.some((element) => element.id === id) ? setIncrementalManualElements((current) => current.map((element) => element.id === id ? { ...element, bbox } : element)) : updateElement(id, { bbox }, `bbox:${id}`)}
+                  onAbstractFieldBoxChange={(id, fieldKey, index, bbox) => {
+                    const element = draftRef.current?.elements.find((candidate) => candidate.id === id);
+                    if (!element?.abstraction) return;
+                    updateElement(id, { abstraction: {
+                      ...element.abstraction,
+                      fields: element.abstraction.fields.map((field) => field.key === fieldKey ? {
+                        ...field,
+                        instanceRegions: field.instanceRegions.map((region, regionIndex) => regionIndex === index ? bbox : region),
+                      } : field),
+                    } }, `abstract-bbox:${id}:${fieldKey}:${index}`);
+                  }}
+                  onBoxChangeEnd={endHistoryGroup}
+                />
             ) : (
               <div className="device-empty"><MonitorSmartphone size={42} /><strong>暂无冻结画面</strong><span>请先在实时操作中冻结设备画面</span></div>
             )}
@@ -2140,11 +2555,14 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
             return (
               <FrameStrip
                 frameIds={currentPage.frameIds}
-                currentFrameId={draft.currentFrameId}
+                currentFrameId={activeFrameId}
+                primaryFrameId={currentPage.primaryFrameId}
+                recognizedFrameIds={recognizedFrameIds}
                 frameUrlFor={(frameId) => absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(frameId)}/image`)}
                 busy={busy === 'append-frame' || busy === 'delete-frame'}
                 deviceConnected={connected}
                 onSelectFrame={selectFrame}
+                onSetPrimary={setPrimaryFrame}
                 onDeleteFrame={(frameId) => void deleteFrame(frameId)}
                 onAddFromDevice={() => void addFrameFromDevice(draft.currentPageId)}
                 onAddFromUpload={() => setUploadDialog({ open: true, targetPageId: draft.currentPageId })}
@@ -2152,8 +2570,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
             );
           })() : null}
           <div className="frame-status">
-            <span>{viewMode === 'live' ? connected ? 'LIVE' : 'OFFLINE' : viewMode === 'frozen' ? 'FROZEN' : draft?.currentFrameId ? 'ANNOTATING' : 'EMPTY'}</span>
-            <code>{draft?.currentFrameId ? `${draft.currentFrameId.slice(0, 22)}...` : '暂无 frameId'}</code>
+            <span>{viewMode === 'live' ? connected ? 'LIVE' : 'OFFLINE' : viewMode === 'frozen' ? 'FROZEN' : activeFrameId ? 'ANNOTATING' : 'EMPTY'}</span>
+            <code>{activeFrameId ? `${activeFrameId.slice(0, 22)}...` : '暂无 frameId'}</code>
             {frame && <small>{frame.width} × {frame.height}</small>}
           </div>
         </section>
@@ -2173,7 +2591,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
               <button type="button" className={`icon-button ${multiSelect ? 'active' : ''}`} title="多选" aria-pressed={multiSelect} disabled={currentElements.length === 0} onClick={() => { setMultiSelect((value) => !value); if (multiSelect) setCheckedIds(new Set()); }}><ListChecks size={15} /></button>
             </div>
           </div>
-          <ElementTree elements={treeElements} filterCandidateKey={duplicateCandidateKeyFilter} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} allChecked={allCurrentChecked} allCheckedAccepted={allCheckedAccepted} onToggleAll={() => setCheckedIds(allCurrentChecked ? new Set() : new Set(treeElements.map((element) => element.id)))} onCreateContainer={createContainerFromSelection} onToggleAccept={allCheckedAccepted ? bulkCancelAccept : bulkAccept} onDeleteChecked={deleteCheckedElements} onSelect={(id) => { setSelectedId(id); setSelectedAbstractFieldKey(null); }} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} onClearFilter={() => setDuplicateCandidateKeyFilter(null)} />
+          <ElementTree elements={treeElements} filterCandidateKey={duplicateCandidateKeyFilter} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} allChecked={allCurrentChecked} allCheckedAccepted={allCheckedAccepted} onToggleAll={() => setCheckedIds(allCurrentChecked ? new Set() : new Set(treeElements.map((element) => element.id)))} onCreateContainer={createContainerFromSelection} onToggleAccept={allCheckedAccepted ? bulkCancelAccept : bulkAccept} onDeleteChecked={deleteCheckedElements} onSelect={(id) => { setSelectedId(id); setSelectedAbstractFieldKey(null); setSelectedAbstractFieldInstanceIndex(null); }} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} onClearFilter={() => setDuplicateCandidateKeyFilter(null)} />
           <div className="tree-legend">
             {(Object.entries(reviewStatusLabels) as [keyof typeof reviewStatusLabels, string][]).map(([statusKey, label]) => <span key={statusKey}><i className={`legend-${statusKey}`} />{label}</span>)}
           </div>
@@ -2182,8 +2600,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         <section className="detail-panel">
           <div className="detail-tabs">
             <button type="button" className={sideTab === 'elements' ? 'active' : ''} onClick={() => setSideTab('elements')}><PanelRight size={15} />属性</button>
-            <button type="button" className={sideTab === 'validation' ? 'active' : ''} onClick={() => setSideTab('validation')}><CloudCog size={15} />校验<span>{issues.length}</span></button>
-            <button type="button" className={sideTab === 'history' ? 'active' : ''} onClick={() => setSideTab('history')}><History size={15} />记录<span>{elementActivities.length}</span></button>
+            <button type="button" className={sideTab === 'validation' ? 'active' : ''} onClick={() => setSideTab('validation')}><CloudCog size={15} />校验<span>{currentPageIssues.length}</span></button>
+            <button type="button" className={sideTab === 'history' ? 'active' : ''} onClick={() => setSideTab('history')}><History size={15} />记录<span>{currentPageActivities.length}</span></button>
           </div>
           {sideTab === 'elements' ? (
             <Inspector
@@ -2203,11 +2621,13 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
               onDelete={deleteSelectedElement}
               onCreateRelation={() => setWorkspaceMode('relation')}
               selectedAbstractFieldKey={selectedAbstractFieldKey}
-              onSelectAbstractField={setSelectedAbstractFieldKey}
+              selectedAbstractFieldInstanceIndex={selectedAbstractFieldInstanceIndex}
+              onSelectAbstractField={(key) => { setSelectedAbstractFieldKey(key); if (!key) setSelectedAbstractFieldInstanceIndex(null); }}
+              onSelectAbstractFieldInstance={setSelectedAbstractFieldInstanceIndex}
             />
           ) : sideTab === 'validation' ? (
             <div className="validation-list">
-              {validationIssueGroups.length === 0 ? <div className="validation-empty"><CircleCheck size={30} /><strong>当前草稿检查通过</strong></div> : validationIssueGroups.map((group) => (
+              {validationIssueGroups.length === 0 ? <div className="validation-empty"><CircleCheck size={30} /><strong>当前页面检查通过</strong></div> : validationIssueGroups.map((group) => (
                 <section key={`${group.level}:${group.code}`} className={`validation-group validation-${group.level}`}>
                   <header><CircleAlert size={15} /><div><strong>{validationIssueTypeLabels[group.code] || group.issues[0].message}</strong><code>{group.code}</code></div><span>{validationGroupItems(group).length}</span></header>
                   <div>
@@ -2239,11 +2659,11 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
               ))}
             </div>
           ) : (
-            <EditHistoryPanel records={elementActivities} onSelectElement={(id) => { setSelectedId(id); setSideTab('elements'); }} />
+            <EditHistoryPanel records={currentPageActivities} onSelectElement={(id) => { setSelectedId(id); setSideTab('elements'); }} />
           )}
         </section>
       </main> : workspaceMode === 'graph' && draft ? (
-        <PageGraph draft={pageGraphDraft || draft} draftDirty={dirty} onOpenPage={openPageInNewTab} onCreateFromDevice={onOpenDeviceAnnotationTab} deviceConnected={connected} onAddFrameFromDevice={(pageId) => void addFrameFromDevice(pageId)} onAddFrameFromUpload={(pageId) => setUploadDialog({ open: true, targetPageId: pageId })} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={(pageId, patch, historyKey) => { updatePage(pageId, patch, historyKey); if (patch.name !== undefined) onPageNameChange(pageId, patch.name); }} onDeletePage={(pageId) => { onPageNameChange(pageId, null); void deletePage(pageId); }} onChangeEnd={endHistoryGroup} />
+        <PageGraph draft={pageGraphDraft || draft} draftDirty={dirty} onOpenPage={openPageInNewTab} onCreateFromDevice={onOpenDeviceAnnotationTab} onUploadDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} onUpdatePage={(pageId, patch, historyKey) => { updatePage(pageId, patch, historyKey); if (patch.name !== undefined) onPageNameChange(pageId, patch.name); }} onDeletePage={(pageId) => { onPageNameChange(pageId, null); void deletePage(pageId); }} onChangeEnd={endHistoryGroup} />
       ) : workspaceMode === 'staging' ? (
         <StagingPanel versions={stagingVersions} staging={staging} busy={busy} dirty={dirty} onPrepare={() => void prepareStaging()} onSelect={setStaging} onMerge={(stageIds) => void mergeStaging(stageIds)} onPublish={(stageId) => void publishStaging(stageId)} onDelete={(stageId) => void deleteStaging(stageId)} onRollback={(stageId) => void rollbackStaging(stageId)} onArchive={(stageId) => void archiveStaging(stageId)} />
       ) : (
@@ -2252,16 +2672,37 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
 
       {pendingRecognitionReplacement && <div className="annotation-cancel-backdrop recognition-replacement-backdrop" role="presentation">
         <section className="annotation-cancel-dialog recognition-replacement-dialog" role="dialog" aria-modal="true" aria-labelledby="recognition-replacement-title" onMouseDown={(event) => event.stopPropagation()}>
-          <header><div><strong id="recognition-replacement-title">是否使用新的识别结果？</strong><span>当前页面已有识别结果。使用新结果会替换当前页面的原有识别内容；保留原结果则丢弃本次新结果。</span></div></header>
+          <header><div><strong id="recognition-replacement-title">是否更新主帧识别结果？</strong><span>当前主帧已有识别元素。使用新结果只会更新主帧来源元素，辅助帧已经合并的内容会继续保留。</span></div></header>
           <div className="recognition-replacement-summary">
             <span><small>原有结果</small><strong>{currentElements.length} 个元素</strong></span>
             <ChevronRight size={18} />
             <span><small>新的结果</small><strong>{pendingRecognitionReplacement.result.recognitionResult.elements.length} 个元素</strong></span>
           </div>
           <div className="annotation-cancel-options">
-            <button type="button" className="annotation-cancel-option save" disabled={recognitionReplacementBusy} onClick={() => void confirmRecognitionReplacement()}><strong>{recognitionReplacementBusy ? <LoaderCircle className="spin" size={16} /> : <RefreshCw size={16} />}使用新的结果</strong><span>用本次重新识别的内容替换当前页面结果。</span></button>
+            <button type="button" className="annotation-cancel-option save" disabled={recognitionReplacementBusy} onClick={() => void confirmRecognitionReplacement()}><strong>{recognitionReplacementBusy ? <LoaderCircle className="spin" size={16} /> : <RefreshCw size={16} />}使用新的结果</strong><span>替换主帧来源元素，并保留全部辅助帧结果。</span></button>
             <button type="button" className="annotation-cancel-option" disabled={recognitionReplacementBusy} onClick={keepExistingRecognitionResult}><strong>保留原有结果</strong><span>不应用本次重新识别结果，继续使用当前页面内容。</span></button>
           </div>
+        </section>
+      </div>}
+
+      {pendingFrameDeletion && <div className="annotation-cancel-backdrop frame-delete-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPendingFrameDeletion(null); }}>
+        <section className="annotation-cancel-dialog frame-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="frame-delete-title" onMouseDown={(event) => event.stopPropagation()}>
+          <header>
+            <div>
+              <strong id="frame-delete-title">删除观测帧 {pendingFrameDeletion.frameNumber}？</strong>
+              <span>该帧已经产生识别元素，删除后会同步清理这些元素及其相关关系。</span>
+            </div>
+            <button type="button" className="icon-button" aria-label="关闭" title="关闭" onClick={() => setPendingFrameDeletion(null)}><X size={16} /></button>
+          </header>
+          <div className="frame-delete-impact">
+            <strong>将删除 {pendingFrameDeletion.elementCount} 个识别元素</strong>
+            <span>这些元素将无法继续在当前页面草稿中使用；其他观测帧及其元素不受影响。</span>
+            {pendingFrameDeletion.elementLabels.length > 0 && <small>{pendingFrameDeletion.elementLabels.join('、')}{pendingFrameDeletion.elementCount > pendingFrameDeletion.elementLabels.length ? `……以及其他 ${pendingFrameDeletion.elementCount - pendingFrameDeletion.elementLabels.length} 个元素` : ''}</small>}
+          </div>
+          <footer className="frame-delete-actions">
+            <button type="button" className="button" disabled={busy === 'delete-frame'} onClick={() => setPendingFrameDeletion(null)}>取消</button>
+            <button type="button" className="button button-danger" disabled={busy === 'delete-frame'} onClick={confirmDeleteFrame}>{busy === 'delete-frame' ? <LoaderCircle className="spin" size={15} /> : <Trash2 size={15} />}删除观测帧并清理元素</button>
+          </footer>
         </section>
       </div>}
 
@@ -2276,10 +2717,11 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         </section>
       </div>}
       <PageUploadDialog open={pageUploadOpen} draftDirty={dirty} onClose={() => setPageUploadOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
-      <PageUploadDialog open={uploadDialog.open} targetPageId={uploadDialog.targetPageId} draftDirty={dirty} onClose={() => setUploadDialog({ open: false, targetPageId: null })} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
+      <PageUploadDialog open={uploadDialog.open} targetPageId={uploadDialog.targetPageId} draftDirty={dirty} onClose={() => setUploadDialog({ open: false, targetPageId: null })} onDraftChange={(nextDraft) => handleAddedFrameDraft(nextDraft, uploadDialog.targetPageId)} />
       <PageUploadDialog open={transferCenterOpen} purpose="history" draftDirty={dirty} onClose={() => setTransferCenterOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
-      {recognitionDialogOpen && modelActivity && frameUrl && <RecognitionProgressPanel activity={modelActivity} gatewayName={status?.manualGatewayLabel || null} modelName={status?.manualModel || null} reasoningEffort={status?.manualReasoningEffort || null} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} onCancel={() => void cancelRecognition()} onRetry={() => modelActivity.resumeKind === 'manual' ? void resumeManualRecognition() : void runRecognition()} onClose={closeRecognitionDialog} />}
+      {incrementalPanelOpen && incrementalSession && frameUrl && <IncrementalRecognitionPanel frameUrl={frameUrl} frameId={incrementalSession.frameId} candidates={incrementalSession.candidates} confirming={incrementalSession.status === 'committing'} onClose={() => setIncrementalPanelOpen(false)} onConfirm={() => void confirmIncrementalAppend()} onOpenCanvas={openIncrementalCanvas} onRemoveManual={removeIncrementalManual} />}
+      {recognitionDialogOpen && modelActivity && frameUrl && <RecognitionProgressPanel activity={modelActivity} gatewayName={status?.manualGatewayLabel || null} modelName={status?.manualModel || null} reasoningEffort={status?.manualReasoningEffort || null} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} onCancel={() => void cancelRecognition()} onRetry={() => modelActivity.resumeKind === 'manual' ? void resumeManualRecognition() : void runRecognition(recognitionModeRef.current)} onClose={closeRecognitionDialog} />}
       {analysisSessionManagerOpen && <div className="annotation-cancel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAnalysisSessionManagerOpen(false); }}>
         <section className="analysis-session-manager" role="dialog" aria-modal="true" aria-labelledby="analysis-session-manager-title" onMouseDown={(event) => event.stopPropagation()}>
           <header><div><strong id="analysis-session-manager-title">进行中的分析任务</strong><span>任务在浏览器断开后仍会继续运行，可重新接入或手动中止。</span></div><button type="button" className="icon-button" title="关闭" aria-label="关闭" onClick={() => setAnalysisSessionManagerOpen(false)}><X size={16} /></button></header>

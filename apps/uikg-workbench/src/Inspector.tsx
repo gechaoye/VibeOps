@@ -1,5 +1,5 @@
 import { Check, Eye, EyeOff, RotateCcw, Trash2, X } from 'lucide-react';
-import { actionEffectsFor, capabilityGroups, capabilityLabel, defaultDescriptionForElementType, elementTypeGroups, elementTypeLabel, interactionBoundaryForActions, normalizeGridCount, recommendedActionsForElementType } from './model';
+import { actionEffectsFor, capabilityGroups, capabilityLabel, clampBox, defaultDescriptionForElementType, elementTypeGroups, elementTypeLabel, interactionBoundaryForActions, normalizeGridCount, recommendedActionsForElementType } from './model';
 import type { AbstractElementField, DraftElement, DraftPage } from './types';
 
 interface InspectorProps {
@@ -19,7 +19,9 @@ interface InspectorProps {
   onDelete: () => void;
   onCreateRelation: () => void;
   selectedAbstractFieldKey: string | null;
+  selectedAbstractFieldInstanceIndex: number | null;
   onSelectAbstractField: (fieldKey: string | null) => void;
+  onSelectAbstractFieldInstance: (index: number | null) => void;
 }
 
 function decimal(value: number) {
@@ -54,7 +56,7 @@ function fieldValuesEqual(field: keyof DraftElement, current: unknown, initial: 
   return JSON.stringify(current) === JSON.stringify(initial);
 }
 
-export function Inspector({ element, initialElement, elements, pages, currentPageId, showGridGuides, canRestoreCurrent, onChange, onChangeEnd, onShowGridGuidesChange, onRestoreCurrent, onAccept, onReject, onDelete, onCreateRelation, selectedAbstractFieldKey, onSelectAbstractField }: InspectorProps) {
+export function Inspector({ element, initialElement, elements, pages, currentPageId, showGridGuides, canRestoreCurrent, onChange, onChangeEnd, onShowGridGuidesChange, onRestoreCurrent, onAccept, onReject, onDelete, onCreateRelation, selectedAbstractFieldKey, selectedAbstractFieldInstanceIndex, onSelectAbstractField, onSelectAbstractFieldInstance }: InspectorProps) {
   if (!element) return <div className="inspector-empty-state"><div className="inspector-empty"><CircleSelection /></div></div>;
   const inheritedListRegion = element.abstraction?.kind === 'repeated-template' && ['list', 'grouped-list', 'swipe-list', 'expandable-list'].includes(elements.find((candidate) => candidate.id === element.parentId)?.elementType || '');
   const possibleParents = elements.filter((candidate) => candidate.id !== element.id && candidate.reviewStatus !== 'rejected');
@@ -156,7 +158,11 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
               ...possibleParents.filter((candidate) => candidate.id !== element.id).map((candidate) => ({ value: candidate.id, label: candidate.label })),
             ].filter((option, index, options) => options.findIndex((candidate) => candidate.value === option.value) === index);
             return <div key={field.key} className={`abstract-field-item ${selectedAbstractFieldKey === field.key ? 'selected' : ''}`}>
-            <button type="button" className="abstract-field-select" aria-pressed={selectedAbstractFieldKey === field.key} onClick={() => onSelectAbstractField(selectedAbstractFieldKey === field.key ? null : field.key)}>
+            <button type="button" className="abstract-field-select" aria-pressed={selectedAbstractFieldKey === field.key} onClick={() => {
+              const nextKey = selectedAbstractFieldKey === field.key ? null : field.key;
+              onSelectAbstractField(nextKey);
+              onSelectAbstractFieldInstance(nextKey && field.instanceRegions.length > 0 ? 0 : null);
+            }}>
               <strong>{field.label}</strong>
               <span>{field.description}</span>
             <dl className="abstract-field-details">
@@ -182,6 +188,17 @@ export function Inspector({ element, initialElement, elements, pages, currentPag
               </div></fieldset>
               <label className="field"><span>父级元素</span><select value={field.parentId || element.candidateKey} onChange={(event) => updateAbstractField(field.key, { parentId: event.target.value || null })}>{fieldParentOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
               <label className="check-field"><input type="checkbox" checked={field.required} onChange={(event) => updateAbstractField(field.key, { required: event.target.checked })} /><span>必填字段</span></label>
+              {field.instanceRegions.length > 0 && <fieldset className="field-group abstract-field-regions"><legend>实例边框（归一化小数）</legend>
+                <div className="abstract-instance-tabs">
+                  {field.instanceRegions.map((_region, index) => <button key={index} type="button" className={selectedAbstractFieldInstanceIndex === index ? 'active' : ''} onClick={() => onSelectAbstractFieldInstance(index)}>实例 {index + 1}</button>)}
+                </div>
+                {field.instanceRegions.map((region, index) => selectedAbstractFieldInstanceIndex === index && <div className="number-grid" key={index}>
+                  {(['x', 'y', 'width', 'height'] as const).map((key) => <label key={key}><span>{{ x: '左', y: '上', width: '宽', height: '高' }[key]}</span><input type="number" min="0" max="1" step="0.001" value={decimal(region[key])} onBlur={onChangeEnd} onChange={(event) => {
+                    const instanceRegions = field.instanceRegions.map((candidate, candidateIndex) => candidateIndex === index ? clampBox({ ...candidate, [key]: Number(event.target.value) }) : candidate);
+                    updateAbstractField(field.key, { instanceRegions }, `field:abstract:${field.key}:bbox:${index}:${key}`);
+                  }} /></label>)}
+                </div>)}
+              </fieldset>}
             </div>}
           </div>;
           })}

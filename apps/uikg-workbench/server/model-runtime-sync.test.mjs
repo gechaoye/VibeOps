@@ -25,6 +25,7 @@ test('数据库配置热加载识别模型，并只把 Midscene 标签配置同�
   modelStore.saveAssignment(assignment('manual', 'recognition', 'manual-v1', 'qwen3-vl'));
   modelStore.saveAssignment(assignment('auto', 'recognition', 'auto-v1', 'gpt-5'));
   modelStore.saveAssignment(assignment('midscene', 'midscene', 'midscene-v1', 'gpt-5'));
+  modelStore.saveAssignment(assignment('self_heal', 'recognition', 'self-heal-v1', 'gpt-5'));
 
   const app = express();
   let draft = createEmptyDraft();
@@ -39,6 +40,7 @@ test('数据库配置热加载识别模型，并只把 Midscene 标签配置同�
     async freezePageContext() {
       assert.equal(getModelRuntime('manual').modelName, expectedManual);
       assert.equal(getModelRuntime('auto').modelName, expectedAuto);
+      assert.equal(getModelRuntime('self_heal').modelName, 'self-heal-v1');
       assert.equal(process.env.MIDSCENE_MODEL_NAME, expectedMidscene.modelName);
       assert.equal(process.env.MIDSCENE_MODEL_BASE_URL, 'https://midscene.example/v1');
       assert.equal(process.env.MIDSCENE_MODEL_API_KEY, 'midscene-secret');

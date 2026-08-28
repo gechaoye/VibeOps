@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { captureRuntimeHierarchy, groundRecognitionGeometry } from './runtime-hierarchy.mjs';
+import { captureDisplayMetrics, captureRuntimeHierarchy, groundRecognitionGeometry } from './runtime-hierarchy.mjs';
 
 const xml = `<?xml version="1.0"?><hierarchy><node class="android.widget.FrameLayout" package="com.example" bounds="[0,0][1440,3168]"><node class="android.widget.TextView" package="com.example" text="我的待办" bounds="[592,205][848,291]"/><node class="android.webkit.WebView" package="com.example" bounds="[0,336][1440,3168]"/></node></hierarchy>`;
 
@@ -19,9 +19,26 @@ test('采集 UIAutomator 层级时保留 display_px 坐标并识别 H5 Activity'
   assert.equal(result.implementationType, 'h5');
   assert.equal(result.activity, 'com.example.BHWebActivity');
   assert.deepEqual(result.viewport, { width: 1440, height: 3168 });
-  assert.equal(result.dpr, 1);
+  assert.equal('dpr' in result, false);
   assert.equal(result.nodeCount, 3);
   assert.deepEqual(commands[1], ['uiautomator', 'dump', '/sdcard/vibeops-window.xml']);
+});
+
+test('显示指标优先读取当前 override 分辨率而不是固定物理分辨率', async () => {
+  const adb = {
+    async shell(command) {
+      if (command[0] === 'dumpsys' && command[1] === 'display') {
+        return 'mBaseDisplayInfo=DisplayInfo{real 1440 x 3168}\nmOverrideDisplayInfo=DisplayInfo{real 1080 x 2376, mode 5}';
+      }
+      if (command[0] === 'wm') return 'Physical density: 640\nOverride density: 480';
+      if (command[0] === 'dumpsys' && command[1] === 'input') return 'SurfaceOrientation: 0';
+      return '';
+    },
+  };
+  const metrics = await captureDisplayMetrics({ interface: { getAdb: async () => adb } });
+  assert.deepEqual(metrics && { width: metrics.width, height: metrics.height, density: metrics.density, rotation: metrics.rotation }, {
+    width: 1080, height: 2376, density: 480, rotation: 0,
+  });
 });
 
 test('运行时 bounds 直接按截图像素归一化，不重复应用 DPR 或状态栏偏移', () => {

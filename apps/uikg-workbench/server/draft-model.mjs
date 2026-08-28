@@ -17,6 +17,13 @@ const ELEMENT_TYPE_REPLACEMENTS = {
   icon: 'image',
   'toggle-button': 'switch',
 };
+const EXCLUDED_SYSTEM_CHROME_TYPES = new Set(['status-bar', 'system-navigation-bar']);
+const DATA_ENTRY_TYPES = new Set(['form', 'input', 'text-area', 'rich-text-input']);
+
+function isDataEntryTemplate(elementType, abstraction) {
+  return DATA_ENTRY_TYPES.has(elementType)
+    || (abstraction?.fields || []).some((field) => DATA_ENTRY_TYPES.has(field.elementType));
+}
 
 function normalizeElementType(value) {
   const candidate = ELEMENT_TYPE_REPLACEMENTS[value] || value;
@@ -343,8 +350,19 @@ export function normalizeRecognitionOutput(rawRecognitionResult) {
       meaning.status = 'candidate';
       meaningIssues.push('只有待归类证据，语义状态已降级为 candidate');
     }
-    const elementIssues = [...repairIssues, ...meaningIssues];
     const candidateKey = typeof normalizedElement.candidateKey === 'string' ? normalizedElement.candidateKey : `element-${index}`;
+    normalizedElement.abstraction = normalizeAbstraction(normalizedElement.abstraction, candidateKey);
+    if (normalizedElement.abstraction?.kind === 'dynamic-template'
+      && isDataEntryTemplate(normalizedElement.elementType, normalizedElement.abstraction)) {
+      normalizedElement.abstraction = null;
+      normalizedElement.dynamicContent = false;
+      normalizedElement.riskSignals = [...new Set([
+        ...(Array.isArray(normalizedElement.riskSignals) ? normalizedElement.riskSignals : []),
+        'data-entry-cannot-be-dynamic-template',
+      ])];
+      repairIssues.push('录入表单或输入字段不能作为 dynamic-template，已保留为普通录入结构');
+    }
+    const elementIssues = [...repairIssues, ...meaningIssues];
     if (elementIssues.length > 0) normalizationIssues.push({ elementIndex: index, candidateKey, messages: elementIssues });
     if (meaningIssues.length > 0) {
       normalizedElement.riskSignals = [...new Set([
@@ -352,9 +370,37 @@ export function normalizeRecognitionOutput(rawRecognitionResult) {
         'meaning-evidence-needs-review',
       ])];
     }
-    normalizedElement.abstraction = normalizeAbstraction(normalizedElement.abstraction, candidateKey);
     return { ...normalizedElement, meaning };
   });
+  const excludedKeys = new Set(recognitionResult.elements
+    .filter((element) => EXCLUDED_SYSTEM_CHROME_TYPES.has(element.elementType))
+    .map((element) => element.candidateKey));
+  const childKeysByParent = new Map();
+  for (const relationship of Array.isArray(recognitionResult.relationships) ? recognitionResult.relationships : []) {
+    if (relationship?.type !== 'contains') continue;
+    const children = childKeysByParent.get(relationship.fromCandidateKey) || [];
+    children.push(relationship.toCandidateKey);
+    childKeysByParent.set(relationship.fromCandidateKey, children);
+  }
+  const pending = [...excludedKeys];
+  while (pending.length > 0) {
+    for (const childKey of childKeysByParent.get(pending.pop()) || []) {
+      if (excludedKeys.has(childKey)) continue;
+      excludedKeys.add(childKey);
+      pending.push(childKey);
+    }
+  }
+  if (excludedKeys.size > 0) {
+    recognitionResult.elements = recognitionResult.elements.filter((element) => !excludedKeys.has(element.candidateKey));
+    recognitionResult.relationships = (recognitionResult.relationships || []).filter((relationship) => (
+      !excludedKeys.has(relationship.fromCandidateKey) && !excludedKeys.has(relationship.toCandidateKey)
+    ));
+    recognitionResult.actionCandidates = (recognitionResult.actionCandidates || []).filter((action) => !excludedKeys.has(action.triggerCandidateKey));
+    normalizationIssues.push({
+      section: 'system-chrome',
+      messages: [`已排除 ${excludedKeys.size} 个系统状态栏、系统导航栏或其子元素`],
+    });
+  }
   if (Array.isArray(recognitionResult.actionCandidates)) {
     recognitionResult.actionCandidates = recognitionResult.actionCandidates.map((actionCandidate, index) => {
       const messages = [];
@@ -420,6 +466,7 @@ function makeDraftPage(page, frameId = null, featurePath = []) {
     scrollableRegions: [...(page.scrollableRegions || [])],
     featurePath: featurePath.length ? [...featurePath] : [page.name || '待归类'],
     frameIds: frameId ? [frameId] : [],
+    primaryFrameId: frameId,
     elementIds: [],
     publishedAt: null,
   };
@@ -430,7 +477,7 @@ export function beginFrameCapture(currentDraft, frameId, { forceNewPage = false,
   const existingPage = previous.pages.find((page) => page.id === (replacePageId || previous.currentPageId));
   const existingPageHasElements = Boolean(existingPage && previous.elements.some((element) => element.pageId === existingPage.id));
   const page = existingPage && !existingPageHasElements && !forceNewPage
-    ? { ...existingPage, frameIds: [frameId], elementIds: [], publishedAt: null }
+    ? { ...existingPage, frameIds: [frameId], primaryFrameId: frameId, elementIds: [], publishedAt: null }
     : makeDraftPage({
         id: draftPageId(),
         key: `page.capture.${randomUUID().slice(0, 8)}`,
@@ -489,7 +536,14 @@ export function appendFrameToPage(currentDraft, frameId, { pageId = null } = {})
   const frameIds = targetPage.frameIds.includes(frameId)
     ? [...targetPage.frameIds]
     : [...targetPage.frameIds, frameId];
-  const nextPage = { ...targetPage, frameIds, publishedAt: null };
+  const nextPage = {
+    ...targetPage,
+    frameIds,
+    primaryFrameId: targetPage.primaryFrameId && frameIds.includes(targetPage.primaryFrameId)
+      ? targetPage.primaryFrameId
+      : frameIds[0] || null,
+    publishedAt: null,
+  };
   const pages = previous.pages.map((page) => (page.id === nextPage.id ? nextPage : page));
   return normalizeDraftShape({
     ...previous,
@@ -516,11 +570,30 @@ export function removeFrameFromPage(currentDraft, frameId, { pageId = null } = {
     return { draft: previous, removed: false, reason: 'last-frame' };
   }
   const frameIds = targetPage.frameIds.filter((id) => id !== frameId);
-  const nextPage = { ...targetPage, frameIds, publishedAt: null };
+  const nextPage = {
+    ...targetPage,
+    frameIds,
+    primaryFrameId: targetPage.primaryFrameId === frameId
+      ? frameIds[0] || null
+      : targetPage.primaryFrameId,
+    publishedAt: null,
+  };
   const pages = previous.pages.map((page) => (page.id === nextPage.id ? nextPage : page));
+  const removedElementIds = new Set(previous.elements
+    .filter((element) => element.pageId === nextPage.id && element.sourceFrameId === frameId)
+    .map((element) => element.id));
+  const elements = previous.elements
+    .filter((element) => !removedElementIds.has(element.id))
+    .map((element) => removedElementIds.has(element.parentId || '')
+      ? { ...element, parentId: null, ownerKind: 'page', ownerRef: element.pageId || nextPage.id }
+      : element);
+  const transitions = previous.transitions.filter((transition) => !removedElementIds.has(transition.triggerElementId)
+    && transition.evidence.beforeFrameId !== frameId
+    && transition.evidence.locatorFrameId !== frameId
+    && transition.evidence.afterFrameId !== frameId);
   const wasCurrent = previous.currentPageId === nextPage.id;
   const currentFrameId = wasCurrent && previous.currentFrameId === frameId
-    ? frameIds.at(-1)
+    ? nextPage.primaryFrameId
     : previous.currentFrameId;
   return {
     draft: normalizeDraftShape({
@@ -529,6 +602,8 @@ export function removeFrameFromPage(currentDraft, frameId, { pageId = null } = {
       currentFrameId,
       page: wasCurrent ? pageSummaryFields(nextPage) : previous.page,
       pages,
+      elements,
+      transitions,
       updatedAt: new Date().toISOString(),
     }),
     removed: true,
@@ -563,7 +638,7 @@ export function removePagesFromDraft(currentDraft, pageIds) {
     ...previous,
     revision: previous.revision + 1,
     currentPageId: nextPage?.id || emptyPage.id,
-    currentFrameId: nextPage?.frameIds.at(-1) || null,
+    currentFrameId: nextPage?.primaryFrameId || nextPage?.frameIds[0] || null,
     page: nextPage
       ? { id: nextPage.id, key: nextPage.key, name: nextPage.name, functionRef: nextPage.functionRef, implementationType: nextPage.implementationType, surfaceType: nextPage.surfaceType, stateSummary: nextPage.stateSummary, scrollableRegions: nextPage.scrollableRegions }
       : emptyPage,
@@ -626,6 +701,12 @@ export function normalizeDraftShape(value) {
   if (draft.currentFrameId && !draft.pages.some((page) => page.id === draft.currentPageId)) {
     draft.pages.push(makeDraftPage(draft.page, draft.currentFrameId, draft.featurePath));
   }
+  for (const page of draft.pages) {
+    page.frameIds = [...new Set(page.frameIds || [])];
+    page.primaryFrameId = page.primaryFrameId && page.frameIds.includes(page.primaryFrameId)
+      ? page.primaryFrameId
+      : page.frameIds[0] || null;
+  }
   draft.elements = (draft.elements || []).map((element) => {
     const { actionable: _removedActionable, ...elementFields } = element;
     const elementType = normalizeElementType(element.elementType);
@@ -644,10 +725,35 @@ export function normalizeDraftShape(value) {
       gridRegion: grid.region,
       meaning: normalizeDraftMeaning(element.meaning),
       pageId: element.pageId ?? (['application', 'shared_component'].includes(element.ownerKind) ? null : draft.currentPageId),
+      sourceFrameId: element.sourceFrameId || null,
       availableOnPageIds: [...(element.availableOnPageIds || (element.ownerKind === 'application' ? [draft.currentPageId] : []))],
       aiModel: element.aiModel || draft.lastAiModel || null,
     };
   });
+  const excludedSystemElementIds = new Set(draft.elements
+    .filter((element) => EXCLUDED_SYSTEM_CHROME_TYPES.has(element.elementType))
+    .map((element) => element.id));
+  const pendingSystemElementIds = [...excludedSystemElementIds];
+  while (pendingSystemElementIds.length > 0) {
+    const parentId = pendingSystemElementIds.pop();
+    for (const element of draft.elements) {
+      if (element.parentId !== parentId || excludedSystemElementIds.has(element.id)) continue;
+      excludedSystemElementIds.add(element.id);
+      pendingSystemElementIds.push(element.id);
+    }
+  }
+  if (excludedSystemElementIds.size > 0) {
+    draft.elements = draft.elements.filter((element) => !excludedSystemElementIds.has(element.id));
+    draft.elementEditRecords = (draft.elementEditRecords || []).filter((record) => !excludedSystemElementIds.has(record.elementId));
+    draft.transitions = (draft.transitions || []).filter((transition) => !excludedSystemElementIds.has(transition.triggerElementId));
+  }
+  // Older drafts did not persist frame provenance. Pin those page-local
+  // elements to the first frame so selecting a later frame cannot overlay
+  // their boxes on top of it.
+  const firstFrameByPage = new Map(draft.pages.map((page) => [page.id, page.frameIds?.[0] || null]));
+  draft.elements = draft.elements.map((element) => element.sourceFrameId || element.ownerKind === 'application' || element.ownerKind === 'shared_component'
+    ? element
+    : { ...element, sourceFrameId: firstFrameByPage.get(element.pageId) || draft.currentFrameId || null });
   // A repeated list-item template represents many rows, so its editable region is
   // the containing list's region rather than any one concrete instance.
   const elementsById = new Map(draft.elements.map((element) => [element.id, element]));
@@ -683,6 +789,9 @@ export function normalizeDraftShape(value) {
     page.implementationType ||= 'unknown';
     page.featurePath = page.featurePath?.length ? page.featurePath.slice(0, 3) : [page.name || '待归类'];
     page.frameIds = [...new Set(page.frameIds || [])];
+    page.primaryFrameId = page.primaryFrameId && page.frameIds.includes(page.primaryFrameId)
+      ? page.primaryFrameId
+      : page.frameIds[0] || null;
     page.elementIds = [];
     page.publishedAt ||= null;
   }
@@ -700,6 +809,86 @@ export function normalizeDraftShape(value) {
 
 function draftElementId(candidateKey) {
   return `element-${candidateKey.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 72)}-${randomUUID().slice(0, 8)}`;
+}
+
+function normalizedMatchText(value) {
+  return String(value || '').trim().toLocaleLowerCase('zh-CN').replace(/[\s'"“”‘’`.,，。:：;；!?！？()（）[\]{}<>《》]/g, '');
+}
+
+function boxIoU(a, b) {
+  if (!a || !b) return 0;
+  const left = Math.max(a.x, b.x);
+  const top = Math.max(a.y, b.y);
+  const right = Math.min(a.x + a.width, b.x + b.width);
+  const bottom = Math.min(a.y + a.height, b.y + b.height);
+  const intersection = Math.max(0, right - left) * Math.max(0, bottom - top);
+  const union = a.width * a.height + b.width * b.height - intersection;
+  return union > 0 ? intersection / union : 0;
+}
+
+function boxCenterDistance(a, b) {
+  if (!a || !b) return 1;
+  return Math.hypot((a.x + a.width / 2) - (b.x + b.width / 2), (a.y + a.height / 2) - (b.y + b.height / 2));
+}
+
+function elementMatchScore(candidate, existing) {
+  if (!candidate || !existing) return -Infinity;
+  const sameKey = candidate.candidateKey && candidate.candidateKey === existing.candidateKey;
+  const sameTemplate = candidate.abstraction?.templateKey && candidate.abstraction.templateKey === existing.abstraction?.templateKey;
+  if (sameKey) return 1000;
+  if (sameTemplate) return 900 + boxIoU(candidate.approximateRegion, existing.bbox) * 10;
+  if (candidate.elementType && existing.elementType && candidate.elementType !== existing.elementType) return -Infinity;
+  const candidateText = normalizedMatchText(candidate.label || candidate.visualDescription);
+  const existingText = normalizedMatchText(existing.label || existing.visualDescription);
+  const textMatch = candidateText && existingText && (candidateText === existingText || candidateText.includes(existingText) || existingText.includes(candidateText));
+  const iou = boxIoU(candidate.approximateRegion, existing.bbox);
+  const distance = boxCenterDistance(candidate.approximateRegion, existing.bbox);
+  if (!textMatch || iou < 0.35 || distance > 0.12) return -Infinity;
+  return 500 + iou * 100 + (candidateText === existingText ? 80 : 0) - distance * 100;
+}
+
+export function matchIncrementalCandidates(candidates, existingElements) {
+  const assignments = new Map();
+  const possibleMatches = [];
+  for (const [candidateIndex, candidate] of (candidates || []).entries()) {
+    for (const [existingIndex, existing] of (existingElements || []).entries()) {
+      const score = elementMatchScore(candidate, existing);
+      if (Number.isFinite(score)) possibleMatches.push({ candidateIndex, existingIndex, existing, score });
+    }
+  }
+  possibleMatches.sort((left, right) => right.score - left.score || left.candidateIndex - right.candidateIndex || left.existingIndex - right.existingIndex);
+  const matchedCandidates = new Set();
+  const matchedExisting = new Set();
+  for (const match of possibleMatches) {
+    if (matchedCandidates.has(match.candidateIndex) || matchedExisting.has(match.existing.id)) continue;
+    assignments.set(match.candidateIndex, match.existing);
+    matchedCandidates.add(match.candidateIndex);
+    matchedExisting.add(match.existing.id);
+  }
+  return assignments;
+}
+
+export function classifyIncrementalRecognition(currentDraft, recognitionResult) {
+  const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
+  const proposal = projectAbstractRecognition(prepareRecognitionForDraft(recognitionResult));
+  const pageId = previous.currentPageId;
+  const existingElements = previous.elements.filter((element) => element.pageId === pageId || element.availableOnPageIds?.includes(pageId));
+  const matches = matchIncrementalCandidates(proposal.elements, existingElements);
+  return {
+    previous,
+    proposal,
+    pageId,
+    candidates: proposal.elements.map((candidate, index) => {
+      const existing = matches.get(index) || null;
+      const sameTemplate = Boolean(candidate.abstraction?.templateKey
+        && candidate.abstraction.templateKey === existing?.abstraction?.templateKey);
+      return {
+        candidate,
+        existing,
+        disposition: existing ? (sameTemplate ? 'common' : 'duplicate') : 'new',
+      };
+    }),
+  };
 }
 
 function inferRole(element) {
@@ -729,7 +918,7 @@ function actionEffectsFor(candidateKey, actions, elementType, capabilities) {
   }));
 }
 
-function nextElementFromRecognition(element, actions, pageId, model) {
+export function nextElementFromRecognition(element, actions, pageId, model, sourceFrameId = null) {
   const capabilities = capabilitiesFor(element.candidateKey, actions);
   const grid = gridForBox(element.approximateRegion);
   return {
@@ -760,6 +949,7 @@ function nextElementFromRecognition(element, actions, pageId, model) {
     parentId: null,
     childrenIds: [],
     pageId,
+    sourceFrameId,
     availableOnPageIds: [],
     interactionBoundary: normalizeInteractionBoundary(null, capabilities),
     reviewStatus: 'pending',
@@ -767,6 +957,48 @@ function nextElementFromRecognition(element, actions, pageId, model) {
     aiModel: model || null,
     lastModelProposal: null,
   };
+}
+
+// Incremental recognition keeps the existing page graph intact. Candidates
+// with an existing key are intentionally skipped; callers can present them
+// as duplicates/shared templates for review without writing them again.
+export function appendRecognitionIntoDraft(currentDraft, recognitionResult, modelResultRef, model = null) {
+  const { previous, proposal, pageId, candidates } = classifyIncrementalRecognition(currentDraft, recognitionResult);
+  const additions = candidates
+    .filter((item) => !item.existing)
+    .map((item) => nextElementFromRecognition(item.candidate, proposal.actionCandidates || [], pageId, model, proposal.frameId));
+  if (additions.length === 0) return previous;
+  const byKey = new Map(candidates
+    .filter((item) => item.existing)
+    .map((item) => [item.candidate.candidateKey, item.existing]));
+  for (const addition of additions) byKey.set(addition.candidateKey, addition);
+  const additionIds = new Set(additions.map((element) => element.id));
+  for (const relation of proposal.relationships || []) {
+    if (relation.type !== 'contains') continue;
+    const parent = byKey.get(relation.fromCandidateKey);
+    const child = byKey.get(relation.toCandidateKey);
+    if (!parent || !child || !additionIds.has(child.id)) continue;
+    child.parentId = parent.id;
+    child.ownerKind = ['application', 'shared_component'].includes(parent.ownerKind) ? 'shared_component' : 'component';
+    child.ownerRef = parent.id;
+    child.pageId = child.ownerKind === 'shared_component' ? null : pageId;
+  }
+  const elements = [...previous.elements, ...additions];
+  const page = previous.pages.find((item) => item.id === pageId);
+  const pages = previous.pages.map((item) => item.id === pageId
+    ? { ...item, elementIds: elements.filter((element) => element.pageId === pageId || element.availableOnPageIds?.includes(pageId)).map((element) => element.id), publishedAt: null }
+    : item);
+  return normalizeDraftShape({
+    ...previous,
+    revision: previous.revision + 1,
+    rawModelResultRef: modelResultRef,
+    lastAiModel: model || previous.lastAiModel,
+    pages,
+    page: page ? pageSummaryFields(page) : previous.page,
+    elements,
+    elementEditRecords: [...previous.elementEditRecords, ...additions.map((element) => ({ elementId: element.id, kind: 'created', fields: ['recognition'], editedAt: new Date().toISOString() }))],
+    updatedAt: new Date().toISOString(),
+  });
 }
 
 function isHumanProtected(element, editedElementIds) {
@@ -913,7 +1145,9 @@ function inferDynamicElements(proposal) {
     }
   }
   const candidates = (proposal.elements || []).filter((element) => element.dynamicContent === true
-    && !element.abstraction && !listDescendants.has(element.candidateKey));
+    && !element.abstraction
+    && !DATA_ENTRY_TYPES.has(element.elementType)
+    && !listDescendants.has(element.candidateKey));
   if (candidates.length === 0) return;
 
   // A single stable dynamic slot is already a valid dynamic-element共相. Preserve its
@@ -1051,7 +1285,7 @@ function inferRepeatedListItems(proposal) {
       geometryKind: allElements.some((element) => (element.riskSignals || []).includes('geometry-grounded-by-runtime')) ? 'boundary' : 'approximate',
       geometryConfidence: Math.min(...allElements.map((element) => Number(element.geometryConfidence) || 0.5)),
       meaning: { status: 'known', description: '重复列表中同构条目的列表项元素共相', evidence: { visibleTexts: [], visibleIcons: [], visibleStates: [], visualCues: ['重复行布局'], userContext: null, unclassified: [] } },
-      dynamicContent: true,
+      dynamicContent: false,
       abstraction: {
         kind: 'repeated-template',
         templateKey: `${prefix}.item`,
@@ -1081,11 +1315,88 @@ function inferRepeatedListItems(proposal) {
   ];
 }
 
+function boxContainsCenter(outer, inner, tolerance = 0.01) {
+  if (!outer || !inner) return false;
+  const x = inner.x + inner.width / 2;
+  const y = inner.y + inner.height / 2;
+  return x >= outer.x - tolerance
+    && x <= outer.x + outer.width + tolerance
+    && y >= outer.y - tolerance
+    && y <= outer.y + outer.height + tolerance;
+}
+
+function absorbRepeatedTemplateInputElements(proposal) {
+  const templates = (proposal.elements || []).filter((element) => (
+    element?.abstraction?.kind === 'repeated-template'
+    && (element.abstraction.fields || []).some((field) => DATA_ENTRY_TYPES.has(field.elementType) && field.elementType !== 'form')
+  ));
+  if (templates.length === 0) return;
+
+  const relationships = proposal.relationships || [];
+  const actions = proposal.actionCandidates || [];
+  const absorbedKeys = new Set();
+  for (const candidate of proposal.elements || []) {
+    if (!['input', 'text-area', 'rich-text-input'].includes(candidate.elementType) || candidate.abstraction) continue;
+    let best = null;
+    for (const template of templates) {
+      const explicitlyRelated = relationships.some((relation) => (
+        ['contains', 'belongs-to'].includes(relation.type)
+        && ((relation.fromCandidateKey === template.candidateKey && relation.toCandidateKey === candidate.candidateKey)
+          || (relation.fromCandidateKey === candidate.candidateKey && relation.toCandidateKey === template.candidateKey))
+      ));
+      const insideInstance = (template.abstraction.instanceRegions || [])
+        .some((region) => boxContainsCenter(region, candidate.approximateRegion));
+      const matchingFields = (template.abstraction.fields || [])
+        .filter((field) => field.elementType === candidate.elementType);
+      for (const field of matchingFields) {
+        const overlap = Math.max(0, ...(field.instanceRegions || []).map((region) => boxIoU(region, candidate.approximateRegion)));
+        if (overlap < 0.65 && !(explicitlyRelated && insideInstance)) continue;
+        const score = overlap + (explicitlyRelated ? 2 : 0);
+        if (!best || score > best.score) best = { template, field, score };
+      }
+    }
+    if (!best) continue;
+
+    const candidateActions = actions.filter((action) => action.triggerCandidateKey === candidate.candidateKey);
+    best.field.capabilities = [...new Set([
+      ...(best.field.capabilities || []).filter((capability) => capability !== 'none'),
+      'tap',
+      'input',
+      ...candidateActions.map((action) => action.action),
+    ])];
+    best.field.interactionBoundary = 'candidate_bbox';
+    best.field.actionEffects = [...(best.field.actionEffects || [])];
+    for (const action of candidateActions) {
+      if (best.field.actionEffects.some((effect) => effect.action === action.action)) continue;
+      best.field.actionEffects.push({
+        action: action.action,
+        effect: action.expectedOutcome || defaultActionEffect(candidate.elementType, action.action),
+      });
+    }
+    best.template.riskSignals = [...new Set([
+      ...(best.template.riskSignals || []),
+      'concrete-inputs-absorbed-into-template',
+    ])];
+    absorbedKeys.add(candidate.candidateKey);
+  }
+
+  if (absorbedKeys.size === 0) return;
+  proposal.elements = (proposal.elements || []).filter((element) => !absorbedKeys.has(element.candidateKey));
+  proposal.relationships = relationships.filter((relation) => (
+    !absorbedKeys.has(relation.fromCandidateKey) && !absorbedKeys.has(relation.toCandidateKey)
+  ));
+  proposal.actionCandidates = actions.filter((action) => !absorbedKeys.has(action.triggerCandidateKey));
+}
+
 export function prepareRecognitionForDraft(recognitionResult) {
   const proposal = structuredClone(recognitionResult);
   inferDynamicUserProfile(proposal);
   inferDynamicElements(proposal);
   inferRepeatedListItems(proposal);
+  // A concrete input represented by a repeated template field is one visual
+  // object, not an additional top-level element. Keep its interaction metadata
+  // on the field and remove only candidates with explicit or geometric proof.
+  absorbRepeatedTemplateInputElements(proposal);
   const byKey = new Map(proposal.elements.map((element) => [element.candidateKey, element]));
   for (const element of proposal.elements) {
     const original = element.approximateRegion;
@@ -1151,7 +1462,7 @@ export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, model
   const currentPageElements = previous.elements.filter((item) => item.pageId === previous.currentPageId || ['application', 'shared_component'].includes(item.ownerKind));
   const previousByKey = new Map(currentPageElements.map((item) => [item.candidateKey, item]));
   const nextElements = recognitionResult.elements.map((candidate) => {
-    const generated = nextElementFromRecognition(candidate, recognitionResult.actionCandidates || [], currentPageId, model);
+    const generated = nextElementFromRecognition(candidate, recognitionResult.actionCandidates || [], currentPageId, model, recognitionResult.frameId);
     const existing = previousByKey.get(candidate.candidateKey);
     if (!existing) return generated;
     if (['application', 'shared_component'].includes(existing.ownerKind)) {
@@ -1192,7 +1503,8 @@ export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, model
   const preservedElements = previous.elements.filter((item) => {
     if (replacedIds.has(item.id)) return false;
     if (['application', 'shared_component'].includes(item.ownerKind)) return true;
-    return pageChanged || item.pageId !== previous.currentPageId;
+    if (pageChanged || item.pageId !== previous.currentPageId) return true;
+    return item.sourceFrameId !== recognitionResult.frameId;
   });
   const mergedElements = [...preservedElements, ...nextElements];
   const byKey = new Map(nextElements.map((item) => [item.candidateKey, item]));
@@ -1234,6 +1546,7 @@ export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, model
     ...(existingPage || makeDraftPage(currentPage, recognitionResult.frameId, [currentPage.name || '待归类'])),
     ...currentPage,
     frameIds: [...new Set([...(existingPage?.frameIds || []), recognitionResult.frameId])],
+    primaryFrameId: existingPage?.primaryFrameId || recognitionResult.frameId,
     elementIds: mergedElements.filter((element) => element.pageId === currentPageId || (element.ownerKind === 'application' && element.availableOnPageIds.includes(currentPageId))).map((element) => element.id),
     publishedAt: null,
   });

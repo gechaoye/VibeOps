@@ -201,7 +201,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', targetP
     setLoading(true);
     setError(null);
     try {
-      const result = await workbenchApi.createPageUploads(images.map((file) => ({ sourceType: 'file', name: file.name, mimeType: file.type, size: file.size })), targetPageId);
+      const result = await workbenchApi.createPageUploads(images.map((file) => ({ sourceType: 'file', name: file.name, mimeType: file.type, size: file.size, targetPageId: targetPageId || undefined })), targetPageId);
       result.tasks.forEach((task) => currentTaskIdsRef.current.add(task.id));
       setTasks((current) => [...result.tasks, ...current]);
       result.tasks.forEach((task, index) => localFilesRef.current.set(task.id, images[index]));
@@ -223,7 +223,7 @@ export function PageUploadDialog({ open, draftDirty, purpose = 'create', targetP
     setLoading(true);
     setError(null);
     try {
-      const result = await workbenchApi.createPageUploads(urls.map((url) => ({ sourceType: 'url', name: decodeURIComponent(new URL(url).pathname.split('/').pop() || '') || '链接图片', url })), targetPageId);
+      const result = await workbenchApi.createPageUploads(urls.map((url) => ({ sourceType: 'url', name: decodeURIComponent(new URL(url).pathname.split('/').pop() || '') || '链接图片', url, targetPageId: targetPageId || undefined })), targetPageId);
       result.tasks.forEach((task) => currentTaskIdsRef.current.add(task.id));
       setTasks((current) => [...result.tasks, ...current]);
       setUrlText('');

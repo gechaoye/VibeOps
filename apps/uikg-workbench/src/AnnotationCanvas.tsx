@@ -7,20 +7,25 @@ interface AnnotationCanvasProps {
   elements: DraftElement[];
   selectedId: string | null;
   selectedAbstractFieldKey: string | null;
+  selectedAbstractFieldInstanceIndex: number | null;
   drawing: boolean;
   showRejected: boolean;
   showGridGuides: boolean;
   onSelect: (id: string | null) => void;
   onSelectAbstractField: (fieldKey: string | null) => void;
+  onSelectAbstractFieldInstance: (index: number | null) => void;
   onAdd: (box: BBox) => void;
   onBoxChange: (id: string, box: BBox) => void;
+  onAbstractFieldBoxChange: (id: string, fieldKey: string, index: number, box: BBox) => void;
   onBoxChangeEnd: () => void;
 }
 
 type Gesture =
   | { type: 'draw'; startX: number; startY: number; currentX: number; currentY: number }
   | { type: 'move'; id: string; startX: number; startY: number; initial: BBox }
-  | { type: 'resize'; id: string; handle: string; startX: number; startY: number; initial: BBox };
+  | { type: 'resize'; id: string; handle: string; startX: number; startY: number; initial: BBox }
+  | { type: 'abstract-move'; id: string; fieldKey: string; index: number; startX: number; startY: number; initial: BBox }
+  | { type: 'abstract-resize'; id: string; fieldKey: string; index: number; handle: string; startX: number; startY: number; initial: BBox };
 
 function point(event: React.PointerEvent, target: HTMLElement) {
   const rect = target.getBoundingClientRect();
@@ -48,7 +53,7 @@ function elementAtPoint(elements: DraftElement[], selectedId: string | null, x: 
   return hits[(selectedIndex + 1) % hits.length];
 }
 
-export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstractFieldKey, drawing, showRejected, showGridGuides, onSelect, onSelectAbstractField, onAdd, onBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
+export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstractFieldKey, selectedAbstractFieldInstanceIndex, drawing, showRejected, showGridGuides, onSelect, onSelectAbstractField, onSelectAbstractFieldInstance, onAdd, onBoxChange, onAbstractFieldBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
@@ -93,8 +98,12 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstr
     const dy = current.y - gesture.startY;
     if (gesture.type === 'move') {
       onBoxChange(gesture.id, clampBox({ ...gesture.initial, x: gesture.initial.x + dx, y: gesture.initial.y + dy }));
-    } else {
+    } else if (gesture.type === 'resize') {
       onBoxChange(gesture.id, resizedBox(gesture.initial, gesture.handle, dx, dy));
+    } else if (gesture.type === 'abstract-move') {
+      onAbstractFieldBoxChange(gesture.id, gesture.fieldKey, gesture.index, clampBox({ ...gesture.initial, x: gesture.initial.x + dx, y: gesture.initial.y + dy }));
+    } else {
+      onAbstractFieldBoxChange(gesture.id, gesture.fieldKey, gesture.index, resizedBox(gesture.initial, gesture.handle, dx, dy));
     }
   };
 
@@ -143,6 +152,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstr
         if (!drawing) {
           onSelect(null);
           onSelectAbstractField(null);
+          onSelectAbstractFieldInstance(null);
           return;
         }
         const start = point(event, stageRef.current);
@@ -187,14 +197,41 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstr
       ))}
       {selectedElement?.abstraction?.fields.find((field) => field.key === selectedAbstractFieldKey)?.instanceRegions.map((region, index) => {
         const field = selectedElement.abstraction?.fields.find((candidate) => candidate.key === selectedAbstractFieldKey);
+        const selected = selectedAbstractFieldInstanceIndex === index;
         return (
           <div
             key={`${selectedElement.id}-field-${selectedAbstractFieldKey}-${index}`}
-            className="bbox-abstract-field-instance"
+            className={`bbox-abstract-field-instance ${selected ? 'bbox-abstract-field-instance-selected' : ''}`}
             style={{ left: `${region.x * 100}%`, top: `${region.y * 100}%`, width: `${region.width * 100}%`, height: `${region.height * 100}%` }}
             title={`${field?.label || '共相字段'} · 第 ${index + 1} 项实例`}
             aria-label={`${field?.label || '共相字段'} 第 ${index + 1} 项实例 bbox`}
-          />
+            onPointerDown={(event) => {
+              if (drawing || !stageRef.current || !field) return;
+              event.stopPropagation();
+              const start = point(event, stageRef.current);
+              event.currentTarget.setPointerCapture(event.pointerId);
+              onSelectAbstractFieldInstance(index);
+              setGesture({ type: 'abstract-move', id: selectedElement.id, fieldKey: field.key, index, startX: start.x, startY: start.y, initial: { ...region } });
+            }}
+          >
+            <span className="bbox-label">{field?.label || '共相字段'} · 实例 {index + 1}</span>
+            <span className="bbox-center" />
+            {selected && field && ['nw', 'ne', 'sw', 'se'].map((handle) => (
+              <button
+                key={handle}
+                type="button"
+                className={`bbox-handle bbox-handle-${handle}`}
+                aria-label={`调整${field.label}实例 ${index + 1} 边框 ${handle}`}
+                onPointerDown={(event) => {
+                  event.stopPropagation();
+                  if (!stageRef.current) return;
+                  const start = point(event, stageRef.current);
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  setGesture({ type: 'abstract-resize', id: selectedElement.id, fieldKey: field.key, index, handle, startX: start.x, startY: start.y, initial: { ...region } });
+                }}
+              />
+            ))}
+          </div>
         );
       })}
       {renderedElements.map((element) => {
@@ -214,6 +251,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstr
               event.currentTarget.setPointerCapture(event.pointerId);
               onSelect(hit.id);
               onSelectAbstractField(null);
+              onSelectAbstractFieldInstance(null);
               if (!hit.abstraction) {
                 setGesture({ type: 'move', id: hit.id, startX: start.x, startY: start.y, initial: { ...hit.bbox } });
               }

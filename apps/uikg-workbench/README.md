@@ -14,6 +14,27 @@ pnpm start
 
 开发时运行 `pnpm dev` 会同时启动前端和 Android/Workbench 服务，打开 `http://127.0.0.1:5173`。生产构建后运行 `pnpm start`，打开 `http://127.0.0.1:5800`。
 
+## OCR 辅助定位
+
+Workbench 会用 OCR 文字框校准模型生成的元素 bbox。默认 `UIKG_OCR_ENGINE=auto`：macOS 优先使用系统 Apple Vision，失败时回退 PaddleOCR；Linux 和 Windows 使用 PaddleOCR。PaddleOCR 是可选依赖，建议使用 Python 3.10-3.12 的独立虚拟环境安装：
+
+```bash
+python3.12 -m venv .venv-paddleocr
+.venv-paddleocr/bin/python -m pip install -r requirements-paddleocr.txt
+```
+
+然后在项目 `.env` 中指定该解释器。Windows 路径可指向 `.venv-paddleocr\\Scripts\\python.exe`。
+
+```dotenv
+UIKG_OCR_ENGINE=paddleocr
+UIKG_OCR_PYTHON=/absolute/path/to/.venv-paddleocr/bin/python
+UIKG_OCR_TIMEOUT_MS=120000
+UIKG_PADDLE_OCR_LANG=ch
+# UIKG_PADDLE_OCR_DEVICE=gpu:0
+```
+
+`UIKG_OCR_ENGINE` 可取 `auto`、`apple-vision`、`paddleocr` 或 `disabled`。OCR 仅作为截图坐标系中的几何辅助，不替代 Midscene 的页面语义识别；图标、开关和无文字控件仍依赖模型视觉框、UI Tree 或 DOM。
+
 ## 模型配置
 
 Workbench 的“模式配置”页从本地 SQLite 数据库 `.data/model-settings.sqlite` 读取网关与模型指派。正式模型槽位为 `manual`、`auto`、`ultra_a`、`ultra_b` 和 `midscene`，五者独立保存。Manual 与 Auto 分别使用自己的页面识别模型；Auto 另用 Midscene 完成设备理解和交互；Model A 与 Model B 仅属于 Ultra，二者并列识别。API Key 仅在服务端读取，页面只显示脱敏末四位。

@@ -44,3 +44,18 @@ test('能力检测忽略 MiniMax think 推理段后解析 JSON', async () => {
   });
   assert.equal(result.mode, 'local');
 });
+
+test('能力检测兼容 ZTO 网关在 delta 后重复发送完整 message', async () => {
+  const result = await probeModelCapability(config, async (_url, options) => {
+    const body = JSON.parse(options.body);
+    if (body.response_format) return new Response(JSON.stringify({ error: { message: 'unsupported response_format' } }), { status: 400 });
+    const content = '{"elements":[]}';
+    return new Response([
+      `data: ${JSON.stringify({ object: 'chat.completion.chunk', choices: [{ delta: { reasoning_content: '分析空白图像' } }] })}`,
+      `data: ${JSON.stringify({ object: 'chat.completion.chunk', choices: [{ finish_reason: 'stop', delta: { content } }] })}`,
+      `data: ${JSON.stringify({ object: 'chat.completion', choices: [{ finish_reason: 'stop', message: { content, reasoning_content: '分析空白图像' } }] })}`,
+      'data: [DONE]',
+    ].join('\n\n'), { status: 200 });
+  });
+  assert.equal(result.mode, 'local');
+});

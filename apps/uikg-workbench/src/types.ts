@@ -77,6 +77,8 @@ export interface DraftElement {
   parentId: string | null;
   childrenIds: string[];
   pageId: string | null;
+  /** Observation frame that produced this element. Used to isolate frame overlays. */
+  sourceFrameId?: string | null;
   availableOnPageIds: string[];
   interactionBoundary: string;
   reviewStatus: ReviewStatus;
@@ -96,6 +98,7 @@ export interface DraftPage {
   scrollableRegions: string[];
   featurePath: string[];
   frameIds: string[];
+  primaryFrameId: string | null;
   elementIds: string[];
   publishedAt?: string | null;
 }
@@ -147,6 +150,8 @@ export interface ElementActivityRecord {
   elementIds: string[];
   elementLabels: string[];
   fields: string[];
+  /** Pages whose element state was affected by this activity. */
+  pageIds?: string[];
   groupKey?: string;
 }
 
@@ -311,6 +316,7 @@ export interface RecognitionResumeSession {
   id: string;
   status: 'paused' | 'running';
   frameId: string;
+  additionalFrameIds?: string[];
   pageId?: string | null;
   pageContext: string;
   includeUiTree?: boolean;
@@ -346,6 +352,15 @@ export interface AnalysisSession {
   schemaErrors?: unknown[];
   consistencyIssues?: unknown[];
   normalizationIssues?: unknown[];
+  selfHealing?: {
+    attempted: boolean;
+    model: string | null;
+    succeeded: boolean;
+    reason?: string;
+    error?: string;
+    initialValidation?: Record<string, unknown>;
+    repairedValidation?: Record<string, unknown>;
+  };
   reasoningContent: string;
   outputContent: string;
   retryAttempts?: RecognitionResumeSession['retryAttempts'];
@@ -386,7 +401,7 @@ export interface ModelPreset {
 }
 
 export type ReasoningEffort = 'none' | 'low' | 'medium' | 'high';
-export type ModelTarget = 'manual' | 'auto' | 'midscene';
+export type ModelTarget = 'manual' | 'auto' | 'midscene' | 'self_heal';
 export type WorkbenchMode = 'manual' | 'auto';
 export type ModelCapabilityMode = 'native' | 'local' | 'unavailable';
 
@@ -426,6 +441,7 @@ export interface ModelSettingsData {
   manual: ModelSlotSettings;
   auto: ModelSlotSettings;
   midscene: ModelSlotSettings;
+  selfHeal: ModelSlotSettings;
   gateways: ModelGatewaySettings[];
   runtimeReloaded?: boolean;
   modeConfiguration: { mode: WorkbenchMode };

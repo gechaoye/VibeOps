@@ -2,6 +2,7 @@ import { Check, Grip, ImageUp, PanelsTopLeft, PanelTopOpen, Pin, Plus, Smartphon
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { absoluteAssetUrl } from './api';
 import { elementAvailableOnPage, pageWorkflowStatus, pageWorkflowStatusLabels } from './model';
+import { FrameStrip } from './FrameStrip';
 import { PageUploadDialog } from './PageUploadDialog';
 import type { Draft, DraftPage } from './types';
 
@@ -10,9 +11,6 @@ interface PageGraphProps {
   draftDirty: boolean;
   onOpenPage: (pageId: string) => void;
   onCreateFromDevice: () => void;
-  onAddFrameFromDevice: (pageId: string) => void;
-  onAddFrameFromUpload: (pageId: string) => void;
-  deviceConnected: boolean;
   onUploadDraftChange: (draft: Draft) => void;
   onUpdatePage: (pageId: string, patch: Partial<DraftPage>, historyKey?: string) => void;
   onDeletePage: (pageId: string) => void;
@@ -20,6 +18,7 @@ interface PageGraphProps {
 }
 
 const showPageBboxesStorageKey = 'uikg-workbench.page-graph.show-element-bboxes';
+const pagePreviewPinnedStorageKey = 'uikg-workbench.page-graph.preview-pinned';
 
 function PageDetailImage({ frameId, page, elements, showElementBboxes }: { frameId: string; page: DraftPage; elements: Draft['elements']; showElementBboxes: boolean }) {
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -106,16 +105,19 @@ function PageEditor({ page, status, onUpdate, onChangeEnd }: { page: DraftPage; 
   );
 }
 
-export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, onAddFrameFromDevice, onAddFrameFromUpload, deviceConnected, onUploadDraftChange, onUpdatePage, onDeletePage, onChangeEnd }: PageGraphProps) {
+export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, onUploadDraftChange, onUpdatePage, onDeletePage, onChangeEnd }: PageGraphProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [deleteConfirmPageId, setDeleteConfirmPageId] = useState<string | null>(null);
-  const [addFrameMenuPageId, setAddFrameMenuPageId] = useState<string | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewPinned, setPreviewPinned] = useState(false);
+  const [previewPinned, setPreviewPinned] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(pagePreviewPinnedStorageKey) === 'true';
+  });
   const [previewPosition, setPreviewPosition] = useState<{ x: number; y: number } | null>(null);
   const [previewSize, setPreviewSize] = useState<{ width: number; height: number } | null>(null);
+  const [selectedPreviewFrameId, setSelectedPreviewFrameId] = useState<string | null>(null);
   const previewRef = useRef<HTMLElement>(null);
   const previewInteractionRef = useRef<{ kind: 'drag' | 'resize'; pointerId: number; startX: number; startY: number; originX: number; originY: number; originWidth: number; originHeight: number } | null>(null);
   const [showElementBboxes, setShowElementBboxes] = useState(() => {
@@ -123,8 +125,10 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
     return window.localStorage.getItem(showPageBboxesStorageKey) === 'true';
   });
   const selectedPage = selectedPageId ? draft.pages.find((page) => page.id === selectedPageId) : undefined;
-  const selectedFrameId = selectedPage?.frameIds.at(-1);
-  const selectedPageElements = selectedPage ? draft.elements.filter((element) => elementAvailableOnPage(element, selectedPage.id, draft.elements)) : [];
+  const selectedFrameId = selectedPage?.frameIds.includes(selectedPreviewFrameId || '')
+    ? selectedPreviewFrameId
+    : selectedPage?.primaryFrameId || selectedPage?.frameIds[0] || null;
+  const selectedPageElements = selectedPage && selectedFrameId ? draft.elements.filter((element) => elementAvailableOnPage(element, selectedPage.id, draft.elements) && element.sourceFrameId === selectedFrameId) : [];
   const selectedPageStatus = selectedPage ? pageWorkflowStatus(draft, selectedPage) : null;
 
   useEffect(() => {
@@ -132,9 +136,14 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
   }, [showElementBboxes]);
 
   useEffect(() => {
+    window.localStorage.setItem(pagePreviewPinnedStorageKey, String(previewPinned));
+  }, [previewPinned]);
+
+  useEffect(() => {
     if (!selectedPageId) return;
     if (draft.pages.some((page) => page.id === selectedPageId)) return;
     setSelectedPageId(null);
+    setSelectedPreviewFrameId(null);
   }, [draft.pages, selectedPageId]);
 
   useEffect(() => {
@@ -151,12 +160,12 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
     }
     const image = new Image();
     image.onload = () => {
-      const titleHeight = 48;
+      const chromeHeight = 140;
       const maxWidth = Math.min(620, window.innerWidth - 24);
       const maxHeight = Math.min(820, window.innerHeight - 72);
-      const scale = Math.min(maxWidth / image.naturalWidth, (maxHeight - titleHeight - 20) / image.naturalHeight, 0.62);
+      const scale = Math.min(maxWidth / image.naturalWidth, (maxHeight - chromeHeight - 20) / image.naturalHeight, 0.62);
       const width = Math.max(Math.min(320, maxWidth), Math.round(image.naturalWidth * scale + 20));
-      const height = Math.max(Math.min(420, maxHeight), Math.round(image.naturalHeight * scale + titleHeight + 20));
+      const height = Math.max(Math.min(420, maxHeight), Math.round(image.naturalHeight * scale + chromeHeight + 20));
       setPreviewPosition({ x: 16, y: 72 });
       setPreviewSize({ width, height });
     };
@@ -176,13 +185,16 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
 
   const selectPage = (pageId: string) => {
     if (pageId === selectedPageId) return;
+    const page = draft.pages.find((candidate) => candidate.id === pageId);
     setPreviewVisible(true);
     setSelectedPageId(pageId);
+    setSelectedPreviewFrameId(page?.primaryFrameId || page?.frameIds[0] || null);
   };
 
   const closePreview = () => {
     setPreviewVisible(false);
     setSelectedPageId(null);
+    setSelectedPreviewFrameId(null);
     setPreviewPosition(null);
     setPreviewSize(null);
   };
@@ -294,13 +306,6 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
                 <span className="page-node-content"><strong>{page.name}</strong><span className="page-node-meta">{page.functionRef || '待归类功能'} · {page.implementationType || '待确认'} · {page.frameIds.length} 帧</span><code>{page.key}</code></span>
                 <button type="button" className={`page-node-action page-node-delete-action ${deleting ? 'confirming' : ''}`} title={deleting ? '再次点击确认删除页面及其元素' : '删除页面'} aria-label={deleting ? `确认删除 ${page.name}` : `删除 ${page.name}`} onClick={(event) => { event.stopPropagation(); if (deleting) { setDeleteConfirmPageId(null); onDeletePage(page.id); } else setDeleteConfirmPageId(page.id); }}>{deleting ? <Check size={13} /> : <Trash2 size={13} />}</button>
                 <button type="button" className="page-node-action page-node-open-action" disabled={!latestFrameId} title={latestFrameId ? '在新标签页标注' : '暂无截图，无法标注'} aria-label={`在新标签页标注 ${page.name}`} onClick={(event) => { event.stopPropagation(); onOpenPage(page.id); }}><PanelTopOpen size={13} /></button>
-                <div className="page-node-addframe">
-                  <button type="button" className={`page-node-action page-node-addframe-action ${addFrameMenuPageId === page.id ? 'active' : ''}`} title="为该页面添加观测帧" aria-label={`为 ${page.name} 添加观测帧`} aria-haspopup="menu" aria-expanded={addFrameMenuPageId === page.id} onClick={(event) => { event.stopPropagation(); setAddFrameMenuPageId((value) => (value === page.id ? null : page.id)); }}><Plus size={13} /></button>
-                  {addFrameMenuPageId === page.id && <div className="page-node-addframe-menu" role="menu" aria-label="添加观测帧方式" onClick={(event) => event.stopPropagation()}>
-                    <button type="button" role="menuitem" disabled={!deviceConnected} title={deviceConnected ? '冻结当前设备画面并追加到该页面' : '设备未连接'} onClick={() => { setAddFrameMenuPageId(null); onAddFrameFromDevice(page.id); }}><Smartphone size={15} />冻结设备画面</button>
-                    <button type="button" role="menuitem" onClick={() => { setAddFrameMenuPageId(null); onAddFrameFromUpload(page.id); }}><ImageUp size={15} />上传图片</button>
-                  </div>}
-                </div>
               </div>;
             })}
           </div>
@@ -319,6 +324,17 @@ export function PageGraph({ draft, draftDirty, onOpenPage, onCreateFromDevice, o
           </div>
         </header>
         {selectedPage && selectedFrameId ? <PageDetailImage frameId={selectedFrameId} page={selectedPage} elements={selectedPageElements} showElementBboxes={showElementBboxes} /> : <div className="page-detail-image"><div className="page-detail-empty">请选择一个页面卡片查看预览</div></div>}
+        {selectedPage && selectedPage.frameIds.length > 0 && <FrameStrip
+          frameIds={selectedPage.frameIds}
+          currentFrameId={selectedFrameId}
+          primaryFrameId={selectedPage.primaryFrameId}
+          frameUrlFor={(frameId) => absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(frameId)}/image`)}
+          readOnly
+          onSelectFrame={setSelectedPreviewFrameId}
+          onDeleteFrame={() => {}}
+          onAddFromDevice={() => {}}
+          onAddFromUpload={() => {}}
+        />}
         {!previewPinned && <button type="button" className="page-detail-resize-handle" aria-label="调整页面预览大小" title="拖动调整预览大小" onPointerDown={handlePreviewResizePointerDown}><Grip size={18} /></button>}
       </section>}
       <aside className="graph-editor">

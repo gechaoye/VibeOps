@@ -86,18 +86,20 @@ async function tryRequest(config, structuredSchema, request) {
   }
   if (!response.ok) return { ok: false, status: response.status, detail: (await response.text().catch(() => '')).slice(0, 500) };
   const raw = await response.text().catch(() => '');
-  let content = '';
+  let streamedContent = '';
+  let messageContent = '';
   for (const line of raw.split(/\r?\n/)) {
     const value = line.trim();
     if (!value.startsWith('data:')) continue;
     const payload = value.slice(5).trim();
     if (!payload || payload === '[DONE]') continue;
     try {
-      const choice = JSON.parse(payload)?.choices?.[0];
-      const delta = choice?.delta || choice?.message || {};
-      if (typeof delta.content === 'string') content += delta.content;
+      const choice = JSON.parse(payload)?.choices?.[0] || {};
+      if (typeof choice.delta?.content === 'string') streamedContent += choice.delta.content;
+      else if (typeof choice.message?.content === 'string') messageContent = choice.message.content;
     } catch {}
   }
+  let content = streamedContent || messageContent;
   if (!content && raw.trim().startsWith('{')) {
     try {
       const payload = JSON.parse(raw);
@@ -145,4 +147,33 @@ export async function probeModelCapability(config, request = fetch) {
   const local = await tryRequest(config, null, request);
   if (local.ok) return { mode: 'local', checkedAt: new Date().toISOString(), detail: `原生结构化输出不可用，已切换本地校验：${errorDetail(native)}` };
   return { mode: 'unavailable', checkedAt: new Date().toISOString(), detail: `原生请求：${errorDetail(native)}；普通 JSON 请求：${errorDetail(local)}` };
+}
+
+export async function probeModelConnectivity(config, request = fetch) {
+  if (!config?.baseUrl || !config?.apiKey || !config?.modelName) {
+    return { ok: false, latencyMs: 0, detail: '模型网关、凭据或模型名称未配置' };
+  }
+  const startedAt = Date.now();
+  let response;
+  try {
+    response = await request(endpointFor(config.baseUrl), {
+      method: 'POST',
+      headers: { authorization: `Bearer ${config.apiKey}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: config.modelName,
+        stream: false,
+        messages: [{ role: 'user', content: '回复 OK' }],
+        ...chatCompletionCompatibility({ modelName: config.modelName, reasoningEffort: 'low', reasoningEnabled: false }),
+      }),
+      signal: AbortSignal.timeout(45_000),
+    });
+  } catch (error) {
+    return { ok: false, latencyMs: Math.max(0, Date.now() - startedAt), detail: error instanceof Error ? error.message : String(error) };
+  }
+  const detail = await response.text().catch(() => '');
+  return {
+    ok: response.ok,
+    latencyMs: Math.max(0, Date.now() - startedAt),
+    ...(response.ok ? {} : { detail: errorDetail({ status: response.status, detail: detail.slice(0, 500) }) }),
+  };
 }

@@ -53,17 +53,20 @@ interface GatewayForm {
 }
 
 type ModelForms = Record<ModelTarget, ModelForm>;
-type GatewayTestState = { status: 'testing' | 'success' | 'error'; detail?: string };
+type ModelTestState = { status: 'testing' | 'success' | 'error'; detail?: string };
+type GatewayTestState = { connectivity: boolean; capabilities: boolean };
+type GatewayModelTests = Record<string, Record<string, ModelTestState>>;
 type EditableRuleSource = 'element-universal' | 'custom';
 type PromptRule = { key: string; title: string; description: string; source: 'builtin' | EditableRuleSource };
 
-const TARGETS: ModelTarget[] = ['manual', 'auto', 'midscene'];
+const TARGETS: ModelTarget[] = ['manual', 'auto', 'midscene', 'self_heal'];
 const MODE_TARGETS: Record<WorkbenchMode, ModelTarget[]> = {
   manual: ['manual'],
   auto: ['auto', 'midscene'],
 };
 const MODE_LABELS: Record<WorkbenchMode, string> = { manual: 'Manual', auto: 'Auto' };
 const CUSTOM_GATEWAY_LIMIT = 5;
+const MODEL_TEST_BATCH_SIZE = 10;
 
 function StructuredOutputIcon() {
   return <svg width="14" height="14" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true" focusable="false">
@@ -94,6 +97,7 @@ function slotForTarget(settings: ModelSettingsData, target: ModelTarget) {
   if (target === 'manual') return settings.manual;
   if (target === 'auto') return settings.auto;
   if (target === 'midscene') return settings.midscene;
+  if (target === 'self_heal') return settings.selfHeal;
   return settings.manual;
 }
 
@@ -137,6 +141,8 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
   const [gatewaySaving, setGatewaySaving] = useState(false);
   const [gatewayDeleting, setGatewayDeleting] = useState(false);
   const [gatewayTests, setGatewayTests] = useState<Record<string, GatewayTestState>>({});
+  const [modelConnectivityTests, setModelConnectivityTests] = useState<GatewayModelTests>({});
+  const [modelCapabilityTests, setModelCapabilityTests] = useState<GatewayModelTests>({});
   const [activeSection, setActiveSection] = useState('model-gateways');
   const [openModelTarget, setOpenModelTarget] = useState<ModelTarget | null>(null);
   const [modelQueries, setModelQueries] = useState<Partial<Record<ModelTarget, string>>>({});
@@ -278,15 +284,16 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     modelFamily: gateway.modelFamilies[modelName] || familyForModel(modelName),
   }))), [catalog]);
 
+  const configuredTargets: ModelTarget[] = [...MODE_TARGETS[mode], 'self_heal'];
   const dirtyTargets = settings && forms
-    ? MODE_TARGETS[mode].filter((target) => formChanged(forms[target], slotForTarget(settings, target)))
+    ? configuredTargets.filter((target) => formChanged(forms[target], slotForTarget(settings, target)))
     : [];
   const dirty = dirtyTargets.length > 0;
 
   const resetCurrentConfiguration = () => {
     if (!settings) return;
     const savedForms = formsFromSettings(settings);
-    setForms((current) => current ? MODE_TARGETS[mode].reduce((next, target) => ({
+    setForms((current) => current ? configuredTargets.reduce((next, target) => ({
       ...next,
       [target]: savedForms[target],
     }), current) : current);
@@ -349,6 +356,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
       manual: 'Manual 页面识别模型',
       auto: 'Auto 页面识别模型',
       midscene: 'Auto Midscene 模型',
+      self_heal: '结构自愈模型',
     };
     return TARGETS.filter((target) => slotForTarget(settings, target).config.gatewayId === editingGatewayId).map((target) => labels[target]);
   }, [editingGatewayId, settings]);
@@ -395,23 +403,77 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
   };
 
   const testGateway = async (gatewayId: string) => {
-    setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'testing' } }));
+    const models = catalog?.gateways.find((gateway) => gateway.id === gatewayId)?.models || [];
+    if (!models.length) {
+      onNotice('error', '当前网关没有可测试的模型');
+      return;
+    }
+    setGatewayTests((current) => ({ ...current, [gatewayId]: { connectivity: true, capabilities: current[gatewayId]?.capabilities || false } }));
+    setModelConnectivityTests((current) => ({
+      ...current,
+      [gatewayId]: Object.fromEntries(models.map((modelName) => [modelName, { status: 'testing' }])),
+    }));
     try {
-      const result = await workbenchApi.testModelGateway(gatewayId);
-      setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'success', detail: `${result.latencyMs} ms · ${result.modelCount} 个模型` } }));
-    } catch (error) {
-      setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'error', detail: error instanceof Error ? error.message : String(error) } }));
+      for (let offset = 0; offset < models.length; offset += MODEL_TEST_BATCH_SIZE) {
+        const batch = models.slice(offset, offset + MODEL_TEST_BATCH_SIZE);
+        await Promise.all(batch.map(async (modelName) => {
+          try {
+            const result = await workbenchApi.testModelConnectivity(gatewayId, modelName);
+            setModelConnectivityTests((current) => ({
+              ...current,
+              [gatewayId]: { ...current[gatewayId], [modelName]: { status: 'success', detail: `${result.latencyMs} ms` } },
+            }));
+          } catch (error) {
+            setModelConnectivityTests((current) => ({
+              ...current,
+              [gatewayId]: { ...current[gatewayId], [modelName]: { status: 'error', detail: error instanceof Error ? error.message : String(error) } },
+            }));
+          }
+        }));
+      }
+    } finally {
+      setGatewayTests((current) => ({ ...current, [gatewayId]: { connectivity: false, capabilities: current[gatewayId]?.capabilities || false } }));
     }
   };
 
   const testGatewayCapabilities = async (gatewayId: string) => {
-    setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'testing', detail: '正在检测模型能力' } }));
+    const models = catalog?.gateways.find((gateway) => gateway.id === gatewayId)?.models || [];
+    if (!models.length) {
+      onNotice('error', '当前网关没有可检测的模型');
+      return;
+    }
+    setGatewayTests((current) => ({ ...current, [gatewayId]: { connectivity: current[gatewayId]?.connectivity || false, capabilities: true } }));
+    setModelCapabilityTests((current) => ({
+      ...current,
+      [gatewayId]: Object.fromEntries(models.map((modelName) => [modelName, { status: 'testing' }])),
+    }));
     try {
-      const result = await workbenchApi.testGatewayModelCapabilities(gatewayId);
-      await loadModels();
-      setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'success', detail: `原生结构化输出 ${result.native} · 本地结构化输出 ${result.local} · 不支持结构化输出 ${result.unavailable}` } }));
-    } catch (error) {
-      setGatewayTests((current) => ({ ...current, [gatewayId]: { status: 'error', detail: error instanceof Error ? error.message : String(error) } }));
+      for (let offset = 0; offset < models.length; offset += MODEL_TEST_BATCH_SIZE) {
+        const batch = models.slice(offset, offset + MODEL_TEST_BATCH_SIZE);
+        await Promise.all(batch.map(async (modelName) => {
+          try {
+            const capability = await workbenchApi.testModelCapability(gatewayId, modelName);
+            setCatalog((current) => current ? {
+              ...current,
+              gateways: current.gateways.map((gateway) => gateway.id === gatewayId ? {
+                ...gateway,
+                capabilities: { ...gateway.capabilities, [modelName]: capability },
+              } : gateway),
+            } : current);
+            setModelCapabilityTests((current) => ({
+              ...current,
+              [gatewayId]: { ...current[gatewayId], [modelName]: { status: 'success', detail: capability.detail } },
+            }));
+          } catch (error) {
+            setModelCapabilityTests((current) => ({
+              ...current,
+              [gatewayId]: { ...current[gatewayId], [modelName]: { status: 'error', detail: error instanceof Error ? error.message : String(error) } },
+            }));
+          }
+        }));
+      }
+    } finally {
+      setGatewayTests((current) => ({ ...current, [gatewayId]: { connectivity: current[gatewayId]?.connectivity || false, capabilities: false } }));
     }
   };
 
@@ -422,6 +484,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
     manual: 'Manual 页面识别模型',
     auto: 'Auto 页面识别模型',
     midscene: 'Midscene 模型',
+    self_heal: '自愈模型',
   };
 
   const renderModelParameters = (target: ModelTarget, disabled: boolean) => {
@@ -470,25 +533,30 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
 
   const renderGateway = (gateway: ModelGatewayCatalog) => {
     const test = gatewayTests[gateway.id];
+    const gatewayTesting = Boolean(test?.connectivity || test?.capabilities);
     const stored = settings.gateways.find((item) => item.id === gateway.id);
     if (!stored) return null;
     return <section className="gateway-catalog-card" key={gateway.id}>
       <header className="gateway-catalog-card-header">
         <div className="gateway-catalog-card-title"><span><strong>{gateway.label}</strong><em>{gateway.kind === 'default' ? '默认' : '自定义'}</em></span><code title={gateway.baseUrl}>{gateway.baseUrl}</code><small><KeyRound size={11} />{gateway.apiKeyConfigured ? `已配置 ${gateway.apiKeyHint || ''}` : '未配置 API Key'}</small></div>
         <div className="gateway-catalog-actions">
-          {test && <small className={`gateway-test-result ${test.status}`} title={test.detail}>{test.status === 'testing' ? '测试中' : test.detail}</small>}
-          <button type="button" className="icon-button" aria-label={`测试 ${gateway.label} 连通性`} title="测试连通性" disabled={test?.status === 'testing' || gatewayDeleting} onClick={() => void testGateway(gateway.id)}>{test?.status === 'testing' ? <LoaderCircle className="spin" size={14} /> : <PlugZap size={14} />}</button>
-          <button type="button" className="icon-button" aria-label={`检测 ${gateway.label} 模型结构化输出能力`} title="检测模型结构化输出能力" disabled={test?.status === 'testing' || gatewayDeleting} onClick={() => void testGatewayCapabilities(gateway.id)}>{test?.status === 'testing' ? <LoaderCircle className="spin" size={14} /> : <StructuredOutputIcon />}</button>
+          <button type="button" className="icon-button" aria-label={`测试 ${gateway.label} 连通性`} title="测试连通性" disabled={gatewayTesting || gatewayDeleting} onClick={() => void testGateway(gateway.id)}>{test?.connectivity ? <LoaderCircle className="spin" size={14} /> : <PlugZap size={14} />}</button>
+          <button type="button" className="icon-button" aria-label={`检测 ${gateway.label} 模型结构化输出能力`} title="检测模型结构化输出能力" disabled={gatewayTesting || gatewayDeleting} onClick={() => void testGatewayCapabilities(gateway.id)}>{test?.capabilities ? <LoaderCircle className="spin" size={14} /> : <StructuredOutputIcon />}</button>
           <button type="button" className="icon-button" aria-label={`刷新 ${gateway.label} 模型列表`} title="刷新模型列表" disabled={modelsLoading || gatewayDeleting} onClick={() => void loadModels()}><RefreshCw className={modelsLoading ? 'spin' : ''} size={14} /></button>
           <button type="button" className="icon-button" aria-label={`编辑 ${gateway.label}`} title="编辑网关" disabled={gatewayDeleting} onClick={() => openGatewayDialog(stored)}><Pencil size={14} /></button>
           <button type="button" className="icon-button danger-icon" aria-label={`删除 ${gateway.label}`} title="删除网关" disabled={gatewayDeleting} onClick={() => void deleteGateway(gateway.id, gateway.label)}><Trash2 size={14} /></button>
         </div>
       </header>
       {gateway.error ? <div className="model-list-error"><CircleAlert size={14} /><span title={gateway.error}>{gateway.error}</span></div> : <div className="model-gateway-models" aria-label={`${gateway.label} 模型`}>
+        {gateway.models.length > 0 && <div className="gateway-model-table-header" aria-hidden="true"><span /><span>模型名称</span><span>模型类型</span><span>连通性</span><span>结构化输出</span></div>}
         {gateway.models.map((modelName) => {
           const capability = gateway.capabilities[modelName];
+          const connectivityTest = modelConnectivityTests[gateway.id]?.[modelName];
+          const capabilityTest = modelCapabilityTests[gateway.id]?.[modelName];
           const label = capability?.mode === 'native' ? '原生结构化输出' : capability?.mode === 'local' ? '本地结构化输出' : capability?.mode === 'unavailable' ? '不支持结构化输出' : '未检测';
-          return <div key={modelName} className="gateway-model-row"><i className={capability?.mode || 'unverified'} aria-hidden="true" /><strong title={modelName}>{modelName}</strong><code>{gateway.modelFamilies[modelName] || familyForModel(modelName)}</code><span className={`model-capability-badge ${capability?.mode || 'unverified'}`} title={capability?.detail}>{label}</span></div>;
+          const connectivityLabel = connectivityTest?.status === 'testing' ? '测试中' : connectivityTest?.status === 'success' ? connectivityTest.detail : connectivityTest?.status === 'error' ? '连接失败' : '未测试';
+          const capabilityLabel = capabilityTest?.status === 'testing' ? '检测中' : capabilityTest?.status === 'error' ? '检测失败' : label;
+          return <div key={modelName} className="gateway-model-row"><i className={capability?.mode || 'unverified'} aria-hidden="true" /><strong title={modelName}>{modelName}</strong><code>{gateway.modelFamilies[modelName] || familyForModel(modelName)}</code><span className={`model-connectivity-result ${connectivityTest?.status || 'untested'}`} title={connectivityTest?.detail}>{connectivityTest?.status === 'testing' && <LoaderCircle className="spin" size={12} />}{connectivityLabel}</span><span className={`model-capability-badge ${capabilityTest?.status === 'error' ? 'error' : capability?.mode || 'unverified'}`} title={capabilityTest?.detail || capability?.detail}>{capabilityTest?.status === 'testing' && <LoaderCircle className="spin" size={12} />}{capabilityLabel}</span></div>;
         })}
         {!gateway.models.length && <div className="model-list-empty">没有可用模型</div>}
       </div>}
@@ -555,6 +623,8 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
             {renderModelSelect('auto', '页面识别模型', '仅供 Auto 模式使用，不与 Manual 共用。')}
             {renderModelSelect('midscene', 'Midscene 模型', 'Auto 模式用于理解并操作设备。')}
           </>}
+          <div className="settings-group-heading"><div><span><h2>结构自愈</h2><p>识别结果结构检查失败时调用一次，不参与页面识别。</p></span></div></div>
+          {renderModelSelect('self_heal', '自愈模型', '修复后的完整 JSON 会再次经过本地归一化和 Schema 校验。')}
           <footer className="settings-save-bar"><span>{dirty ? '有未保存的更改' : <><Check size={13} />设置已同步</>}</span><button type="button" className="button" disabled={!dirty || saving} onClick={resetCurrentConfiguration}><RotateCcw size={14} />还原</button><button type="button" className="button button-primary" disabled={!dirty || saving} onClick={() => void saveConfiguration()}>{saving ? <LoaderCircle className="spin" size={14} /> : <Save size={14} />}保存设置</button></footer>
         </section> : <section className="prompt-detail-page" aria-labelledby="recognition-prompt-title">
             <div className="settings-group-heading"><div><FileText size={17} /><span><h2 id="recognition-prompt-title">当前识别提示词</h2></span></div></div>

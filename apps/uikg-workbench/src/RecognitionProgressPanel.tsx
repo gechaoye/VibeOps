@@ -142,7 +142,11 @@ function historyErrorDetails(session: AnalysisSession | null) {
   });
   const consistencyDetails = (session.consistencyIssues || []).map((item) => typeof item === 'string' && item.trim() ? `一致性检查：${item.trim()}` : null);
   const normalizationDetails = (session.normalizationIssues || []).map((item) => typeof item === 'string' && item.trim() ? `归一化检查：${item.trim()}` : null);
-  const details = [...new Set([...schemaDetails, ...consistencyDetails, ...normalizationDetails].filter((item): item is string => Boolean(item)))];
+  const selfHealingDetails = session.selfHealing ? [
+    !session.selfHealing.attempted && session.selfHealing.reason === 'not-configured' ? '自愈模型：未配置，未执行自动修复' : null,
+    session.selfHealing.error ? `自愈模型：${session.selfHealing.error}` : null,
+  ] : [];
+  const details = [...new Set([...schemaDetails, ...consistencyDetails, ...normalizationDetails, ...selfHealingDetails].filter((item): item is string => Boolean(item)))];
   return details.length > 0 || message !== '输出结果未通过结构检查'
     ? details
     : ['Schema 校验未通过（未返回具体校验项）'];
@@ -154,7 +158,8 @@ export function RecognitionProgressPanel({ activity, gatewayName, modelName, rea
   const [showHistory, setShowHistory] = useState(activity.phase === 'history');
   const [historySessionId, setHistorySessionId] = useState<string | null>(activity.phase === 'history' ? sessions[0]?.id || null : null);
   const [windowPosition, setWindowPosition] = useState({ x: 0, y: 0 });
-  const dragRef = useRef<{ x: number; y: number; originX: number; originY: number } | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const dragRef = useRef<{ pointerId: number; x: number; y: number; originX: number; originY: number; currentX: number; currentY: number } | null>(null);
   const displayedReasoningContent = useThrottledStreamContent(activity.reasoningContent, active && !showHistory);
   const displayedOutputContent = useThrottledStreamContent(activity.outputContent, active && !showHistory);
   const outputStream = useStreamFollow(displayedOutputContent, !showHistory);
@@ -175,17 +180,40 @@ export function RecognitionProgressPanel({ activity, gatewayName, modelName, rea
   const duration = formatDuration(endedAt - startedAt);
   const onHeaderPointerDown = (event: PointerEvent<HTMLElement>) => {
     if ((event.target as HTMLElement).closest('button')) return;
-    dragRef.current = { x: event.clientX, y: event.clientY, originX: windowPosition.x, originY: windowPosition.y };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    const panel = panelRef.current;
+    if (!panel) return;
+    dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, originX: windowPosition.x, originY: windowPosition.y, currentX: windowPosition.x, currentY: windowPosition.y };
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Synthetic pointer events do not have an active pointer to capture.
+    }
+    event.preventDefault();
   };
   const onHeaderPointerMove = (event: PointerEvent<HTMLElement>) => {
-    if (!dragRef.current) return;
-    setWindowPosition({ x: dragRef.current.originX + event.clientX - dragRef.current.x, y: dragRef.current.originY + event.clientY - dragRef.current.y });
+    const drag = dragRef.current;
+    const panel = panelRef.current;
+    if (!drag || drag.pointerId !== event.pointerId || !panel) return;
+    drag.currentX = drag.originX + event.clientX - drag.x;
+    drag.currentY = drag.originY + event.clientY - drag.y;
+    // Keep pointer feedback out of React's render queue while recognition streams update.
+    panel.style.transform = `translate(calc(-50% + ${drag.currentX}px), calc(-50% + ${drag.currentY}px))`;
+  };
+  const onHeaderPointerUp = (event: PointerEvent<HTMLElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    setWindowPosition({ x: drag.currentX, y: drag.currentY });
+    dragRef.current = null;
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // Synthetic pointer events do not have an active pointer to release.
+    }
   };
 
   return <div className="recognition-progress-backdrop">
-    <section className="recognition-progress-panel" role="dialog" aria-modal="true" aria-label="页面识别" style={{ transform: `translate(calc(-50% + ${windowPosition.x}px), calc(-50% + ${windowPosition.y}px))` }}>
-      <header className="recognition-progress-header" onPointerDown={onHeaderPointerDown} onPointerMove={onHeaderPointerMove} onPointerUp={() => { dragRef.current = null; }}>
+    <section ref={panelRef} className="recognition-progress-panel" role="dialog" aria-modal="true" aria-label="页面识别" style={{ transform: `translate(calc(-50% + ${windowPosition.x}px), calc(-50% + ${windowPosition.y}px))` }}>
+      <header className="recognition-progress-header" onPointerDown={onHeaderPointerDown} onPointerMove={onHeaderPointerMove} onPointerUp={onHeaderPointerUp} onPointerCancel={onHeaderPointerUp}>
         <div><ScanSearch size={18} /><span><strong>Manual 模式 · {gatewayName || '未配置网关'}：{modelName || '模型未配置'} · {reasoningEffort || '未配置'} · {duration}</strong></span></div>
         <div><button type="button" className={`icon-button ${showHistory ? 'active' : ''}`} title="识别历史" onClick={() => setShowHistory((value) => !value)}><History size={15} /></button><button type="button" className="icon-button" title="关闭" disabled={active} onClick={onClose}><X size={16} /></button></div>
       </header>

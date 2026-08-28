@@ -15,6 +15,8 @@ import {
   saveModelGateway,
   saveTargetModelSettings,
   saveWorkbenchMode,
+  testGatewayModelCapabilities,
+  testModelConnectivity,
   testModelGateway,
 } from './model-settings.mjs';
 import { DEFAULT_RECOGNITION_PROMPT_RULES, ModelSettingsStore } from './model-settings-store.mjs';
@@ -26,11 +28,11 @@ async function temporaryStore() {
   return { root, store };
 }
 
-test('网关和三个运行目标持久化到 SQLite 且彼此独立', async () => {
+test('网关和四个运行目标持久化到 SQLite 且彼此独立', async () => {
   const { root, store } = await temporaryStore();
   try {
     store.saveGateway({ id: 'alpha', label: 'Alpha', baseUrl: 'https://alpha.example/v1', apiKey: 'alpha-secret-1234' });
-    for (const [target, modelName] of [['manual', 'manual-model'], ['auto', 'auto-model'], ['midscene', 'midscene-model']]) {
+    for (const [target, modelName] of [['manual', 'manual-model'], ['auto', 'auto-model'], ['midscene', 'midscene-model'], ['self_heal', 'self-heal-model']]) {
       saveTargetModelSettings(store, {
         target, gatewayId: 'alpha', modelName, modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'medium',
       });
@@ -42,6 +44,7 @@ test('网关和三个运行目标持久化到 SQLite 且彼此独立', async () 
     assert.equal(reopened.getAssignment('manual').modelName, 'manual-model');
     assert.equal(reopened.getAssignment('auto').modelName, 'auto-model');
     assert.equal(reopened.getAssignment('midscene').modelName, 'midscene-model');
+    assert.equal(reopened.getAssignment('self_heal').modelName, 'self-heal-model');
     assert.equal(reopened.getGateway('alpha', { includeApiKey: true }).apiKey, 'alpha-secret-1234');
     reopened.close();
   } finally {
@@ -345,6 +348,53 @@ test('所有已保存网关均可执行连通性测试', async () => {
   }
 });
 
+test('单模型连通性测试发送轻量请求并返回独立延迟', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    store.saveGateway({ id: 'alpha', label: 'Alpha', baseUrl: 'https://alpha.example/v1', apiKey: 'alpha-secret' });
+    const result = await testModelConnectivity(store, 'alpha', 'model-a', async (url, options) => {
+      assert.equal(url, 'https://alpha.example/v1/chat/completions');
+      assert.equal(options.headers.authorization, 'Bearer alpha-secret');
+      const body = JSON.parse(options.body);
+      assert.equal(body.model, 'model-a');
+      assert.equal(body.stream, false);
+      assert.equal(body.messages[0].content, '回复 OK');
+      return new Response(JSON.stringify({ choices: [{ message: { content: 'OK' } }] }), { status: 200 });
+    });
+    assert.equal(result.gatewayId, 'alpha');
+    assert.equal(result.modelName, 'model-a');
+    assert.equal(result.ok, true);
+    assert.equal(typeof result.latencyMs, 'number');
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('网关能力检测分批并发且每批不超过 10 个模型', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    store.saveGateway({ id: 'alpha', label: 'Alpha', baseUrl: 'https://alpha.example/v1', apiKey: 'alpha-secret' });
+    const models = Array.from({ length: 12 }, (_, index) => ({ id: `model-${index + 1}` }));
+    let active = 0;
+    let maximumActive = 0;
+    const result = await testGatewayModelCapabilities(store, 'alpha', async (url) => {
+      if (url.endsWith('/models')) return new Response(JSON.stringify({ data: models }), { status: 200 });
+      active += 1;
+      maximumActive = Math.max(maximumActive, active);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      active -= 1;
+      return new Response(`data: ${JSON.stringify({ choices: [{ delta: { content: '{"frameId":"probe"}' } }] })}\n\ndata: [DONE]\n\n`, { status: 200 });
+    });
+    assert.equal(result.results.length, 12);
+    assert.equal(result.native, 12);
+    assert.equal(maximumActive, 10);
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test('旧数据库中的双模型目标只迁移主识别配置', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-model-target-migration-'));
   const databasePath = path.join(root, 'model-settings.sqlite');
@@ -366,6 +416,32 @@ test('旧数据库中的双模型目标只迁移主识别配置', async () => {
     assert.throws(() => store.getAssignment('ultra_a'), /未知模型目标/);
     assert.throws(() => store.getAssignment('ultra_b'), /未知模型目标/);
     assert.deepEqual(store.listAssignments().map((assignment) => assignment.target), ['manual']);
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('三目标数据库迁移后保留原配置并支持自愈模型', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-self-heal-target-migration-'));
+  const databasePath = path.join(root, 'model-settings.sqlite');
+  const legacy = new Database(databasePath);
+  legacy.exec(`
+    CREATE TABLE model_gateways (id TEXT PRIMARY KEY, label TEXT NOT NULL, base_url TEXT NOT NULL UNIQUE COLLATE NOCASE, api_key TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+    CREATE TABLE model_assignments (target TEXT PRIMARY KEY CHECK (target IN ('manual', 'auto', 'midscene')), gateway_id TEXT NOT NULL REFERENCES model_gateways(id), model_name TEXT NOT NULL, model_family TEXT NOT NULL, timeout INTEGER NOT NULL, temperature REAL NOT NULL, reasoning_effort TEXT NOT NULL, updated_at TEXT NOT NULL);
+    CREATE TABLE model_settings_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+    INSERT INTO model_gateways VALUES ('current', 'Current', 'https://current.example/v1', 'secret', '2026-01-01', '2026-01-01');
+    INSERT INTO model_assignments VALUES ('manual', 'current', 'manual-v1', 'gpt-5', 180000, 0, 'medium', '2026-01-01');
+    INSERT INTO model_assignments VALUES ('auto', 'current', 'auto-v1', 'gpt-5', 180000, 0, 'medium', '2026-01-01');
+    INSERT INTO model_assignments VALUES ('midscene', 'current', 'midscene-v1', 'gpt-5', 180000, 0, 'medium', '2026-01-01');
+  `);
+  legacy.close();
+  const store = new ModelSettingsStore(databasePath);
+  try {
+    await store.initialize();
+    assert.deepEqual(store.listAssignments().map((assignment) => assignment.target), ['auto', 'manual', 'midscene']);
+    store.saveAssignment({ target: 'self_heal', gatewayId: 'current', modelName: 'healer-v1', modelFamily: 'gpt-5', timeout: 180000, temperature: 0, reasoningEffort: 'low' });
+    assert.equal(store.getAssignment('self_heal').modelName, 'healer-v1');
   } finally {
     store.close();
     await rm(root, { recursive: true, force: true });

@@ -16,7 +16,9 @@ export function draftForAnnotationTarget(draft: Draft, target: AnnotationTarget)
   if (!page) return null;
   const frameId = target.frameId && page.frameIds.includes(target.frameId)
     ? target.frameId
-    : page.frameIds.at(-1) || null;
+    : page.primaryFrameId && page.frameIds.includes(page.primaryFrameId)
+      ? page.primaryFrameId
+      : page.frameIds[0] || null;
   return {
     ...draft,
     currentPageId: page.id,
