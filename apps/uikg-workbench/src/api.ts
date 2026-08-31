@@ -197,8 +197,8 @@ export const workbenchApi = {
   }),
   processPageUpload: (taskId: string) => request<{ task: PageUploadTask; draft?: Draft }>(`/page-uploads/${encodeURIComponent(taskId)}/process`, { method: 'POST', body: '{}' }),
   deletePageUploads: (ids: string[], deletePages: boolean) => request<{ deletedIds: string[]; draft: Draft }>('/page-uploads', { method: 'DELETE', body: JSON.stringify({ ids, deletePages }) }),
-  freezeFrame: (forceNewPage = false, collectRuntimeStructure = true) => request<{ frame: FrameMetadata; draft: Draft }>('/frames', { method: 'POST', body: JSON.stringify({ forceNewPage, collectRuntimeStructure }) }),
-  appendFrame: (pageId?: string, collectRuntimeStructure = true) => request<{ frame: FrameMetadata; draft: Draft }>('/frames/append', { method: 'POST', body: JSON.stringify({ pageId, collectRuntimeStructure }) }),
+  freezeFrame: (forceNewPage = false, collectRuntimeStructure = true, exportFullPage = true) => request<{ frame: FrameMetadata; draft: Draft }>('/frames', { method: 'POST', body: JSON.stringify({ forceNewPage, collectRuntimeStructure, exportFullPage }) }),
+  appendFrame: (pageId?: string, collectRuntimeStructure = true, exportFullPage = true) => request<{ frame: FrameMetadata; draft: Draft }>('/frames/append', { method: 'POST', body: JSON.stringify({ pageId, collectRuntimeStructure, exportFullPage }) }),
   deletePageFrame: (frameId: string, pageId?: string) => request<{ draft: Draft }>(`/frames/${encodeURIComponent(frameId)}`, { method: 'DELETE', body: JSON.stringify({ pageId }) }),
   frame: (frameId: string) => request<{ frame: FrameMetadata }>(`/frames/${encodeURIComponent(frameId)}`),
   recognitionStream: (

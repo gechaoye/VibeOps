@@ -549,7 +549,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
       </header>
       {gateway.error ? <div className="model-list-error"><CircleAlert size={14} /><span title={gateway.error}>{gateway.error}</span></div> : <div className="model-gateway-models" aria-label={`${gateway.label} 模型`}>
         {gateway.models.length > 0 && <div className="gateway-model-table-header" aria-hidden="true"><span /><span>模型名称</span><span>模型类型</span><span>连通性</span><span>结构化输出</span></div>}
-        {gateway.models.map((modelName) => {
+        {gateway.models.length > 0 && <div className="gateway-model-table-body">{gateway.models.map((modelName) => {
           const capability = gateway.capabilities[modelName];
           const connectivityTest = modelConnectivityTests[gateway.id]?.[modelName];
           const capabilityTest = modelCapabilityTests[gateway.id]?.[modelName];
@@ -557,7 +557,7 @@ export function ModelSettings({ onSaved, onNotice }: ModelSettingsProps) {
           const connectivityLabel = connectivityTest?.status === 'testing' ? '测试中' : connectivityTest?.status === 'success' ? connectivityTest.detail : connectivityTest?.status === 'error' ? '连接失败' : '未测试';
           const capabilityLabel = capabilityTest?.status === 'testing' ? '检测中' : capabilityTest?.status === 'error' ? '检测失败' : label;
           return <div key={modelName} className="gateway-model-row"><i className={capability?.mode || 'unverified'} aria-hidden="true" /><strong title={modelName}>{modelName}</strong><code>{gateway.modelFamilies[modelName] || familyForModel(modelName)}</code><span className={`model-connectivity-result ${connectivityTest?.status || 'untested'}`} title={connectivityTest?.detail}>{connectivityTest?.status === 'testing' && <LoaderCircle className="spin" size={12} />}{connectivityLabel}</span><span className={`model-capability-badge ${capabilityTest?.status === 'error' ? 'error' : capability?.mode || 'unverified'}`} title={capabilityTest?.detail || capability?.detail}>{capabilityTest?.status === 'testing' && <LoaderCircle className="spin" size={12} />}{capabilityLabel}</span></div>;
-        })}
+        })}</div>}
         {!gateway.models.length && <div className="model-list-empty">没有可用模型</div>}
       </div>}
     </section>;

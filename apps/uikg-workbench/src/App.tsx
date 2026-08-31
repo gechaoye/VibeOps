@@ -53,7 +53,7 @@ import { IncrementalRecognitionPanel, type IncrementalCandidate } from './Increm
 import { KnowledgeGraph } from './KnowledgeGraph';
 import { LiveDevicePreview } from './LiveDevicePreview';
 import { ModelSettings } from './ModelSettings';
-import { createDraftTransition, createHumanElement, elementAvailableOnPage, gridForBox, normalizeGridCount, reviewStatusLabels, validateDraftClient } from './model';
+import { createDraftTransition, createHumanElement, elementAvailableOnPage, gridForBox, normalizeGridCount, recognizedFrameIdsForPage, reviewStatusLabels, validateDraftClient } from './model';
 import { PageGraph } from './PageGraph';
 import { PageUploadDialog } from './PageUploadDialog';
 import { ProjectModelSettings } from './ProjectModelSettings';
@@ -453,6 +453,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const [frame, setFrame] = useState<FrameMetadata | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => annotationTarget ? 'review' : 'live');
   const [collectUiTreeWithScreenshot, setCollectUiTreeWithScreenshot] = useState(true);
+  const [exportFullPage, setExportFullPage] = useState(true);
+  const [showDeviceViewportMask, setShowDeviceViewportMask] = useState(true);
   const [includeUiTreeInRecognition, setIncludeUiTreeInRecognition] = useState(false);
   const [sideTab, setSideTab] = useState<SideTab>('elements');
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(() => tabKind === 'workspace' ? 'graph' : tabKind === 'knowledge' ? 'knowledge' : 'annotation');
@@ -486,7 +488,6 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const [viewedFrameId, setViewedFrameId] = useState<string | null>(null);
   const [incrementalSession, setIncrementalSession] = useState<IncrementalSession | null>(null);
   const [incrementalPanelOpen, setIncrementalPanelOpen] = useState(false);
-  const [incrementalManualElements, setIncrementalManualElements] = useState<DraftElement[]>([]);
   const [analysisSessions, setAnalysisSessions] = useState<AnalysisSession[]>([]);
   const [analysisSessionManagerOpen, setAnalysisSessionManagerOpen] = useState(false);
   const [analysisSessionReconnectId, setAnalysisSessionReconnectId] = useState<string | null>(null);
@@ -574,10 +575,24 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       });
     });
   }, [draft, elementActivities]);
-  const annotationCanvasElements = useMemo(() => [...currentElements, ...incrementalManualElements], [currentElements, incrementalManualElements]);
-  const treeElements = useMemo(() => duplicateCandidateKeyFilter
-    ? currentElements.filter((element) => element.candidateKey.trim() === duplicateCandidateKeyFilter)
-    : currentElements, [currentElements, duplicateCandidateKeyFilter]);
+  const annotationCanvasElements = currentElements;
+  const treeElements = useMemo(() => {
+    const byId = new Map((draft?.elements || []).map((element) => [element.id, element]));
+    const visible = new Map(currentElements.map((element) => [element.id, element]));
+    for (const element of currentElements) {
+      let parent = element.parentId ? byId.get(element.parentId) : undefined;
+      const visited = new Set<string>();
+      while (parent && !visited.has(parent.id)) {
+        visited.add(parent.id);
+        visible.set(parent.id, parent);
+        parent = parent.parentId ? byId.get(parent.parentId) : undefined;
+      }
+    }
+    const result = [...visible.values()];
+    return duplicateCandidateKeyFilter
+      ? result.filter((element) => element.candidateKey.trim() === duplicateCandidateKeyFilter)
+      : result;
+  }, [currentElements, draft, duplicateCandidateKeyFilter]);
   const currentPageHasPrivateElements = Boolean(draft?.elements.some((element) => element.pageId === draft.currentPageId));
   const historyBlockedForPendingPage = Boolean(activeFrameId && !currentPageHasPrivateElements && draft?.pages.find((page) => page.id === draft.currentPageId)?.frameIds.includes(activeFrameId));
   const allCurrentChecked = treeElements.length > 0 && treeElements.every((element) => checkedIds.has(element.id));
@@ -586,8 +601,11 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const frameUrl = activeFrameId
     ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(activeFrameId)}/image`)
     : null;
-  const incrementalAdditions = incrementalSession?.candidates.filter((candidate) => candidate.kind === 'new' || candidate.kind === 'manual').length || 0;
+  const incrementalAdditions = incrementalSession?.candidates.filter((candidate) => candidate.kind === 'new').length || 0;
   const uiTreeAvailable = Boolean(frame && frame.frameId === activeFrameId && frame.runtimeStructure);
+  const longFrameHasDeviceViewport = Boolean(frame?.capture?.deviceViewport
+    && frame.height > frame.capture.deviceViewport.height * 1.05
+    && Math.abs(frame.width / frame.capture.deviceViewport.width - 1) < 0.08);
   const pageGraphDraft = useMemo(() => {
     if (!draft || Object.keys(pageNameOverrides).length === 0) return draft;
     const pages = draft.pages.map((page) => Object.prototype.hasOwnProperty.call(pageNameOverrides, page.id)
@@ -607,14 +625,9 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     return analysisSessions.filter((session) => session.pageId === draft.currentPageId);
   }, [analysisSessions, draft]);
   const recognizedFrameIds = useMemo(() => {
-    const result = new Set<string>();
-    if (!draft) return result;
-    for (const element of draft.elements) {
-      if (element.sourceFrameId && elementAvailableOnPage(element, draft.currentPageId, draft.elements)) {
-        result.add(element.sourceFrameId);
-      }
-    }
-    return result;
+    if (!draft) return new Set<string>();
+    const currentPage = draft.pages.find((page) => page.id === draft.currentPageId);
+    return currentPage ? recognizedFrameIdsForPage(draft, currentPage) : new Set<string>();
   }, [draft]);
   const hasAnalyzedCurrentFrame = Boolean(activeFrameId && recognizedFrameIds.has(activeFrameId));
   const acceptedHistorySessionId = useMemo(() => {
@@ -1036,8 +1049,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     try {
       const appendTargetPageId = deviceFrameTargetPageId;
       const result = appendTargetPageId
-        ? await workbenchApi.appendFrame(appendTargetPageId, collectUiTreeWithScreenshot)
-        : await workbenchApi.freezeFrame(true, collectUiTreeWithScreenshot);
+        ? await workbenchApi.appendFrame(appendTargetPageId, collectUiTreeWithScreenshot, exportFullPage)
+        : await workbenchApi.freezeFrame(true, collectUiTreeWithScreenshot, exportFullPage);
 
       resetDraftState(result.draft);
       setSelectedId(null);
@@ -1050,8 +1063,10 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       setDeviceFrameTargetPageId(null);
       setPendingAppendedFrame(appendTargetPageId ? { pageId: appendTargetPageId, frameId: result.frame.frameId } : null);
       setIncrementalSession(null);
-      setIncrementalManualElements([]);
-      showNotice('success', appendTargetPageId ? '设备帧已添加，请确认后开始标注' : '画面已冻结，请确认后开始标注');
+      const captureMessage = result.frame.capture?.exportedFullPage
+        ? '，已导出整页'
+        : exportFullPage && result.frame.capture?.reason ? `；整页导出不可用：${result.frame.capture.reason}` : '';
+      showNotice('success', `${appendTargetPageId ? '设备帧已添加，请确认后开始标注' : '画面已冻结，请确认后开始标注'}${captureMessage}`);
     } catch (error) {
       showNotice('error', error instanceof Error ? error.message : String(error));
     } finally {
@@ -1087,7 +1102,6 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     setIncrementalSession(pageElements.length > 0
       ? { pageId: targetPageId, frameId: nextDraft.currentFrameId, baseElementIds: pageElements.map((element) => element.id), candidates: [], status: 'pending' }
       : null);
-    setIncrementalManualElements([]);
     setIncrementalPanelOpen(false);
     const addedPage = nextDraft.pages.find((page) => page.id === targetPageId);
     const recognitionAction = addedPage?.primaryFrameId === nextDraft.currentFrameId ? '识别分析' : '增量识别';
@@ -1102,7 +1116,6 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     setSelectedId(null);
     setCheckedIds(new Set());
     setIncrementalSession(null);
-    setIncrementalManualElements([]);
     setIncrementalPanelOpen(false);
     setViewMode('review');
   };
@@ -1129,7 +1142,6 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       setSelectedId(null);
       setCheckedIds(new Set());
       setIncrementalSession(null);
-      setIncrementalManualElements([]);
       setIncrementalPanelOpen(false);
       showNotice('success', '已设置新的主帧');
     };
@@ -1163,7 +1175,6 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       setSelectedId(null);
       setCheckedIds(new Set());
       setIncrementalSession(null);
-      setIncrementalManualElements([]);
       setIncrementalPanelOpen(false);
       showNotice('success', '已删除该观测帧');
     } catch (error) {
@@ -1244,10 +1255,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     const pageElements = draft.elements.filter((element) => elementAvailableOnPage(element, draft.currentPageId, draft.elements));
     if (isAdditionalFrame && pageElements.length > 0) {
       setIncrementalSession({ pageId: draft.currentPageId, frameId: activeFrameId, baseElementIds: pageElements.map((element) => element.id), candidates: [], status: 'pending' });
-      setIncrementalManualElements([]);
     } else if (isAdditionalFrame) {
       setIncrementalSession(null);
-      setIncrementalManualElements([]);
     }
     setViewMode('review');
   };
@@ -1275,7 +1284,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       setRecognitionActivity((current) => current ? {
         ...current,
         phase: String(event.phase || current.phase),
-        phaseMessage: String(event.message || current.phaseMessage),
+        phaseMessage: event.phase === 'resume' || /正在继续 .*识别/.test(String(event.message || '')) ? '正在重新识别' : String(event.message || current.phaseMessage),
         retryReason: typeof event.retryReason === 'string' ? event.retryReason : current.retryReason,
         retryAttempt: typeof event.totalAttempt === 'number' ? event.totalAttempt : current.retryAttempt,
         retryLimit: typeof event.retryLimit === 'number' ? event.retryLimit : current.retryLimit,
@@ -1314,7 +1323,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
           candidate: candidatesByKey.get(item.candidateKey),
         };
       });
-      setIncrementalSession((current) => current ? { ...current, candidates: [...candidates, ...current.candidates.filter((item) => item.kind === 'manual')], recognitionResult: result.recognitionResult, modelResultRef: result.modelResultRef, model: result.model, status: 'review' } : current);
+      setIncrementalSession((current) => current ? { ...current, candidates, recognitionResult: result.recognitionResult, modelResultRef: result.modelResultRef, model: result.model, status: 'review' } : current);
       setRecognitionActivity((current) => current ? { ...current, status: 'completed', phase: 'incremental-review', phaseMessage: '识别完成，候选已完成去重与共相匹配', completedAt: new Date().toISOString() } : current);
       setRecognitionDialogOpen(false);
       setIncrementalPanelOpen(true);
@@ -1360,7 +1369,6 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     if (mode === 'incremental') {
       setIncrementalSession(null);
       setIncrementalPanelOpen(false);
-      setIncrementalManualElements([]);
     }
     setRecognitionActivity((current) => current ? {
       ...current,
@@ -1401,7 +1409,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     }
     recognitionModeRef.current = mode;
     if (mode === 'incremental') {
-      setIncrementalManualElements([]);
+      setDrawing(false);
       setIncrementalSession({
         pageId: recognitionDraft.currentPageId,
         frameId: recognitionDraft.currentFrameId || '',
@@ -1489,16 +1497,11 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     if (modelActivity?.status !== 'paused') setRecognitionActivity(null);
   };
 
-  const openIncrementalCanvas = () => {
+  const discardIncrementalResult = () => {
+    setIncrementalSession(null);
     setIncrementalPanelOpen(false);
-    setWorkspaceMode('annotation');
-    setViewMode('review');
-    setDrawing(true);
-  };
-
-  const removeIncrementalManual = (id: string) => {
-    setIncrementalSession((current) => current ? { ...current, candidates: current.candidates.filter((candidate) => candidate.id !== id) } : current);
-    setIncrementalManualElements((current) => current.filter((element) => element.id !== id));
+    setSelectedId(null);
+    showNotice('info', '已放弃本次增量识别结果');
   };
 
   const confirmIncrementalAppend = async () => {
@@ -1508,23 +1511,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     setIncrementalSession((current) => current ? { ...current, status: 'committing' } : current);
     try {
       if (!session.recognitionResult) {
-        const manualElements = incrementalManualElements.filter((element) => session.candidates.some((candidate) => candidate.id === element.id));
-        const nextDraft: Draft = {
-          ...currentDraft,
-          revision: currentDraft.revision + 1,
-          elements: [...currentDraft.elements, ...manualElements],
-          elementEditRecords: [...currentDraft.elementEditRecords, ...manualElements.map((element) => ({ elementId: element.id, kind: 'created' as const, fields: ['bbox'], editedAt: new Date().toISOString() }))],
-          pages: currentDraft.pages.map((page) => page.id === session.pageId ? { ...page, elementIds: [...new Set([...page.elementIds, ...manualElements.map((element) => element.id)])], publishedAt: null } : page),
-          updatedAt: new Date().toISOString(),
-        };
-        const result = await workbenchApi.savePageDraft(session.pageId, nextDraft);
-        resetDraftState(result.draft);
-        setServerIssues(result.issues);
-        setIncrementalSession(null);
-        setIncrementalPanelOpen(false);
-        setIncrementalManualElements([]);
-        showNotice('success', `已保存手动新增 ${manualElements.length} 项`);
-        return;
+        throw new Error('增量识别结果不存在');
       }
       const result = await workbenchApi.appendRecognitionResult({
         frameId: session.frameId,
@@ -1533,22 +1520,12 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         modelResultRef: session.modelResultRef || 'recognition-incremental-append',
         model: session.model || null,
       });
-      const manualIds = new Set(session.candidates.filter((candidate) => candidate.kind === 'manual').map((candidate) => candidate.id));
-      const manualElements = incrementalManualElements.filter((element) => manualIds.has(element.id));
-      const mergedManualElements = manualElements.filter((element) => !result.draft.elements.some((candidate) => candidate.id === element.id));
-      const nextDraft = mergedManualElements.length === 0 ? result.draft : {
-        ...result.draft,
-        elements: [...result.draft.elements, ...mergedManualElements],
-        elementEditRecords: [...result.draft.elementEditRecords, ...mergedManualElements.map((element) => ({ elementId: element.id, kind: 'created' as const, fields: ['bbox'], editedAt: new Date().toISOString() }))],
-        pages: result.draft.pages.map((page) => page.id === session.pageId ? { ...page, elementIds: [...new Set([...page.elementIds, ...mergedManualElements.map((element) => element.id)])] } : page),
-      };
-      resetDraftState(nextDraft);
-      setServerIssues(validateDraftClient(nextDraft));
+      resetDraftState(result.draft);
+      setServerIssues(validateDraftClient(result.draft));
       setIncrementalSession(null);
       setIncrementalPanelOpen(false);
-      setIncrementalManualElements([]);
       setSelectedId(null);
-      showNotice('success', `已完成增量合并，仅新增 ${session.candidates.filter((candidate) => candidate.kind === 'new' || candidate.kind === 'manual').length} 项`);
+      showNotice('success', `已完成增量合并，仅新增 ${session.candidates.filter((candidate) => candidate.kind === 'new').length} 项`);
     } catch (error) {
       setIncrementalSession((current) => current ? { ...current, status: 'review' } : current);
       showNotice('error', `增量合并失败：${error instanceof Error ? error.message : String(error)}`);
@@ -1563,7 +1540,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       ...current,
       status: 'running',
       phase: 'resume',
-      phaseMessage: '正在继续页面识别',
+      phaseMessage: '正在重新识别',
       errorMessage: undefined,
     } : current);
     try {
@@ -1689,6 +1666,35 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     reviewCompletionInFlightRef.current = true;
     setBusy('review-complete');
     try {
+      const currentPage = current.pages.find((page) => page.id === current.currentPageId);
+      const recognizedFrames = currentPage ? recognizedFrameIdsForPage(current, currentPage) : new Set<string>();
+      const nextUnrecognizedFrameId = currentPage?.frameIds.find((frameId) => !recognizedFrames.has(frameId)) || null;
+      if (currentPage && nextUnrecognizedFrameId) {
+        const continuedDraft = { ...current, currentFrameId: nextUnrecognizedFrameId };
+        const result = annotationTarget
+          ? await workbenchApi.savePageDraft(annotationTarget.pageId, continuedDraft)
+          : await workbenchApi.saveDraft(continuedDraft);
+        resetDraftState(result.draft);
+        setServerIssues(result.issues);
+        setViewedFrameId(nextUnrecognizedFrameId);
+        setSelectedId(null);
+        setCheckedIds(new Set());
+        setDrawing(false);
+        setViewMode('review');
+        setIncrementalSession({
+          pageId: currentPage.id,
+          frameId: nextUnrecognizedFrameId,
+          baseElementIds: result.draft.elements
+            .filter((element) => elementAvailableOnPage(element, currentPage.id, result.draft.elements))
+            .map((element) => element.id),
+          candidates: [],
+          status: 'pending',
+        });
+        setIncrementalPanelOpen(false);
+        setAutoSaveState('saved');
+        showNotice('success', '当前观测帧审核完成，请继续识别下一张观测帧');
+        return;
+      }
       const emptyPage = createEmptyWorkingPage();
       const clearedDraft: Draft = {
         ...current,
@@ -1874,18 +1880,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const addElement = (bbox: BBox) => {
     if (!draft || !activeFrameId) return;
     const element = { ...createHumanElement(bbox, draft.currentPageId), sourceFrameId: activeFrameId };
-    if (incrementalSession) {
-      setIncrementalManualElements((current) => [...current, element]);
-      setSelectedId(element.id);
-      setDrawing(false);
-      setIncrementalSession((current) => current ? {
-        ...current,
-        candidates: [...current.candidates, { id: element.id, key: element.candidateKey, label: element.label, kind: 'manual', confidence: 1 }],
-      } : current);
-      setIncrementalPanelOpen(true);
-      showNotice('info', '已加入手动画框候选，确认后才会并入页面');
-      return;
-    }
+    if (incrementalSession) return;
     updateDraft((current) => ({
       ...current,
       elements: [...current.elements, element],
@@ -2461,6 +2456,10 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
                     <input type="checkbox" checked={collectUiTreeWithScreenshot} onChange={(event) => setCollectUiTreeWithScreenshot(event.target.checked)} />
                     <span>同时获取 UI Tree</span>
                   </label>
+                  <label className="freeze-runtime-toggle" title="自动截取或拼接屏幕外的完整页面内容">
+                    <input type="checkbox" checked={exportFullPage} onChange={(event) => setExportFullPage(event.target.checked)} />
+                    <span>导出整页</span>
+                  </label>
                   <button type="button" className="button" disabled={!connected || busy === 'freeze'} onClick={() => void captureFrame()}>{busy === 'freeze' ? <LoaderCircle className="spin" size={15} /> : <Camera size={15} />}冻结画面</button>
                 </>
               ) : viewMode === 'frozen' ? (
@@ -2478,12 +2477,16 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
                 </>
               ) : (
                 <>
+                  {longFrameHasDeviceViewport && <label className="freeze-runtime-toggle" title="按截图设备分辨率显示可滚动的标注视口">
+                    <input type="checkbox" checked={showDeviceViewportMask} onChange={(event) => setShowDeviceViewportMask(event.target.checked)} />
+                    <span>设备视口遮罩</span>
+                  </label>}
                   <label className={`freeze-runtime-toggle ${uiTreeAvailable ? '' : 'disabled'}`} title={uiTreeAvailable ? '模型识别请求将附带截图时采集的 UI Tree' : '该截图未获取 UI Tree'}>
                     <input type="checkbox" checked={uiTreeAvailable && includeUiTreeInRecognition} disabled={!uiTreeAvailable} onChange={(event) => setIncludeUiTreeInRecognition(event.target.checked)} />
                     <span>识别时附带 UI Tree</span>
                   </label>
                   <button type="button" className="icon-button danger-button" title="取消标注" aria-label="取消标注" disabled={busy === 'cancel-annotation' || busy === 'review-complete'} onClick={requestCancelAnnotation}><X size={16} /></button>
-                  <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><span className="drawing-tool-icon" aria-hidden="true"><SquareDashed /><Feather /></span></button>
+                  {!incrementalSession && <button type="button" className={`icon-button ${drawing ? 'active' : ''}`} title="绘制新元素" onClick={() => setDrawing((value) => !value)}><span className="drawing-tool-icon" aria-hidden="true"><SquareDashed /><Feather /></span></button>}
                   {modelActivity?.status === 'paused' && <button type="button" className="icon-button recognition-resume-button" title={`继续页面识别，已完成 ${modelActivity.completedCandidates || 0} 个候选`} aria-label="继续页面识别" onClick={() => setRecognitionDialogOpen(true)}><RefreshCw size={15} /></button>}
                   <button type="button" className="icon-button" title="页面识别历史" disabled={pageHistorySessions.length === 0} onClick={openRecognitionHistory}><History size={15} /></button>
                   {incrementalSession && <button type="button" className="button incremental-entry-status" onClick={() => setIncrementalPanelOpen(true)}><ScanSearch size={15} />{incrementalSession.status === 'pending' ? '待手动识别' : incrementalSession.status === 'recognizing' ? '正在增量识别' : `审核新增 ${incrementalAdditions}`}</button>}
@@ -2520,6 +2523,8 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
             ) : frameUrl ? (
                 <AnnotationCanvas
                   imageUrl={frameUrl}
+                  deviceViewport={frame?.capture?.deviceViewport}
+                  useDeviceViewport={showDeviceViewportMask}
                   elements={annotationCanvasElements}
                   selectedId={selectedId}
                   selectedAbstractFieldKey={selectedAbstractFieldKey}
@@ -2531,7 +2536,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
                   onSelectAbstractField={setSelectedAbstractFieldKey}
                   onSelectAbstractFieldInstance={setSelectedAbstractFieldInstanceIndex}
                   onAdd={addElement}
-                  onBoxChange={(id, bbox) => incrementalManualElements.some((element) => element.id === id) ? setIncrementalManualElements((current) => current.map((element) => element.id === id ? { ...element, bbox } : element)) : updateElement(id, { bbox }, `bbox:${id}`)}
+                  onBoxChange={(id, bbox) => updateElement(id, { bbox }, `bbox:${id}`)}
                   onAbstractFieldBoxChange={(id, fieldKey, index, bbox) => {
                     const element = draftRef.current?.elements.find((candidate) => candidate.id === id);
                     if (!element?.abstraction) return;
@@ -2579,7 +2584,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         <section className="tree-panel">
           <div className="panel-title">
             <div className="panel-title-heading">
-              <MousePointer2 size={16} /><strong>页面元素</strong><span>{currentElements.length}</span>
+              <MousePointer2 size={16} /><strong>页面元素</strong><span>{treeElements.length}</span>
               <div className="element-history-actions" aria-label="元素历史操作">
                 <button type="button" className="icon-button" title="撤销上一步" disabled={pastRef.current.length === 0 || historyBlockedForPendingPage} onClick={undo}><Undo2 size={15} /></button>
                 <button type="button" className="icon-button" title="取消撤销" disabled={futureRef.current.length === 0 || historyBlockedForPendingPage} onClick={redo}><Redo2 size={15} /></button>
@@ -2607,7 +2612,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
             <Inspector
               element={selectedElement}
               initialElement={initialSelectedElement}
-              elements={currentElements}
+              elements={treeElements}
               pages={draft?.pages || []}
               currentPageId={draft?.currentPageId || ''}
               showGridGuides={showGridGuides}
@@ -2720,7 +2725,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       <PageUploadDialog open={uploadDialog.open} targetPageId={uploadDialog.targetPageId} draftDirty={dirty} onClose={() => setUploadDialog({ open: false, targetPageId: null })} onDraftChange={(nextDraft) => handleAddedFrameDraft(nextDraft, uploadDialog.targetPageId)} />
       <PageUploadDialog open={transferCenterOpen} purpose="history" draftDirty={dirty} onClose={() => setTransferCenterOpen(false)} onDraftChange={(nextDraft) => { resetDraftState(nextDraft, false, true); setServerIssues(validateDraftClient(nextDraft)); }} />
       {notice && <div className={`notice notice-${notice.type}`}>{notice.type === 'error' ? <CircleAlert size={16} /> : <CircleCheck size={16} />}{notice.text}</div>}
-      {incrementalPanelOpen && incrementalSession && frameUrl && <IncrementalRecognitionPanel frameUrl={frameUrl} frameId={incrementalSession.frameId} candidates={incrementalSession.candidates} confirming={incrementalSession.status === 'committing'} onClose={() => setIncrementalPanelOpen(false)} onConfirm={() => void confirmIncrementalAppend()} onOpenCanvas={openIncrementalCanvas} onRemoveManual={removeIncrementalManual} />}
+      {incrementalPanelOpen && incrementalSession && frameUrl && <IncrementalRecognitionPanel frameUrl={frameUrl} frameId={incrementalSession.frameId} candidates={incrementalSession.candidates} confirming={incrementalSession.status === 'committing'} onClose={() => setIncrementalPanelOpen(false)} onDiscard={discardIncrementalResult} onConfirm={() => void confirmIncrementalAppend()} />}
       {recognitionDialogOpen && modelActivity && frameUrl && <RecognitionProgressPanel activity={modelActivity} gatewayName={status?.manualGatewayLabel || null} modelName={status?.manualModel || null} reasoningEffort={status?.manualReasoningEffort || null} sessions={pageHistorySessions} acceptedSessionId={acceptedHistorySessionId} onCancel={() => void cancelRecognition()} onRetry={() => modelActivity.resumeKind === 'manual' ? void resumeManualRecognition() : void runRecognition(recognitionModeRef.current)} onClose={closeRecognitionDialog} />}
       {analysisSessionManagerOpen && <div className="annotation-cancel-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAnalysisSessionManagerOpen(false); }}>
         <section className="analysis-session-manager" role="dialog" aria-modal="true" aria-labelledby="analysis-session-manager-title" onMouseDown={(event) => event.stopPropagation()}>

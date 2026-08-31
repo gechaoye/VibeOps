@@ -530,6 +530,45 @@ test('旧抽象结果中过滤无 bbox 的头像字段但保留有 bbox 的真�
   assert.equal(fields.find((field) => field.key === 'avatar')?.description, '实际头像');
 });
 
+test('共相字段父级必须引用当前识别结果中的 candidateKey', () => {
+  const result = sampleRecognition();
+  result.elements[0].abstraction = {
+    kind: 'repeated-template',
+    templateKey: 'settings.row.template',
+    instanceCount: 2,
+    fields: [{
+      key: 'ordinal', label: '填写项序号', elementType: 'static-label', description: '字段序号',
+      parentId: 'settings.row.template.0.settings.row.template.1'.repeat(100), required: false,
+      instanceRegions: [{ x: 0.1, y: 0.2, width: 0.05, height: 0.04 }, { x: 0.1, y: 0.3, width: 0.05, height: 0.04 }],
+    }],
+    instanceRegions: [{ x: 0.1, y: 0.2, width: 0.8, height: 0.08 }, { x: 0.1, y: 0.3, width: 0.8, height: 0.08 }],
+    bboxStyle: 'abstract',
+  };
+
+  assert.ok(validateRecognitionConsistency(result).some((issue) => issue.startsWith('共相字段父级引用了不可见候选')));
+
+  const { recognitionResult, normalizationIssues } = normalizeRecognitionOutput(result);
+  assert.equal(recognitionResult.elements[0].abstraction.fields[0].parentId, 'settings.row');
+  assert.ok(normalizationIssues.some((issue) => issue.messages.some((message) => message.includes('不在当前识别候选中'))));
+  assert.deepEqual(validateRecognitionConsistency(recognitionResult), []);
+});
+
+test('草稿归一化修复不存在的共相字段父级并兼容已有元素 ID', () => {
+  const result = sampleRecognition();
+  result.elements[0].abstraction = {
+    kind: 'repeated-template', templateKey: 'settings.row.template', instanceCount: 2,
+    fields: [{ key: 'title', label: '标题', elementType: 'static-label', description: '标题', parentId: null, required: false, instanceRegions: [] }],
+    instanceRegions: [{ x: 0.1, y: 0.2, width: 0.8, height: 0.08 }, { x: 0.1, y: 0.3, width: 0.8, height: 0.08 }], bboxStyle: 'abstract',
+  };
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), result, 'model.json');
+  const row = draft.elements.find((element) => element.candidateKey === 'settings.row');
+  row.abstraction.fields[0].parentId = 'missing-parent';
+  assert.equal(normalizeDraftShape(draft).elements.find((element) => element.id === row.id).abstraction.fields[0].parentId, 'settings.row');
+
+  row.abstraction.fields[0].parentId = row.id;
+  assert.equal(normalizeDraftShape(draft).elements.find((element) => element.id === row.id).abstraction.fields[0].parentId, row.abstraction.fields[0].parentId);
+});
+
 test('模型把 abstraction 错放到 meaning 时仍恢复为顶层抽象模板', () => {
   const result = sampleRecognition();
   result.elements[0].elementType = 'list-item';

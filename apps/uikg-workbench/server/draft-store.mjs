@@ -83,16 +83,17 @@ export class DraftStore {
       height: frame.height,
       bytes: frame.buffer.length,
       capturedAt: frame.capturedAt,
+      capture: frame.capture || null,
       runtimeStructure: frame.runtimeStructure || null,
       imagePath,
     };
     const metadataPath = this.frameMetadataPath(frame.frameId);
     if (!(await exists(metadataPath))) {
       await writeFile(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`, 'utf8');
-    } else if (metadata.runtimeStructure) {
+    } else if (metadata.runtimeStructure || metadata.capture) {
       const existingMetadata = await this.loadFrame(frame.frameId);
-      if (!existingMetadata.runtimeStructure) {
-        await writeFile(metadataPath, `${JSON.stringify({ ...existingMetadata, runtimeStructure: metadata.runtimeStructure }, null, 2)}\n`, 'utf8');
+      if ((!existingMetadata.runtimeStructure && metadata.runtimeStructure) || (!existingMetadata.capture && metadata.capture)) {
+        await writeFile(metadataPath, `${JSON.stringify({ ...existingMetadata, runtimeStructure: existingMetadata.runtimeStructure || metadata.runtimeStructure, capture: existingMetadata.capture || metadata.capture }, null, 2)}\n`, 'utf8');
       }
     }
     return metadata;

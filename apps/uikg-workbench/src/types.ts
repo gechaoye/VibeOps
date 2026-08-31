@@ -272,6 +272,20 @@ export interface FrameMetadata {
   bytes: number;
   capturedAt: string;
   imageUrl: string;
+  capture?: {
+    requestedFullPage?: boolean;
+    exportedFullPage?: boolean;
+    status?: string;
+    reason?: string | null;
+    kind?: string;
+    method?: string;
+    deviceViewport?: { width: number; height: number };
+    webViewBounds?: { left: number; top: number; right: number; bottom: number };
+    page?: { url?: string; title?: string };
+    scrollContainer?: { scrollHeight: number; clientHeight: number; clientWidth: number };
+    devicePixelRatio?: number;
+    chunkCount?: number;
+  } | null;
   runtimeStructure?: Record<string, unknown> | null;
 }
 

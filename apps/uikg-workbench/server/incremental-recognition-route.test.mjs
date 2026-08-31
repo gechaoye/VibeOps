@@ -59,6 +59,21 @@ test('增量预览与提交统一匹配键漂移元素，并将合并结果落�
     dynamicContent: false, abstraction: null, riskSignals: [], confidence: 0.9,
   };
   const incremental = recognition(auxiliaryFrameId, 'submit_button', [extraElement]);
+  incremental.geometryRefinement = {
+    version: 2,
+    uiTreeAvailable: true,
+    domStatus: 'unavailable',
+    ocrStatus: 'complete',
+    ocrEngine: 'paddleocr',
+    anchorCount: 1,
+    calibration: { x: { scale: 1, offset: 0 }, y: { scale: 1, offset: 0 }, reliable: true },
+    exactMatchCount: 1,
+    rectangleMatchCount: 0,
+    separatorBandCount: 0,
+    structuralFieldMatchCount: 0,
+    structuralFieldRegionCount: 0,
+    visualBlockMatchCount: 0,
+  };
   const payload = { frameId: auxiliaryFrameId, pageId: draft.currentPageId, recognitionResult: incremental, modelResultRef: 'incremental.json', model: 'test-model' };
 
   try {
@@ -79,6 +94,16 @@ test('增量预览与提交统一匹配键漂移元素，并将合并结果落�
     assert.equal(invalidAppendResponse.status, 422);
     assert.deepEqual((await store.loadDraft()).elements.map((element) => element.id), draft.elements.map((element) => element.id));
 
+    const unknownRootProperty = structuredClone(incremental);
+    unknownRootProperty.unexpectedServerMetadata = true;
+    const unknownRootResponse = await fetch(`${baseUrl}/recognition/incremental-preview`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...payload, recognitionResult: unknownRootProperty }),
+    });
+    assert.equal(unknownRootResponse.status, 422);
+    const unknownRootError = await unknownRootResponse.json();
+    assert.ok(unknownRootError.schemaErrors.some((error) => error.params?.additionalProperty === 'unexpectedServerMetadata'));
+
     const previewResponse = await fetch(`${baseUrl}/recognition/incremental-preview`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload),
     });
@@ -97,6 +122,19 @@ test('增量预览与提交统一匹配键漂移元素，并将合并结果落�
     const persisted = await store.loadDraft();
     assert.deepEqual(persisted.elements.map((element) => element.id), appended.draft.elements.map((element) => element.id));
     assert.equal(persisted.rawModelResultRef, 'incremental.json');
+
+    const replacement = recognition(primaryFrameId, 'btn_submit');
+    replacement.page.name = '模型误判出的新页面';
+    const replacementResponse = await fetch(`${baseUrl}/recognition/apply`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ frameId: primaryFrameId, pageId: draft.currentPageId, recognitionResult: replacement, modelResultRef: 'replacement.json', model: 'test-model' }),
+    });
+    assert.equal(replacementResponse.status, 200);
+    const replaced = await replacementResponse.json();
+    assert.equal(replaced.draft.currentPageId, draft.currentPageId);
+    assert.equal(replaced.draft.pages.length, 1);
+    assert.equal(replaced.draft.pages[0].id, draft.currentPageId);
+    assert.ok(replaced.draft.pages[0].frameIds.includes(auxiliaryFrameId));
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     await rm(root, { recursive: true, force: true });

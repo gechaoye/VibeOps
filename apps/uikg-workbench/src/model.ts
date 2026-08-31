@@ -12,9 +12,20 @@ export const pageWorkflowStatusLabels: Record<PageWorkflowStatus, string> = {
   published: '已发布',
 };
 
+export function recognizedFrameIdsForPage(draft: Draft, page: DraftPage): Set<string> {
+  const frameIds = new Set(page.frameIds);
+  return new Set(draft.elements
+    .filter((element) => element.sourceFrameId
+      && frameIds.has(element.sourceFrameId)
+      && elementAvailableOnPage(element, page.id, draft.elements))
+    .map((element) => element.sourceFrameId as string));
+}
+
 export function pageWorkflowStatus(draft: Draft, page: DraftPage): PageWorkflowStatus {
   const pageElements = draft.elements.filter((element) => elementAvailableOnPage(element, page.id, draft.elements));
-  if (page.frameIds.length === 0 || pageElements.length === 0) return 'pending-recognition';
+  if (page.frameIds.length === 0
+    || pageElements.length === 0
+    || recognizedFrameIdsForPage(draft, page).size < page.frameIds.length) return 'pending-recognition';
   if (pageElements.some((element) => element.reviewStatus === 'pending')) return 'pending-review';
   return page.publishedAt ? 'published' : 'ready';
 }

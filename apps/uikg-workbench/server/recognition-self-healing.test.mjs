@@ -95,7 +95,12 @@ function eventPayload(stream, eventName) {
 }
 
 test('Schema 失败后调用自愈模型一次并使用再次校验通过的结果', async () => {
-  const scenario = await runScenario(() => ({ repairedResult: recognitionResult('candidate_bbox'), outputContent: '{"repaired":true}' }));
+  const scenario = await runScenario((input) => {
+    assert.equal(input.candidate.geometryRefinement, undefined);
+    const repairedResult = recognitionResult('candidate_bbox');
+    repairedResult.geometryRefinement = { version: 2, generatedBy: 'server' };
+    return { repairedResult, outputContent: '{"repaired":true}' };
+  });
   assert.equal(scenario.repairCalls, 1);
   assert.match(scenario.text, /phase":"self-heal"/);
   const result = eventPayload(scenario.text, 'result');

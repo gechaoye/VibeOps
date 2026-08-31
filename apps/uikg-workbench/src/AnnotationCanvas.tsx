@@ -4,6 +4,8 @@ import type { BBox, DraftElement } from './types';
 
 interface AnnotationCanvasProps {
   imageUrl: string;
+  deviceViewport?: { width: number; height: number };
+  useDeviceViewport: boolean;
   elements: DraftElement[];
   selectedId: string | null;
   selectedAbstractFieldKey: string | null;
@@ -53,14 +55,15 @@ function elementAtPoint(elements: DraftElement[], selectedId: string | null, x: 
   return hits[(selectedIndex + 1) % hits.length];
 }
 
-export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstractFieldKey, selectedAbstractFieldInstanceIndex, drawing, showRejected, showGridGuides, onSelect, onSelectAbstractField, onSelectAbstractFieldInstance, onAdd, onBoxChange, onAbstractFieldBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
+export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, elements, selectedId, selectedAbstractFieldKey, selectedAbstractFieldInstanceIndex, drawing, showRejected, showGridGuides, onSelect, onSelectAbstractField, onSelectAbstractFieldInstance, onAdd, onBoxChange, onAbstractFieldBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
+  const viewportRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [availableSize, setAvailableSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const container = stageRef.current?.parentElement;
+    const container = viewportRef.current?.parentElement;
     if (!container) return;
     const updateSize = (width: number, height: number) => {
       setAvailableSize((current) => current.width === width && current.height === height ? current : { width, height });
@@ -78,14 +81,25 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstr
     return () => observer.disconnect();
   }, []);
 
-  const fittedSize = useMemo(() => {
+  const layout = useMemo(() => {
     if (!imageSize.width || !imageSize.height || !availableSize.width || !availableSize.height) return null;
-    const scale = Math.min(availableSize.width / imageSize.width, availableSize.height / imageSize.height);
+    const isLongPage = Boolean(deviceViewport?.width && deviceViewport?.height
+      && imageSize.height > deviceViewport.height * 1.05
+      && Math.abs(imageSize.width / deviceViewport.width - 1) < 0.08);
+    const viewportMode = isLongPage && useDeviceViewport;
+    const reference = viewportMode ? deviceViewport! : imageSize;
+    const scale = Math.min(availableSize.width / reference.width, availableSize.height / reference.height);
     return {
-      width: imageSize.width * scale,
-      height: imageSize.height * scale,
+      isLongPage,
+      viewportMode,
+      viewport: { width: reference.width * scale, height: reference.height * scale },
+      stage: { width: imageSize.width * scale, height: imageSize.height * scale },
     };
-  }, [availableSize, imageSize]);
+  }, [availableSize, deviceViewport, imageSize, useDeviceViewport]);
+
+  useEffect(() => {
+    if (viewportRef.current) viewportRef.current.scrollTop = 0;
+  }, [imageUrl, useDeviceViewport]);
 
   const onPointerMove = (event: React.PointerEvent) => {
     if (!gesture || !stageRef.current) return;
@@ -140,12 +154,18 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstr
     .sort((left, right) => Number(left.id === selectedId) - Number(right.id === selectedId));
   const selectedElement = visibleElements.find((element) => element.id === selectedId) || null;
   const selectedInheritsListRegion = Boolean(selectedElement?.abstraction?.kind === 'repeated-template' && visibleElements.some((candidate) => candidate.id === selectedElement.parentId && ['list', 'grouped-list', 'swipe-list', 'expandable-list'].includes(candidate.elementType)));
-
   return (
+    <div
+      ref={viewportRef}
+      className={`annotation-canvas-viewport ${layout?.viewportMode ? 'annotation-device-viewport' : ''}`}
+      style={layout?.viewport}
+      data-long-page={layout?.isLongPage ? 'true' : 'false'}
+      data-viewport-mask={layout?.viewportMode ? 'true' : 'false'}
+    >
     <div
       ref={stageRef}
       className={`annotation-stage ${drawing ? 'annotation-stage-drawing' : ''}`}
-      style={fittedSize || undefined}
+      style={layout?.stage}
       onPointerDown={(event) => {
         const isBackground = event.target === event.currentTarget || event.target instanceof HTMLImageElement;
         if (!stageRef.current || !isBackground) return;
@@ -287,6 +307,7 @@ export function AnnotationCanvas({ imageUrl, elements, selectedId, selectedAbstr
         );
       })}
       {drawBox && <div className="bbox bbox-new" style={{ left: `${drawBox.x * 100}%`, top: `${drawBox.y * 100}%`, width: `${drawBox.width * 100}%`, height: `${drawBox.height * 100}%` }} />}
+    </div>
     </div>
   );
 }

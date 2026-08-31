@@ -401,6 +401,19 @@ export function normalizeRecognitionOutput(rawRecognitionResult) {
       messages: [`已排除 ${excludedKeys.size} 个系统状态栏、系统导航栏或其子元素`],
     });
   }
+  const recognizedCandidateKeys = new Set(recognitionResult.elements.map((element) => element.candidateKey));
+  recognitionResult.elements.forEach((element, elementIndex) => {
+    for (const field of element.abstraction?.fields || []) {
+      if (!field.parentId || recognizedCandidateKeys.has(field.parentId)) continue;
+      const invalidParentId = field.parentId;
+      field.parentId = element.candidateKey;
+      const summarizedParentId = `${invalidParentId.slice(0, 120)}${invalidParentId.length > 120 ? '...' : ''}`;
+      const message = `共相字段 ${field.key} 的父级 ${summarizedParentId} 不在当前识别候选中，已回退到 ${element.candidateKey}`;
+      const existingIssue = normalizationIssues.find((issue) => issue.elementIndex === elementIndex && issue.candidateKey === element.candidateKey);
+      if (existingIssue) existingIssue.messages.push(message);
+      else normalizationIssues.push({ elementIndex, candidateKey: element.candidateKey, messages: [message] });
+    }
+  });
   if (Array.isArray(recognitionResult.actionCandidates)) {
     recognitionResult.actionCandidates = recognitionResult.actionCandidates.map((actionCandidate, index) => {
       const messages = [];
@@ -747,6 +760,21 @@ export function normalizeDraftShape(value) {
     draft.elementEditRecords = (draft.elementEditRecords || []).filter((record) => !excludedSystemElementIds.has(record.elementId));
     draft.transitions = (draft.transitions || []).filter((transition) => !excludedSystemElementIds.has(transition.triggerElementId));
   }
+  const validAbstractFieldParentRefs = new Set(draft.elements.flatMap((element) => [element.id, element.candidateKey]));
+  draft.elements = draft.elements.map((element) => {
+    if (!element.abstraction) return element;
+    return {
+      ...element,
+      abstraction: {
+        ...element.abstraction,
+        fields: element.abstraction.fields.map((field) => (
+          field.parentId && !validAbstractFieldParentRefs.has(field.parentId)
+            ? { ...field, parentId: element.candidateKey }
+            : field
+        )),
+      },
+    };
+  });
   // Older drafts did not persist frame provenance. Pin those page-local
   // elements to the first frame so selecting a later frame cannot overlay
   // their boxes on top of it.
@@ -1441,7 +1469,7 @@ function projectAbstractRecognition(recognitionResult) {
   return proposal;
 }
 
-export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, modelResultRef, model = null) {
+export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, modelResultRef, model = null, options = {}) {
   recognitionResult = projectAbstractRecognition(recognitionResult);
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
   const editedElementIds = new Set(previous.elementEditRecords.map((record) => record.elementId));
@@ -1450,7 +1478,7 @@ export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, model
     previous.page.key?.startsWith('page.manual.')
     || previous.page.key?.startsWith('page.capture.')
   ) && !currentPageHasElements;
-  const pageChanged = Boolean(
+  const pageChanged = !options.preservePageIdentity && Boolean(
     previous.currentFrameId
     && !currentPageIsEmptyCapture
     && previous.page.name
@@ -1577,6 +1605,13 @@ export function validateRecognitionConsistency(recognitionResult) {
     const box = element.approximateRegion;
     if (box && (box.x + box.width > 1 || box.y + box.height > 1)) {
       issues.push(`候选框超出截图边界：${element.candidateKey}`);
+    }
+  }
+  for (const element of elements) {
+    for (const field of element.abstraction?.fields || []) {
+      if (field.parentId && !keys.has(field.parentId)) {
+        issues.push(`共相字段父级引用了不可见候选：${element.candidateKey}.${field.key} -> ${field.parentId}`);
+      }
     }
   }
   for (const relation of recognitionResult?.relationships || []) {
