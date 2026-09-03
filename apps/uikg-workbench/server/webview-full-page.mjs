@@ -28,6 +28,22 @@ function devtoolsSockets(value) {
   }))];
 }
 
+async function packageDebuggable(adb, packageName) {
+  if (!packageName) return null;
+  try {
+    const output = textResult(await adb.shell(['dumpsys', 'package', packageName]));
+    if (!output.trim()) return null;
+    const pkgFlags = output.match(/\bpkgFlags=\[([^\]]*)\]/i)?.[1];
+    if (pkgFlags && /\bDEBUGGABLE\b/i.test(pkgFlags)) return true;
+    const flags = output.match(/\bflags=0x([0-9a-f]+)/i)?.[1];
+    if (flags) return (Number.parseInt(flags, 16) & 0x2) !== 0;
+    if (pkgFlags) return false;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function availablePort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
@@ -162,7 +178,7 @@ export async function stitchHybridFullPage({ nativeBuffer, chunks, webViewBounds
     .toBuffer();
 }
 
-export async function captureWebViewFullPage(agent, hierarchy, nativeImage) {
+export async function captureWebViewFullPage(agent, hierarchy, nativeImage, options = {}) {
   const device = agent?.interface;
   const webViewBounds = largestWebViewBounds(hierarchy);
   const deviceViewport = hierarchy?.viewport;
@@ -170,6 +186,10 @@ export async function captureWebViewFullPage(agent, hierarchy, nativeImage) {
     return { status: 'unavailable', reason: '当前页面没有可用的 WebView 或设备视口信息' };
   }
   const adb = await device.getAdb();
+  const debuggable = await packageDebuggable(adb, hierarchy?.packageName);
+  if (debuggable === false) {
+    return { status: 'unavailable', reason: '当前应用不是 debug 包，WebView 未开启调试；请安装 debug 包后再导出整页' };
+  }
   const sockets = devtoolsSockets(await adb.shell(['cat', '/proc/net/unix']));
   if (sockets.length === 0) return { status: 'unavailable', reason: 'WebView 未开启调试，已保留当前整屏截图' };
   const candidates = [];
@@ -194,11 +214,26 @@ export async function captureWebViewFullPage(agent, hierarchy, nativeImage) {
         }
         const positions = scrollPositions(scroller.scrollHeight, scroller.clientHeight);
         const chunks = [];
+        const structureSnapshots = [];
         for (const requested of positions) {
           const scrollTop = await evaluate(cdp, `(() => { const element = window.__vibeopsFullPageScroller; element.scrollTop = ${requested}; return element.scrollTop; })()`);
           await new Promise((resolve) => setTimeout(resolve, 180));
           const shot = await cdp.call('Page.captureScreenshot', { format: 'png', fromSurface: true });
           chunks.push({ buffer: Buffer.from(shot.data, 'base64'), scrollTop, clientHeight: scroller.clientHeight, rect: scroller.rect });
+          if (typeof options.captureChunk === 'function') {
+            try {
+              const snapshot = await options.captureChunk({
+                cdp,
+                scrollTop,
+                scroller,
+                webViewBounds,
+                deviceViewport,
+              });
+              if (snapshot) structureSnapshots.push({ scrollTop, ...snapshot });
+            } catch (error) {
+              structureSnapshots.push({ scrollTop, error: String(error?.message || error) });
+            }
+          }
         }
         const buffer = await stitchHybridFullPage({
           nativeBuffer: nativeImage.buffer,
@@ -222,6 +257,7 @@ export async function captureWebViewFullPage(agent, hierarchy, nativeImage) {
             devicePixelRatio: scroller.devicePixelRatio,
             chunkCount: chunks.length,
           },
+          structureSnapshots,
         };
       } finally {
         if (scroller) {

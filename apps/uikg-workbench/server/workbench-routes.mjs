@@ -19,8 +19,9 @@ import {
   removePagesFromDraft,
   validateDraft,
   validateRecognitionConsistency,
+  applyBusinessDynamicSemantics,
 } from './draft-model.mjs';
-import { deleteModelGateway, fetchAvailableModelsByGateway, loadModelGateways, loadTargetModelSettings, loadWorkbenchPreferences, MODEL_TARGETS, resolveTargetModelConfig, resetDefaultModelGateway, saveModelGateway, saveTargetModelSettings, saveWorkbenchMode, testGatewayModelCapabilities, testModelCapability, testModelConnectivity, testModelGateway, verifyTargetModelSettings } from './model-settings.mjs';
+import { deleteModelGateway, fetchAvailableModelsByGateway, loadModelGateways, loadTargetModelSettings, loadWorkbenchPreferences, MODEL_TARGETS, resolveTargetModelConfig, resetDefaultModelGateway, saveModelGateway, saveTargetModelSettings, saveWorkbenchMode, testGatewayModelCapabilities, testModelCapability, testModelConnectivity, testModelGateway } from './model-settings.mjs';
 import { reasoningBudgetForModel } from './model-compatibility.mjs';
 import { clearModelRuntime, getModelRuntime, setModelRuntime } from './model-runtime.mjs';
 import { recoverRecognitionCheckpointFromStream, runResumableRecognition, RECOGNITION_ERROR_RETRY_LIMIT } from './resumable-recognition.mjs';
@@ -28,13 +29,67 @@ import { runRecognitionModel } from './recognition-client.mjs';
 import { runRecognitionRepairModel } from './recognition-repair-client.mjs';
 import { buildRecognitionContinuationPrompt, buildRecognitionPrompt, SYSTEM_CHROME_EXCLUSION_RULE } from './recognition-prompt.mjs';
 import { canonicalFullPageAssetPath, loadCanonicalGraph } from './canonical-graph.mjs';
-import { captureDisplayMetrics, captureRuntimeHierarchy } from './runtime-hierarchy.mjs';
-import { captureWebViewDom } from './webview-dom.mjs';
+import { captureDisplayMetrics, captureRuntimeHierarchy, mergeRuntimeHierarchySnapshots } from './runtime-hierarchy.mjs';
+import { captureWebViewDom, captureDomSnapshotFromCdp, mergeDomSnapshots } from './webview-dom.mjs';
 import { captureWebViewFullPage } from './webview-full-page.mjs';
 import { refineRecognitionGeometry } from './geometry-refinement.mjs';
 
 const MAX_PAGE_UPLOAD_BATCH = 20;
 const MAX_PAGE_IMAGE_BYTES = 25 * 1024 * 1024;
+
+function fingerprint(value) {
+  return createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+// A resumable recognition checkpoint is only meaningful under the same
+// inference configuration. Keep the credential itself out of persisted
+// records while still invalidating a checkpoint when credentials change.
+export function recognitionModelConfigFingerprint(runtime) {
+  const apiKey = runtime?.apiKey ? fingerprint(String(runtime.apiKey)) : null;
+  return fingerprint({
+    gatewayId: runtime?.gatewayId || null,
+    baseUrl: runtime?.baseUrl || null,
+    modelName: runtime?.modelName || null,
+    modelFamily: runtime?.modelFamily || null,
+    timeout: runtime?.timeout ?? null,
+    temperature: runtime?.temperature ?? null,
+    reasoningEffort: runtime?.reasoningEffort || null,
+    structuredOutputMode: runtime?.structuredOutputMode || null,
+    assignmentUpdatedAt: runtime?.updatedAt || null,
+    gatewayUpdatedAt: runtime?.gatewayUpdatedAt || null,
+    apiKey,
+  });
+}
+
+export function recognitionPromptRuleFingerprint(rules) {
+  return fingerprint((Array.isArray(rules) ? rules : []).map((rule) => ({
+    key: rule?.key || null,
+    category: rule?.category || null,
+    title: rule?.title || null,
+    description: rule?.description || null,
+  })));
+}
+
+// Missing fingerprints are deliberately treated as compatible for sessions
+// written by older versions. Once a session has a fingerprint, any changed
+// value means its partial output must not be fed to a different prompt/model.
+export function recognitionResumeFingerprintMismatches(resumeSession, currentFingerprints) {
+  if (!resumeSession || typeof resumeSession !== 'object') return [];
+  const current = currentFingerprints && typeof currentFingerprints === 'object' ? currentFingerprints : {};
+  const keys = ['modelConfigFingerprint', 'promptFingerprint', 'promptRuleFingerprint'];
+  const hasStoredFingerprint = keys.some((key) => typeof resumeSession[key] === 'string' && resumeSession[key].length > 0);
+  // A session with no fingerprints predates this guard and remains backward
+  // compatible. A partially fingerprinted session, however, cannot prove
+  // that its missing dimensions are compatible and must restart as well.
+  if (!hasStoredFingerprint) return [];
+  return keys.filter((key) => (
+    typeof resumeSession[key] !== 'string'
+    || resumeSession[key].length === 0
+    || typeof current[key] !== 'string'
+    || current[key].length === 0
+    || resumeSession[key] !== current[key]
+  ));
+}
 
 function imageBufferPayload(buffer, mimeType = '') {
   let dimensions;
@@ -74,19 +129,58 @@ function workbenchError(status, message, details = {}) {
 
 // Keep the runtime tree useful for grounding without persisting another copy
 // of the screenshot or other binary/oversized fields from Midscene's context.
-function runtimeStructureFromContext(value, depth = 0) {
+function runtimeStructureFromContext(value, depth = 0, preserveDomArrays = false) {
   if (depth > 8 || value === null || value === undefined) return value ?? null;
   if (typeof value === 'string') {
     if (value.length > 4000) return `${value.slice(0, 4000)}…`;
     return value;
   }
   if (typeof value !== 'object') return value;
-  if (Array.isArray(value)) return value.slice(0, 200).map((item) => runtimeStructureFromContext(item, depth + 1));
+  if (Array.isArray(value)) {
+    const items = preserveDomArrays ? value : value.slice(0, 200);
+    return items.map((item) => runtimeStructureFromContext(item, depth + 1, preserveDomArrays));
+  }
   const output = {};
   for (const [key, child] of Object.entries(value)) {
     if (key === 'screenshot' || key === 'dpr' || /base64|dataurl|imagebuffer|rawimage/i.test(key)) continue;
-    output[key] = runtimeStructureFromContext(child, depth + 1);
+    output[key] = runtimeStructureFromContext(child, depth + 1, preserveDomArrays || key === 'dom' || key === 'hierarchy');
   }
+  return output;
+}
+
+// The DOM collector can see more than one WebView target (for example the
+// current route and the host page).  Recognition must receive the document
+// that belongs to the frozen page, not whichever target happened to be last.
+function runtimeStructureForPrompt(runtimeStructure, preferredUrl = '') {
+  if (!runtimeStructure || typeof runtimeStructure !== 'object') return runtimeStructure;
+  const output = runtimeStructureFromContext(runtimeStructure);
+  const dom = runtimeStructure.dom;
+  if (!dom || !Array.isArray(dom.documents) || dom.documents.length <= 1) return output;
+  const preferred = String(preferredUrl || '').trim();
+  const scoreDocument = (document, index) => {
+    const url = String(document?.url || '');
+    const urlScore = preferred && url === preferred ? 100000
+      : preferred && url && (url.startsWith(preferred) || preferred.startsWith(url)) ? 50000
+        : 0;
+    const nodeScore = (document?.nodes || []).reduce((score, node) => score
+      + (node?.interactive ? 4 : 0)
+      + (node?.text ? 1 : 0), 0);
+    return urlScore + nodeScore - index * 0.01;
+  };
+  const selectedIndex = dom.documents.reduce((best, document, index) => (
+    scoreDocument(document, index) > scoreDocument(dom.documents[best], best) ? index : best
+  ), 0);
+  output.dom = {
+    ...output.dom,
+    documents: [output.dom.documents[selectedIndex]],
+    // The prompt receives a single selected document after filtering; its
+    // local index is therefore always zero. Preserve the source index only as
+    // diagnostics so downstream DOM readers cannot accidentally skip it.
+    selectedDocumentIndex: 0,
+    sourceDocumentIndex: selectedIndex,
+    selectedDocumentUrl: dom.documents[selectedIndex]?.url || null,
+    discardedDocumentCount: dom.documents.length - 1,
+  };
   return output;
 }
 
@@ -112,12 +206,39 @@ async function freezeAndCapture(agent, collectRuntimeStructure = true, exportFul
   let fullPage = null;
   if (exportFullPage && runtimeHierarchy) {
     try {
-      fullPage = await captureWebViewFullPage(agent, runtimeHierarchy, image);
+      fullPage = await captureWebViewFullPage(agent, runtimeHierarchy, image, {
+        captureChunk: collectRuntimeStructure ? async ({ cdp, webViewBounds }) => {
+          const [hierarchyResult, domResult] = await Promise.allSettled([
+            captureRuntimeHierarchy(agent, { width: image.width, height: image.height }, displayBefore),
+            captureDomSnapshotFromCdp(cdp, webViewBounds, runtimeHierarchy.viewport),
+          ]);
+          return {
+            hierarchy: hierarchyResult.status === 'fulfilled' ? hierarchyResult.value : null,
+            dom: domResult.status === 'fulfilled' ? domResult.value : null,
+          };
+        } : null,
+      });
     } catch (error) {
       fullPage = { status: 'unavailable', reason: String(error?.message || error) };
     }
   }
   const capturedImage = fullPage?.status === 'complete' ? fullPage.image : image;
+  let capturedHierarchy = runtimeHierarchy;
+  let capturedDom = dom;
+  if (fullPage?.status === 'complete' && collectRuntimeStructure && fullPage.structureSnapshots?.length) {
+    const snapshotOptions = {
+      webViewBounds: fullPage.capture.webViewBounds,
+      viewport: { width: capturedImage.width, height: capturedImage.height },
+      devicePixelRatio: fullPage.capture.devicePixelRatio,
+      scrollClientHeightCss: fullPage.capture.scrollContainer?.clientHeight,
+    };
+    capturedHierarchy = mergeRuntimeHierarchySnapshots(
+      runtimeHierarchy,
+      fullPage.structureSnapshots,
+      snapshotOptions,
+    );
+    capturedDom = mergeDomSnapshots(dom, fullPage.structureSnapshots, snapshotOptions);
+  }
   return {
     ...capturedImage,
     frameId: hashFrame(capturedImage.buffer),
@@ -129,12 +250,13 @@ async function freezeAndCapture(agent, collectRuntimeStructure = true, exportFul
       reason: fullPage?.reason || null,
       deviceViewport: runtimeHierarchy?.viewport || { width: image.width, height: image.height },
       ...(fullPage?.capture || {}),
+      ...(fullPage?.structureSnapshots ? { structureChunkCount: fullPage.structureSnapshots.filter((snapshot) => !snapshot.error).length } : {}),
     },
     runtimeStructure: collectRuntimeStructure
       ? {
         midscene: runtimeStructureFromContext(context),
-        hierarchy: runtimeHierarchy,
-        dom,
+        hierarchy: capturedHierarchy,
+        dom: capturedDom,
       }
       : null,
   };
@@ -159,6 +281,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   let annotationDraftQueue = Promise.resolve();
   const activePageUploadControllers = new Map();
   const deletedPageUploadIds = new Set();
+  const pendingModelCapabilityProbes = new Set();
   const workspaceSessionKey = (value) => String(value || 'default').trim().slice(0, 160) || 'default';
   const runProjectModelService = (command, projectKey, payload = null) => new Promise((resolve, reject) => {
     if (!/^[a-z0-9][a-z0-9.-]*$/.test(projectKey)) {
@@ -289,6 +412,29 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     return true;
   };
 
+  const probeModelCapabilityInBackground = (gatewayId, modelName) => {
+    const gateway = modelStore?.getGateway(gatewayId, { includeApiKey: true });
+    if (!gateway?.apiKey || !modelName) return;
+    const cached = modelStore.getModelCapability?.(gateway.id, modelName);
+    if (cached?.gatewayUpdatedAt === gateway.updatedAt) return;
+    const probeKey = `${gateway.id}::${modelName}`;
+    if (pendingModelCapabilityProbes.has(probeKey)) return;
+    pendingModelCapabilityProbes.add(probeKey);
+
+    // Capability probing performs a real vision inference; never hold up a save response on it.
+    setImmediate(() => {
+      void testModelCapability(modelStore, gateway.id, modelName)
+        .catch((error) => {
+          console.warn('[workbench] background model capability check failed', {
+            gatewayId: gateway.id,
+            modelName,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        })
+        .finally(() => pendingModelCapabilityProbes.delete(probeKey));
+    });
+  };
+
   const loadCombinedModelSettings = () => ({
     settingsSchemaVersion: 3,
     sections: [
@@ -403,13 +549,13 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     }
   };
 
-  const inspectRecognitionResult = (candidate) => {
+  const inspectRecognitionResult = (candidate, pageContext = '') => {
     // geometryRefinement is generated by the server after model validation.
     // A self-healing model may echo it back from the repair candidate, but it
     // is intentionally outside the model output contract.
     const payload = structuredClone(candidate);
     if (payload && typeof payload === 'object' && !Array.isArray(payload)) delete payload.geometryRefinement;
-    const { recognitionResult: normalizedResult, normalizationIssues } = normalizeRecognitionOutput(payload);
+    const { recognitionResult: normalizedResult, normalizationIssues } = normalizeRecognitionOutput(payload, pageContext);
     const schemaValid = validateRecognitionSchema(normalizedResult);
     const schemaErrors = structuredClone(validateRecognitionSchema.errors || []);
     return { normalizedResult, normalizationIssues, schemaValid, schemaErrors };
@@ -419,13 +565,22 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     issue.startsWith('候选键重复') || issue.startsWith('候选框超出截图边界')
   ));
 
-  const validatedRecognitionPayload = (candidate) => {
+  // Older clients do not send the context envelope back when confirming a
+  // streamed result. Page metadata is a deterministic fallback so those
+  // results still receive the same business-semantic inference pass.
+  const pageRecognitionContext = (page) => [
+    page?.name,
+    page?.stateSummary,
+    ...(Array.isArray(page?.scrollableRegions) ? page.scrollableRegions : []),
+  ].filter((value) => typeof value === 'string' && value.trim()).join('；');
+
+  const validatedRecognitionPayload = (candidate, pageContext = '') => {
     const payload = structuredClone(candidate);
     // Geometry refinement is server-generated metadata returned with the
     // recognition result. Incremental review echoes that result back, but the
     // metadata is intentionally not part of the model output schema.
     if (payload && typeof payload === 'object' && !Array.isArray(payload)) delete payload.geometryRefinement;
-    const inspected = inspectRecognitionResult(payload);
+    const inspected = inspectRecognitionResult(payload, pageContext);
     const consistencyIssues = inspected.schemaValid ? validateRecognitionConsistency(inspected.normalizedResult) : [];
     if (!inspected.schemaValid || blockingRecognitionConsistencyIssues(consistencyIssues).length > 0) {
       throw workbenchError(422, '识别结果未通过结构检查，未执行增量合并', {
@@ -447,6 +602,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     pageContext: session.pageContext,
     includeUiTree: session.includeUiTree !== false,
     model: session.model,
+    modelConfigFingerprint: session.modelConfigFingerprint || null,
+    promptFingerprint: session.promptFingerprint || null,
+    promptRuleFingerprint: session.promptRuleFingerprint || null,
+    resumeReset: session.resumeReset || null,
     completedCandidates: session.completedCandidates,
     retryAttempts: session.retryAttempts,
     createdAt: session.createdAt,
@@ -479,6 +638,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     await syncModelRuntime();
     const runtime = getModelRuntime(target);
     const model = runtime?.modelName || null;
+    const modelConfigFingerprint = recognitionModelConfigFingerprint(runtime);
     const setResumable = (value) => {
       const sessions = resumableRecognitionSessions.get(target);
       if (value) sessions.set(workspaceSessionId, value);
@@ -499,6 +659,9 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
     let sessionConsistencyIssues = [];
     let sessionNormalizationIssues = [];
     let sessionSelfHealing = null;
+    let promptFingerprint = null;
+    let promptRuleFingerprint = null;
+    let resumeReset = null;
     const emitProgress = (event) => {
       if (event.type === 'chunk') {
         reasoningContent += event.reasoningContent || '';
@@ -515,6 +678,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         pageId: pageId || null,
         workspaceSessionId,
         model,
+        modelConfigFingerprint,
         startedAt: sessionStartedAt,
         updatedAt: new Date().toISOString(),
         reasoningContent,
@@ -530,13 +694,55 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         .slice(0, 3)
         .map((candidate) => candidate);
       const additionalFrozenFrames = await Promise.all(extraFrames.map((candidate) => store.loadFrame(candidate)));
-      const recognitionPageContext = additionalFrozenFrames.length > 0
-        ? `${pageContext ? `${pageContext}；` : ''}请同时比较当前观测帧与补充观测帧，综合输出页面中可确认的元素；不要因为同一元素在两帧重复出现而重复创建。`
-        : pageContext;
+      const fullPageCoordinateContext = frozenFrame.capture?.exportedFullPage
+        ? `当前识别图片是整页长截图，图片尺寸为 ${frozenFrame.width}x${frozenFrame.height}，设备视口为 ${frozenFrame.capture.deviceViewport?.width || frozenFrame.width}x${frozenFrame.capture.deviceViewport?.height || frozenFrame.height}；所有 approximateRegion 和 instanceRegions 必须相对于整张识别图片归一化，不能相对于设备视口或遮罩窗口归一化`
+        : `当前识别图片尺寸为 ${frozenFrame.width}x${frozenFrame.height}；所有 approximateRegion 和 instanceRegions 必须相对于整张识别图片归一化`;
+      const recognitionPageContext = [
+        pageContext,
+        fullPageCoordinateContext,
+        additionalFrozenFrames.length > 0
+          ? '请同时比较当前观测帧与补充观测帧，综合输出页面中可确认的元素；不要因为同一元素在两帧重复出现而重复创建。'
+          : '',
+      ].filter(Boolean).join('；');
       const promptRuntimeStructure = includeUiTree && frozenFrame.runtimeStructure
-        ? runtimeStructureFromContext(frozenFrame.runtimeStructure)
+        ? runtimeStructureForPrompt(frozenFrame.runtimeStructure, frozenFrame.capture?.page?.url)
         : null;
       const managedPromptRules = modelStore?.listRecognitionPromptRules?.() || [];
+      promptRuleFingerprint = recognitionPromptRuleFingerprint(managedPromptRules);
+      const initialPrompt = buildRecognitionPrompt(frameId, recognitionPageContext, promptRuntimeStructure, managedPromptRules);
+      promptFingerprint = fingerprint(initialPrompt);
+
+      const resumeFingerprintMismatches = recognitionResumeFingerprintMismatches(resumeSession, {
+        modelConfigFingerprint,
+        promptFingerprint,
+        promptRuleFingerprint,
+      });
+      if (resumeSession && resumeFingerprintMismatches.length > 0) {
+        // A partial response is tied to the exact model and prompt that
+        // produced it. Reusing it after a model/rule change is equivalent to
+        // mixing two independent recognitions and is a source of unstable
+        // geometry and dynamic-template decisions.
+        resumeReset = {
+          reason: 'fingerprint-mismatch',
+          mismatches: resumeFingerprintMismatches,
+          previous: {
+            modelConfigFingerprint: resumeSession.modelConfigFingerprint || null,
+            promptFingerprint: resumeSession.promptFingerprint || null,
+            promptRuleFingerprint: resumeSession.promptRuleFingerprint || null,
+          },
+        };
+        resumeSession = null;
+        reasoningContent = '';
+        outputContent = '';
+        continuationContent = '';
+        emitProgress({
+          type: 'stage',
+          phase: 'resume-reset',
+          message: '识别配置或规则已变化，正在从完整截图重新识别',
+          reason: resumeReset.reason,
+          mismatches: resumeReset.mismatches,
+        });
+      }
       signal?.throwIfAborted();
 
       const startedAt = sessionStartedAt;
@@ -548,7 +754,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       });
       setResumable(null);
       const run = await runResumableRecognition({
-        initialPrompt: buildRecognitionPrompt(frameId, recognitionPageContext, promptRuntimeStructure, managedPromptRules),
+        initialPrompt,
         initialResult: resumeSession?.rawResult,
         initialFallback: { frameId, elements: [] },
         callModel: async (prompt, attempt) => {
@@ -587,7 +793,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           }
         },
         buildContinuationPrompt: (checkpoint, attempt) => buildRecognitionContinuationPrompt(frameId, recognitionPageContext, checkpoint, attempt, promptRuntimeStructure, managedPromptRules),
-        isComplete: (candidate) => inspectRecognitionResult(candidate).schemaValid,
+        isComplete: (candidate) => inspectRecognitionResult(candidate, recognitionPageContext).schemaValid,
         signal,
         onRetry: ({ attempt, totalAttempt, retryLimit, checkpoint, error }) => emitProgress({
           type: 'stage',
@@ -605,12 +811,15 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       signal?.throwIfAborted();
 
       emitProgress({ type: 'stage', phase: 'normalize', message: '正在归一化并校验模型输出' });
-      let { normalizedResult, normalizationIssues, schemaValid, schemaErrors } = inspectRecognitionResult(rawResult);
-      const preRefinementConsistencyIssues = schemaValid ? validateRecognitionConsistency(normalizedResult) : [];
-      if (schemaValid) normalizedResult = await refineRecognitionGeometry(normalizedResult, frozenFrame);
-      let consistencyIssues = schemaValid
-        ? [...new Set([...preRefinementConsistencyIssues, ...validateRecognitionConsistency(normalizedResult)])]
-        : [];
+      let { normalizedResult, normalizationIssues, schemaValid, schemaErrors } = inspectRecognitionResult(rawResult, recognitionPageContext);
+      if (schemaValid) applyBusinessDynamicSemantics(normalizedResult, recognitionPageContext);
+      if (schemaValid) normalizedResult = await refineRecognitionGeometry(normalizedResult, frozenFrame, recognitionPageContext);
+      // Geometry refinement is a server-side normalization step. Issues that
+      // existed only on the model's pre-refinement boxes (for example an
+      // out-of-bounds list whose height is clipped to the screenshot) must not
+      // keep triggering self-healing after the final result is valid. Validate
+      // the representation that will be persisted and rendered.
+      let consistencyIssues = schemaValid ? validateRecognitionConsistency(normalizedResult) : [];
       let blockingConsistencyIssues = blockingRecognitionConsistencyIssues(consistencyIssues);
       const initialValidation = {
         schemaErrors: structuredClone(schemaErrors),
@@ -650,11 +859,13 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           const repairCandidate = repairResponse?.repairedResult ?? repairResponse;
           selfHealing.repairOutput = repairResponse?.outputContent ?? JSON.stringify(repairCandidate);
           selfHealing.reasoningContent = repairResponse?.reasoningContent || '';
-          let repaired = inspectRecognitionResult(repairCandidate);
-          const repairedPreRefinementIssues = repaired.schemaValid ? validateRecognitionConsistency(repaired.normalizedResult) : [];
-          if (repaired.schemaValid) repaired.normalizedResult = await refineRecognitionGeometry(repaired.normalizedResult, frozenFrame);
+          let repaired = inspectRecognitionResult(repairCandidate, recognitionPageContext);
+          if (repaired.schemaValid) {
+            applyBusinessDynamicSemantics(repaired.normalizedResult, recognitionPageContext);
+            repaired.normalizedResult = await refineRecognitionGeometry(repaired.normalizedResult, frozenFrame, recognitionPageContext);
+          }
           const repairedConsistencyIssues = repaired.schemaValid
-            ? [...new Set([...repairedPreRefinementIssues, ...validateRecognitionConsistency(repaired.normalizedResult)])]
+            ? validateRecognitionConsistency(repaired.normalizedResult)
             : [];
           const repairedBlockingIssues = blockingRecognitionConsistencyIssues(repairedConsistencyIssues);
           const repairedFrameIdValid = repaired.normalizedResult.frameId === frameId;
@@ -688,6 +899,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         completedAt: new Date().toISOString(),
         target,
         model,
+        modelConfigFingerprint,
+        promptFingerprint,
+        promptRuleFingerprint,
+        resumeReset,
         frameIntegrity: frozenFrame.frameId === frameId,
         includeUiTree,
         schemaValid,
@@ -716,6 +931,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           includeUiTree,
           target,
           model,
+          modelConfigFingerprint,
+          promptFingerprint,
+          promptRuleFingerprint,
+          resumeReset,
           rawResult,
           completedCandidates: Array.isArray(rawResult?.elements) ? rawResult.elements.length : 0,
           retryAttempts,
@@ -757,7 +976,16 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         draft = await queueAnnotationDraftMutation(async () => {
           const currentDraft = await store.loadDraft();
           const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) || currentDraft : currentDraft;
-          const merged = mergeRecognitionIntoDraft(pageDraft, prepareRecognitionForDraft(normalizedResult), modelResultRef, model);
+          // The frame was captured for an explicit Page. Recognition may refine
+          // that page's semantic name, but it must not create a second Page
+          // object and leave annotation tabs pointing at the capture Page.
+          const merged = mergeRecognitionIntoDraft(
+            pageDraft,
+            prepareRecognitionForDraft(normalizedResult, recognitionPageContext),
+            modelResultRef,
+            model,
+            { preservePageIdentity: Boolean(pageId) },
+          );
           await store.saveDraft(merged);
           return merged;
         });
@@ -766,7 +994,19 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       }
       emitProgress({ type: 'stage', phase: 'complete', message: `${label} 分析完成` });
       sessionStatus = 'completed';
-      return { frameId, target, recognitionResult: normalizedResult, modelResultRef, model, reasoningContent, outputContent, ...(draft ? { draft, issues } : {}) };
+      return {
+        frameId,
+        target,
+        recognitionResult: normalizedResult,
+        modelResultRef,
+        model,
+        // Keep the exact semantic context used during normalization so a
+        // later confirmation/append request cannot silently downgrade it.
+        pageContext: recognitionPageContext,
+        reasoningContent,
+        outputContent,
+        ...(draft ? { draft, issues } : {}),
+      };
     } catch (error) {
       if (signal?.aborted && (!error || typeof error !== 'object')) error = new Error(`用户中断 ${label}`);
       sessionStatus = signal?.aborted ? 'cancelled' : 'failed';
@@ -791,6 +1031,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
           includeUiTree,
           target,
           model,
+          modelConfigFingerprint,
+          promptFingerprint,
+          promptRuleFingerprint,
+          resumeReset,
           rawResult: rawResultForResume,
           completedCandidates: Array.isArray(rawResultForResume?.elements) ? rawResultForResume.elements.length : 0,
           retryAttempts,
@@ -838,6 +1082,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         pageId: pageId || null,
         workspaceSessionId,
         model,
+        modelConfigFingerprint,
+        promptFingerprint,
+        promptRuleFingerprint,
+        resumeReset,
         startedAt: sessionStartedAt,
         updatedAt: new Date().toISOString(),
         completedAt: sessionStatus === 'running' ? null : new Date().toISOString(),
@@ -1035,8 +1283,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
   router.put('/model-settings', async (req, res, next) => {
     try {
       if (recognitionInProgress()) return res.status(409).json({ error: 'AI 分析正在运行，结束后才能切换模型' });
-      await verifyTargetModelSettings(modelStore, req.body);
-      saveTargetModelSettings(modelStore, req.body);
+      const savedTarget = saveTargetModelSettings(modelStore, req.body);
       let runtimeReloaded = true;
       try {
         await syncModelRuntime();
@@ -1044,6 +1291,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         runtimeReloaded = false;
       }
       res.json({ ...await loadCombinedModelSettings(), runtimeReloaded });
+      probeModelCapabilityInBackground(savedTarget.config.gatewayId, savedTarget.config.modelName);
     } catch (error) {
       next(error);
     }
@@ -1651,7 +1899,10 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         const currentDraft = await store.loadDraft();
         const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : null;
         if (!frameId || !pageDraft || pageDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他冻结帧');
-        const { recognitionResult } = normalizeRecognitionOutput(req.body?.recognitionResult || {});
+        const pageContext = typeof req.body?.pageContext === 'string' && req.body.pageContext.trim()
+          ? req.body.pageContext
+          : pageRecognitionContext(pageDraft.page);
+        const { recognitionResult } = normalizeRecognitionOutput(req.body?.recognitionResult || {}, pageContext);
         if (recognitionResult.frameId !== frameId) throw workbenchError(409, '识别结果与当前冻结帧不一致');
         const currentPageElementIds = new Set(pageDraft.elements.filter((element) => element.pageId === pageDraft.currentPageId).map((element) => element.id));
         const replacementBase = {
@@ -1660,7 +1911,7 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         };
         const draft = mergeRecognitionIntoDraft(
           replacementBase,
-          prepareRecognitionForDraft(recognitionResult),
+          prepareRecognitionForDraft(recognitionResult, pageContext),
           String(req.body?.modelResultRef || 'recognition-replacement'),
           typeof req.body?.model === 'string' ? req.body.model : null,
           { preservePageIdentity: true },
@@ -1681,9 +1932,12 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
       const currentDraft = await store.loadDraft();
       const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : null;
       if (!frameId || !pageDraft || pageDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他观测帧');
-      const recognitionResult = validatedRecognitionPayload(req.body?.recognitionResult || {});
+      const pageContext = typeof req.body?.pageContext === 'string' && req.body.pageContext.trim()
+        ? req.body.pageContext
+        : pageRecognitionContext(pageDraft.page);
+      const recognitionResult = validatedRecognitionPayload(req.body?.recognitionResult || {}, pageContext);
       if (recognitionResult.frameId !== frameId) throw workbenchError(409, '识别结果与当前观测帧不一致');
-      const classified = classifyIncrementalRecognition(pageDraft, recognitionResult);
+      const classified = classifyIncrementalRecognition(pageDraft, recognitionResult, pageContext);
       res.json({
         candidates: classified.candidates.map(({ candidate, existing, disposition }) => ({
           candidateKey: candidate.candidateKey,
@@ -1707,13 +1961,17 @@ export async function registerWorkbenchRoutes({ server, store, modelStore, graph
         const currentDraft = await store.loadDraft();
         const pageDraft = pageId ? selectDraftPage(currentDraft, pageId, frameId) : null;
         if (!frameId || !pageDraft || pageDraft.currentFrameId !== frameId) throw workbenchError(409, '草稿已经切换到其他观测帧');
-        const recognitionResult = validatedRecognitionPayload(req.body?.recognitionResult || {});
+        const pageContext = typeof req.body?.pageContext === 'string' && req.body.pageContext.trim()
+          ? req.body.pageContext
+          : pageRecognitionContext(pageDraft.page);
+        const recognitionResult = validatedRecognitionPayload(req.body?.recognitionResult || {}, pageContext);
         if (recognitionResult.frameId !== frameId) throw workbenchError(409, '识别结果与当前观测帧不一致');
         const draft = appendRecognitionIntoDraft(
           pageDraft,
           recognitionResult,
           String(req.body?.modelResultRef || 'recognition-incremental-append'),
           typeof req.body?.model === 'string' ? req.body.model : null,
+          pageContext,
         );
         await store.saveDraft(draft);
         return draft;

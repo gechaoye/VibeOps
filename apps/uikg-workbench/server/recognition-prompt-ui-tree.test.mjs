@@ -71,8 +71,11 @@ test('识别 prompt 按视觉结构归纳表单字段块并识别分隔带边界
     assert.match(prompt, /跨实例共享且连续的视觉分隔边界/);
     assert.doesNotMatch(prompt, /横向浅灰分隔带/);
     assert.match(prompt, /序号、必填标记、字段标签必须作为职责不同的独立 fields/);
+    assert.match(prompt, /各自 bbox 只覆盖自身实际可见区域/);
+    assert.match(prompt, /不预设固定排列方向/);
     assert.match(prompt, /占位提示语也必须作为独立 placeholder field/);
     assert.match(prompt, /不可见的占位语、标记或标题不补造 bbox/);
+    assert.match(prompt, /中间实例未观测时保留 null 以维持索引/);
     assert.match(prompt, /表单字段块共相使用 section/);
     assert.match(prompt, /整体数据录入集合使用 form/);
     assert.match(prompt, /每个实例必须对应截图中一个视觉上独立的可填写块/);
@@ -96,8 +99,15 @@ test('识别 prompt 将动态槽位定义为单实例动态元素共相', () => 
     assert.match(value, /abstraction\.kind=dynamic-template/);
     assert.match(value, /instanceCount 固定为 1/);
     assert.match(value, /当前用户头像、姓名、组织、部门或职位/);
+    assert.match(value, /业务语义不是标题专属/);
+    assert.match(value, /接收人或接收群、成员、负责人/);
     assert.match(value, /动态元素共相/);
     assert.match(value, /随账号、时间、状态或数据变化的可见内容必须设置 dynamicContent=true/);
+    assert.match(value, /属于同一运行时载荷、会共同变化且共享一个稳定边界/);
+    assert.match(value, /不得仅根据业务文案、candidateKey 或邻近关系推断共同载荷/);
+    assert.match(value, /业务规则可以补充元素含义、数据来源、状态和动态性线索/);
+    assert.match(value, /不能覆盖截图或 UI Tree 的可见事实/);
+    assert.doesNotMatch(value, /接收人、接收群 section/);
   }
 });
 

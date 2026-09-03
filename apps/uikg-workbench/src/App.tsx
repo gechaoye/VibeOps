@@ -74,6 +74,7 @@ type IncrementalSession = {
   baseElementIds: string[];
   candidates: IncrementalCandidate[];
   recognitionResult?: RecognitionResult;
+  pageContext?: string;
   modelResultRef?: string;
   model?: string | null;
   status: 'pending' | 'recognizing' | 'review' | 'committing';
@@ -1063,6 +1064,13 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       setDeviceFrameTargetPageId(null);
       setPendingAppendedFrame(appendTargetPageId ? { pageId: appendTargetPageId, frameId: result.frame.frameId } : null);
       setIncrementalSession(null);
+      // A fresh screenshot creates (or appends to) the authoritative Page on
+      // the server. Keep an existing annotation tab pointed at that Page so
+      // recognition and page-scoped saves use the screenshot's target.
+      if (tabKind === 'annotation') {
+        const capturedPage = result.draft.pages.find((page) => page.id === result.draft.currentPageId);
+        if (capturedPage) onPromoteAnnotationTab(tabId, capturedPage.id, result.frame.frameId, capturedPage.name || '待识别页面');
+      }
       const captureMessage = result.frame.capture?.exportedFullPage
         ? '，已导出整页'
         : exportFullPage && result.frame.capture?.reason ? `；整页导出不可用：${result.frame.capture.reason}` : '';
@@ -1310,6 +1318,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         frameId: result.recognitionResult.frameId,
         pageId: currentDraft.currentPageId,
         recognitionResult: result.recognitionResult,
+        pageContext: result.pageContext,
       });
       const candidatesByKey = new Map(result.recognitionResult.elements.map((candidate) => [candidate.candidateKey, candidate]));
       const candidates: IncrementalCandidate[] = preview.candidates.map((item) => {
@@ -1323,7 +1332,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
           candidate: candidatesByKey.get(item.candidateKey),
         };
       });
-      setIncrementalSession((current) => current ? { ...current, candidates, recognitionResult: result.recognitionResult, modelResultRef: result.modelResultRef, model: result.model, status: 'review' } : current);
+      setIncrementalSession((current) => current ? { ...current, candidates, recognitionResult: result.recognitionResult, pageContext: result.pageContext, modelResultRef: result.modelResultRef, model: result.model, status: 'review' } : current);
       setRecognitionActivity((current) => current ? { ...current, status: 'completed', phase: 'incremental-review', phaseMessage: '识别完成，候选已完成去重与共相匹配', completedAt: new Date().toISOString() } : current);
       setRecognitionDialogOpen(false);
       setIncrementalPanelOpen(true);
@@ -1392,7 +1401,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     if (mode === 'full' && !draftOverride && dirty) {
       try {
         const saved = annotationTarget
-          ? await workbenchApi.savePageDraft(annotationTarget.pageId, recognitionDraft)
+          ? await workbenchApi.savePageDraft(recognitionDraft.currentPageId, recognitionDraft)
           : await workbenchApi.saveDraft(recognitionDraft);
         lastSavedDraftRef.current = structuredClone(saved.draft);
         draftRef.current = saved.draft;
@@ -1464,6 +1473,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         recognitionResult: pending.result.recognitionResult,
         modelResultRef: pending.result.modelResultRef,
         model: pending.result.model,
+        pageContext: pending.result.pageContext,
       });
       resetDraftState(result.draft);
       setServerIssues(result.issues);
@@ -1519,6 +1529,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         recognitionResult: session.recognitionResult,
         modelResultRef: session.modelResultRef || 'recognition-incremental-append',
         model: session.model || null,
+        pageContext: session.pageContext,
       });
       resetDraftState(result.draft);
       setServerIssues(validateDraftClient(result.draft));
@@ -1582,7 +1593,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
 
   const persistDraft = async (draftToSave: Draft) => {
     const result = annotationTarget
-      ? await workbenchApi.savePageDraft(annotationTarget.pageId, draftToSave)
+      ? await workbenchApi.savePageDraft(draftToSave.currentPageId, draftToSave)
       : await workbenchApi.saveDraft(draftToSave);
     lastSavedDraftRef.current = structuredClone(result.draft);
     // Autosave replaces the server-normalized draft without resetting the

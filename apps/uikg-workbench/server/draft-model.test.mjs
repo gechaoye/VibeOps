@@ -133,6 +133,26 @@ test('人工审核结果不会被后续 单模型覆盖', () => {
   assert.equal(second.elements[0].lastModelProposal.label, '模型新名称');
 });
 
+test('截图已有目标 Page 时识别不会因页面名称变化创建新 Page', () => {
+  const captured = beginFrameCapture(createEmptyDraft(), 'sha256:captured-frame', { forceNewPage: true });
+  const pageId = captured.currentPageId;
+  const recognitionResult = sampleRecognition();
+  recognitionResult.frameId = 'sha256:captured-frame';
+  recognitionResult.page.name = '模型识别出的页面名称';
+
+  const merged = mergeRecognitionIntoDraft(
+    captured,
+    recognitionResult,
+    'captured-page.json',
+    'test-model',
+    { preservePageIdentity: true },
+  );
+
+  assert.equal(merged.currentPageId, pageId);
+  assert.equal(merged.pages.length, captured.pages.length);
+  assert.equal(merged.pages.find((page) => page.id === pageId)?.name, '模型识别出的页面名称');
+});
+
 test('增量识别跳过重复候选并仅追加新元素', () => {
   const first = mergeRecognitionIntoDraft(createEmptyDraft(), sampleRecognition(), 'first.json');
   const originalToggle = structuredClone(first.elements.find((element) => element.candidateKey === 'settings.toggle'));
@@ -421,7 +441,7 @@ test('重复列表可投影为抽象模板并隐藏具体行元素', () => {
   ]);
 });
 
-test('当前用户头像和身份信息归纳为单实例动态模板', () => {
+test('当前用户字段无关系证据时分别保留动态语义但不会自动合并', () => {
   const result = sampleRecognition();
   result.elements = [
     { ...result.elements[0], candidateKey: 'self_avatar', label: null, visualDescription: '当前登录用户头像', elementType: 'avatar', interactive: true, dynamicContent: false, approximateRegion: { x: 0.03, y: 0.04, width: 0.11, height: 0.08 }, meaning: { ...result.elements[0].meaning, description: '当前登录账号的头像入口' } },
@@ -432,17 +452,744 @@ test('当前用户头像和身份信息归纳为单实例动态模板', () => {
   result.actionCandidates = [{ ...sampleRecognition().actionCandidates[0], triggerCandidateKey: 'self_avatar', expectedOutcome: '打开个人资料' }];
 
   const prepared = prepareRecognitionForDraft(result);
-  const template = prepared.elements.find((element) => element.abstraction?.kind === 'dynamic-template');
-  assert.equal(template.candidateKey, 'current-user-profile-template');
-  assert.equal(template.dynamicContent, true);
-  assert.equal(template.abstraction.instanceCount, 1);
-  assert.deepEqual(template.abstraction.fields.map((field) => field.key), ['avatar', 'display-name', 'organization']);
-  assert.ok(template.abstraction.fields.every((field) => field.instanceRegions.length === 1));
+  assert.deepEqual(prepared.elements.map((element) => element.candidateKey), [
+    'self_avatar', 'self_name_title', 'self_org_subtitle',
+  ]);
+  assert.ok(prepared.elements.every((element) => element.abstraction?.kind === 'dynamic-template'));
+  assert.ok(prepared.elements.every((element) => element.dynamicContent === true));
+  assert.deepEqual(
+    prepared.elements.map((element) => element.abstraction?.templateKey),
+    ['business.dynamic-content', 'business.dynamic-content', 'business.dynamic-content'],
+  );
+  assert.ok(prepared.elements.every((element) => element.abstraction?.instanceCount === 1));
+});
 
-  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), prepared, 'dynamic-profile.json');
-  assert.deepEqual(draft.elements.map((element) => element.candidateKey), ['current-user-profile-template']);
-  assert.equal(draft.elements[0].abstraction?.kind, 'dynamic-template');
-  assert.deepEqual(draft.elements[0].capabilities, ['tap']);
+test('模型已明确声明动态模板时保留其语义和字段结构', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'profile_slot',
+    label: '用户资料',
+    elementType: 'section',
+    dynamicContent: true,
+    abstraction: {
+      kind: 'dynamic-template',
+      templateKey: 'profile-slot',
+      instanceCount: 1,
+      instanceRegions: [{ x: 0.1, y: 0.1, width: 0.4, height: 0.1 }],
+      fields: [{ key: 'profile-value', label: '资料值', elementType: 'static-label', instanceRegions: [{ x: 0.2, y: 0.12, width: 0.2, height: 0.03 }] }],
+      bboxStyle: 'abstract',
+    },
+    approximateRegion: { x: 0.1, y: 0.1, width: 0.4, height: 0.1 },
+  }];
+  result.relationships = [];
+  const prepared = prepareRecognitionForDraft(result);
+  assert.equal(prepared.elements[0].abstraction.kind, 'dynamic-template');
+  assert.equal(prepared.elements[0].dynamicContent, true);
+});
+
+test('无业务语义的无结构动态标题在草稿准备阶段降级为普通标题', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'welcome_heading',
+    label: '欢迎页主标题',
+    elementType: 'title',
+    interactive: false,
+    dynamicContent: true,
+    abstraction: null,
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const title = prepared.elements[0];
+  assert.equal(title.dynamicContent, false);
+  assert.equal(title.abstraction, null);
+  assert.ok(title.riskSignals.includes('unstructured-dynamic-title-downgraded'));
+});
+
+test('明确的当前用户业务字段无需结构化兄弟字段也保留动态共相', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'current_user_name',
+    label: '当前用户姓名',
+    visualDescription: '当前登录用户的显示名称',
+    elementType: 'static-label',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.2, y: 0.1, width: 0.25, height: 0.04 },
+    meaning: {
+      ...result.elements[0].meaning,
+      description: '当前登录用户的显示名称',
+      evidence: meaningEvidence({ visibleTexts: ['当前用户姓名'] }),
+    },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const name = prepared.elements[0];
+  assert.equal(name.dynamicContent, true);
+  assert.equal(name.abstraction?.kind, 'dynamic-template');
+  assert.equal(name.abstraction?.instanceCount, 1);
+  assert.ok(name.riskSignals.includes('business-dynamic-semantic-inferred'));
+});
+
+test('单字段纯文本动态标题也会降级，而多字段结构化载荷保持动态语义', () => {
+  const result = sampleRecognition();
+  const plain = {
+    ...result.elements[0],
+    candidateKey: 'plain_dynamic_title',
+    label: '日报标题',
+    elementType: 'title',
+    interactive: false,
+    dynamicContent: true,
+    abstraction: {
+      kind: 'dynamic-template', templateKey: 'plain-title', instanceCount: 1,
+      instanceRegions: [{ x: 0.1, y: 0.1, width: 0.3, height: 0.04 }],
+      fields: [{ key: 'text', label: '标题文本', elementType: 'title', capabilities: ['none'],
+        instanceRegions: [{ x: 0.1, y: 0.1, width: 0.3, height: 0.04 }] }],
+      bboxStyle: 'abstract',
+    },
+  };
+  const structured = {
+    ...result.elements[0],
+    candidateKey: 'structured_profile_title',
+    label: '当前用户资料',
+    elementType: 'title',
+    interactive: false,
+    dynamicContent: true,
+    abstraction: {
+      kind: 'dynamic-template', templateKey: 'profile-title', instanceCount: 1,
+      instanceRegions: [{ x: 0.1, y: 0.2, width: 0.5, height: 0.1 }],
+      fields: [
+        { key: 'avatar', label: '用户头像', elementType: 'avatar', capabilities: ['none'],
+          instanceRegions: [{ x: 0.1, y: 0.21, width: 0.08, height: 0.08 }] },
+        { key: 'name', label: '用户姓名', elementType: 'title', capabilities: ['none'],
+          instanceRegions: [{ x: 0.21, y: 0.22, width: 0.25, height: 0.04 }] },
+      ],
+      bboxStyle: 'abstract',
+    },
+  };
+  result.elements = [plain, structured];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const plainTitle = prepared.elements.find((element) => element.candidateKey === plain.candidateKey);
+  const profileTitle = prepared.elements.find((element) => element.candidateKey === structured.candidateKey);
+  assert.equal(plainTitle.dynamicContent, false);
+  assert.equal(plainTitle.abstraction, null);
+  assert.equal(profileTitle.dynamicContent, true);
+  assert.equal(profileTitle.abstraction?.kind, 'dynamic-template');
+  assert.deepEqual(profileTitle.abstraction.fields.map((field) => field.key), ['avatar', 'name']);
+});
+
+test('业务语义明确时单字段日报标题保留为动态共相', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作日志日报填写页面',
+    stateSummary: '当前用户填写并提交工作日志日报',
+  };
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'report_heading',
+    label: '葛超烨的日报',
+    visualDescription: '页面顶部显示当前填写人的日报标题',
+    elementType: 'title',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.08, y: 0.04, width: 0.32, height: 0.03 },
+    meaning: {
+      ...result.elements[0].meaning,
+      description: '当前填写人的日报标题',
+      evidence: meaningEvidence({ visibleTexts: ['葛超烨的日报'] }),
+    },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result, '工作日志日报填写页面；当前用户填写日报');
+  const title = prepared.elements[0];
+  assert.equal(title.dynamicContent, true);
+  assert.equal(title.abstraction?.kind, 'dynamic-template');
+  assert.equal(title.abstraction?.instanceCount, 1);
+  assert.equal(title.abstraction?.templateKey, 'business.report-title');
+  assert.deepEqual(title.abstraction?.fields.map((field) => field.key), ['report-title-text']);
+  assert.equal(title.abstraction?.fields[0].parentId, 'report_heading');
+  assert.ok(title.riskSignals.includes('business-dynamic-title-inferred'));
+});
+
+test('业务填写上下文可从泛化的日报标题标签推断动态共相', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作日志日报填写页面',
+    stateSummary: '当前页面用于填写并提交日报',
+  };
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'generic_report_heading',
+    label: '日报标题',
+    visualDescription: '页面顶部的日报标题',
+    elementType: 'title',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.08, y: 0.04, width: 0.32, height: 0.03 },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const title = prepared.elements[0];
+  assert.equal(title.dynamicContent, true);
+  assert.equal(title.abstraction?.kind, 'dynamic-template');
+  assert.equal(title.abstraction?.templateKey, 'business.report-title');
+  assert.ok(title.riskSignals.includes('business-dynamic-title-inferred'));
+});
+
+test('业务语义可通用提升接收对象及其实体字段为动态共相', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作日志日报填写页面',
+    stateSummary: '当前页面用于填写并提交日报，已设置接收人和接收群',
+  };
+  const base = result.elements[0];
+  const businessElement = (candidateKey, label, visualDescription, elementType, approximateRegion, extra = {}) => ({
+    ...base,
+    candidateKey,
+    label,
+    visualDescription,
+    elementType,
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion,
+    meaning: {
+      ...base.meaning,
+      description: visualDescription,
+      evidence: meaningEvidence({ visibleTexts: label ? [label] : [] }),
+    },
+    ...extra,
+  });
+  result.elements = [
+    businessElement('recipient_section', '接收人', '已选接收人区域', 'section', { x: 0.08, y: 0.4, width: 0.84, height: 0.1 }),
+    businessElement('recipient_avatar', '葛超烨', '当前接收人的联系人头像', 'avatar', { x: 0.09, y: 0.43, width: 0.08, height: 0.06 }, { interactive: true }),
+    businessElement('recipient_name', '葛超烨', '接收人名称', 'static-label', { x: 0.09, y: 0.49, width: 0.12, height: 0.03 }),
+    businessElement('group_section', '接收群', '已选接收群区域', 'section', { x: 0.08, y: 0.52, width: 0.84, height: 0.1 }),
+    businessElement('group_avatar', '项目群', '当前接收群的群组头像', 'avatar-group', { x: 0.09, y: 0.55, width: 0.08, height: 0.06 }),
+    businessElement('group_name', '项目群', '接收群名称', 'static-label', { x: 0.09, y: 0.61, width: 0.12, height: 0.03 }),
+    businessElement('live_status', '审批任务状态', '实时审批任务状态值', 'status', { x: 0.1, y: 0.7, width: 0.2, height: 0.03 }),
+  ];
+  result.relationships = [
+    { fromCandidateKey: 'recipient_section', type: 'contains', toCandidateKey: 'recipient_avatar' },
+    { fromCandidateKey: 'recipient_section', type: 'contains', toCandidateKey: 'recipient_name' },
+    { fromCandidateKey: 'group_section', type: 'contains', toCandidateKey: 'group_avatar' },
+    { fromCandidateKey: 'group_section', type: 'contains', toCandidateKey: 'group_name' },
+  ];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const recipientAvatar = prepared.elements.find((element) => element.candidateKey === 'recipient_avatar');
+  const recipientName = prepared.elements.find((element) => element.candidateKey === 'recipient_name');
+  const groupAvatar = prepared.elements.find((element) => element.candidateKey === 'group_avatar');
+  const groupName = prepared.elements.find((element) => element.candidateKey === 'group_name');
+  const liveStatus = prepared.elements.find((element) => element.candidateKey === 'live_status');
+  for (const element of [recipientAvatar, recipientName, groupAvatar, groupName, liveStatus]) {
+    assert.equal(element.dynamicContent, true);
+    assert.equal(element.abstraction?.kind, 'dynamic-template');
+    assert.equal(element.abstraction?.instanceCount, 1);
+    assert.ok(element.riskSignals.includes('business-dynamic-semantic-inferred'));
+  }
+  assert.equal(recipientAvatar.abstraction.templateKey, 'business.recipient-person');
+  assert.equal(groupAvatar.abstraction.templateKey, 'business.recipient-group');
+  assert.equal(liveStatus.abstraction.templateKey, 'business.dynamic-content');
+  assert.deepEqual(recipientName.approximateRegion, { x: 0.09, y: 0.49, width: 0.12, height: 0.03 });
+});
+
+test('直接描述接收对象时无需依赖分组结构也能稳定保留动态语义', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作日志日报填写页面',
+    stateSummary: '当前页面用于填写并提交日报',
+  };
+  const base = result.elements[0];
+  const makeElement = (candidateKey, label, elementType, visualDescription) => ({
+    ...base,
+    candidateKey,
+    label,
+    visualDescription,
+    elementType,
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.1, y: 0.4, width: 0.2, height: 0.04 },
+    meaning: { ...base.meaning, description: visualDescription, evidence: meaningEvidence({ visibleTexts: label ? [label] : [] }) },
+  });
+  result.elements = [
+    makeElement('recipient_avatar', '葛超烨', 'avatar', '当前接收人的头像'),
+    makeElement('recipient_name', '葛超烨', 'static-label', '当前接收人的名称'),
+    makeElement('recipient_group_avatar', 'Onl...', 'avatar-group', '当前接收群的群组头像'),
+    makeElement('recipient_group_name', 'Onl...', 'static-label', '当前接收群的名称'),
+  ];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.deepEqual(prepared.elements.map((element) => element.abstraction?.templateKey), [
+    'business.recipient-person', 'business.recipient-person',
+    'business.recipient-group', 'business.recipient-group',
+  ]);
+  assert.ok(prepared.elements.every((element) => element.dynamicContent === true));
+});
+
+test('泛化实体和值词缺少运行时语义时不会提升普通说明文本', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'user_info_note',
+    label: '用户信息',
+    visualDescription: '用户信息展示文本',
+    elementType: 'static-label',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.1, y: 0.4, width: 0.3, height: 0.04 },
+    meaning: {
+      ...result.elements[0].meaning,
+      description: '用于说明用户信息的静态文本',
+      evidence: meaningEvidence({ visibleTexts: ['用户信息'] }),
+    },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.equal(prepared.elements[0].dynamicContent, false);
+  assert.equal(prepared.elements[0].abstraction, null);
+  assert.equal(prepared.elements[0].riskSignals.includes('business-dynamic-semantic-inferred'), false);
+});
+
+test('日报列表中的泛化标题不会被误判为动态报告标题', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '我的日报列表',
+    stateSummary: '展示报告列表及其列标题',
+  };
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'report_title_column',
+    label: '日报标题',
+    visualDescription: '列表区域标题',
+    elementType: 'title',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.08, y: 0.2, width: 0.3, height: 0.03 },
+    meaning: {
+      ...result.elements[0].meaning,
+      description: '列表区域标题',
+      evidence: meaningEvidence({ visibleTexts: ['日报标题'] }),
+    },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.equal(prepared.elements[0].dynamicContent, false);
+  assert.equal(prepared.elements[0].abstraction, null);
+  assert.equal(prepared.elements[0].riskSignals.includes('business-dynamic-title-inferred'), false);
+});
+
+test('工作台中的普通用户信息说明不会仅凭泛化业务词被提升', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作台主页',
+    stateSummary: '用户信息展示页',
+  };
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'user_info_note',
+    label: '用户信息',
+    visualDescription: '用户信息展示文本',
+    elementType: 'static-label',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.1, y: 0.2, width: 0.3, height: 0.04 },
+    meaning: {
+      ...result.elements[0].meaning,
+      description: '用户信息展示文本',
+      evidence: meaningEvidence({ visibleTexts: ['用户信息'] }),
+    },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.equal(prepared.elements[0].dynamicContent, false);
+  assert.equal(prepared.elements[0].abstraction, null);
+  assert.equal(prepared.elements[0].riskSignals.includes('business-dynamic-semantic-inferred'), false);
+});
+
+test('业务流程中的时间和状态实际值可通用识别为动态载荷，而裸标签保持静态', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作日志日报填写页面',
+    stateSummary: '当前页面用于填写并提交日报',
+  };
+  const base = result.elements[0];
+  const makeField = (candidateKey, label, description) => ({
+    ...base,
+    candidateKey,
+    label,
+    visualDescription: description,
+    elementType: 'static-label',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.1, y: 0.4, width: 0.45, height: 0.04 },
+    meaning: {
+      ...base.meaning,
+      description,
+      evidence: meaningEvidence({ visibleTexts: [label] }),
+    },
+  });
+  result.elements = [
+    makeField('submit_time_value', '提交时间：当日09:00-18:00', '报告卡片中的提交时间值'),
+    makeField('report_status_value', '报告状态：已提交', '当前报告状态值'),
+    makeField('submit_time_label', '提交时间', '提交时间字段标签'),
+  ];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const submitTimeValue = prepared.elements.find((element) => element.candidateKey === 'submit_time_value');
+  const reportStatusValue = prepared.elements.find((element) => element.candidateKey === 'report_status_value');
+  const submitTimeLabel = prepared.elements.find((element) => element.candidateKey === 'submit_time_label');
+  assert.equal(submitTimeValue.dynamicContent, true);
+  assert.equal(reportStatusValue.dynamicContent, true);
+  assert.equal(submitTimeLabel.dynamicContent, false);
+  assert.equal(submitTimeLabel.abstraction, null);
+});
+
+test('工作台上下文和状态进度类型本身不能单独触发动态共相', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作台主页',
+    stateSummary: '工作台首页，展示用户信息和任务状态',
+  };
+  const base = result.elements[0];
+  const makeField = (candidateKey, label, visualDescription, elementType) => ({
+    ...base,
+    candidateKey,
+    label,
+    visualDescription,
+    elementType,
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.1, y: 0.4, width: 0.45, height: 0.04 },
+    meaning: {
+      ...base.meaning,
+      description: visualDescription,
+      evidence: meaningEvidence({ visibleTexts: [label] }),
+    },
+  });
+  result.elements = [
+    makeField('workbench_user_info', '用户信息', '工作台中的用户信息说明', 'static-label'),
+    makeField('workbench_status', '用户状态', '工作台中的状态字段标签', 'status'),
+    makeField('workbench_progress', '任务进度', '工作台中的进度展示', 'progress-bar'),
+  ];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.ok(prepared.elements.every((element) => element.dynamicContent === false));
+  assert.ok(prepared.elements.every((element) => element.abstraction === null));
+});
+
+test('时间日期状态进度字段要求可见值或明确运行时证据，裸字段标签保持静态', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作日志日报填写页面',
+    stateSummary: '当前页面用于填写并提交日报',
+  };
+  const base = result.elements[0];
+  const makeField = (candidateKey, label, visualDescription, elementType = 'static-label') => ({
+    ...base,
+    candidateKey,
+    label,
+    visualDescription,
+    elementType,
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.1, y: 0.4, width: 0.45, height: 0.04 },
+    meaning: {
+      ...base.meaning,
+      description: visualDescription,
+      evidence: meaningEvidence({ visibleTexts: [label] }),
+    },
+  });
+  result.elements = [
+    makeField('submit_time_value', '提交时间：当日09:00-18:00', '报告卡片中的提交时间实际值'),
+    makeField('status_value', '任务状态：已完成', '报告卡片中的任务状态实际值'),
+    makeField('progress_value', '任务进度 80%', '报告卡片中的任务进度实际值'),
+    makeField('submit_date_value', '提交日期：2026-09-02', '报告卡片中的提交日期实际值'),
+    makeField('submit_time_label', '提交时间', '提交时间字段标签'),
+    makeField('status_label', '任务状态', '任务状态字段标签'),
+    makeField('progress_label', '任务进度', '任务进度字段标签'),
+    makeField('explicit_status', '审核状态', '实时状态来自服务端数据源'),
+  ];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  for (const key of ['submit_time_value', 'status_value', 'progress_value', 'submit_date_value', 'explicit_status']) {
+    const element = prepared.elements.find((candidate) => candidate.candidateKey === key);
+    assert.equal(element.dynamicContent, true, key);
+    assert.equal(element.abstraction?.kind, 'dynamic-template', key);
+  }
+  for (const key of ['submit_time_label', 'status_label', 'progress_label']) {
+    const element = prepared.elements.find((candidate) => candidate.candidateKey === key);
+    assert.equal(element.dynamicContent, false, key);
+    assert.equal(element.abstraction, null, key);
+  }
+});
+
+test('日报列表或区域标题中的具体日报标题也保持静态', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '我的日报列表',
+    stateSummary: '展示日报列表及其列标题',
+  };
+  const base = result.elements[0];
+  const makeHeading = (candidateKey, label, visualDescription) => ({
+    ...base,
+    candidateKey,
+    label,
+    visualDescription,
+    elementType: 'title',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.1, y: 0.2, width: 0.45, height: 0.04 },
+    meaning: {
+      ...base.meaning,
+      description: visualDescription,
+      evidence: meaningEvidence({ visibleTexts: [label] }),
+    },
+  });
+  result.elements = [
+    makeHeading('report_column_heading', '日报标题', '列表区域标题'),
+    makeHeading('report_region_heading', '张三的日报', '日报列表中的区域标题'),
+  ];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.ok(prepared.elements.every((element) => element.dynamicContent === false));
+  assert.ok(prepared.elements.every((element) => element.abstraction === null));
+});
+
+test('多重父关系按最具体语义容器解析而不受关系数组顺序影响', () => {
+  const result = sampleRecognition();
+  const base = result.elements[0];
+  result.elements = [
+    {
+      ...base,
+      candidateKey: 'report_form',
+      label: '日报填写表单',
+      visualDescription: '整体录入表单',
+      elementType: 'form',
+      approximateRegion: { x: 0.04, y: 0.2, width: 0.92, height: 0.6 },
+    },
+    {
+      ...base,
+      candidateKey: 'recipient_section',
+      label: '接收人',
+      visualDescription: '接收人区域',
+      elementType: 'section',
+      approximateRegion: { x: 0.08, y: 0.35, width: 0.84, height: 0.12 },
+    },
+    {
+      ...base,
+      candidateKey: 'recipient_name',
+      label: '张三',
+      visualDescription: '接收人名称',
+      elementType: 'static-label',
+      approximateRegion: { x: 0.12, y: 0.4, width: 0.2, height: 0.04 },
+      meaning: {
+        ...base.meaning,
+        description: '接收人名称',
+        evidence: meaningEvidence({ visibleTexts: ['张三'] }),
+      },
+    },
+  ];
+  // The broad form appears first intentionally; semantic ownership must be
+  // invariant to this incidental relationship ordering.
+  result.relationships = [
+    { fromCandidateKey: 'report_form', type: 'contains', toCandidateKey: 'recipient_name' },
+    { fromCandidateKey: 'recipient_section', type: 'contains', toCandidateKey: 'recipient_name' },
+    { fromCandidateKey: 'report_form', type: 'contains', toCandidateKey: 'recipient_section' },
+  ];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  const recipient = prepared.elements.find((element) => element.candidateKey === 'recipient_name');
+  assert.equal(recipient.dynamicContent, true);
+  assert.equal(recipient.abstraction?.templateKey, 'business.recipient-person');
+});
+
+test('业务页面中的分组标题、附件说明和选项标签不会误判为动态载荷', () => {
+  const result = sampleRecognition();
+  result.page = {
+    ...result.page,
+    name: '工作日志日报填写页面',
+    stateSummary: '当前页面用于填写并提交日报，已设置接收人和接收群',
+  };
+  const base = result.elements[0];
+  const makeElement = (candidateKey, label, elementType, visualDescription) => ({
+    ...base,
+    candidateKey,
+    label,
+    visualDescription,
+    elementType,
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.1, y: 0.4, width: 0.7, height: 0.04 },
+    meaning: { ...base.meaning, description: visualDescription, evidence: meaningEvidence({ visibleTexts: [label] }) },
+  });
+  result.elements = [
+    makeElement('recipient_heading', '接收人', 'static-label', '接收人设置区域的标题'),
+    makeElement('group_heading', '接收群', 'title', '接收群设置区域顶部的大号标题'),
+    makeElement('attachment_heading', '4. 图片和附件', 'static-label', '附件区域的字段标题'),
+    makeElement('attachment_hint', '单个文件最大为400M', 'caption', '说明文件大小限制的辅助文字'),
+    makeElement('more_heading', '更多', 'title', '附加设置区块顶部的大号标题'),
+    makeElement('allow_forward_label', '允许转发', 'static-label', '未选中复选框右侧的选项文字'),
+    makeElement('linked_report_heading', '关联汇报', 'title', '关联汇报规则列表区域的标题'),
+  ];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.ok(prepared.elements.every((element) => element.dynamicContent === false));
+  assert.ok(prepared.elements.every((element) => element.abstraction === null));
+});
+
+test('普通页面标题不会仅因包含标题文字而被推断为动态共相', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'page_heading',
+    label: '设置页面标题',
+    visualDescription: '页面顶部标题',
+    elementType: 'title',
+    interactive: false,
+    dynamicContent: false,
+    abstraction: null,
+    approximateRegion: { x: 0.08, y: 0.04, width: 0.32, height: 0.03 },
+    meaning: {
+      ...result.elements[0].meaning,
+      description: '页面标题',
+      evidence: meaningEvidence({ visibleTexts: ['设置页面标题'] }),
+    },
+  }];
+  result.relationships = [];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.equal(prepared.elements[0].dynamicContent, false);
+  assert.equal(prepared.elements[0].abstraction, null);
+  assert.equal(prepared.elements[0].riskSignals.includes('business-dynamic-title-inferred'), false);
+});
+
+test('静态分组容器不会仅凭标签和几何邻近被破坏性改写为动态共相', () => {
+  const result = sampleRecognition();
+  const makeElement = (candidateKey, label, elementType, approximateRegion) => ({
+    ...result.elements[0], candidateKey, label, visualDescription: label, elementType,
+    approximateRegion, interactive: false, dynamicContent: false,
+  });
+  result.elements = [
+    makeElement('settings_cluster', '设置分组', 'section', { x: 0.08, y: 0.3, width: 0.84, height: 0.2 }),
+    makeElement('leading_icon', '状态图标', 'avatar', { x: 0.1, y: 0.34, width: 0.08, height: 0.04 }),
+    makeElement('cluster_description', '辅助说明', 'static-label', { x: 0.1, y: 0.4, width: 0.3, height: 0.03 }),
+    makeElement('cluster_toggle', '启用选项', 'switch', { x: 0.75, y: 0.38, width: 0.12, height: 0.05 }),
+  ];
+  result.relationships = [
+    { fromCandidateKey: 'settings_cluster', type: 'contains', toCandidateKey: 'leading_icon' },
+    { fromCandidateKey: 'settings_cluster', type: 'contains', toCandidateKey: 'cluster_description' },
+    { fromCandidateKey: 'settings_cluster', type: 'contains', toCandidateKey: 'cluster_toggle' },
+  ];
+  result.actionCandidates = [];
+
+  const normalized = normalizeRecognitionOutput(result).recognitionResult;
+  assert.deepEqual(normalized.elements.map((element) => element.candidateKey), [
+    'settings_cluster', 'leading_icon', 'cluster_description', 'cluster_toggle',
+  ]);
+  assert.ok(normalized.elements.every((element) => element.abstraction === null));
+  assert.equal(normalized.relationships.length, 3);
+});
+
+test('普通 *_group 键名不会单独触发动态共相归纳', () => {
+  const result = sampleRecognition();
+  const makeElement = (candidateKey, label, elementType, approximateRegion, dynamicContent = false) => ({
+    ...result.elements[0], candidateKey, label, visualDescription: label, elementType,
+    approximateRegion, interactive: false, dynamicContent,
+  });
+  result.elements = [
+    makeElement('layout_group', '布局分组', 'section', { x: 0.08, y: 0.28, width: 0.84, height: 0.2 }),
+    makeElement('layout_group_icon', '布局图标', 'avatar', { x: 0.1, y: 0.33, width: 0.08, height: 0.05 }),
+    makeElement('layout_group_label', '布局说明', 'static-label', { x: 0.22, y: 0.34, width: 0.3, height: 0.03 }),
+  ];
+  result.relationships = [
+    { fromCandidateKey: 'layout_group', type: 'contains', toCandidateKey: 'layout_group_icon' },
+    { fromCandidateKey: 'layout_group', type: 'contains', toCandidateKey: 'layout_group_label' },
+  ];
+  result.actionCandidates = [];
+
+  const prepared = prepareRecognitionForDraft(result);
+  assert.deepEqual(prepared.elements.map((element) => element.candidateKey), [
+    'layout_group', 'layout_group_icon', 'layout_group_label',
+  ]);
+  assert.ok(prepared.elements.every((element) => element.abstraction?.kind !== 'dynamic-template'));
+  assert.ok(prepared.elements.every((element) => element.dynamicContent === false));
+});
+
+test('草稿合并选择最具体的 section 作为子元素父级', () => {
+  const result = sampleRecognition();
+  result.elements = [
+    { ...result.elements[0], candidateKey: 'outer_form', label: '外层表单', elementType: 'form', approximateRegion: { x: 0, y: 0.1, width: 1, height: 0.8 } },
+    { ...result.elements[0], candidateKey: 'inner_section', label: '内部区块', elementType: 'section', approximateRegion: { x: 0.08, y: 0.2, width: 0.84, height: 0.3 } },
+    { ...result.elements[1], candidateKey: 'inner_button', label: '内部操作', elementType: 'text-button', interactive: true, approximateRegion: { x: 0.2, y: 0.3, width: 0.2, height: 0.05 } },
+  ];
+  result.relationships = [
+    { fromCandidateKey: 'outer_form', type: 'contains', toCandidateKey: 'inner_section' },
+    { fromCandidateKey: 'outer_form', type: 'contains', toCandidateKey: 'inner_button' },
+    { fromCandidateKey: 'inner_section', type: 'contains', toCandidateKey: 'inner_button' },
+  ];
+  result.actionCandidates = [{ ...result.actionCandidates[0], triggerCandidateKey: 'inner_button' }];
+  const draft = mergeRecognitionIntoDraft(createEmptyDraft(), result, 'nested.json');
+  const section = draft.elements.find((element) => element.candidateKey === 'inner_section');
+  const button = draft.elements.find((element) => element.candidateKey === 'inner_button');
+  assert.equal(button.parentId, section.id);
+  assert.equal(button.ownerRef, section.id);
 });
 
 test('轮播无需独立规则即可归纳为动态元素共相', () => {
@@ -762,6 +1509,21 @@ test('单模型归一化保留原始输出，并仅降级含未知证据的元�
   assert.ok(!recognitionResult.elements[1].riskSignals.includes('meaning-evidence-needs-review'));
   assert.equal(normalizationIssues.length, 1);
   assert.equal(normalizationIssues[0].candidateKey, 'settings.row');
+});
+
+test('归一化不会根据普通页面文本自行推断动态共相', () => {
+  const raw = sampleRecognition();
+  raw.elements.push({
+    candidateKey: 'page_heading', label: '示例页面标题', visualDescription: '页面标题', elementType: 'title', interactive: false,
+    enabled: true, state: null, approximateRegion: { x: 0.08, y: 0.04, width: 0.32, height: 0.03 }, geometryKind: 'boundary', geometryConfidence: 0.8,
+    meaning: { status: 'known', description: '页面标题', evidence: meaningEvidence({ visibleTexts: ['示例页面标题'] }) }, dynamicContent: false, riskSignals: [], confidence: 0.9,
+  });
+
+  const { recognitionResult, normalizationIssues } = normalizeRecognitionOutput(raw);
+  const title = recognitionResult.elements.find((element) => element.candidateKey === 'page_heading');
+  assert.equal(title.dynamicContent, false);
+  assert.equal(title.abstraction, null);
+  assert.equal(normalizationIssues.some((issue) => issue.candidateKey === 'form_heading'), false);
 });
 
 test('单模型归一化强制排除系统栏、子元素及其关系和动作', () => {

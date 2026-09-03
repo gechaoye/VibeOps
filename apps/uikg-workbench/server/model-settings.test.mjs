@@ -113,6 +113,36 @@ test('旧版三条可维护规则迁移到元素共相规则且保留人工修�
   }
 });
 
+test('v1 规则迁移按 key 去重并移除过时内置规则', async () => {
+  const { root, store } = await temporaryStore();
+  try {
+    const legacyRules = [
+      { ...DEFAULT_RECOGNITION_PROMPT_RULES[0], title: '第一次编辑', description: '第一次编辑内容。' },
+      { ...DEFAULT_RECOGNITION_PROMPT_RULES[0], title: '最终编辑', description: '最终编辑内容。' },
+      { ...DEFAULT_RECOGNITION_PROMPT_RULES[1] },
+      { key: 'managed-carousel', title: '旧轮播规则', description: '不应再注入。' },
+      { key: 'custom-visible-only', title: '可见内容', description: '只保留截图中的内容。' },
+    ];
+    store.setMeta('recognition_prompt_rules_v1', JSON.stringify(legacyRules));
+    store.ensureDatabase().prepare("DELETE FROM model_settings_meta WHERE key IN ('recognition_prompt_rules_v2', 'element_universal_rules_v3', 'element_universal_rules_v4')").run();
+    store.close();
+
+    const reopened = new ModelSettingsStore(path.join(root, 'model-settings.sqlite'));
+    await reopened.initialize();
+    const migrated = reopened.listRecognitionPromptRules();
+    assert.equal(new Set(migrated.map((rule) => rule.key)).size, migrated.length);
+    assert.equal(migrated.filter((rule) => rule.key === 'managed-list-abstraction').length, 1);
+    assert.equal(migrated.find((rule) => rule.key === 'managed-list-abstraction').title, '最终编辑');
+    assert.deepEqual(migrated.find((rule) => rule.key === 'managed-dynamic-content'), DEFAULT_RECOGNITION_PROMPT_RULES[1]);
+    assert.equal(migrated.some((rule) => rule.key === 'managed-carousel'), false);
+    assert.equal(migrated.find((rule) => rule.key === 'custom-visible-only').category, 'custom');
+    reopened.close();
+  } finally {
+    store.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test('设置响应只返回 SQLite 网关密钥掩码', async () => {
   const { root, store } = await temporaryStore();
   try {

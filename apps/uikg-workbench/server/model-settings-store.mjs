@@ -17,7 +17,7 @@ const ELEMENT_UNIVERSAL_RULE_KEYS = new Set([
 ]);
 
 function normalizeRecognitionPromptRule(rule) {
-  if (!rule || typeof rule !== 'object') return rule;
+  if (!rule || typeof rule !== 'object' || Array.isArray(rule)) return null;
   const category = rule.category === 'element-universal' || rule.category === 'custom'
     ? rule.category
     : ELEMENT_UNIVERSAL_RULE_KEYS.has(rule.key) ? 'element-universal' : 'custom';
@@ -25,9 +25,18 @@ function normalizeRecognitionPromptRule(rule) {
 }
 
 function normalizeRecognitionPromptRules(rules) {
-  return Array.isArray(rules)
-    ? rules.filter((rule) => rule?.key !== 'managed-carousel').map(normalizeRecognitionPromptRule)
-    : [];
+  if (!Array.isArray(rules)) return [];
+  // A legacy database can contain the built-in rule plus a user-edited copy
+  // under the same key. Keep one deterministic rule so the model never sees
+  // contradictory instructions; later entries win, preserving an explicit
+  // user edit over an older default.
+  const byKey = new Map();
+  for (const rule of rules) {
+    const normalized = normalizeRecognitionPromptRule(rule);
+    if (!normalized || normalized.key === 'managed-carousel' || typeof normalized.key !== 'string' || !normalized.key.trim()) continue;
+    byKey.set(normalized.key, normalized);
+  }
+  return [...byKey.values()];
 }
 
 export const DEFAULT_RECOGNITION_PROMPT_RULES = [
@@ -41,7 +50,7 @@ export const DEFAULT_RECOGNITION_PROMPT_RULES = [
     key: 'managed-dynamic-content',
     category: 'element-universal',
     title: '动态元素共相',
-    description: '随账号、时间、状态或数据变化的可见内容必须设置 dynamicContent=true，但只有字段共同属于同一稳定展示载荷时，才创建 abstraction.kind=dynamic-template、instanceCount 固定为 1。当前用户头像、姓名、组织、部门或职位、轮播/横幅等属于可能的动态载荷，但必须有共同变化的槽位证据；轮播区域按实际形态使用 elementType=carousel。用户可填写的 form、input、text-area、rich-text-input 以及包含这些字段的录入模板，不因填写值未来会变化而成为动态载荷；重复录入结构应使用 repeated-template。共相只保留共同变化的可见字段、显示条件和交互职责；当前文案、图片、数值和业务对象只是观测。位于共相块之外的独立可点击或可输入控件必须作为普通顶层元素输出，永远不得放入任何 abstraction.fields，也不得用字段路径作为 actionCandidates.triggerCandidateKey。仅颜色、位置或短暂动画变化，或者无法确认共同载荷时，不得创建动态元素共相。',
+    description: '随账号、时间、状态或数据变化的可见内容必须设置 dynamicContent=true，并在稳定视觉槽位上创建 abstraction.kind=dynamic-template、instanceCount 固定为 1。业务语义是动态性判定的一等依据，且不限于标题：只要语义明确某个槽位承载当前用户、接收人或接收群、成员、负责人、报告主体、实时业务值或其他会被业务数据替换的对象，即使只有一个可见字段、没有头像或其他结构化兄弟字段，也应保留为单实例动态共相；“某主体的日报/周报/报告/汇报”以及业务填写/编辑/提交流程中的“日报标题”等泛化标题只是强示例，不能因为缺少结构证据而降级，但列表列头、分组/区域标题和设置标题仍保持静态。时间、日期、状态、进度等业务字段只有在可见文本同时呈现实际值（例如“提交时间：当日09:00-18:00”“报告状态：已提交”）或 meaning 明确其运行时来源时才提升，裸字段标签不作为动态载荷。当前用户头像、姓名、组织、部门或职位、轮播/横幅等也属于可能的动态载荷；轮播区域按实际形态使用 elementType=carousel。用户可填写的 form、input、text-area、rich-text-input 以及包含这些字段的录入模板，不因填写值未来会变化而成为动态载荷；重复录入结构应使用 repeated-template。共相只保留稳定字段、显示条件和交互职责；当前文案、图片、数值和业务对象只是观测。业务规则可以补充语义和动态性线索，但不能伪造不可见字段、改变 bbox、实例数量、父子关系或交互边界；位于共相块之外的独立可点击或可输入控件必须作为普通顶层元素输出，永远不得放入任何 abstraction.fields，也不得用字段路径作为 actionCandidates.triggerCandidateKey。仅颜色、位置或短暂动画变化，且没有业务语义或稳定槽位依据时，不得创建动态元素共相。',
   },
 ];
 
@@ -77,6 +86,24 @@ function migrateRecognitionPromptRule(rule) {
   const current = DEFAULT_RECOGNITION_PROMPT_RULES.find((candidate) => candidate.key === rule.key);
   const unchangedDefault = previousDefaultSignatures.has(recognitionPromptRuleSignature(rule));
   return unchangedDefault && current ? current : rule;
+}
+
+function migrateRecognitionPromptRules(rules) {
+  return normalizeRecognitionPromptRules((Array.isArray(rules) ? rules : [])
+    .map(migrateRecognitionPromptRule)
+    .filter(Boolean));
+}
+
+function mergeDefaultRecognitionPromptRules(legacyRules) {
+  // Start with the current defaults, then let migrated legacy entries replace
+  // the matching key. This removes duplicate built-ins while retaining a
+  // deliberately customized rule from an older settings version.
+  return normalizeRecognitionPromptRules([
+    ...DEFAULT_RECOGNITION_PROMPT_RULES,
+    ...((Array.isArray(legacyRules) ? legacyRules : [])
+      .map(migrateRecognitionPromptRule)
+      .filter(Boolean)),
+  ]);
 }
 
 export class ModelSettingsStore {
@@ -211,7 +238,7 @@ export class ModelSettingsStore {
     const currentValue = this.getMeta(RECOGNITION_PROMPT_RULES_KEY);
     if (currentValue !== null) {
       try {
-        const normalizedValue = JSON.stringify(normalizeRecognitionPromptRules(JSON.parse(currentValue).map(migrateRecognitionPromptRule).filter(Boolean)));
+        const normalizedValue = JSON.stringify(migrateRecognitionPromptRules(JSON.parse(currentValue)));
         if (normalizedValue !== currentValue) this.setMeta(RECOGNITION_PROMPT_RULES_KEY, normalizedValue);
       } catch {
         this.setMeta(RECOGNITION_PROMPT_RULES_KEY, '[]');
@@ -229,9 +256,9 @@ export class ModelSettingsStore {
       legacyRules = [];
     }
     const rules = previousUniversalValue !== null || previousValue !== null
-      ? legacyRules.map(migrateRecognitionPromptRule).filter(Boolean)
-      : [...DEFAULT_RECOGNITION_PROMPT_RULES, ...legacyRules];
-    this.setMeta(RECOGNITION_PROMPT_RULES_KEY, JSON.stringify(normalizeRecognitionPromptRules(rules)));
+      ? migrateRecognitionPromptRules(legacyRules)
+      : mergeDefaultRecognitionPromptRules(legacyRules);
+    this.setMeta(RECOGNITION_PROMPT_RULES_KEY, JSON.stringify(rules));
     return true;
   }
 

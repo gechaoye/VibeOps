@@ -19,6 +19,40 @@ const ELEMENT_TYPE_REPLACEMENTS = {
 };
 const EXCLUDED_SYSTEM_CHROME_TYPES = new Set(['status-bar', 'system-navigation-bar']);
 const DATA_ENTRY_TYPES = new Set(['form', 'input', 'text-area', 'rich-text-input']);
+const TITLE_TEXT_TYPES = new Set(['text', 'static-label', 'title', 'subtitle', 'caption']);
+const BUSINESS_DYNAMIC_SEMANTIC_MARKER = 'business-dynamic-semantic-inferred';
+const BUSINESS_DYNAMIC_TITLE_MARKER = 'business-dynamic-title-inferred';
+const BUSINESS_REPORT_TERMS = /(?:日报|周报|月报|季报|年报|报告|汇报|工作日志)/u;
+// "工作台" identifies a product surface, but does not by itself establish
+// that an arbitrary label is a runtime value. Keep it out of the positive
+// workflow gate used for generic business-value inference.
+const BUSINESS_WORKFLOW_CONTEXT_TERMS = /(?:填写|编辑|提交|日志|日报|周报|月报|季报|年报|汇报|报告|表单)/u;
+const BUSINESS_STRONG_ENTITY_TERMS = /(?:当前(?:登录)?(?:用户|账号|人员|填写人|提交人)|我的|本次(?:填写|提交)?|负责人|成员|员工|联系人|接收人|接收群|收件人|发送人|作者|创建人|所有者|群组|群聊|报告主体)/u;
+const BUSINESS_GENERIC_ENTITY_TERMS = /(?:用户|账号|人员|填写人|提交人|组织|部门|团队|公司|单位|项目|任务|客户|供应商|对象)/u;
+const BUSINESS_RUNTIME_ENTITY_TERMS = new RegExp(`(?:${BUSINESS_STRONG_ENTITY_TERMS.source}|${BUSINESS_GENERIC_ENTITY_TERMS.source})`, 'u');
+const BUSINESS_IDENTITY_TERMS = BUSINESS_RUNTIME_ENTITY_TERMS;
+const DYNAMIC_SUBJECT_TERMS = BUSINESS_RUNTIME_ENTITY_TERMS;
+const DYNAMIC_TITLE_TERMS = /(?:姓名|名称|标题|日报|周报|月报|季报|年报|报告|汇报)/u;
+const POSSESSIVE_BUSINESS_TITLE = /[^\s，。！？、:：;；“”‘’"'<>]{1,40}的(?:日报|周报|月报|季报|年报|报告|汇报)/u;
+const GENERIC_BUSINESS_REPORT_TITLE = /(?:(?:日报|周报|月报|季报|年报|工作日志|报告|汇报)\s*(?:标题|名称|题目)|(?:标题|名称|题目)\s*(?:是|为|：|:)?\s*(?:日报|周报|月报|季报|年报|工作日志|报告|汇报))/u;
+const GENERIC_BUSINESS_REPORT_TITLE_LABEL = /^(?:(?:日报|周报|月报|季报|年报|工作日志|报告|汇报)\s*(?:标题|名称|题目)|(?:标题|名称|题目)\s*(?:是|为|：|:)?\s*(?:日报|周报|月报|季报|年报|工作日志|报告|汇报))$/u;
+const BUSINESS_RUNTIME_VALUE_TERMS = /(?:头像|图标|名称|姓名|昵称|标题|内容|封面|图片|组织|部门|团队|公司|单位|指标|数值|数量|时间|日期|状态|进度|结果|详情|卡片|列表|数据|记录|规则|信息|资料|文本|值)/u;
+const BUSINESS_TEMPORAL_FIELD_TERMS = /(?:时间|日期|状态|进度)/u;
+const BUSINESS_TEMPORAL_ROLE_TERMS = /(?:提交|填写|创建|更新|修改|截止|开始|结束|审核|审批|发布|处理|完成|交付|报告)/u;
+// A visible value is stronger evidence than a generic field noun. Keep the
+// pattern broad enough for times, dates, status words and percentages while
+// avoiding a bare label such as "提交时间" or "任务状态".
+const BUSINESS_OBSERVED_VALUE_PATTERN = /(?:[:：]\s*\S|(?:是|为)\s*\S|\d{1,4}\s*(?:年|月|日|时|分|秒|[-/:：])|\d+(?:\.\d+)?\s*%|(?:今天|昨天|明天|当日|本周|本月|已提交|已完成|进行中|成功|失败|草稿|待处理|开启|关闭))/u;
+const BUSINESS_DYNAMIC_PAYLOAD_TYPES = new Set([
+  'avatar', 'avatar-group', 'image', 'thumbnail', 'preview', 'banner', 'carousel',
+  'badge', 'status', 'progress-bar', 'loading',
+]);
+const BUSINESS_DYNAMIC_CONTAINER_TYPES = new Set([
+  'navigation-bar', 'sidebar', 'drawer', 'list', 'grouped-list', 'swipe-list',
+  'expandable-list', 'list-item', 'card', 'panel', 'section', 'form', 'table',
+  'chart', 'image-viewer', 'file-preview', 'dialog', 'confirm-dialog', 'bottom-sheet',
+  'popover', 'floating-card', 'toast',
+]);
 
 function isDataEntryTemplate(elementType, abstraction) {
   return DATA_ENTRY_TYPES.has(elementType)
@@ -121,6 +155,13 @@ function isInheritedAbstractListItem(element, parent) {
 function normalizeAbstraction(rawAbstraction, fallbackKey = '') {
   if (!rawAbstraction || typeof rawAbstraction !== 'object' || !['repeated-template', 'dynamic-template'].includes(rawAbstraction.kind)) return null;
   const kind = rawAbstraction.kind;
+  // A field can be absent in the middle of a repeated capture (for example a
+  // title hidden by virtualization). Preserve that slot as null so the next
+  // observed region keeps its template instance index. The outer template
+  // regions remain concrete boxes and are normalized separately below.
+  const normalizeFieldRegions = (regions) => (Array.isArray(regions)
+    ? regions.map((region) => region && typeof region === 'object' ? clampUnitBox(region) : null)
+    : []);
   const fields = Array.isArray(rawAbstraction.fields)
     ? rawAbstraction.fields.map((field, index) => ({
       key: typeof field?.key === 'string' && field.key.trim() ? field.key.trim() : `field-${index + 1}`,
@@ -133,14 +174,13 @@ function normalizeAbstraction(rawAbstraction, fallbackKey = '') {
       actionEffects: normalizeActionEffects(field?.actionEffects, typeof field?.elementType === 'string' && field.elementType ? field.elementType : 'static-label', normalizeCapabilities(field?.capabilities)),
       parentId: typeof field?.parentId === 'string' && field.parentId.trim() ? field.parentId.trim() : null,
       required: Boolean(field?.required),
-      instanceRegions: Array.isArray(field?.instanceRegions)
-        ? field.instanceRegions.filter((region) => region && typeof region === 'object').map(clampUnitBox)
-        : [],
+      instanceRegions: normalizeFieldRegions(field?.instanceRegions),
     })).filter((field) => {
       // Legacy recognition sometimes hallucinated an avatar role without any visual evidence.
       // Keep real avatars when the model supplied at least one field-level bbox.
       const key = field.key.toLowerCase();
-      return !(field.instanceRegions.length === 0 && (key === 'avatar' || key === 'avatar-placeholder' || key === 'avatar-placeholder-icon'));
+      return !(field.instanceRegions.every((region) => !region)
+        && (key === 'avatar' || key === 'avatar-placeholder' || key === 'avatar-placeholder-icon'));
     })
     : [];
   const instanceRegions = Array.isArray(rawAbstraction.instanceRegions)
@@ -270,7 +310,434 @@ function hasClassifiedMeaningEvidence(evidence) {
   return MEANING_EVIDENCE_FIELDS.some((field) => evidence[field].length > 0) || Boolean(evidence.userContext);
 }
 
-export function normalizeRecognitionOutput(rawRecognitionResult) {
+function businessVisibleText(element) {
+  const evidence = element?.meaning?.evidence || {};
+  return [
+    element?.label,
+    ...(Array.isArray(evidence.visibleTexts) ? evidence.visibleTexts : []),
+  ].filter((value) => typeof value === 'string' && value.trim()).join(' ');
+}
+
+function businessDescriptionText(element) {
+  const evidence = element?.meaning?.evidence || {};
+  return [
+    element?.visualDescription,
+    element?.meaning?.description,
+    ...(Array.isArray(evidence.visualCues) ? evidence.visualCues : []),
+    evidence.userContext,
+  ].filter((value) => typeof value === 'string' && value.trim()).join(' ');
+}
+
+function businessSemanticText(element, pageContext = '') {
+  return [businessVisibleText(element), businessDescriptionText(element), pageContext]
+    .filter((value) => typeof value === 'string' && value.trim()).join(' ');
+}
+
+function businessDynamicTitleCue(element, pageContext = '') {
+  if (!element || !TITLE_TEXT_TYPES.has(element.elementType) || element.interactive) return null;
+  const elementText = businessSemanticText(element);
+  const visibleText = businessVisibleText(element);
+  const contextText = businessSemanticText(null, pageContext);
+  const labelText = typeof element.label === 'string' ? element.label.trim() : '';
+  // Strong report-title patterns must be visible text, not explanatory prose
+  // from visualDescription/meaning.description. Descriptions can explain a
+  // static rule or example that happens to mention another report.
+  const reportTitle = POSSESSIVE_BUSINESS_TITLE.test(visibleText);
+  const genericReportSlot = GENERIC_BUSINESS_REPORT_TITLE_LABEL.test(labelText)
+    || GENERIC_BUSINESS_REPORT_TITLE_LABEL.test(visibleText);
+  // A subject-plus-title phrase is title semantics only for a real heading.
+  // Names and labels such as “接收人名称” are handled by the generic business
+  // value path below so they can share the recipient identity template.
+  const subjectTitle = element.elementType === 'title'
+    && DYNAMIC_SUBJECT_TERMS.test(elementText) && DYNAMIC_TITLE_TERMS.test(elementText);
+  const explicitRuntimeTitle = /(?:随(?:用户|账号|人员|日期|时间|状态|数据)|运行时(?:数据|内容)|动态(?:标题|内容)|当前用户对应|当前填写人)/u.test(elementText);
+  const reportContext = BUSINESS_REPORT_TERMS.test(contextText);
+  const workflowContext = BUSINESS_WORKFLOW_CONTEXT_TERMS.test(contextText);
+  const workflowActionContext = /(?:填写|编辑|提交|日志|表单)/u.test(contextText);
+  const contextualSubject = DYNAMIC_SUBJECT_TERMS.test(contextText);
+  const structuralHeading = isBusinessStructuralHeading(element, elementText);
+  const staticReportHeading = isStaticBusinessReportHeading(element);
+  const structuralRoleLabel = isBusinessStructuralRoleLabel(labelText);
+  const reportListContext = /(?:列表|列头|表头|列表页|清单|目录|搜索结果)/u.test(contextText);
+  // A page-level heading may still be the business report title during a
+  // fill/edit/submit flow. List/column/section headings remain static even
+  // when their label happens to be the generic "日报标题" slot name.
+  const reportTitleSlotAllowed = !structuralHeading
+    || (workflowActionContext && !staticReportHeading && !structuralRoleLabel);
+  const reportTitleContextAllowed = reportTitleSlotAllowed
+    // A list/column/region heading is a structural label even when the model
+    // happened to render a concrete subject (for example "张三的日报").
+    // Do not let the possessive title shortcut bypass that boundary.
+    && (!reportListContext || workflowActionContext)
+    && !(reportListContext && structuralHeading);
+
+  // A possessive business title such as "某人的日报" is a strong semantic
+  // signal on its own. It identifies a runtime subject without relying on a
+  // concrete name, candidate key, avatar or a particular screen geometry.
+  if (reportTitle && reportTitleContextAllowed) {
+    return { role: 'report-title', reason: '标题包含运行时主体和业务报告类型' };
+  }
+  if (subjectTitle && (reportContext || workflowContext || explicitRuntimeTitle)
+    && reportTitleContextAllowed) {
+    return { role: 'dynamic-title', reason: '标题含运行时主体语义并处于业务工作流上下文' };
+  }
+  // A model may call the visible slot simply "日报标题" while the page
+  // context identifies it as the current user's report. In that case the
+  // context supplies the missing business role; it still cannot create a
+  // missing visual element or change its geometry.
+  if (BUSINESS_REPORT_TERMS.test(visibleText) && (reportContext || workflowContext) && contextualSubject
+    && reportTitleContextAllowed) {
+    return { role: 'report-title', reason: '页面上下文确认报告标题属于运行时主体' };
+  }
+  // Recognition models often emit the slot label rather than the currently
+  // rendered subject (for example, "日报标题"). In a report editing workflow
+  // that label is still the runtime subject title; requiring workflow context
+  // keeps ordinary static headings on unrelated pages unchanged.
+  if ((genericReportSlot || GENERIC_BUSINESS_REPORT_TITLE.test(visibleText)) && reportContext
+    && (workflowActionContext || contextualSubject)
+    && reportTitleContextAllowed) {
+    return { role: 'report-title', reason: '业务填写流程中的报告标题槽位' };
+  }
+  return null;
+}
+
+function businessRelationshipText(element) {
+  const evidence = element?.meaning?.evidence || {};
+  return [
+    element?.label,
+    ...(Array.isArray(evidence.visibleTexts) ? evidence.visibleTexts : []),
+  ].filter((value) => typeof value === 'string' && value.trim()).join(' ');
+}
+
+function isBusinessStructuralHeading(element, elementText = businessSemanticText(element)) {
+  if (!element || !TITLE_TEXT_TYPES.has(element.elementType)) return false;
+  const label = typeof element.label === 'string' ? element.label.trim() : '';
+  if (isBusinessStructuralRoleLabel(label)) return true;
+  const description = [element.visualDescription, element.meaning?.description]
+    .filter((value) => typeof value === 'string' && value.trim()).join(' ');
+  const headingDescription = /(?:导航栏|页面(?:顶部|中央)?(?:显示)?(?:的)?(?:页面)?标题|区域(?:的)?(?:字段)?标题|区块(?:顶部|的)?(?:大号)?标题|列表(?:区域|标题)|设置(?:区域|区块)|说明文字|辅助文字|文件大小限制|选项文字|复选框.*文字|承载当前页面标题)/u.test(description);
+  return headingDescription && !/(?:可见名称|显示名称|姓名|昵称|当前值|状态值|业务数据|动态|实时)/u.test(elementText);
+}
+
+function isBusinessStructuralRoleLabel(label) {
+  return /^(?:接收人|接收群|收件人|发送人|群组|群聊|成员|负责人|当前用户|用户|更多|关联汇报|附件|附件和图片|图片和附件|文件和附件|工作日志|日志|日志日报|日报|周报|报告)$/u.test(String(label || '').trim());
+}
+
+function isStaticBusinessReportHeading(element) {
+  if (!element || !TITLE_TEXT_TYPES.has(element.elementType)) return false;
+  const description = [element.visualDescription, element.meaning?.description]
+    .filter((value) => typeof value === 'string' && value.trim()).join(' ');
+  return /(?:列表|列(?:表)?|表头|列头|区域|区块|分组|设置|说明|辅助|附件|选项|复选框|导航|菜单)/u.test(description);
+}
+
+function businessRelationshipContext(recognitionResult, element) {
+  const elements = Array.isArray(recognitionResult?.elements) ? recognitionResult.elements : [];
+  const byKey = new Map(elements.map((candidate) => [candidate?.candidateKey, candidate]));
+  const relationships = Array.isArray(recognitionResult?.relationships) ? recognitionResult.relationships : [];
+  const structuralParentTypes = new Set(['form', 'list', 'grouped-list', 'swipe-list', 'expandable-list', 'navigation-bar', 'sidebar', 'drawer']);
+  const context = [];
+  const visited = new Set([element?.candidateKey]);
+  let childKey = element?.candidateKey;
+  for (let depth = 0; depth < 4; depth += 1) {
+    const parentCandidates = [...new Set(relationships
+      .filter((relationship) => (
+        ['contains', 'belongs-to'].includes(relationship?.type)
+          && relationship.toCandidateKey === childKey
+      ))
+      .map((relationship) => relationship.fromCandidateKey)
+      .map((parentKey) => byKey.get(parentKey))
+      .filter((parent) => parent && !visited.has(parent.candidateKey)))];
+    if (parentCandidates.length === 0) break;
+    // Prefer the nearest semantic owner over a broad form/list ancestor, then
+    // use geometry and candidateKey as deterministic tie-breakers. Relation
+    // array order is an incidental model detail and must not change semantics.
+    const semanticParents = parentCandidates.filter((parent) => !structuralParentTypes.has(parent.elementType));
+    const parent = [...(semanticParents.length > 0 ? semanticParents : parentCandidates)].sort((left, right) => {
+      const leftText = businessRelationshipText(left);
+      const rightText = businessRelationshipText(right);
+      const leftScore = (BUSINESS_STRONG_ENTITY_TERMS.test(leftText) ? 2 : 0)
+        + (BUSINESS_GENERIC_ENTITY_TERMS.test(leftText) ? 1 : 0);
+      const rightScore = (BUSINESS_STRONG_ENTITY_TERMS.test(rightText) ? 2 : 0)
+        + (BUSINESS_GENERIC_ENTITY_TERMS.test(rightText) ? 1 : 0);
+      if (rightScore !== leftScore) return rightScore - leftScore;
+      const leftRegion = left.approximateRegion || {};
+      const rightRegion = right.approximateRegion || {};
+      const leftArea = (Number(leftRegion.width) || 1) * (Number(leftRegion.height) || 1);
+      const rightArea = (Number(rightRegion.width) || 1) * (Number(rightRegion.height) || 1);
+      return leftArea - rightArea || String(left.candidateKey).localeCompare(String(right.candidateKey));
+    })[0] || null;
+    if (!parent || visited.has(parent.candidateKey)) break;
+    if (structuralParentTypes.has(parent.elementType)) break;
+    visited.add(parent.candidateKey);
+    // Only carry the parent's own label/visible text upward. Structural
+    // descriptions frequently enumerate unrelated siblings (for example an
+    // outer form mentioning both recipients and attachments), which would
+    // otherwise make every child look like a recipient payload.
+    context.push(businessRelationshipText(parent));
+    childKey = parent.candidateKey;
+    // The nearest semantic owner (for example a recipient section) is useful
+    // evidence. Broad form/list ancestors usually enumerate unrelated
+    // siblings and must not leak their business vocabulary into this field.
+  }
+  return context.filter(Boolean).join(' ');
+}
+
+function businessDynamicSemanticCue(element, pageContext = '', relationshipContext = '') {
+  const interactivePayload = element?.interactive
+    && ['avatar', 'avatar-group', 'image', 'thumbnail', 'preview'].includes(element.elementType);
+  if (!element || (element.interactive && !interactivePayload) || DATA_ENTRY_TYPES.has(element.elementType)
+    || BUSINESS_DYNAMIC_CONTAINER_TYPES.has(element.elementType)) return null;
+
+  const titleCue = businessDynamicTitleCue(element, pageContext);
+  if (titleCue) {
+    return {
+      ...titleCue,
+      marker: BUSINESS_DYNAMIC_TITLE_MARKER,
+      templateKey: titleCue.role === 'report-title' ? 'business.report-title' : 'business.dynamic-title',
+    };
+  }
+
+  const elementText = businessSemanticText(element);
+  const visibleText = businessVisibleText(element);
+  const descriptionText = businessDescriptionText(element);
+  const semanticText = `${visibleText} ${descriptionText} ${relationshipContext}`.trim();
+  const contextText = businessSemanticText(null, pageContext);
+  const strongIdentityEntity = BUSINESS_STRONG_ENTITY_TERMS.test(semanticText);
+  const genericIdentityEntity = BUSINESS_GENERIC_ENTITY_TERMS.test(semanticText);
+  const identityEntity = strongIdentityEntity || genericIdentityEntity;
+  const relationIdentity = BUSINESS_STRONG_ENTITY_TERMS.test(relationshipContext);
+  const genericRelationIdentity = BUSINESS_GENERIC_ENTITY_TERMS.test(relationshipContext);
+  const directBusinessRole = /(?:接收人|接收群|收件人|发送人|联系人|成员|负责人|群组|群聊)/u.test(elementText);
+  const valueTerm = BUSINESS_RUNTIME_VALUE_TERMS.test(visibleText)
+    || BUSINESS_RUNTIME_VALUE_TERMS.test(descriptionText);
+  const payloadType = BUSINESS_DYNAMIC_PAYLOAD_TYPES.has(element.elementType);
+  // Status/progress are value-bearing fields, not intrinsically dynamic just
+  // because the model chose a status/progress element type. Media and other
+  // payload types may still use their type as supporting evidence.
+  const temporalPayloadType = ['status', 'progress-bar'].includes(element.elementType);
+  const intrinsicPayloadType = payloadType && !temporalPayloadType;
+  const localStrongRuntimeTerm = /(?:运行时|动态|实时|最新|随(?:用户|账号|人员|日期|时间|状态|数据|配置|网络)|会(?:随|因).{0,12}(?:变化|替换|更新)|当前值|当前对象|数据源)/u.test(semanticText);
+  const contextualStrongRuntimeTerm = /(?:运行时|动态|实时|最新|随(?:用户|账号|人员|日期|时间|状态|数据|配置|网络)|会(?:随|因).{0,12}(?:变化|替换|更新)|当前值|当前对象|数据源)/u.test(contextText);
+  const explicitRuntimeValue = localStrongRuntimeTerm;
+  // Only visible text can prove that a value is rendered. Descriptions may
+  // discuss examples or rules and must not turn a structural label dynamic.
+  const observedRuntimeValue = BUSINESS_OBSERVED_VALUE_PATTERN.test(visibleText);
+  const temporalStatusField = temporalPayloadType || BUSINESS_TEMPORAL_FIELD_TERMS.test(semanticText);
+  const workflowContext = BUSINESS_WORKFLOW_CONTEXT_TERMS.test(contextText);
+  const reportContext = BUSINESS_REPORT_TERMS.test(contextText)
+    || BUSINESS_REPORT_TERMS.test(relationshipContext);
+  // A time/status/progress field is a runtime payload only when it exposes an
+  // observed value (or explicitly says it is runtime data). A bare label such
+  // as "提交时间" remains a structural field label. A business role or
+  // workflow context strengthens a value match but cannot manufacture one.
+  const temporalRuntimeEvidence = temporalStatusField
+    && (observedRuntimeValue || explicitRuntimeValue)
+    && (BUSINESS_TEMPORAL_ROLE_TERMS.test(semanticText)
+      || observedRuntimeValue
+      || explicitRuntimeValue);
+  const structuralHeading = isBusinessStructuralHeading(element, elementText);
+  const label = typeof element.label === 'string' ? element.label.trim() : '';
+  const labelLooksLikePayload = Boolean(label)
+    && !/(?:通过|允许|选择|添加|移除|发送|转发|切换|选项|说明|提示|限制|标题|区域|区块|设置|操作|入口|按钮)/u.test(label);
+  const identityTextPayload = TITLE_TEXT_TYPES.has(element.elementType)
+    && (relationIdentity || (genericRelationIdentity && workflowContext))
+    && !structuralHeading
+    && (valueTerm || labelLooksLikePayload);
+  const textualRuntimePayload = TITLE_TEXT_TYPES.has(element.elementType)
+    && (valueTerm || explicitRuntimeValue)
+    && !structuralHeading;
+  // Explicit runtime subjects are sufficient semantic evidence even when the
+  // model emitted a single field with no section/relationship or sibling
+  // avatar. This is intentionally based on the subject and value terms in the
+  // field itself, not on its candidate key or location.
+  const directSemanticPayload = !structuralHeading
+    && strongIdentityEntity
+    && (valueTerm || intrinsicPayloadType || temporalRuntimeEvidence);
+  // Generic nouns such as "用户/项目/任务" need a strict workflow and a
+  // visible/explicit value. The workbench surface or an element type alone is
+  // not enough to make a generic field dynamic.
+  const genericBusinessPayload = genericIdentityEntity
+    && workflowContext
+    && (observedRuntimeValue || explicitRuntimeValue || intrinsicPayloadType);
+  const semanticRuntimeEvidence = explicitRuntimeValue || contextualStrongRuntimeTerm
+    || strongIdentityEntity || directBusinessRole || relationIdentity || genericBusinessPayload
+    || temporalRuntimeEvidence;
+
+  // Business semantics may establish a runtime payload even when the model
+  // emits only one visible field, but a structural heading is not a payload.
+  // Media/status controls are payload candidates by type; text candidates
+  // need a value term or a recipient/member owner. Explicit runtime wording
+  // can establish the same fact without a relationship owner.
+  if (structuralHeading) return null;
+  if (!payloadType && !identityTextPayload && !textualRuntimePayload) return null;
+  if (!semanticRuntimeEvidence && !directSemanticPayload) return null;
+  if (!identityEntity && !explicitRuntimeValue && !contextualStrongRuntimeTerm && !temporalRuntimeEvidence) return null;
+
+  const role = /(?:接收群|群组|群聊)/u.test(semanticText)
+    ? 'recipient-group'
+    : /(?:接收人|收件人|发送人|联系人)/u.test(semanticText)
+      ? 'recipient-person'
+      : 'business-value';
+  const templateKey = role === 'recipient-group'
+    ? 'business.recipient-group'
+    : role === 'recipient-person' ? 'business.recipient-person' : 'business.dynamic-content';
+  return {
+    role,
+    reason: explicitRuntimeValue || contextualStrongRuntimeTerm ? '业务语义确认可见槽位承载运行时数据' : '业务工作流确认可见槽位承载业务对象或数据',
+    marker: BUSINESS_DYNAMIC_SEMANTIC_MARKER,
+    templateKey,
+  };
+}
+
+function dynamicFieldLabel(element, cue) {
+  if (cue.role === 'report-title') return '日报标题';
+  if (cue.role === 'recipient-group') {
+    if (element.elementType === 'avatar' || element.elementType === 'avatar-group') return '接收群头像';
+    return '接收群名称';
+  }
+  if (cue.role === 'recipient-person') {
+    if (element.elementType === 'avatar' || element.elementType === 'avatar-group') return '接收人头像';
+    return '接收人名称';
+  }
+  const labels = {
+    avatar: '动态头像', 'avatar-group': '动态头像集合', image: '动态图片', thumbnail: '动态缩略图',
+    preview: '动态预览', banner: '动态横幅', carousel: '动态轮播内容', badge: '动态状态角标',
+    status: '动态状态', 'progress-bar': '动态进度', loading: '动态加载状态', title: '动态标题文本',
+    subtitle: '动态辅助标题', caption: '动态说明文本', 'static-label': '动态业务文本',
+  };
+  return labels[element.elementType] || '动态业务字段';
+}
+
+function dynamicSemanticAbstraction(element, cue, actionCandidates = []) {
+  const region = element?.approximateRegion && typeof element.approximateRegion === 'object'
+    ? clampUnitBox(element.approximateRegion)
+    : null;
+  if (!region) return null;
+  const current = element.abstraction?.kind === 'dynamic-template' ? element.abstraction : null;
+  const fields = Array.isArray(current?.fields) && current.fields.length > 0
+    ? current.fields.map((field) => ({ ...field }))
+    : [{
+      key: cue.role === 'report-title' ? 'report-title-text' : `business-${element.elementType || 'value'}-value`,
+      label: dynamicFieldLabel(element, cue),
+      elementType: element.elementType || 'static-label',
+      description: cue.role === 'report-title'
+        ? '标题主体来自运行时业务数据，当前文字仅作为本次观测。'
+        : '字段主体来自运行时业务对象或业务数据，当前内容仅作为本次观测。',
+      displayCondition: typeof element.displayCondition === 'string' ? element.displayCondition : '',
+      capabilities: (() => {
+        const actions = [...new Set(actionCandidates
+          .filter((action) => action?.triggerCandidateKey === element.candidateKey)
+          .map((action) => action.action)
+          .filter((action) => RECOGNITION_ACTIONS.includes(action)))];
+        return actions.length > 0 ? actions : (element.interactive ? ['tap'] : ['none']);
+      })(),
+      interactionBoundary: element.interactive ? 'candidate_bbox' : 'none',
+      actionEffects: (() => {
+        const actions = [...new Set(actionCandidates
+          .filter((action) => action?.triggerCandidateKey === element.candidateKey)
+          .map((action) => action.action)
+          .filter((action) => RECOGNITION_ACTIONS.includes(action)))];
+        const capabilities = actions.length > 0 ? actions : (element.interactive ? ['tap'] : ['none']);
+        return normalizeActionEffects(element.actionEffects, element.elementType || 'static-label', capabilities);
+      })(),
+      parentId: element.candidateKey,
+      required: false,
+      instanceRegions: [region],
+    }];
+  const instanceRegions = Array.isArray(current?.instanceRegions) && current.instanceRegions.length > 0
+    ? current.instanceRegions.filter((item) => item && typeof item === 'object').map(clampUnitBox)
+    : [region];
+  return {
+    kind: 'dynamic-template',
+    templateKey: cue.templateKey || (cue.role === 'report-title' ? 'business.report-title' : 'business.dynamic-title'),
+    instanceCount: 1,
+    fields: fields.map((field) => ({
+      ...field,
+      parentId: element.candidateKey,
+      instanceRegions: Array.isArray(field.instanceRegions)
+        ? field.instanceRegions.map((item) => item && typeof item === 'object' ? clampUnitBox(item) : null)
+        : [],
+    })),
+    instanceRegions: [instanceRegions[0] || region],
+    bboxStyle: 'abstract',
+  };
+}
+
+// Kept as a small compatibility wrapper for callers/tests that used the old
+// title-specific helper while the semantic inference itself is now generic.
+function dynamicTitleAbstraction(element, cue) {
+  return dynamicSemanticAbstraction(element, cue);
+}
+
+/**
+ * Apply business-semantic dynamic inference without inventing visual facts.
+ * The caller may pass user/page context; the recognition page metadata is
+ * always included so the result remains deterministic when no extra context
+ * is available (for example, when an older result is re-applied).
+ */
+export function applyBusinessDynamicSemantics(recognitionResult, pageContext = '') {
+  if (!recognitionResult || typeof recognitionResult !== 'object') return 0;
+  const page = recognitionResult.page || {};
+  const context = [
+    pageContext,
+    page.name,
+    page.stateSummary,
+    ...(Array.isArray(page.scrollableRegions) ? page.scrollableRegions : []),
+  ].filter((value) => typeof value === 'string' && value.trim()).join('；');
+  let inferredCount = 0;
+  for (const element of recognitionResult.elements || []) {
+    const cue = businessDynamicSemanticCue(element, context, businessRelationshipContext(recognitionResult, element));
+    const hasBusinessMarker = (element.riskSignals || []).some((signal) => (
+      signal === BUSINESS_DYNAMIC_SEMANTIC_MARKER || signal === BUSINESS_DYNAMIC_TITLE_MARKER
+    ));
+    if (!cue) {
+      // Remove stale inference markers produced by an earlier pass or an
+      // older, overly broad rule set. Explicit model dynamic state remains
+      // untouched unless the candidate is visibly a structural heading.
+      if (hasBusinessMarker || (element.dynamicContent === true && isBusinessStructuralHeading(element))) {
+        element.dynamicContent = false;
+        element.abstraction = null;
+        element.riskSignals = [...new Set([
+          ...(element.riskSignals || []).filter((signal) => (
+            signal !== BUSINESS_DYNAMIC_SEMANTIC_MARKER && signal !== BUSINESS_DYNAMIC_TITLE_MARKER
+          )),
+          'business-dynamic-semantic-cleared',
+        ])];
+      }
+      continue;
+    }
+    if (!element.approximateRegion) continue;
+    const abstraction = dynamicSemanticAbstraction(element, cue, recognitionResult.actionCandidates || []);
+    if (!abstraction) continue;
+    const wasDynamic = element.dynamicContent === true;
+    element.dynamicContent = true;
+    element.abstraction = abstraction;
+    element.riskSignals = [...new Set([
+      ...(element.riskSignals || []),
+      BUSINESS_DYNAMIC_SEMANTIC_MARKER,
+      ...(cue.marker === BUSINESS_DYNAMIC_TITLE_MARKER ? [BUSINESS_DYNAMIC_TITLE_MARKER] : []),
+    ])];
+    if (element.meaning && typeof element.meaning === 'object') {
+      element.meaning = {
+        ...element.meaning,
+        status: element.meaning.status === 'unknown' ? 'candidate' : element.meaning.status,
+        description: element.meaning.description || (cue.role === 'report-title'
+          ? '显示业务上下文中的动态标题，当前主体文字仅作为本次观测。'
+          : '显示业务上下文中的动态对象或数据，当前内容仅作为本次观测。'),
+      };
+    }
+    if (!wasDynamic || !hasBusinessMarker) inferredCount += 1;
+  }
+  return inferredCount;
+}
+
+export function hasBusinessDynamicSemantics(element) {
+  return (element?.riskSignals || []).some((signal) => (
+    signal === BUSINESS_DYNAMIC_SEMANTIC_MARKER || signal === BUSINESS_DYNAMIC_TITLE_MARKER
+  ));
+}
+
+export function normalizeRecognitionOutput(rawRecognitionResult, pageContext = '') {
   const recognitionResult = structuredClone(rawRecognitionResult);
   const normalizationIssues = [];
   if (!Array.isArray(recognitionResult?.elements)) return { recognitionResult, normalizationIssues };
@@ -450,6 +917,7 @@ export function normalizeRecognitionOutput(rawRecognitionResult) {
       });
     }
   }
+  applyBusinessDynamicSemantics(recognitionResult, pageContext);
   return { recognitionResult, normalizationIssues };
 }
 
@@ -896,9 +1364,9 @@ export function matchIncrementalCandidates(candidates, existingElements) {
   return assignments;
 }
 
-export function classifyIncrementalRecognition(currentDraft, recognitionResult) {
+export function classifyIncrementalRecognition(currentDraft, recognitionResult, pageContext = '') {
   const previous = normalizeDraftShape(currentDraft || createEmptyDraft());
-  const proposal = projectAbstractRecognition(prepareRecognitionForDraft(recognitionResult));
+  const proposal = projectAbstractRecognition(prepareRecognitionForDraft(recognitionResult, pageContext));
   const pageId = previous.currentPageId;
   const existingElements = previous.elements.filter((element) => element.pageId === pageId || element.availableOnPageIds?.includes(pageId));
   const matches = matchIncrementalCandidates(proposal.elements, existingElements);
@@ -990,8 +1458,8 @@ export function nextElementFromRecognition(element, actions, pageId, model, sour
 // Incremental recognition keeps the existing page graph intact. Candidates
 // with an existing key are intentionally skipped; callers can present them
 // as duplicates/shared templates for review without writing them again.
-export function appendRecognitionIntoDraft(currentDraft, recognitionResult, modelResultRef, model = null) {
-  const { previous, proposal, pageId, candidates } = classifyIncrementalRecognition(currentDraft, recognitionResult);
+export function appendRecognitionIntoDraft(currentDraft, recognitionResult, modelResultRef, model = null, pageContext = '') {
+  const { previous, proposal, pageId, candidates } = classifyIncrementalRecognition(currentDraft, recognitionResult, pageContext);
   const additions = candidates
     .filter((item) => !item.existing)
     .map((item) => nextElementFromRecognition(item.candidate, proposal.actionCandidates || [], pageId, model, proposal.frameId));
@@ -1000,18 +1468,8 @@ export function appendRecognitionIntoDraft(currentDraft, recognitionResult, mode
     .filter((item) => item.existing)
     .map((item) => [item.candidate.candidateKey, item.existing]));
   for (const addition of additions) byKey.set(addition.candidateKey, addition);
-  const additionIds = new Set(additions.map((element) => element.id));
-  for (const relation of proposal.relationships || []) {
-    if (relation.type !== 'contains') continue;
-    const parent = byKey.get(relation.fromCandidateKey);
-    const child = byKey.get(relation.toCandidateKey);
-    if (!parent || !child || !additionIds.has(child.id)) continue;
-    child.parentId = parent.id;
-    child.ownerKind = ['application', 'shared_component'].includes(parent.ownerKind) ? 'shared_component' : 'component';
-    child.ownerRef = parent.id;
-    child.pageId = child.ownerKind === 'shared_component' ? null : pageId;
-  }
   const elements = [...previous.elements, ...additions];
+  applyContainmentParents(elements.filter((element) => byKey.has(element.candidateKey)), proposal.relationships, new Set(), pageId);
   const page = previous.pages.find((item) => item.id === pageId);
   const pages = previous.pages.map((item) => item.id === pageId
     ? { ...item, elementIds: elements.filter((element) => element.pageId === pageId || element.availableOnPageIds?.includes(pageId)).map((element) => element.id), publishedAt: null }
@@ -1031,6 +1489,50 @@ export function appendRecognitionIntoDraft(currentDraft, recognitionResult, mode
 
 function isHumanProtected(element, editedElementIds) {
   return element.reviewStatus === 'accepted' || editedElementIds.has(element.id) || element.source === 'human';
+}
+
+function chooseSpecificParent(parentCandidates, relationPairs) {
+  if (parentCandidates.length <= 1) return parentCandidates[0] || null;
+  const candidateKeys = new Set(parentCandidates.map((parent) => parent.candidateKey));
+  // If one candidate parent contains another candidate parent, the nested
+  // container is the direct semantic owner. This prevents an outer form or
+  // WebView-sized shell from winning by relation order.
+  const direct = parentCandidates.filter((parent) => ![...candidateKeys].some((otherKey) => (
+    otherKey !== parent.candidateKey && relationPairs.some((relation) => (
+      relation.fromCandidateKey === parent.candidateKey
+        && relation.toCandidateKey === otherKey
+        && relation.type === 'contains'
+    ))
+  )));
+  const pool = direct.length > 0 ? direct : parentCandidates;
+  return [...pool].sort((left, right) => {
+    const leftArea = (left.bbox?.width || 1) * (left.bbox?.height || 1);
+    const rightArea = (right.bbox?.width || 1) * (right.bbox?.height || 1);
+    return leftArea - rightArea || left.candidateKey.localeCompare(right.candidateKey);
+  })[0] || null;
+}
+
+function applyContainmentParents(elements, relationships, editedElementIds, currentPageId) {
+  const byKey = new Map(elements.map((item) => [item.candidateKey, item]));
+  const parentsByChild = new Map();
+  for (const relation of relationships || []) {
+    if (relation.type !== 'contains') continue;
+    const parent = byKey.get(relation.fromCandidateKey);
+    const child = byKey.get(relation.toCandidateKey);
+    if (!parent || !child || isHumanProtected(child, editedElementIds)) continue;
+    const parents = parentsByChild.get(child.candidateKey) || [];
+    parents.push(parent);
+    parentsByChild.set(child.candidateKey, parents);
+  }
+  for (const [childKey, parents] of parentsByChild) {
+    const child = byKey.get(childKey);
+    const parent = chooseSpecificParent(parents, relationships || []);
+    if (!child || !parent) continue;
+    child.parentId = parent.id;
+    child.ownerKind = parent.ownerKind === 'application' || parent.ownerKind === 'shared_component' ? 'shared_component' : 'component';
+    child.ownerRef = parent.id;
+    child.pageId = child.ownerKind === 'shared_component' ? null : currentPageId;
+  }
 }
 
 function clampUnitBox(box) {
@@ -1058,78 +1560,6 @@ function unionCandidateBoxes(elements) {
   return clampUnitBox({ x: left, y: top, width: right - left, height: bottom - top });
 }
 
-function currentUserFieldRole(element) {
-  const key = String(element?.candidateKey || '').toLowerCase();
-  const description = [element?.label, element?.visualDescription, element?.meaning?.description].filter(Boolean).join(' ');
-  const scoped = /(^|[._-])(?:self|current[._-]?(?:user|account)|user[._-]?profile)([._-]|$)/.test(key)
-    || /当前(?:登录)?(?:用户|账号)|登录(?:用户|账号)|个人(?:头像|资料|信息)/.test(description);
-  if (!scoped) return null;
-  const source = `${key} ${description}`.toLowerCase();
-  if (element.elementType === 'avatar' || /avatar|头像/.test(source)) return { key: 'avatar', label: '用户头像', required: true };
-  if (/display[._-]?name|user[._-]?name|姓名|显示名称|用户名称|账号名称/.test(source)) return { key: 'display-name', label: '用户名称', required: true };
-  if (/organization|company|department|[._-]org(?:[._-]|$)|所属组织|组织名称|企业名称|公司名称|部门名称/.test(source)) return { key: 'organization', label: '组织信息', required: false };
-  if (/position|job[._-]?title|职位|岗位|职务/.test(source)) return { key: 'position', label: '职位信息', required: false };
-  return null;
-}
-
-function inferDynamicUserProfile(proposal) {
-  if ((proposal.elements || []).some((element) => element?.abstraction?.kind === 'dynamic-template')) return;
-  const profileFields = (proposal.elements || []).map((element) => ({ element, role: currentUserFieldRole(element) })).filter((item) => item.role);
-  if (profileFields.length < 2 || !profileFields.some((item) => item.role.key === 'avatar')) return;
-
-  const candidateKey = 'current-user-profile-template';
-  if ((proposal.elements || []).some((element) => element.candidateKey === candidateKey)) return;
-  const elements = profileFields.map((item) => item.element);
-  const instanceRegion = unionCandidateBoxes(elements);
-  const fields = profileFields.map(({ element, role }) => {
-    const actions = (proposal.actionCandidates || []).filter((action) => action.triggerCandidateKey === element.candidateKey);
-    const capabilities = [...new Set(actions.map((action) => action.action).filter((action) => RECOGNITION_ACTIONS.includes(action)))];
-    const normalizedCapabilities = capabilities.length > 0 ? capabilities : ['none'];
-    return {
-      ...role,
-      elementType: element.elementType || 'static-label',
-      description: `${role.label}随当前登录用户变化`,
-      displayCondition: typeof element.displayCondition === 'string' ? element.displayCondition : '',
-      capabilities: normalizedCapabilities,
-      interactionBoundary: normalizedCapabilities.some((action) => action !== 'none') ? 'candidate_bbox' : 'none',
-      actionEffects: normalizedCapabilities.map((action) => ({
-        action,
-        effect: actions.find((candidate) => candidate.action === action)?.expectedOutcome || defaultActionEffect(element.elementType || 'static-label', action),
-      })),
-      parentId: candidateKey,
-      instanceRegions: [element.approximateRegion],
-    };
-  });
-  proposal.elements.push({
-    candidateKey,
-    label: '当前用户资料共相',
-    visualDescription: '由当前登录用户的头像和身份信息组成的单实例动态区域',
-    elementType: 'section',
-    interactive: elements.some((element) => element.interactive),
-    enabled: elements.some((element) => element.enabled === true) ? true : null,
-    state: null,
-    approximateRegion: instanceRegion,
-    geometryKind: elements.some((element) => element.geometryKind === 'boundary') ? 'boundary' : 'approximate',
-    geometryConfidence: Math.min(...elements.map((element) => Number(element.geometryConfidence) || 0.5)),
-    meaning: { status: 'known', description: '结构固定、内容随当前登录用户变化的个人资料区域', evidence: { visibleTexts: [], visibleIcons: [], visibleStates: [], visualCues: ['头像与身份信息相邻排列'], userContext: null, unclassified: [] } },
-    dynamicContent: true,
-    abstraction: {
-      kind: 'dynamic-template',
-      templateKey: 'current-user.profile',
-      instanceCount: 1,
-      fields,
-      instanceRegions: [instanceRegion],
-      bboxStyle: 'abstract',
-    },
-    riskSignals: [],
-    confidence: Math.min(...elements.map((element) => Number(element.confidence) || 0.5)),
-  });
-  proposal.relationships = [
-    ...(proposal.relationships || []),
-    ...elements.map((element) => ({ fromCandidateKey: candidateKey, type: 'contains', toCandidateKey: element.candidateKey })),
-  ];
-}
-
 function dynamicFieldForElement(element, parentId, actionCandidates = []) {
   const elementType = element.elementType || 'section';
   const fieldLabels = {
@@ -1155,6 +1585,37 @@ function dynamicFieldForElement(element, parentId, actionCandidates = []) {
     required: false,
     instanceRegions: [element.approximateRegion],
 };
+}
+
+function isUnstructuredDynamicTitle(element) {
+  if (element?.elementType !== 'title' || element.dynamicContent !== true || element.interactive) return false;
+  const abstraction = element.abstraction;
+  if (!abstraction) return true;
+  if (abstraction.kind !== 'dynamic-template') return false;
+  const fields = abstraction.fields || [];
+  return fields.length <= 1 && fields.every((field) => (
+    TITLE_TEXT_TYPES.has(field.elementType)
+      && (field.capabilities || []).every((capability) => capability === 'none')
+  ));
+}
+
+function downgradeUnstructuredDynamicTitles(proposal) {
+  for (const element of proposal.elements || []) {
+    if (!isUnstructuredDynamicTitle(element)) continue;
+    // Business-semantic inference may intentionally represent a single title
+    // field as a dynamic slot (for example, a person's daily-report title).
+    // Do not erase that decision merely because it has no avatar or sibling
+    // fields; the geometry pass will still ground its bbox from runtime facts.
+    if ((element.riskSignals || []).some((signal) => (
+      signal === BUSINESS_DYNAMIC_SEMANTIC_MARKER || signal === BUSINESS_DYNAMIC_TITLE_MARKER
+    ))) continue;
+    element.dynamicContent = false;
+    element.abstraction = null;
+    element.riskSignals = [...new Set([
+      ...(element.riskSignals || []),
+      'unstructured-dynamic-title-downgraded',
+    ])];
+  }
 }
 
 function inferDynamicElements(proposal) {
@@ -1196,8 +1657,9 @@ function inferDynamicElements(proposal) {
   }
 
   // Each explicitly dynamic candidate is an independent stable slot unless the
-  // model already supplied a multi-field dynamic template or the dedicated user
-  // profile inference above provided stronger grouping evidence.
+  // model already supplied a multi-field dynamic template. Runtime geometry
+  // refinement may later combine separate avatar/name observations when their
+  // concrete image and text nodes prove one visual payload.
   for (const element of candidates) {
     element.abstraction = {
       kind: 'dynamic-template',
@@ -1416,9 +1878,17 @@ function absorbRepeatedTemplateInputElements(proposal) {
   proposal.actionCandidates = actions.filter((action) => !absorbedKeys.has(action.triggerCandidateKey));
 }
 
-export function prepareRecognitionForDraft(recognitionResult) {
+export function prepareRecognitionForDraft(recognitionResult, pageContext = '') {
   const proposal = structuredClone(recognitionResult);
-  inferDynamicUserProfile(proposal);
+  // Business context can establish that a visible title is a runtime slot even
+  // when the model omitted dynamicContent or emitted only one text field. This
+  // pass is deliberately semantic; it never creates a missing bbox or visual
+  // child. Geometry is resolved later from the frozen screenshot/runtime tree.
+  applyBusinessDynamicSemantics(proposal, pageContext);
+  // Keep explicitly dynamic titles that lack business evidence conservative.
+  // A lone generic title is not promoted solely because it is text that could
+  // change in some hypothetical future state.
+  downgradeUnstructuredDynamicTitles(proposal);
   inferDynamicElements(proposal);
   inferRepeatedListItems(proposal);
   // A concrete input represented by a repeated template field is one visual
@@ -1427,6 +1897,9 @@ export function prepareRecognitionForDraft(recognitionResult) {
   absorbRepeatedTemplateInputElements(proposal);
   const byKey = new Map(proposal.elements.map((element) => [element.candidateKey, element]));
   for (const element of proposal.elements) {
+    // Keep the proposal shape deterministic for consumers that distinguish an
+    // absent property from an explicitly non-abstract element.
+    element.abstraction ||= null;
     const original = element.approximateRegion;
     const normalized = clampUnitBox(original);
     if (Object.keys(normalized).some((key) => normalized[key] !== original[key])) {
@@ -1535,17 +2008,7 @@ export function mergeRecognitionIntoDraft(currentDraft, recognitionResult, model
     return item.sourceFrameId !== recognitionResult.frameId;
   });
   const mergedElements = [...preservedElements, ...nextElements];
-  const byKey = new Map(nextElements.map((item) => [item.candidateKey, item]));
-  for (const relation of recognitionResult.relationships || []) {
-    if (relation.type !== 'contains') continue;
-    const parent = byKey.get(relation.fromCandidateKey);
-    const child = byKey.get(relation.toCandidateKey);
-    if (!parent || !child || isHumanProtected(child, editedElementIds)) continue;
-    child.parentId = parent.id;
-    child.ownerKind = parent.ownerKind === 'application' || parent.ownerKind === 'shared_component' ? 'shared_component' : 'component';
-    child.ownerRef = parent.id;
-    child.pageId = child.ownerKind === 'shared_component' ? null : currentPageId;
-  }
+  applyContainmentParents(nextElements, recognitionResult.relationships, editedElementIds, currentPageId);
 
   const byId = new Map(mergedElements.map((item) => [item.id, item]));
   for (const element of mergedElements) element.childrenIds = [];

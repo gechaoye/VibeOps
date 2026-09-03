@@ -24,6 +24,7 @@ function recognitionConfig(target) {
     baseUrl: runtime.baseUrl,
     modelFamily: String(runtime.modelFamily || '').toLowerCase(),
     temperature: Number(runtime.temperature || 0),
+    timeout: Number(runtime.timeout || 180_000),
     reasoningEffort,
     reasoningEnabled: true,
     structuredOutputMode: runtime.structuredOutputMode || 'unverified',
@@ -216,66 +217,105 @@ export async function runRecognitionModel({
     };
   }
 
-  const response = await fetch(endpointFor(config), {
-    method: 'POST',
-    signal,
-    headers: {
-      authorization: `Bearer ${config.apiKey}`,
-      'content-type': 'application/json',
-      accept: 'text/event-stream',
-      'cache-control': 'no-cache',
-    },
-    body: JSON.stringify(requestBody),
-  });
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw providerError(response.status, detail);
-  }
-  if (!response.body) throw new Error(`${config.label} 模型没有返回可读取的响应流`);
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let accumulated = '';
-  let accumulatedReasoning = '';
-  let done = false;
-  const thinkingContent = createThinkingContentSplitter();
-  const emitDelta = (content, reasoningContent) => {
-    if (content) accumulated += content;
-    if (reasoningContent) accumulatedReasoning += reasoningContent;
-    if (content || reasoningContent) {
-      onChunk({ content, reasoning_content: reasoningContent, accumulated });
-    }
+  // The model timeout is an inactivity limit, not a total request deadline.
+  // Reasoning and JSON deltas both count as activity, so long analyses that
+  // keep streaming are allowed to run longer than the configured interval.
+  const timeoutMs = Number.isFinite(Number(config.timeout)) && Number(config.timeout) > 0
+    ? Number(config.timeout)
+    : 180_000;
+  const requestController = new AbortController();
+  let idleTimer = null;
+  let timedOut = false;
+  const externalAbort = () => requestController.abort(signal?.reason);
+  if (signal?.aborted) externalAbort();
+  else signal?.addEventListener('abort', externalAbort, { once: true });
+  const resetIdleTimeout = () => {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      timedOut = true;
+      requestController.abort(new Error(`模型响应超过 ${timeoutMs}ms 无输出`));
+    }, timeoutMs);
+    idleTimer.unref?.();
   };
-  const consumeLine = (line) => {
-    const value = line.trim();
-    if (!value || !value.startsWith('data:')) return;
-    const payload = value.slice(5).trim();
-    if (payload === '[DONE]') {
-      done = true;
-      return;
-    }
-    try {
-      const delta = extractDelta(JSON.parse(payload));
-      const content = delta.contentSnapshot && accumulated ? '' : delta.content;
-      const reasoningContent = delta.reasoningSnapshot && accumulatedReasoning ? '' : delta.reasoningContent;
-      const separated = thinkingContent.push(content);
-      emitDelta(separated.content, reasoningContent + separated.reasoningContent);
-    } catch {
-      // Providers occasionally emit non-JSON keepalive chunks.
-    }
-  };
+  resetIdleTimeout();
 
-  while (!done) {
-    const { value, done: streamDone } = await reader.read();
-    buffer += decoder.decode(value || new Uint8Array(), { stream: !streamDone });
-    const lines = buffer.split(/\r?\n/);
-    buffer = lines.pop() || '';
-    lines.forEach(consumeLine);
-    if (streamDone) break;
+  try {
+    const response = await fetch(endpointFor(config), {
+      method: 'POST',
+      signal: requestController.signal,
+      headers: {
+        authorization: `Bearer ${config.apiKey}`,
+        'content-type': 'application/json',
+        accept: 'text/event-stream',
+        'cache-control': 'no-cache',
+      },
+      body: JSON.stringify(requestBody),
+    });
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      throw providerError(response.status, detail);
+    }
+    if (!response.body) throw new Error(`${config.label} 模型没有返回可读取的响应流`);
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let accumulated = '';
+    let accumulatedReasoning = '';
+    let done = false;
+    const thinkingContent = createThinkingContentSplitter();
+    const markActivity = () => {
+      resetIdleTimeout();
+    };
+    const emitDelta = (content, reasoningContent) => {
+      if (content) accumulated += content;
+      if (reasoningContent) accumulatedReasoning += reasoningContent;
+      if (content || reasoningContent) {
+        onChunk({ content, reasoning_content: reasoningContent, accumulated });
+      }
+    };
+    const consumeLine = (line) => {
+      const value = line.trim();
+      if (!value || !value.startsWith('data:')) return;
+      const payload = value.slice(5).trim();
+      if (payload === '[DONE]') {
+        done = true;
+        return;
+      }
+      try {
+        const delta = extractDelta(JSON.parse(payload));
+        const content = delta.contentSnapshot && accumulated ? '' : delta.content;
+        const reasoningContent = delta.reasoningSnapshot && accumulatedReasoning ? '' : delta.reasoningContent;
+        if (content || reasoningContent) markActivity();
+        const separated = thinkingContent.push(content);
+        emitDelta(separated.content, reasoningContent + separated.reasoningContent);
+      } catch {
+        // Providers occasionally emit non-JSON keepalive chunks.
+      }
+    };
+
+    while (!done) {
+      const { value, done: streamDone } = await reader.read();
+      buffer += decoder.decode(value || new Uint8Array(), { stream: !streamDone });
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop() || '';
+      lines.forEach(consumeLine);
+      if (streamDone) break;
+    }
+    if (buffer) consumeLine(buffer);
+    const trailing = thinkingContent.flush();
+    emitDelta(trailing.content, trailing.reasoningContent);
+    return parseObject(accumulated);
+  } catch (error) {
+    if (timedOut) {
+      const timeoutError = new Error(`模型响应超过 ${timeoutMs}ms 无输出`);
+      timeoutError.code = 'MODEL_IDLE_TIMEOUT';
+      timeoutError.retryable = true;
+      throw timeoutError;
+    }
+    throw error;
+  } finally {
+    if (idleTimer) clearTimeout(idleTimer);
+    signal?.removeEventListener('abort', externalAbort);
   }
-  if (buffer) consumeLine(buffer);
-  const trailing = thinkingContent.flush();
-  emitDelta(trailing.content, trailing.reasoningContent);
-  return parseObject(accumulated);
 }

@@ -234,6 +234,64 @@ test('Recognition client provider errors start with 模型请求失败', async (
   }
 });
 
+test('Recognition client uses an inactivity timeout while allowing continuous output', async () => {
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { 'content-type': 'text/event-stream' });
+    let index = 0;
+    const timer = setInterval(() => {
+      index += 1;
+      const content = index < 6 ? `data: ${JSON.stringify({ choices: [{ delta: { reasoning_content: `进度${index}` } }] })}\n\n` : 'data: {"choices":[{"delta":{"content":"{\\"frameId\\":\\"f\\",\\"elements\\":[]}"}}]}\n\n';
+      response.write(content);
+      if (index >= 6) {
+        clearInterval(timer);
+        response.end('data: [DONE]\n\n');
+      }
+    }, 15);
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  setModelRuntime('manual', {
+    baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'gpt-5.6-terra',
+    modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'medium', timeout: 35,
+    structuredOutputMode: 'local',
+  });
+
+  try {
+    const result = await runRecognitionModel({
+      target: 'manual', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema,
+    });
+    assert.deepEqual(result, { frameId: 'f', elements: [] });
+  } finally {
+    clearModelRuntime('manual');
+    server.close();
+  }
+});
+
+test('Recognition client times out only after the stream stops producing output', async () => {
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { 'content-type': 'text/event-stream' });
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  setModelRuntime('manual', {
+    baseUrl: `http://127.0.0.1:${address.port}/v1`, apiKey: 'test-key', modelName: 'gpt-5.6-terra',
+    modelFamily: 'gpt-5', temperature: 0, reasoningEffort: 'medium', timeout: 35,
+    structuredOutputMode: 'local',
+  });
+
+  try {
+    await assert.rejects(
+      runRecognitionModel({ target: 'manual', prompt: 'inspect', imageBuffer: Buffer.from([137, 80, 78, 71]), responseSchema }),
+      (error) => error?.code === 'MODEL_IDLE_TIMEOUT' && /无输出/.test(error.message) && error.retryable === true,
+    );
+  } finally {
+    clearModelRuntime('manual');
+    server.close();
+  }
+});
+
 test('Recognition 为 Qwen、Doubao 和 MiniMax 构造兼容请求', async () => {
   const received = [];
   const server = createServer((request, response) => {

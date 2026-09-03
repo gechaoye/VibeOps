@@ -4,6 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { createEmptyDraft } from './draft-model.mjs';
 import { getModelRuntime } from './model-runtime.mjs';
@@ -11,6 +12,7 @@ import { ModelSettingsStore } from './model-settings-store.mjs';
 import { registerWorkbenchRoutes } from './workbench-routes.mjs';
 
 const PNG_1X1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z4ZkAAAAASUVORK5CYII=';
+const workbenchRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 function assignment(target, gatewayId, modelName, modelFamily) {
   return { target, gatewayId, modelName, modelFamily, timeout: 180000, temperature: 0, reasoningEffort: 'medium' };
@@ -85,6 +87,63 @@ test('数据库配置热加载识别模型，并只把 Midscene 标签配置同�
     assert.equal(process.env.MIDSCENE_MODEL_REASONING_BUDGET, '8192');
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
+    modelStore.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('保存模型配置不等待后台能力检测', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'uikg-model-save-'));
+  const modelStore = new ModelSettingsStore(path.join(root, 'model-settings.sqlite'));
+  await modelStore.initialize();
+
+  const upstream = createServer((request, response) => {
+    if (request.url !== '/v1/chat/completions') {
+      response.writeHead(404).end();
+      return;
+    }
+    response.writeHead(200, { 'content-type': 'text/event-stream' });
+    setTimeout(() => response.end(`data: ${JSON.stringify({ choices: [{ delta: { content: '{"frameId":"probe"}' } }] })}\n\ndata: [DONE]\n\n`), 500);
+  });
+  await new Promise((resolve) => upstream.listen(0, '127.0.0.1', resolve));
+  const upstreamBaseUrl = `http://127.0.0.1:${upstream.address().port}/v1`;
+  modelStore.saveGateway({ id: 'slow', label: 'Slow', baseUrl: upstreamBaseUrl, apiKey: 'secret' });
+
+  const app = express();
+  await registerWorkbenchRoutes({
+    server: { app, agent: null, getSessionState: () => null },
+    store: {},
+    modelStore,
+    graphWorkflow: {},
+    workbenchRoot,
+    spec: { version: 'test', schemaVersion: 'test', contentHash: 'test', index: 'test' },
+  });
+  const httpServer = createServer(app);
+  await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
+  const baseUrl = `http://127.0.0.1:${httpServer.address().port}/workbench/api`;
+  try {
+    const startedAt = Date.now();
+    const response = await fetch(`${baseUrl}/model-settings`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        target: 'manual', gatewayId: 'slow', modelName: 'vision-model', modelFamily: 'gpt-5',
+        timeout: 180000, temperature: 0, reasoningEffort: 'low',
+      }),
+    });
+    const elapsedMs = Date.now() - startedAt;
+    assert.equal(response.status, 200);
+    assert.ok(elapsedMs < 300, `保存被能力检测阻塞了 ${elapsedMs}ms`);
+    assert.equal(modelStore.getAssignment('manual').modelName, 'vision-model');
+
+    const deadline = Date.now() + 2_000;
+    while (!modelStore.getModelCapability('slow', 'vision-model') && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    assert.equal(modelStore.getModelCapability('slow', 'vision-model')?.mode, 'native');
+  } finally {
+    await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
+    await new Promise((resolve, reject) => upstream.close((error) => error ? reject(error) : resolve()));
     modelStore.close();
     await rm(root, { recursive: true, force: true });
   }

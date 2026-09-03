@@ -113,3 +113,102 @@ test('模型错误重试从已收到的断点继续并最终合并草稿', async
     clearModelRuntime('manual');
   }
 });
+
+test('恢复前模型配置变化时丢弃旧 checkpoint 并从完整 prompt 重识别', async () => {
+  const frameId = 'sha256:resume-fingerprint-change';
+  const runtime = {
+    gatewayId: 'test-gateway',
+    modelName: 'recognition-model-a',
+    modelFamily: 'gpt-5',
+    baseUrl: 'https://test.invalid/v1',
+    apiKey: 'test',
+    timeout: 180000,
+    temperature: 0,
+    reasoningEffort: 'medium',
+    structuredOutputMode: 'native',
+  };
+  setModelRuntime('manual', runtime);
+  const app = express();
+  let modelCalls = 0;
+  let notifyFirstCall;
+  const firstCallStarted = new Promise((resolve) => { notifyFirstCall = resolve; });
+  const requests = [];
+  const server = {
+    app,
+    agent: null,
+    getSessionState: () => null,
+    async runRecognitionModel({ prompt, continuation, onChunk, signal }) {
+      modelCalls += 1;
+      requests.push({ prompt, continuation });
+      if (modelCalls === 1) {
+        const checkpoint = {
+          frameId,
+          page: { name: '消息', surfaceType: 'page', stateSummary: '消息页', scrollableRegions: [] },
+          elements: [recognitionElement('stale.partial')],
+        };
+        const content = `<data-json>${JSON.stringify(checkpoint)}`;
+        onChunk({ content, reasoning_content: '', accumulated: content, isComplete: false });
+        notifyFirstCall();
+        return new Promise((_resolve, reject) => {
+          signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+        });
+      }
+      return {
+        frameId,
+        page: { name: '消息', surfaceType: 'page', stateSummary: '消息页', scrollableRegions: [] },
+        elements: [recognitionElement('fresh.full')],
+        relationships: [],
+        actionCandidates: [],
+        comparison: { basisFrameId: null, status: 'not-requested', changes: [] },
+        uncertainties: [],
+      };
+    },
+  };
+  const store = {
+    async loadFrame() { return { frameId, width: 100, height: 200, imagePath: '/tmp/resume-fingerprint.png', mimeType: 'image/png' }; },
+    async saveModelResult(id) { return path.join(process.cwd(), '.data', 'evidence', 'model-results', `${id}.json`); },
+    async saveAnalysisSession() {},
+  };
+  await registerWorkbenchRoutes({
+    server,
+    store,
+    graphWorkflow: {},
+    workbenchRoot: process.cwd(),
+    spec: { version: 'test', schemaVersion: 'test', contentHash: 'test', index: 'test' },
+  });
+
+  const httpServer = createServer(app);
+  await new Promise((resolve) => httpServer.listen(0, '127.0.0.1', resolve));
+  const baseUrl = `http://127.0.0.1:${httpServer.address().port}`;
+  try {
+    const initialResponse = await fetch(`${baseUrl}/workbench/api/recognition/manual/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ frameId }),
+    });
+    await firstCallStarted;
+    const cancelResponse = await fetch(`${baseUrl}/workbench/api/recognition/manual/cancel`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+    });
+    assert.deepEqual(await cancelResponse.json(), { cancelled: true });
+    const cancelled = eventPayload(await initialResponse.text(), 'cancelled');
+    assert.equal(cancelled.resumableSession.completedCandidates, 1);
+
+    setModelRuntime('manual', { ...runtime, modelName: 'recognition-model-b' });
+    const resumeResponse = await fetch(`${baseUrl}/workbench/api/recognition/manual/resume/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId: cancelled.resumableSession.id }),
+    });
+    const resumeText = await resumeResponse.text();
+    assert.equal(modelCalls, 2);
+    assert.equal(requests[1].continuation, false);
+    assert.doesNotMatch(requests[1].prompt, /stale\.partial/);
+    assert.match(resumeText, /"phase":"resume-reset"/);
+    assert.match(resumeText, /modelConfigFingerprint/);
+    assert.deepEqual(eventPayload(resumeText, 'result').recognitionResult.elements.map((element) => element.candidateKey), ['fresh.full']);
+  } finally {
+    await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
+    clearModelRuntime('manual');
+  }
+});

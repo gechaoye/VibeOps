@@ -21,7 +21,8 @@ export interface AbstractElementField {
   actionEffects: Array<{ action: string; effect: string }>;
   parentId: string | null;
   required: boolean;
-  instanceRegions: BBox[];
+  /** Null marks an unobserved middle instance; array indexes remain stable. */
+  instanceRegions: Array<BBox | null>;
 }
 
 export interface AbstractElementDefinition {

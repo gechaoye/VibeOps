@@ -30,6 +30,28 @@ function recognition(frameId, candidateKey, extraElements = []) {
   };
 }
 
+function contextOnlyReportTitle(frameId, candidateKey = 'report_title') {
+  const result = recognition(frameId, candidateKey);
+  result.page = { name: '普通页面', surfaceType: 'page', stateSummary: '普通状态', scrollableRegions: [] };
+  result.elements[0] = {
+    ...result.elements[0],
+    label: '日报标题',
+    visualDescription: '页面顶部标题',
+    elementType: 'title',
+    interactive: false,
+    geometryKind: 'boundary',
+    meaning: {
+      ...result.elements[0].meaning,
+      description: '页面顶部标题',
+      evidence: { ...result.elements[0].meaning.evidence, visibleTexts: ['日报标题'] },
+    },
+    dynamicContent: false,
+    abstraction: null,
+  };
+  result.actionCandidates = [];
+  return result;
+}
+
 test('增量预览与提交统一匹配键漂移元素，并将合并结果落盘', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibeops-incremental-route-'));
   const store = new DraftStore(root);
@@ -135,6 +157,87 @@ test('增量预览与提交统一匹配键漂移元素，并将合并结果落�
     assert.equal(replaced.draft.pages.length, 1);
     assert.equal(replaced.draft.pages[0].id, draft.currentPageId);
     assert.ok(replaced.draft.pages[0].frameIds.includes(auxiliaryFrameId));
+  } finally {
+    await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('确认替换和增量路径保留识别时的业务上下文', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibeops-recognition-context-'));
+  const store = new DraftStore(root);
+  await store.initialize();
+  const primaryFrameId = 'sha256:context-primary';
+  const auxiliaryFrameId = 'sha256:context-auxiliary';
+  const context = '工作日志日报填写页面；当前用户填写日报';
+  const primary = mergeRecognitionIntoDraft(createEmptyDraft(), recognition(primaryFrameId, 'base_submit'), 'primary.json');
+  const withAuxiliary = appendFrameToPage(primary, auxiliaryFrameId, { pageId: primary.currentPageId });
+  await store.saveDraft(withAuxiliary);
+
+  const app = express();
+  await registerWorkbenchRoutes({
+    server: { app, agent: null, getSessionState: () => null },
+    store,
+    graphWorkflow: {},
+    workbenchRoot,
+    spec: { version: 'test', schemaVersion: 'test', contentHash: 'test', index: 'test' },
+  });
+  const httpServer = createServer(app);
+  httpServer.listen(0, '127.0.0.1');
+  await once(httpServer, 'listening');
+  const baseUrl = `http://127.0.0.1:${httpServer.address().port}/workbench/api`;
+
+  try {
+    const replacement = contextOnlyReportTitle(primaryFrameId);
+    const applyResponse = await fetch(`${baseUrl}/recognition/apply`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        frameId: primaryFrameId,
+        pageId: withAuxiliary.currentPageId,
+        recognitionResult: replacement,
+        pageContext: context,
+        modelResultRef: 'context-replacement.json',
+        model: 'test-model',
+      }),
+    });
+    assert.equal(applyResponse.status, 200);
+    const applied = await applyResponse.json();
+    const appliedTitle = applied.draft.elements.find((element) => element.candidateKey === 'report_title');
+    assert.equal(appliedTitle.dynamicContent, true);
+    assert.equal(appliedTitle.abstraction?.templateKey, 'business.report-title');
+
+    const latest = appendFrameToPage(applied.draft, auxiliaryFrameId, { pageId: applied.draft.currentPageId });
+    await store.saveDraft(latest);
+    const incremental = contextOnlyReportTitle(auxiliaryFrameId);
+    const incrementalPayload = {
+      frameId: auxiliaryFrameId,
+      pageId: latest.currentPageId,
+      recognitionResult: incremental,
+      pageContext: context,
+    };
+    const previewResponse = await fetch(`${baseUrl}/recognition/incremental-preview`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(incrementalPayload),
+    });
+    assert.equal(previewResponse.status, 200);
+    const preview = await previewResponse.json();
+    assert.equal(preview.candidates.find((candidate) => candidate.candidateKey === 'report_title').disposition, 'common');
+
+    const appendResponse = await fetch(`${baseUrl}/recognition/append`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        ...incrementalPayload,
+        modelResultRef: 'context-incremental.json',
+        model: 'test-model',
+      }),
+    });
+    assert.equal(appendResponse.status, 200);
+    const appended = await appendResponse.json();
+    assert.equal(appended.draft.elements.filter((element) => element.candidateKey === 'report_title').length, 1);
+    assert.equal(appended.draft.elements.find((element) => element.candidateKey === 'report_title').abstraction?.templateKey, 'business.report-title');
   } finally {
     await new Promise((resolve, reject) => httpServer.close((error) => error ? reject(error) : resolve()));
     await rm(root, { recursive: true, force: true });

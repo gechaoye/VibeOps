@@ -216,6 +216,7 @@ export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, 
         />
       ))}
       {selectedElement?.abstraction?.fields.find((field) => field.key === selectedAbstractFieldKey)?.instanceRegions.map((region, index) => {
+        if (!region) return null;
         const field = selectedElement.abstraction?.fields.find((candidate) => candidate.key === selectedAbstractFieldKey);
         const selected = selectedAbstractFieldInstanceIndex === index;
         return (

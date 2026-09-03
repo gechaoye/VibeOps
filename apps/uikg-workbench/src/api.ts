@@ -56,6 +56,8 @@ export type RecognitionStreamResult = {
   recognitionResult: RecognitionResult;
   modelResultRef: string;
   model: string | null;
+  /** Semantic context used while normalizing this result. */
+  pageContext?: string;
   reasoningContent?: string;
   outputContent?: string;
   draft?: Draft;
@@ -224,11 +226,13 @@ export const workbenchApi = {
     recognitionResult: RecognitionResult;
     modelResultRef: string;
     model: string | null;
+    pageContext?: string;
   }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/apply', { method: 'POST', body: JSON.stringify(payload) }),
   previewIncrementalRecognition: (payload: {
     frameId: string;
     pageId: string;
     recognitionResult: RecognitionResult;
+    pageContext?: string;
   }) => request<{ candidates: Array<{
     candidateKey: string;
     label: string;
@@ -243,6 +247,7 @@ export const workbenchApi = {
     recognitionResult: RecognitionResult;
     modelResultRef: string;
     model: string | null;
+    pageContext?: string;
   }) => request<{ draft: Draft; issues: ValidationIssue[] }>('/recognition/append', { method: 'POST', body: JSON.stringify(payload) }),
   prepareStaging: () => request<StagingResult>('/staging', { method: 'POST', body: '{}' }),
   stagingVersions: () => request<{ versions: StagingResult[] }>('/staging'),

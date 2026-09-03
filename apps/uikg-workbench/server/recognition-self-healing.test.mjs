@@ -50,7 +50,7 @@ function recognitionResult(interactionBoundary = 'tap-target') {
   };
 }
 
-async function runScenario(repairImplementation, configureRepair = true) {
+async function runScenario(repairImplementation, configureRepair = true, options = {}) {
   setModelRuntime('manual', { modelName: 'recognizer', baseUrl: 'https://invalid.test/v1', apiKey: 'secret', structuredOutputMode: 'local' });
   if (configureRepair) setModelRuntime('self_heal', { modelName: 'healer', baseUrl: 'https://invalid.test/v1', apiKey: 'secret', structuredOutputMode: 'local' });
   else clearModelRuntime('self_heal');
@@ -62,14 +62,27 @@ async function runScenario(repairImplementation, configureRepair = true) {
     app,
     agent: null,
     getSessionState: () => null,
-    async runRecognitionModel() { return recognitionResult(); },
+    async runRecognitionModel() {
+      return typeof options.recognitionResult === 'function'
+        ? options.recognitionResult()
+        : options.recognitionResult || recognitionResult();
+    },
     async runRecognitionRepairModel(input) {
       repairCalls += 1;
       return repairImplementation(input);
     },
   };
   const store = {
-    async loadFrame() { return { frameId: FRAME_ID, imagePath: '/tmp/self-healing.png', mimeType: 'image/png', runtimeStructure: null }; },
+    async loadFrame() {
+      return {
+        frameId: FRAME_ID,
+        imagePath: '/tmp/self-healing.png',
+        mimeType: 'image/png',
+        width: 1000,
+        height: 1000,
+        ...(options.frame || {}),
+      };
+    },
     async saveModelResult(id, value) { records.push(structuredClone(value)); return path.join(WORKBENCH_ROOT, '.data', `${id}.json`); },
     async saveAnalysisSession(value) { sessions.push(structuredClone(value)); },
   };
@@ -153,4 +166,52 @@ test('自愈模型将越界候选挤到截图边缘时拒绝结果', async () =>
   const failure = eventPayload(scenario.text, 'error');
   assert.equal(failure.selfHealing.succeeded, false);
   assert.ok(failure.selfHealing.repairedValidation.consistencyIssues.some((issue) => issue.includes('候选框超出截图边界')));
+});
+
+test('模型越界框经几何精修后合法时不触发自愈', async () => {
+  const candidate = recognitionResult();
+  candidate.elements[0] = {
+    ...candidate.elements[0],
+    label: '资料区域',
+    visualDescription: '资料区域文字',
+    elementType: 'text',
+    interactive: false,
+    approximateRegion: { x: 0.1, y: 0.9, width: 0.8, height: 0.2 },
+    dynamicContent: false,
+    abstraction: null,
+    meaning: {
+      ...candidate.elements[0].meaning,
+      description: '资料区域文字',
+      evidence: {
+        ...candidate.elements[0].meaning.evidence,
+        visibleTexts: ['资料区域'],
+      },
+    },
+  };
+  const runtimeStructure = {
+    hierarchy: {
+      coordinateSpace: 'display_px',
+      viewport: { width: 1000, height: 1000 },
+      root: {
+        class: 'FrameLayout',
+        bounds: { left: 0, top: 0, right: 1000, bottom: 1000 },
+        children: [{
+          class: 'TextView',
+          text: '资料区域',
+          bounds: { left: 100, top: 700, right: 900, bottom: 800 },
+          children: [],
+        }],
+      },
+    },
+  };
+  const scenario = await runScenario(() => {
+    throw new Error('精修后的合法结果不应调用自愈模型');
+  }, true, { recognitionResult: candidate, frame: { runtimeStructure } });
+  assert.equal(scenario.repairCalls, 0);
+  const result = eventPayload(scenario.text, 'result');
+  assert.ok(result);
+  assert.equal(result.selfHealing, undefined);
+  assert.deepEqual(result.recognitionResult.elements[0].approximateRegion, {
+    x: 0.1, y: 0.7, width: 0.8, height: 0.1,
+  });
 });

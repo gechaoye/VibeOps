@@ -118,7 +118,14 @@
                     "instanceRegions": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/properties/elements/items/properties/approximateRegion"
+                        "anyOf": [
+                          {
+                            "$ref": "#/properties/elements/items/properties/approximateRegion"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     }
                   }

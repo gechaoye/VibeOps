@@ -234,6 +234,130 @@ export async function captureRuntimeHierarchy(agent, screenshotViewport, display
   }
 }
 
+function nodeKey(node) {
+  const bounds = node?.bounds || {};
+  const identity = node?.resourceId || node?.text || node?.contentDescription || '';
+  return `${node?.class || ''}|${identity}|${Math.round(Number(bounds.left) || 0)}|${Math.round(Number(bounds.top) || 0)}|${Math.round(Number(bounds.right) || 0)}|${Math.round(Number(bounds.bottom) || 0)}`;
+}
+
+function nodeIdentity(node) {
+  return `${node?.class || ''}|${node?.resourceId || ''}|${node?.contentDescription || ''}|${node?.text || ''}`;
+}
+
+function boundsOverlapRatio(left, right) {
+  if (!left || !right) return 0;
+  const width = Math.max(0, Math.min(left.right, right.right) - Math.max(left.left, right.left));
+  const height = Math.max(0, Math.min(left.bottom, right.bottom) - Math.max(left.top, right.top));
+  const intersection = width * height;
+  const leftArea = Math.max(0, left.right - left.left) * Math.max(0, left.bottom - left.top);
+  const rightArea = Math.max(0, right.right - right.left) * Math.max(0, right.bottom - right.top);
+  return intersection / Math.max(1, Math.min(leftArea, rightArea));
+}
+
+function sameRuntimeNode(left, right) {
+  const stableIdentity = left?.resourceId || left?.contentDescription || left?.text
+    || right?.resourceId || right?.contentDescription || right?.text;
+  return Boolean(stableIdentity)
+    && nodeIdentity(left) === nodeIdentity(right)
+    && boundsOverlapRatio(left?.bounds, right?.bounds) >= 0.65;
+}
+
+function unionBounds(left, right) {
+  return {
+    left: Math.min(left.left, right.left),
+    top: Math.min(left.top, right.top),
+    right: Math.max(left.right, right.right),
+    bottom: Math.max(left.bottom, right.bottom),
+  };
+}
+
+function displayScrollScale(devicePixelRatio, webViewBounds, scrollClientHeightCss) {
+  const explicitScale = Number(devicePixelRatio);
+  if (explicitScale > 0) return explicitScale;
+  const displayHeight = Number(webViewBounds?.bottom) - Number(webViewBounds?.top);
+  const cssHeight = Number(scrollClientHeightCss);
+  return displayHeight > 0 && cssHeight > 0 ? displayHeight / cssHeight : 1;
+}
+
+function intersectsBounds(left, right) {
+  return left && right
+    && Number(left.right) > Number(right.left)
+    && Number(left.left) < Number(right.right)
+    && Number(left.bottom) > Number(right.top)
+    && Number(left.top) < Number(right.bottom);
+}
+
+function cloneForFullPage(node, scrollOffset, webViewBounds) {
+  if (!node?.bounds || !intersectsBounds(node.bounds, webViewBounds)) return null;
+  const className = String(node.class || '');
+  const area = (Number(node.bounds.right) - Number(node.bounds.left)) * (Number(node.bounds.bottom) - Number(node.bounds.top));
+  const webViewArea = (webViewBounds.right - webViewBounds.left) * (webViewBounds.bottom - webViewBounds.top);
+  // The WebView and its full-screen ancestors repeat on every dump. Their
+  // descendants are the useful per-scroll structure, so avoid duplicating
+  // those structural surfaces in the merged tree.
+  if (/WebView/i.test(className) || (!node.text && !node.contentDescription && area >= webViewArea * 0.9)) return null;
+  const bounds = {
+    left: node.bounds.left,
+    top: node.bounds.top + scrollOffset,
+    right: node.bounds.right,
+    bottom: node.bounds.bottom + scrollOffset,
+  };
+  return { ...node, bounds, children: [] };
+}
+
+export function mergeRuntimeHierarchySnapshots(baseHierarchy, snapshots, {
+  webViewBounds,
+  viewport,
+  devicePixelRatio = 0,
+  scrollClientHeightCss = 0,
+} = {}) {
+  if (!baseHierarchy?.root || !webViewBounds || !viewport?.width || !viewport?.height) return baseHierarchy;
+  const root = structuredClone(baseHierarchy.root);
+  const seen = new Set(flatten(root).filter((node) => node.bounds).map(nodeKey));
+  const seenNodes = flatten(root).filter((node) => node.bounds);
+  const output = {
+    ...baseHierarchy,
+    coordinateSpace: 'display_px',
+    origin: 'full_page',
+    viewport: { width: viewport.width, height: viewport.height },
+    screenshotViewport: { width: viewport.width, height: viewport.height },
+    root,
+    fullPage: true,
+    fullPageSnapshots: [],
+  };
+  for (const snapshot of snapshots || []) {
+    if (!snapshot?.hierarchy?.root) continue;
+    // scrollTop is in CSS pixels, while hierarchy bounds and the stitched
+    // screenshot are display pixels. Prefer the exact DPR used by stitching;
+    // only fall back to the WebView ratio for legacy callers without DPR.
+    const displayScale = displayScrollScale(devicePixelRatio, webViewBounds, scrollClientHeightCss);
+    const scrollOffset = Number(snapshot.scrollTop || 0) * displayScale;
+    const nodes = flatten(snapshot.hierarchy.root)
+      .map((node) => cloneForFullPage(node, scrollOffset, webViewBounds))
+      .filter(Boolean);
+    for (const node of nodes) {
+      const existing = seenNodes.find((candidate) => sameRuntimeNode(candidate, node));
+      if (existing) {
+        // A node crossing a viewport edge can be clipped in one dump and
+        // complete in the next. Keep the full visible extent while the
+        // overlap requirement in sameRuntimeNode keeps repeated rows apart.
+        existing.bounds = unionBounds(existing.bounds, node.bounds);
+        seen.add(nodeKey(existing));
+        continue;
+      }
+      const key = nodeKey(node);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      seenNodes.push(node);
+      root.children ||= [];
+      root.children.push(node);
+    }
+    output.fullPageSnapshots.push({ scrollTop: snapshot.scrollTop, nodeCount: nodes.length });
+  }
+  output.nodeCount = flatten(root).filter((node) => node.bounds).length;
+  return output;
+}
+
 function hierarchyRoot(runtimeStructure) {
   return runtimeStructure?.hierarchy?.root || runtimeStructure?.root || null;
 }

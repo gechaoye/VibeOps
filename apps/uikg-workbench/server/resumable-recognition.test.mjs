@@ -58,6 +58,83 @@ test('单模型续写按 candidateKey 合并元素并去重关系与动作', () 
   assert.equal(summarizeRecognitionCheckpoint(merged).coveredBottom, 0.30000000000000004);
 });
 
+test('断点覆盖进度忽略覆盖整页的 form，并标记不可信覆盖', () => {
+  const summary = summarizeRecognitionCheckpoint({
+    elements: [
+      { ...element('page.form', 0.02), elementType: 'form', approximateRegion: { x: 0, y: 0.02, width: 1, height: 0.94 } },
+      element('page.title', 0.04),
+      element('page.first-field', 0.2),
+    ],
+  });
+
+  assert.equal(summary.coveredBottom, 0.30000000000000004);
+  assert.equal(summary.broadBottom, 0.96);
+  assert.equal(summary.hasUnreliableCoverage, true);
+  assert.deepEqual(summary.broadCandidates.map((item) => item.candidateKey), ['page.form']);
+});
+
+test('宽 form 缺少后半页叶子元素时不能凭 done=true 完成续写', async () => {
+  let calls = 0;
+  const result = await runResumableRecognition({
+    initialPrompt: 'initial',
+    initialResult: {
+      frameId: 'sha256:frame',
+      elements: [
+        { ...element('page.form', 0.02), elementType: 'form', approximateRegion: { x: 0, y: 0.02, width: 1, height: 0.94 } },
+        element('page.title', 0.04),
+      ],
+    },
+    callModel: async (_prompt, options) => {
+      calls += 1;
+      // The unsafe checkpoint must restart from the full prompt instead of
+      // asking the model to continue after the form's synthetic bottom.
+      assert.equal(options.continuation, false);
+      return {
+        ...completeRecognition([element('page.title', 0.04), element('page.footer', 0.9)]),
+      };
+    },
+    buildContinuationPrompt: () => 'continue',
+    isComplete: (candidate) => Boolean(candidate?.relationships && candidate?.actionCandidates && candidate?.comparison && candidate?.uncertainties),
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(result.completed, true);
+  assert.deepEqual(result.rawResult.elements.map((item) => item.candidateKey), ['page.title', 'page.footer']);
+});
+
+test('续写新增宽祖先造成不可信覆盖时不接受 done=true', async () => {
+  let calls = 0;
+  const result = await runResumableRecognition({
+    initialPrompt: 'initial',
+    initialResult: {
+      frameId: 'sha256:frame',
+      elements: [
+        element('page.title', 0.04),
+      ],
+      relationships: [],
+      actionCandidates: [],
+      comparison: { basisFrameId: null, status: 'not-requested', changes: [] },
+      uncertainties: [],
+    },
+    callModel: async () => {
+      calls += 1;
+      return {
+        elements: [{ ...element('page.form', 0.02), elementType: 'form', approximateRegion: { x: 0, y: 0.02, width: 1, height: 0.94 } }],
+        relationships: [],
+        actionCandidates: [],
+        comparison: { basisFrameId: null, status: 'not-requested', changes: [] },
+        uncertainties: [],
+        done: true,
+      };
+    },
+    buildContinuationPrompt: () => 'continue',
+    isComplete: () => true,
+  });
+
+  assert.equal(calls, 1);
+  assert.equal(result.completed, false);
+});
+
 test('单模型流错误后仅恢复结构完整的候选作为断点', () => {
   const complete = {
     ...element('header', 0),
