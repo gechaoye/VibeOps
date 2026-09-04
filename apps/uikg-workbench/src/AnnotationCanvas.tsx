@@ -126,6 +126,25 @@ function regionsRepresentSameElement(left: BBox, right: BBox) {
   return regionOverlap(left, right) >= 0.6 && regionOverlap(right, left) >= 0.6;
 }
 
+const fixedVisualFieldTypes = new Set([
+  'avatar', 'avatar-group', 'image', 'banner', 'thumbnail', 'preview', 'carousel',
+  'image-viewer', 'file-preview', 'video',
+]);
+
+function regionMatchesFixedBox(region: BBox, fixedBoxes: BBox[]) {
+  return fixedBoxes.some((box) => regionsRepresentSameElement(region, box));
+}
+
+function abstractInstanceHasFixedVisualField(element: DraftElement, instanceIndex: number, fixedBoxes: BBox[]) {
+  return element.abstraction?.kind === 'dynamic-template'
+    && element.abstraction.fields.some((field) => {
+      if (!fixedVisualFieldTypes.has(field.elementType)) return false;
+      const region = field.instanceRegions[instanceIndex];
+      if (!region) return false;
+      return regionMatchesFixedBox(region, fixedBoxes);
+    });
+}
+
 function largestScrollableBounds(runtimeStructure: Record<string, unknown> | null | undefined) {
   const hierarchy = (runtimeStructure?.hierarchy || runtimeStructure) as Record<string, any> | undefined;
   const flatten = (node: any, output: any[] = []) => {
@@ -258,7 +277,13 @@ export function AnnotationCanvas({ imageUrl, deviceViewport, runtimeStructure, u
     const regions = (element.abstraction?.instanceRegions?.length
       ? element.abstraction.instanceRegions
       : [element.bbox]).filter(Boolean);
-    return regions.length > 0 && regions.every((region) => fixedBoxes.some((box) => regionsRepresentSameElement(region, box)));
+    if (regions.length === 0) return false;
+    if (regions.every((region) => regionMatchesFixedBox(region, fixedBoxes))) return true;
+    // A dynamic template can combine a fixed visual slot (for example an
+    // avatar image) with adjacent content such as a user name. Its complete
+    // instance region is intentionally larger than the runtime image node,
+    // so match each instance through its stable visual field as a fallback.
+    return regions.every((_, index) => abstractInstanceHasFixedVisualField(element, index, fixedBoxes));
   };
   const fixedElements = visibleElements.filter(isElementFixed);
   const scrollingElements = visibleElements.filter((element) => !isElementFixed(element));
