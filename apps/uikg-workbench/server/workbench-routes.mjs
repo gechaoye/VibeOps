@@ -32,6 +32,7 @@ import { canonicalFullPageAssetPath, loadCanonicalGraph } from './canonical-grap
 import { captureDisplayMetrics, captureRuntimeHierarchy, mergeRuntimeHierarchySnapshots } from './runtime-hierarchy.mjs';
 import { captureWebViewDom, captureDomSnapshotFromCdp, mergeDomSnapshots } from './webview-dom.mjs';
 import { captureWebViewFullPage } from './webview-full-page.mjs';
+import { captureNativeFullPage } from './native-full-page.mjs';
 import { refineRecognitionGeometry } from './geometry-refinement.mjs';
 
 const MAX_PAGE_UPLOAD_BATCH = 20;
@@ -206,18 +207,27 @@ async function freezeAndCapture(agent, collectRuntimeStructure = true, exportFul
   let fullPage = null;
   if (exportFullPage && runtimeHierarchy) {
     try {
-      fullPage = await captureWebViewFullPage(agent, runtimeHierarchy, image, {
-        captureChunk: collectRuntimeStructure ? async ({ cdp, webViewBounds }) => {
+      const captureChunk = collectRuntimeStructure
+        ? async ({ cdp, webViewBounds, scrollBounds, viewport, scrollTop }) => {
           const [hierarchyResult, domResult] = await Promise.allSettled([
             captureRuntimeHierarchy(agent, { width: image.width, height: image.height }, displayBefore),
-            captureDomSnapshotFromCdp(cdp, webViewBounds, runtimeHierarchy.viewport),
+            cdp && webViewBounds
+              ? captureDomSnapshotFromCdp(cdp, webViewBounds, runtimeHierarchy.viewport)
+              : Promise.resolve(null),
           ]);
           return {
             hierarchy: hierarchyResult.status === 'fulfilled' ? hierarchyResult.value : null,
             dom: domResult.status === 'fulfilled' ? domResult.value : null,
+            scrollBounds,
+            viewport,
+            scrollTop,
           };
-        } : null,
-      });
+        }
+        : null;
+      fullPage = await captureWebViewFullPage(agent, runtimeHierarchy, image, { captureChunk });
+      if (fullPage?.status !== 'complete' && runtimeHierarchy.implementationType !== 'h5') {
+        fullPage = await captureNativeFullPage(agent, runtimeHierarchy, image, { captureChunk });
+      }
     } catch (error) {
       fullPage = { status: 'unavailable', reason: String(error?.message || error) };
     }
@@ -232,12 +242,25 @@ async function freezeAndCapture(agent, collectRuntimeStructure = true, exportFul
       devicePixelRatio: fullPage.capture.devicePixelRatio,
       scrollClientHeightCss: fullPage.capture.scrollContainer?.clientHeight,
     };
-    capturedHierarchy = mergeRuntimeHierarchySnapshots(
-      runtimeHierarchy,
-      fullPage.structureSnapshots,
-      snapshotOptions,
-    );
-    capturedDom = mergeDomSnapshots(dom, fullPage.structureSnapshots, snapshotOptions);
+    if (fullPage.capture?.kind === 'native-full-page') {
+      capturedHierarchy = mergeRuntimeHierarchySnapshots(
+        runtimeHierarchy,
+        fullPage.structureSnapshots,
+        {
+          ...snapshotOptions,
+          webViewBounds: fullPage.capture.scrollContainer?.bounds || fullPage.capture.scrollBounds,
+          fixedViewport: {
+            left: 0,
+            top: 0,
+            right: runtimeHierarchy.viewport.width,
+            bottom: runtimeHierarchy.viewport.height,
+          },
+        },
+      );
+    } else {
+      capturedHierarchy = mergeRuntimeHierarchySnapshots(runtimeHierarchy, fullPage.structureSnapshots, snapshotOptions);
+      capturedDom = mergeDomSnapshots(dom, fullPage.structureSnapshots, snapshotOptions);
+    }
   }
   return {
     ...capturedImage,

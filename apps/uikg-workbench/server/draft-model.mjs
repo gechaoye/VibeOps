@@ -20,6 +20,11 @@ const ELEMENT_TYPE_REPLACEMENTS = {
 const EXCLUDED_SYSTEM_CHROME_TYPES = new Set(['status-bar', 'system-navigation-bar']);
 const DATA_ENTRY_TYPES = new Set(['form', 'input', 'text-area', 'rich-text-input']);
 const TITLE_TEXT_TYPES = new Set(['text', 'static-label', 'title', 'subtitle', 'caption']);
+const INDEPENDENT_CONTROL_TYPES = new Set([
+  'switch', 'checkbox', 'radio', 'slider', 'dropdown-selector', 'wheel-picker',
+  'date-picker', 'time-picker', 'date-time-picker', 'number-picker', 'cascader',
+  'tag-selector', 'segmented-selector',
+]);
 const BUSINESS_DYNAMIC_SEMANTIC_MARKER = 'business-dynamic-semantic-inferred';
 const BUSINESS_DYNAMIC_TITLE_MARKER = 'business-dynamic-title-inferred';
 const BUSINESS_REPORT_TERMS = /(?:日报|周报|月报|季报|年报|报告|汇报|工作日志)/u;
@@ -197,6 +202,74 @@ function normalizeAbstraction(rawAbstraction, fallbackKey = '') {
     instanceRegions,
     bboxStyle: 'abstract',
   };
+}
+
+function sanitizeControlAbstractions(proposal) {
+  const listKeys = new Set((proposal.elements || [])
+    .filter((element) => ['list', 'grouped-list', 'swipe-list', 'expandable-list', 'list-item'].includes(element.elementType))
+    .map((element) => element.candidateKey));
+  const additions = [];
+  const removedKeys = new Set();
+  const actionRemaps = new Map();
+  for (const element of proposal.elements || []) {
+    const abstraction = element.abstraction;
+    if (!abstraction) continue;
+    const containedByList = (proposal.relationships || []).some((relation) => (
+      relation.type === 'contains' && relation.toCandidateKey === element.candidateKey && listKeys.has(relation.fromCandidateKey)
+    ));
+    const invalid = INDEPENDENT_CONTROL_TYPES.has(element.elementType)
+      || abstraction.fields?.some((field) => field.elementType === 'segmented-selector')
+      || (abstraction.fields?.some((field) => INDEPENDENT_CONTROL_TYPES.has(field.elementType)) && !containedByList);
+    if (!invalid) continue;
+    const controlFields = (abstraction.fields || []).filter((field) => INDEPENDENT_CONTROL_TYPES.has(field.elementType));
+    const regionEntries = controlFields.flatMap((field) => (field.instanceRegions || [])
+      .filter(Boolean).map((region) => ({ region, field })));
+    const fallbackRegions = (abstraction.instanceRegions || []).map((region) => ({ region, field: controlFields[0] || null }));
+    const instances = [...regionEntries, ...fallbackRegions].filter((entry, index, entries) => (
+      entries.findIndex((candidate) => JSON.stringify(candidate.region) === JSON.stringify(entry.region)) === index
+    ));
+    const splitControlInstances = ['switch', 'checkbox', 'radio'].includes(element.elementType);
+    if (instances.length >= 2 && (splitControlInstances || controlFields.length > 0)) {
+      removedKeys.add(element.candidateKey);
+      const keys = [];
+      for (const [index, { region, field }] of instances.entries()) {
+        const key = `${element.candidateKey}-control-${index + 1}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+        keys.push(key);
+        additions.push({
+          ...element,
+          candidateKey: key,
+          label: field?.label || `${element.label || '独立控件'} ${index + 1}`,
+          elementType: field?.elementType || element.elementType,
+          approximateRegion: region,
+          dynamicContent: false,
+          abstraction: null,
+          capabilities: field?.capabilities || element.capabilities,
+          actionEffects: field?.actionEffects || element.actionEffects,
+          riskSignals: [...new Set([...(element.riskSignals || []), 'independent-control-abstraction-rejected'])],
+        });
+      }
+      actionRemaps.set(element.candidateKey, keys);
+      continue;
+    }
+    element.abstraction = null;
+    element.dynamicContent = false;
+    element.riskSignals = [...new Set([...(element.riskSignals || []), 'independent-control-abstraction-rejected'])];
+  }
+  if (removedKeys.size > 0) {
+    proposal.elements = (proposal.elements || []).filter((element) => !removedKeys.has(element.candidateKey)).concat(additions);
+    proposal.relationships = (proposal.relationships || []).flatMap((relation) => {
+      if (!removedKeys.has(relation.fromCandidateKey) && !removedKeys.has(relation.toCandidateKey)) return [relation];
+      if (removedKeys.has(relation.fromCandidateKey)) {
+        return (actionRemaps.get(relation.fromCandidateKey) || []).map((key) => ({ ...relation, fromCandidateKey: key }));
+      }
+      return [];
+    });
+    proposal.actionCandidates = (proposal.actionCandidates || []).flatMap((action) => {
+      const keys = actionRemaps.get(action.triggerCandidateKey);
+      return keys ? keys.map((key) => ({ ...action, triggerCandidateKey: key })) : [action];
+    });
+  }
+  return proposal;
 }
 
 function evidenceDetail(value) {
@@ -1880,6 +1953,10 @@ function absorbRepeatedTemplateInputElements(proposal) {
 
 export function prepareRecognitionForDraft(recognitionResult, pageContext = '') {
   const proposal = structuredClone(recognitionResult);
+  // Independent settings controls are not repeated visual instances. Repair
+  // over-eager model abstractions before list/template projection can hide the
+  // concrete switch or mode selector candidates.
+  sanitizeControlAbstractions(proposal);
   // Business context can establish that a visible title is a runtime slot even
   // when the model omitted dynamicContent or emitted only one text field. This
   // pass is deliberately semantic; it never creates a missing bbox or visual

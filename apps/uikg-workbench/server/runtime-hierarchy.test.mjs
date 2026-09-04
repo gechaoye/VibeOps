@@ -169,3 +169,81 @@ test('UI Automation 滚动偏移与长截图拼接使用同一 DPR', () => {
   const node = merged.root.children[0];
   assert.equal(node.bounds.top, 330);
 });
+
+test('滚动结构合并识别固定节点并保持其视口坐标', () => {
+  const make = (text, top) => ({ class: 'TextView', text, bounds: { left: 10, top, right: 90, bottom: top + 20 }, children: [] });
+  const merged = mergeRuntimeHierarchySnapshots({
+    coordinateSpace: 'display_px', viewport: { width: 100, height: 200 }, root: { children: [] },
+  }, [
+    { scrollTop: 0, hierarchy: { root: { children: [make('固定标题', 20), make('第一项', 100)] } } },
+    { scrollTop: 60, hierarchy: { root: { children: [make('固定标题', 20), make('第一项', 40)] } } },
+  ], { webViewBounds: { left: 0, top: 0, right: 100, bottom: 200 }, viewport: { width: 100, height: 400 }, devicePixelRatio: 1 });
+  assert.equal(merged.fixedNodes.length, 1);
+  assert.equal(merged.fixedNodes[0].text, '固定标题');
+  assert.equal(merged.fixedNodes[0].bounds.top, 20);
+  assert.equal(merged.fixedNodes[0].fixed, true);
+});
+
+test('固定判定排除滚动容器子树并识别滚动区外的固定控件', () => {
+  const fixed = (className, resourceId, text, top) => ({
+    class: className,
+    resourceId,
+    text,
+    clickable: className.includes('Button'),
+    bounds: { left: 0, top, right: 100, bottom: top + 20 },
+    children: [],
+  });
+  const snapshot = (scrollTop) => ({
+    scrollTop,
+    hierarchy: { root: { class: 'FrameLayout', children: [
+      fixed('TextView', 'header', '固定标题', 10),
+      { class: 'ScrollView', resourceId: 'scroll', scrollable: true, bounds: { left: 0, top: 40, right: 100, bottom: 160 }, children: [
+        { class: 'LinearLayout', resourceId: 'scroll-content', bounds: { left: 0, top: 40, right: 100, bottom: 160 }, children: [
+          fixed('TextView', 'meeting-mode', '会议模式', 50),
+        ] },
+      ] },
+      fixed('Button', 'footer', '开始会议', 180),
+    ] } },
+  });
+  const merged = mergeRuntimeHierarchySnapshots({
+    coordinateSpace: 'display_px',
+    viewport: { width: 100, height: 200 },
+    root: { class: 'FrameLayout', children: [
+      fixed('TextView', 'header', '固定标题', 10),
+      { class: 'ScrollView', resourceId: 'scroll', scrollable: true, bounds: { left: 0, top: 40, right: 100, bottom: 160 }, children: [] },
+      fixed('Button', 'footer', '开始会议', 180),
+    ] },
+  }, [snapshot(0), snapshot(60)], {
+    webViewBounds: { left: 0, top: 40, right: 100, bottom: 160 },
+    fixedViewport: { left: 0, top: 0, right: 100, bottom: 200 },
+    viewport: { width: 100, height: 400 },
+    devicePixelRatio: 1,
+  });
+  assert.deepEqual(merged.fixedNodes.map((node) => node.resourceId).sort(), ['footer', 'header']);
+  assert.equal(merged.fixedNodes.some((node) => node.resourceId === 'meeting-mode'), false);
+});
+
+test('滚动快照缺少容器节点时仍不会把其已知子树识别为固定', () => {
+  const base = {
+    coordinateSpace: 'display_px',
+    viewport: { width: 100, height: 200 },
+    root: { class: 'FrameLayout', children: [{
+      class: 'ScrollView', resourceId: 'scroll', scrollable: true,
+      bounds: { left: 0, top: 40, right: 100, bottom: 160 }, children: [{
+        class: 'LinearLayout', resourceId: 'content', bounds: { left: 0, top: 40, right: 100, bottom: 160 }, children: [
+          { class: 'TextView', resourceId: 'meeting-mode', text: '会议模式', bounds: { left: 10, top: 50, right: 90, bottom: 70 }, children: [] },
+        ],
+      }],
+    }] },
+  };
+  const snapshot = (scrollTop, top) => ({ scrollTop, hierarchy: { root: { class: 'FrameLayout', children: [
+    { class: 'TextView', resourceId: 'meeting-mode', text: '会议模式', bounds: { left: 10, top, right: 90, bottom: top + 20 }, children: [] },
+  ] } } });
+  const merged = mergeRuntimeHierarchySnapshots(base, [snapshot(0, 50), snapshot(60, 20)], {
+    webViewBounds: { left: 0, top: 40, right: 100, bottom: 160 },
+    fixedViewport: { left: 0, top: 0, right: 100, bottom: 200 },
+    viewport: { width: 100, height: 400 },
+    devicePixelRatio: 1,
+  });
+  assert.equal(merged.fixedNodes.some((node) => node.resourceId === 'meeting-mode'), false);
+});

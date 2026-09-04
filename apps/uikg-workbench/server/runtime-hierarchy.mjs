@@ -244,6 +244,38 @@ function nodeIdentity(node) {
   return `${node?.class || ''}|${node?.resourceId || ''}|${node?.contentDescription || ''}|${node?.text || ''}`;
 }
 
+function fixedObservationNodes(node, insideScrollable = false, output = []) {
+  if (!node) return output;
+  const nestedInScrollable = insideScrollable || node.scrollable === true;
+  if (node.bounds && !nestedInScrollable && node.scrollable !== true) {
+    const className = String(node.class || '');
+    const area = Math.max(0, Number(node.bounds.right) - Number(node.bounds.left))
+      * Math.max(0, Number(node.bounds.bottom) - Number(node.bounds.top));
+    // Layout surfaces and full-screen roots can remain at the same bounds while
+    // their scrollable descendants move. Only retain concrete UI nodes as
+    // fixed candidates; their descendants will still be observed separately.
+    const structural = /(?:Layout|ViewGroup|ScrollView|RecyclerView|WebView|FrameLayout|LinearLayout|RelativeLayout|ConstraintLayout|CoordinatorLayout)$/i.test(className);
+    const concrete = Boolean(node.text || node.contentDescription || node.clickable || node.checkable || node.focusable
+      || /(?:TextView|ImageView|Button|EditText|Switch|CheckBox|RadioButton)$/i.test(className));
+    if (concrete && !(structural && area > 0.7 * 1_000_000)) output.push(node);
+  }
+  for (const child of node.children || []) fixedObservationNodes(child, nestedInScrollable, output);
+  return output;
+}
+
+function fixedOutsideScrollNodes(root, scrollBounds) {
+  if (!scrollBounds) return [];
+  return fixedObservationNodes(root).filter((node) => {
+    const bounds = node.bounds;
+    return bounds && (
+      bounds.left < scrollBounds.left - 1
+      || bounds.right > scrollBounds.right + 1
+      || bounds.top < scrollBounds.top - 1
+      || bounds.bottom > scrollBounds.bottom + 1
+    );
+  });
+}
+
 function boundsOverlapRatio(left, right) {
   if (!left || !right) return 0;
   const width = Math.max(0, Math.min(left.right, right.right) - Math.max(left.left, right.left));
@@ -287,7 +319,67 @@ function intersectsBounds(left, right) {
     && Number(left.top) < Number(right.bottom);
 }
 
-function cloneForFullPage(node, scrollOffset, webViewBounds) {
+function fixedNodeIdentities(snapshots, webViewBounds, excludedIdentities = new Set()) {
+  const observations = new Map();
+  for (const snapshot of snapshots || []) {
+    const scrollTop = Number(snapshot?.scrollTop || 0);
+    const snapshotRoot = snapshot?.hierarchy?.root;
+    // Some Android dumps omit the scrollable flag on the intermediate
+    // LinearLayout/RecyclerView nodes. Build the ancestor exclusion from all
+    // explicitly scrollable bounds as a second guard, so a repeated content
+    // surface cannot become a fixed candidate merely because its parent flag
+    // was lost in the dump.
+    const scrollableBounds = flatten(snapshotRoot)
+      .filter((node) => node?.scrollable === true && node.bounds)
+      .map((node) => node.bounds);
+    for (const node of fixedObservationNodes(snapshotRoot).filter((candidate) => (
+      !scrollableBounds.some((bounds) => (
+        candidate.bounds.left >= bounds.left - 1
+        && candidate.bounds.top >= bounds.top - 1
+        && candidate.bounds.right <= bounds.right + 1
+        && candidate.bounds.bottom <= bounds.bottom + 1
+      ))
+    ))) {
+      const identity = nodeIdentity(node);
+      if (!identity.replaceAll('|', '') || excludedIdentities.has(identity) || !intersectsBounds(node.bounds, webViewBounds)) continue;
+      const values = observations.get(identity) || [];
+      values.push({ scrollTop, bounds: node.bounds });
+      observations.set(identity, values);
+    }
+  }
+  const fixed = new Set();
+  for (const [identity, values] of observations) {
+    for (let index = 1; index < values.length; index += 1) {
+      const previous = values[index - 1];
+      const current = values[index];
+      if (Math.abs(current.scrollTop - previous.scrollTop) < 8) continue;
+      const topDelta = Math.abs(Number(current.bounds.top) - Number(previous.bounds.top));
+      const leftDelta = Math.abs(Number(current.bounds.left) - Number(previous.bounds.left));
+      if (topDelta <= 4 && leftDelta <= 4) {
+        fixed.add(identity);
+        break;
+      }
+    }
+  }
+  return fixed;
+}
+
+function scrollableSubtreeIdentities(root) {
+  const excluded = new Set();
+  const visit = (node, insideScrollable = false) => {
+    if (!node) return;
+    const nested = insideScrollable || node.scrollable === true;
+    if (nested) {
+      const identity = nodeIdentity(node);
+      if (identity.replaceAll('|', '')) excluded.add(identity);
+    }
+    for (const child of node.children || []) visit(child, nested);
+  };
+  visit(root);
+  return excluded;
+}
+
+function cloneForFullPage(node, scrollOffset, webViewBounds, fixedIdentities = new Set()) {
   if (!node?.bounds || !intersectsBounds(node.bounds, webViewBounds)) return null;
   const className = String(node.class || '');
   const area = (Number(node.bounds.right) - Number(node.bounds.left)) * (Number(node.bounds.bottom) - Number(node.bounds.top));
@@ -296,17 +388,19 @@ function cloneForFullPage(node, scrollOffset, webViewBounds) {
   // descendants are the useful per-scroll structure, so avoid duplicating
   // those structural surfaces in the merged tree.
   if (/WebView/i.test(className) || (!node.text && !node.contentDescription && area >= webViewArea * 0.9)) return null;
+  const fixed = fixedIdentities.has(nodeIdentity(node)) || node.fixed === true;
   const bounds = {
     left: node.bounds.left,
-    top: node.bounds.top + scrollOffset,
+    top: node.bounds.top + (fixed ? 0 : scrollOffset),
     right: node.bounds.right,
-    bottom: node.bounds.bottom + scrollOffset,
+    bottom: node.bounds.bottom + (fixed ? 0 : scrollOffset),
   };
-  return { ...node, bounds, children: [] };
+  return { ...node, bounds, fixed, position: fixed ? 'fixed' : (node.position || 'static'), children: [] };
 }
 
 export function mergeRuntimeHierarchySnapshots(baseHierarchy, snapshots, {
   webViewBounds,
+  fixedViewport = webViewBounds,
   viewport,
   devicePixelRatio = 0,
   scrollClientHeightCss = 0,
@@ -324,7 +418,18 @@ export function mergeRuntimeHierarchySnapshots(baseHierarchy, snapshots, {
     root,
     fullPage: true,
     fullPageSnapshots: [],
+    fixedNodes: [],
   };
+  const scrollableIdentities = scrollableSubtreeIdentities(baseHierarchy.root);
+  const fixedIdentities = new Set([
+    ...fixedNodeIdentities(snapshots, fixedViewport, scrollableIdentities),
+    ...fixedOutsideScrollNodes(baseHierarchy.root, webViewBounds).map((node) => nodeIdentity(node)),
+  ]);
+  for (const node of seenNodes) {
+    if (!fixedIdentities.has(nodeIdentity(node))) continue;
+    node.fixed = true;
+    node.position = 'fixed';
+  }
   for (const snapshot of snapshots || []) {
     if (!snapshot?.hierarchy?.root) continue;
     // scrollTop is in CSS pixels, while hierarchy bounds and the stitched
@@ -333,7 +438,7 @@ export function mergeRuntimeHierarchySnapshots(baseHierarchy, snapshots, {
     const displayScale = displayScrollScale(devicePixelRatio, webViewBounds, scrollClientHeightCss);
     const scrollOffset = Number(snapshot.scrollTop || 0) * displayScale;
     const nodes = flatten(snapshot.hierarchy.root)
-      .map((node) => cloneForFullPage(node, scrollOffset, webViewBounds))
+      .map((node) => cloneForFullPage(node, scrollOffset, webViewBounds, fixedIdentities))
       .filter(Boolean);
     for (const node of nodes) {
       const existing = seenNodes.find((candidate) => sameRuntimeNode(candidate, node));
@@ -342,6 +447,10 @@ export function mergeRuntimeHierarchySnapshots(baseHierarchy, snapshots, {
         // complete in the next. Keep the full visible extent while the
         // overlap requirement in sameRuntimeNode keeps repeated rows apart.
         existing.bounds = unionBounds(existing.bounds, node.bounds);
+        if (node.fixed) {
+          existing.fixed = true;
+          existing.position = 'fixed';
+        }
         seen.add(nodeKey(existing));
         continue;
       }
@@ -352,8 +461,9 @@ export function mergeRuntimeHierarchySnapshots(baseHierarchy, snapshots, {
       root.children ||= [];
       root.children.push(node);
     }
-    output.fullPageSnapshots.push({ scrollTop: snapshot.scrollTop, nodeCount: nodes.length });
+    output.fullPageSnapshots.push({ scrollTop: snapshot.scrollTop, nodeCount: nodes.length, fixedNodeCount: nodes.filter((node) => node.fixed).length });
   }
+  output.fixedNodes = seenNodes.filter((node) => node.fixed).map((node) => structuredClone(node));
   output.nodeCount = flatten(root).filter((node) => node.bounds).length;
   return output;
 }

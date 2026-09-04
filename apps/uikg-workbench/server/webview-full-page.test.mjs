@@ -8,6 +8,18 @@ async function solid(width, height, background) {
   return sharp({ create: { width, height, channels: 4, background } }).png().toBuffer();
 }
 
+async function strips(width, strips) {
+  const height = strips.reduce((total, strip) => total + strip.height, 0);
+  return sharp({ create: { width, height, channels: 4, background: '#ffffff' } })
+    .composite(await Promise.all(strips.map(async (strip, index) => ({
+      input: await solid(width, strip.height, strip.background),
+      left: 0,
+      top: strips.slice(0, index).reduce((total, item) => total + item.height, 0),
+    }))))
+    .png()
+    .toBuffer();
+}
+
 test('非 debug 包在 CDP 截图前快速降级，不等待 Page.captureScreenshot', async () => {
   const result = await captureWebViewFullPage({
     interface: {
@@ -50,6 +62,30 @@ test('整页拼接保留原生头尾，并按 scrollTop 连续拼接 WebView 分
   assert.deepEqual(pixel(50, 330), [0, 255, 0, 255]);
 });
 
+test('整页拼接保留滚动容器下方的固定提交栏', async () => {
+  const result = await stitchHybridFullPage({
+    nativeBuffer: await solid(100, 200, '#00ff00'),
+    chunks: [
+      { buffer: await strips(100, [{ height: 140, background: '#ff0000' }, { height: 20, background: '#ffff00' }]), scrollTop: 0, clientHeight: 140, rect: { x: 0, y: 0, width: 100, height: 140 } },
+      { buffer: await strips(100, [{ height: 140, background: '#0000ff' }, { height: 20, background: '#00ffff' }]), scrollTop: 60, clientHeight: 140, rect: { x: 0, y: 0, width: 100, height: 140 } },
+    ],
+    webViewBounds: { left: 0, top: 20, right: 100, bottom: 180 },
+    deviceViewport: { width: 100, height: 200 },
+    scrollHeightCss: 200,
+    devicePixelRatio: 1,
+  });
+
+  const image = sharp(result);
+  const metadata = await image.metadata();
+  assert.deepEqual({ width: metadata.width, height: metadata.height }, { width: 100, height: 260 });
+  const { data } = await image.raw().toBuffer({ resolveWithObject: true });
+  const pixel = (y) => [...data.subarray((y * 100 + 50) * 4, (y * 100 + 50) * 4 + 4)];
+  assert.deepEqual(pixel(20), [255, 0, 0, 255]);
+  assert.deepEqual(pixel(159), [0, 0, 255, 255]);
+  assert.deepEqual(pixel(220), [0, 255, 255, 255]);
+  assert.deepEqual(pixel(245), [0, 255, 0, 255]);
+});
+
 test('DOM 分段按滚动偏移合并到整图，并去重重叠节点', () => {
   const document = (top, id) => ({
     url: 'https://example.test/form',
@@ -73,4 +109,16 @@ test('DOM CSS 坐标按页面 DPR 映射而不是 WebView 可见高度反推', (
   }, { left: 0, top: 252, right: 1152, bottom: 2256 }, { width: 1152, height: 2376 });
   assert.ok(Math.abs(mapped.nodes[0].bounds.top - 5086.6875) < 0.001);
   assert.ok(Math.abs(mapped.nodes[0].bounds.bottom - 5160.3975) < 0.01);
+});
+
+test('DOM 固定节点在长页面合并后保持视口位置', () => {
+  const base = { status: 'complete', documents: [{ viewport: { width: 100, height: 160, devicePixelRatio: 1 }, nodes: [] }] };
+  const fixed = (top) => ({ tag: 'div', role: 'banner', text: '固定提交栏', fixed: true, bounds: { left: 0, top, right: 100, bottom: top + 20 } });
+  const merged = mergeDomSnapshots(base, [
+    { scrollTop: 0, dom: { viewport: { width: 100, height: 160, devicePixelRatio: 1 }, nodes: [fixed(120)] } },
+    { scrollTop: 80, dom: { viewport: { width: 100, height: 160, devicePixelRatio: 1 }, nodes: [fixed(120)] } },
+  ], { webViewBounds: { left: 0, top: 0, right: 100, bottom: 160 }, viewport: { width: 100, height: 400 } });
+  assert.equal(merged.fixedNodes.length, 1);
+  assert.equal(merged.documents[0].nodes.filter((node) => node.text === '固定提交栏').length, 1);
+  assert.equal(merged.fixedNodes[0].bounds.top, 120);
 });

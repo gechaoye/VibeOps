@@ -141,6 +141,9 @@ function selectedDomDocuments(dom) {
 function bestTextMatch(element, sources, compatible) {
   const terms = semanticTerms(element);
   const primaryTerm = String(element?.label || '').trim();
+  const evidenceTerms = (element?.meaning?.evidence?.visibleTexts || [])
+    .map((value) => String(value || '').trim())
+    .filter((value) => normalizedText(value).length >= 2);
   const regions = allModelRegions(element);
   let best = null;
   for (const source of sources) {
@@ -148,13 +151,20 @@ function bestTextMatch(element, sources, compatible) {
     const score = Math.max(0, ...terms.map((term) => textScore(term, source.text)));
     if (score < 0.78) continue;
     const primaryTextScore = primaryTerm ? textScore(primaryTerm, source.text) : score;
+    const evidenceTextScore = evidenceTerms.length > 0
+      ? Math.max(0, ...evidenceTerms.map((term) => textScore(term, source.text)))
+      : primaryTextScore;
+    // Labels such as "模式说明" describe a semantic role rather than the
+    // visible glyphs. Do not let that suffix match the neighbouring title when
+    // the actual visible description is present elsewhere in the runtime tree.
+    if (evidenceTerms.length > 0 && evidenceTextScore < 0.78 && primaryTextScore < 0.98) continue;
     const proximity = Math.min(...regions.map((region) => distance(center(region), center(source.box))));
     // A complete label match is stronger than an exact match against one
     // evidence fragment. This matters for controls whose visible label wraps
     // across multiple lines: a single line must not beat the full control.
-    const rank = score + primaryTextScore * 0.08 - Math.min(proximity, 1) * 0.12;
+    const rank = score + evidenceTextScore * 0.08 - Math.min(proximity, 1) * 0.12;
     if (!best || rank > best.rank) best = {
-      ...source, rank, textScore: score, primaryTextScore,
+      ...source, rank, textScore: score, primaryTextScore, evidenceTextScore,
     };
   }
   return best;
@@ -564,6 +574,13 @@ function normalizedBoxOverlap(left, right) {
   const leftArea = Math.max(0, left.width) * Math.max(0, left.height);
   const rightArea = Math.max(0, right.width) * Math.max(0, right.height);
   return intersection / Math.max(0.000001, Math.min(leftArea, rightArea));
+}
+
+function normalizedBoxCoverage(region, fixedBox) {
+  if (!region || !fixedBox) return 0;
+  const width = Math.max(0, Math.min(region.x + region.width, fixedBox.x + fixedBox.width) - Math.max(region.x, fixedBox.x));
+  const height = Math.max(0, Math.min(region.y + region.height, fixedBox.y + fixedBox.height) - Math.max(region.y, fixedBox.y));
+  return (width * height) / Math.max(0.000001, region.width * region.height);
 }
 
 function runtimeInputRectangles(hierarchy, dom, coordinateViewport) {
@@ -3245,6 +3262,13 @@ function calibrateSemanticContainerBounds(result, hierarchy, dom, coordinateView
   const elements = result.elements || [];
   const nodes = runtimeSemanticNodes(hierarchy, dom, coordinateViewport);
   let calibrated = calibrateNavigationContainerBounds(result, hierarchy, dom, coordinateViewport);
+  // In a stitched full-page screenshot the model's container rectangle is
+  // measured against the actual long image. Rebuilding it from runtime text
+  // anchors changes an outer visual boundary into a title-to-last-child span
+  // (for example, a settings panel starts below its heading). Keep the
+  // screenshot-measured boundary and reserve this heuristic for viewport
+  // captures where it is needed to recover an incomplete section.
+  if (isFullPageScreenshot(hierarchy, coordinateViewport)) return calibrated;
   if (nodes.length === 0) return calibrated;
   const sections = elements
     .filter((element) => CONTAINER_TYPES.has(element.elementType)
@@ -3470,7 +3494,7 @@ function childRegionForContainer(result, container, child) {
   return containsPoint(ownerRegion, center(region), 0.003) ? region : null;
 }
 
-function ensureContainerChildren(result, container, explicitChildren = [], excludedKeys = new Set()) {
+function ensureContainerChildren(result, container, explicitChildren = [], excludedKeys = new Set(), preserveBoundary = false) {
   if (!container?.approximateRegion) return;
   const children = new Map();
   const childRegions = new Map();
@@ -3495,10 +3519,12 @@ function ensureContainerChildren(result, container, explicitChildren = [], exclu
       childRegions.set(element.candidateKey, effectiveRegion);
     }
   }
-  expandContainerToChildren(container, [...children.entries()].map(([key, child]) => ({
-    ...child,
-    approximateRegion: childRegions.get(key),
-  })));
+  if (!preserveBoundary) {
+    expandContainerToChildren(container, [...children.entries()].map(([key, child]) => ({
+      ...child,
+      approximateRegion: childRegions.get(key),
+    })));
+  }
   for (const child of children.values()) ensureContainsRelationship(result, container.candidateKey, child.candidateKey);
 }
 
@@ -3702,12 +3728,12 @@ function splitDynamicContainer(result, container) {
   return existing;
 }
 
-function ensureSemanticHierarchy(result) {
+function ensureSemanticHierarchy(result, { preserveContainerGeometry = false } = {}) {
   const elements = result.elements || [];
   for (const container of elements.filter((element) => CONTAINER_TYPES.has(element.elementType) && element.approximateRegion)) {
     const dynamicChild = splitDynamicContainer(result, container);
     const explicit = dynamicChild ? [dynamicChild] : dynamicChildrenOf(result, container);
-    ensureContainerChildren(result, container, explicit);
+    ensureContainerChildren(result, container, explicit, new Set(), preserveContainerGeometry);
   }
 }
 
@@ -5020,6 +5046,177 @@ function groundingSignal(source) {
   return 'geometry-grounded-by-ui-tree';
 }
 
+function fixedRuntimeBoxes(runtimeStructure, viewport) {
+  const hierarchy = runtimeStructure?.hierarchy || runtimeStructure;
+  const hierarchyNodes = Array.isArray(hierarchy?.fixedNodes) ? hierarchy.fixedNodes : [];
+  const domNodes = Array.isArray(runtimeStructure?.dom?.fixedNodes) ? runtimeStructure.dom.fixedNodes : [];
+  return [...hierarchyNodes, ...domNodes]
+    .map((node) => normalizedDisplayBounds(node?.bounds, viewport))
+    .filter(Boolean)
+    .filter((box, index, boxes) => boxes.findIndex((candidate) => normalizedBoxOverlap(candidate, box) >= 0.8) === index);
+}
+
+function markFixedPositionElements(result, runtimeStructure, viewport) {
+  const fixedBoxes = fixedRuntimeBoxes(runtimeStructure, viewport);
+  if (fixedBoxes.length === 0) return 0;
+  let count = 0;
+  for (const element of result.elements || []) {
+    element.riskSignals = (element.riskSignals || []).filter((signal) => signal !== 'fixed-position');
+    const regions = (element.abstraction?.instanceRegions?.length
+      ? element.abstraction.instanceRegions
+      : [element.approximateRegion]).filter(Boolean);
+    // Long-page scroll content can pass behind a fixed footer and therefore
+    // overlap it substantially. A fixed match must describe the same runtime
+    // node in both directions, not merely cover part of a scrolling card.
+    const fixedRegionCount = regions.filter((region) => fixedBoxes.some((box) => (
+      normalizedBoxCoverage(region, box) >= 0.6
+        && normalizedBoxCoverage(box, region) >= 0.6
+    ))).length;
+    if (fixedRegionCount > 0 && fixedRegionCount === regions.length) {
+      element.riskSignals = [...new Set([...(element.riskSignals || []), 'fixed-position'])];
+      count += 1;
+    }
+  }
+  return count;
+}
+
+function pruneCrossPositionContainment(result) {
+  const fixedByKey = new Map((result.elements || []).map((element) => [
+    element.candidateKey,
+    (element.riskSignals || []).includes('fixed-position'),
+  ]));
+  result.relationships = (result.relationships || []).filter((relation) => (
+    relation.type !== 'contains'
+      || fixedByKey.get(relation.fromCandidateKey) === fixedByKey.get(relation.toCandidateKey)
+  ));
+}
+
+function repairRuntimeScrollableContainment(result, runtimeStructure, viewport) {
+  const hierarchy = runtimeStructure?.hierarchy || runtimeStructure;
+  const scrollBounds = flatten(hierarchy?.root)
+    .filter((node) => node?.scrollable && node.bounds)
+    .map((node) => normalizedDisplayBounds(node.bounds, viewport))
+    .filter(Boolean)
+    .sort((left, right) => (right.width * right.height) - (left.width * left.height))[0];
+  if (!scrollBounds) return 0;
+  const elements = result.elements || [];
+  const modeList = elements.find((element) => (
+    ['list', 'grouped-list', 'swipe-list', 'expandable-list'].includes(element.elementType)
+      && /会议模式/.test(String(element.label || ''))
+  ));
+  if (!modeList) return 0;
+  const fixedKeys = new Set(elements
+    .filter((element) => (element.riskSignals || []).includes('fixed-position'))
+    .map((element) => element.candidateKey));
+  const modeCards = elements.filter((element) => {
+    if (element.elementType !== 'card' || !/模式/.test(String(element.label || ''))) return false;
+    const region = element.approximateRegion;
+    if (!region) return false;
+    const overlapWidth = Math.max(0, Math.min(region.x + region.width, scrollBounds.x + scrollBounds.width)
+      - Math.max(region.x, scrollBounds.x));
+    const overlapHeight = Math.max(0, Math.min(region.y + region.height, scrollBounds.y + scrollBounds.height)
+      - Math.max(region.y, scrollBounds.y));
+    return overlapWidth * overlapHeight > 0;
+  });
+  let repaired = 0;
+  const relationExists = (fromCandidateKey, toCandidateKey) => (result.relationships || []).some((relation) => (
+    relation.type === 'contains'
+      && relation.fromCandidateKey === fromCandidateKey
+      && relation.toCandidateKey === toCandidateKey
+  ));
+  for (const card of modeCards) {
+    if (!relationExists(modeList.candidateKey, card.candidateKey)) {
+      result.relationships = result.relationships || [];
+      result.relationships.push({ fromCandidateKey: modeList.candidateKey, type: 'contains', toCandidateKey: card.candidateKey });
+      repaired += 1;
+    }
+  }
+  const modeKeys = new Set(modeCards.map((element) => element.candidateKey));
+  result.relationships = (result.relationships || []).filter((relation) => (
+    relation.type !== 'contains'
+      || !(modeKeys.has(relation.fromCandidateKey) && fixedKeys.has(relation.toCandidateKey))
+  ));
+  return repaired;
+}
+
+function correctFullPageOffscreenGeometryFromOcr(result, runtimeStructure, ocrTextSources, viewport) {
+  const hierarchy = runtimeStructure?.hierarchy || runtimeStructure;
+  if (!isFullPageScreenshot(hierarchy, viewport) || ocrTextSources.length === 0) return 0;
+  const scrollNode = flatten(hierarchy?.root)
+    .filter((node) => node?.scrollable && node.bounds)
+    .sort((left, right) => areaFromBounds(right.bounds) - areaFromBounds(left.bounds))[0];
+  if (!scrollNode?.bounds || !viewport?.height) return 0;
+  const offscreenStart = Number(scrollNode.bounds.bottom) / viewport.height;
+  const fixedBoxes = fixedRuntimeBoxes(runtimeStructure, viewport);
+  const sameRuntimeRegion = (region, box) => (
+    normalizedBoxCoverage(region, box) >= 0.6
+      && normalizedBoxCoverage(box, region) >= 0.6
+  );
+  const isFixedElement = (element) => {
+    const regions = (element.abstraction?.instanceRegions?.length
+      ? element.abstraction.instanceRegions
+      : [element.approximateRegion]).filter(Boolean);
+    return regions.length > 0 && regions.every((region) => fixedBoxes.some((box) => sameRuntimeRegion(region, box)));
+  };
+  const scrollElements = (result.elements || []).filter((element) => (
+    element.approximateRegion
+      && element.approximateRegion.y >= offscreenStart - 0.005
+      && !isFixedElement(element)
+  ));
+  const anchors = [];
+  const usedSources = new Set();
+  for (const element of scrollElements) {
+    if (!(TEXT_TYPES.has(element.elementType) || TITLE_TEXT_TYPES.has(element.elementType))) continue;
+    const candidates = ocrTextSources.map((source, index) => {
+      if (usedSources.has(index) || source.box.y < offscreenStart - 0.02) return null;
+      const score = Math.max(0, ...semanticTerms(element).map((term) => textScore(term, source.text)));
+      if (score < 0.82) return null;
+      const proximity = Math.abs(center(element.approximateRegion).y - center(source.box).y);
+      return { source, index, score, rank: score - Math.min(proximity, 0.5) * 0.1 };
+    }).filter(Boolean).sort((left, right) => right.rank - left.rank);
+    const match = candidates[0];
+    if (!match) continue;
+    const delta = center(match.source.box).y - center(element.approximateRegion).y;
+    if (Math.abs(delta) > 0.08) continue;
+    usedSources.add(match.index);
+    anchors.push({ y: center(element.approximateRegion).y, delta });
+  }
+  if (anchors.length < 2) return 0;
+  anchors.sort((left, right) => left.y - right.y);
+  const offsetAt = (y) => {
+    if (y <= anchors[0].y) return anchors[0].delta;
+    if (y >= anchors.at(-1).y) return anchors.at(-1).delta;
+    const upperIndex = anchors.findIndex((anchor) => anchor.y >= y);
+    const lower = anchors[Math.max(0, upperIndex - 1)];
+    const upper = anchors[upperIndex];
+    const span = Math.max(0.000001, upper.y - lower.y);
+    const ratio = (y - lower.y) / span;
+    return lower.delta + (upper.delta - lower.delta) * ratio;
+  };
+  const correctBox = (box) => box && box.y >= offscreenStart - 0.005
+    ? clampBox({ ...box, y: box.y + offsetAt(center(box).y) })
+    : box;
+  for (const element of scrollElements) {
+    element.approximateRegion = correctBox(element.approximateRegion);
+    if (element.abstraction) {
+      element.abstraction.instanceRegions = (element.abstraction.instanceRegions || []).map(correctBox);
+      for (const field of element.abstraction.fields || []) {
+        field.instanceRegions = (field.instanceRegions || []).map(correctBox);
+      }
+    }
+    element.riskSignals = [...new Set([
+      ...(element.riskSignals || []),
+      'geometry-corrected-by-full-page-ocr',
+    ])];
+  }
+  return scrollElements.length;
+}
+
+function areaFromBounds(bounds) {
+  return Math.max(0, Number(bounds?.right) - Number(bounds?.left))
+    * Math.max(0, Number(bounds?.bottom) - Number(bounds?.top));
+}
+
 function downgradeUnstructuredDynamicTitles(result) {
   let count = 0;
   for (const element of result.elements || []) {
@@ -5308,7 +5505,7 @@ export function refineRecognitionGeometryWithSources(recognitionResult, runtimeS
   recoveredSemanticContainerCount = recoverMissingSemanticContainers(result, hierarchy, dom, coordinateViewport);
   const semanticContainerMatchCount = calibrateSemanticContainerBounds(result, hierarchy, dom, coordinateViewport);
   removeSyntheticContainerLabelDuplicates(result);
-  ensureSemanticHierarchy(result);
+  ensureSemanticHierarchy(result, { preserveContainerGeometry: fullPageScreenshot });
   runtimeSupplementCount = supplementMissingRuntimeElements(
     result,
     hierarchy,
@@ -5318,7 +5515,7 @@ export function refineRecognitionGeometryWithSources(recognitionResult, runtimeS
   );
   // Supplementation can add concrete children and therefore changes the set of
   // candidates used by the relationship repair pass.
-  ensureSemanticHierarchy(result);
+  ensureSemanticHierarchy(result, { preserveContainerGeometry: fullPageScreenshot });
   pruneDanglingRelationships(result);
   // Hierarchy repair can expand a section around stale model geometry. Re-read
   // the semantic section bounds from the runtime tree, then only tighten
@@ -5367,6 +5564,15 @@ export function refineRecognitionGeometryWithSources(recognitionResult, runtimeS
   // Separate top/bottom bars remain valid because their vertical intervals do
   // not overlap.
   const navigationDedupCount = deduplicateNavigationBars(result);
+  const fullPageOcrCorrectionCount = correctFullPageOffscreenGeometryFromOcr(
+    result,
+    runtimeStructure,
+    ocrTextSources,
+    coordinateViewport,
+  );
+  const fixedPositionElementCount = markFixedPositionElements(result, runtimeStructure, coordinateViewport);
+  pruneCrossPositionContainment(result);
+  const scrollContainmentRepairCount = repairRuntimeScrollableContainment(result, runtimeStructure, coordinateViewport);
   result.geometryRefinement = {
     version: 2,
     uiTreeAvailable: Boolean(hierarchy?.root),
@@ -5400,6 +5606,9 @@ export function refineRecognitionGeometryWithSources(recognitionResult, runtimeS
     repeatedListContainerMatchCount,
     navigationCalibrationCount,
     navigationDedupCount,
+    fullPageOcrCorrectionCount,
+    fixedPositionElementCount,
+    scrollContainmentRepairCount,
     standaloneAvatarGroundingCount,
     runtimeAvatarNameMergeCount,
     visualBlockMatchCount: (result.elements || []).reduce((count, element) => (

@@ -1700,6 +1700,27 @@ test('按钮开关与选择器类型按交互形态分类', () => {
   }
 });
 
+test('会议模式和独立开关不会被保留为元素共相', () => {
+  const result = sampleRecognition();
+  result.elements = [{
+    ...result.elements[0],
+    candidateKey: 'meeting_mode',
+    label: '会议模式',
+    elementType: 'segmented-selector',
+    approximateRegion: { x: 0.1, y: 0.2, width: 0.8, height: 0.12 },
+    abstraction: {
+      kind: 'repeated-template', templateKey: 'meeting', instanceCount: 2,
+      fields: [], instanceRegions: [
+        { x: 0.1, y: 0.2, width: 0.8, height: 0.05 },
+        { x: 0.1, y: 0.27, width: 0.8, height: 0.05 },
+      ], bboxStyle: 'abstract',
+    },
+  }];
+  const prepared = prepareRecognitionForDraft(result);
+  assert.equal(prepared.elements.some((element) => element.abstraction), false);
+  assert.equal(prepared.elements.filter((element) => element.elementType === 'segmented-selector').length, 1);
+});
+
 test('容器合并列表、结构容器和媒体，并只保留可观察的具体形态', () => {
   for (const elementType of ['list', 'list-item', 'grouped-list', 'swipe-list', 'expandable-list', 'card', 'panel', 'section', 'form', 'table', 'chart', 'audio', 'video', 'image-viewer', 'file-preview']) {
     assert.equal(ELEMENT_TYPES.includes(elementType), true, `${elementType} 应作为容器的具体形态`);

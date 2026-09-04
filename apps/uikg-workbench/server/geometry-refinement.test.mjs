@@ -20,6 +20,96 @@ function roundedBox(box) {
   return Object.fromEntries(Object.entries(box).map(([key, value]) => [key, Number(value.toFixed(6))]));
 }
 
+test('固定节点匹配要求双向覆盖并移除跨滚动层父子关系', () => {
+  const recognition = {
+    elements: [
+      element('meeting_mode', '培训模式', 'card', { x: 0.5, y: 0.35, width: 0.45, height: 0.2 }, {
+        riskSignals: ['fixed-position'],
+      }),
+      element('start_button', '开始会议', 'text-button', { x: 0.52, y: 0.48, width: 0.42, height: 0.06 }),
+    ],
+    relationships: [
+      { fromCandidateKey: 'meeting_mode', type: 'contains', toCandidateKey: 'start_button' },
+    ],
+  };
+  const runtime = { hierarchy: {
+    fullPage: true,
+    viewport: { width: 1000, height: 1000 },
+    fixedNodes: [
+      { class: 'Button', text: '开始会议', bounds: { left: 520, top: 960, right: 940, bottom: 1080 }, children: [] },
+    ],
+    root: { class: 'FrameLayout', children: [] },
+  } };
+
+  const result = refineRecognitionGeometryWithSources(recognition, runtime, null, { width: 1000, height: 2000 });
+  const mode = result.elements.find((item) => item.candidateKey === 'meeting_mode');
+  const button = result.elements.find((item) => item.candidateKey === 'start_button');
+  assert.equal(mode.riskSignals.includes('fixed-position'), false);
+  assert.equal(button.riskSignals.includes('fixed-position'), true);
+  assert.equal(result.relationships.some((relation) => relation.type === 'contains'
+    && relation.fromCandidateKey === 'meeting_mode'
+    && relation.toCandidateKey === 'start_button'), false);
+});
+
+test('UI Tree ScrollView 会补齐会议模式卡片的列表归属', () => {
+  const recognition = {
+    elements: [
+      element('mode_list', '会议模式选项列表', 'list', { x: 0.04, y: 0.28, width: 0.92, height: 0.21 }),
+      element('mode_interview', '面试模式', 'card', { x: 0.04, y: 0.42, width: 0.45, height: 0.09 }),
+      element('mode_training', '培训模式', 'card', { x: 0.51, y: 0.42, width: 0.45, height: 0.09 }),
+    ],
+    relationships: [],
+  };
+  const runtime = { hierarchy: {
+    viewport: { width: 1000, height: 1000 },
+    root: { class: 'FrameLayout', children: [
+      { class: 'ScrollView', scrollable: true, bounds: { left: 0, top: 300, right: 1000, bottom: 500 }, children: [] },
+    ] },
+  } };
+  const result = refineRecognitionGeometryWithSources(recognition, runtime, null, { width: 1000, height: 1000 });
+  assert.deepEqual(result.relationships.filter((relation) => relation.type === 'contains').map((relation) => [
+    relation.fromCandidateKey, relation.toCandidateKey,
+  ]), [
+    ['mode_list', 'mode_interview'],
+    ['mode_list', 'mode_training'],
+  ]);
+});
+
+test('长图首屏外元素按 OCR 锚点纠正 UI Tree 分段累计偏移', () => {
+  const recognition = {
+    elements: [
+      element('settings_heading', '会议设置', 'title', { x: 0.04, y: 0.5, width: 0.2, height: 0.03 }),
+      element('password_label', '开启会议密码', 'static-label', { x: 0.08, y: 0.56, width: 0.25, height: 0.03 }),
+      element('password_switch', '会议密码开关', 'switch', { x: 0.82, y: 0.56, width: 0.1, height: 0.03 }),
+      element('attendee_heading', '参会人设置', 'title', { x: 0.04, y: 0.75, width: 0.2, height: 0.03 }),
+    ],
+    relationships: [],
+  };
+  const runtime = { hierarchy: {
+    fullPage: true,
+    viewport: { width: 1000, height: 1000 },
+    root: { class: 'FrameLayout', children: [
+      { class: 'ScrollView', scrollable: true, bounds: { left: 0, top: 100, right: 1000, bottom: 400 }, children: [] },
+      { class: 'TextView', text: '会议设置', bounds: { left: 40, top: 500, right: 240, bottom: 530 }, children: [] },
+      { class: 'TextView', text: '开启会议密码', bounds: { left: 80, top: 560, right: 330, bottom: 590 }, children: [] },
+      { class: 'TextView', text: '参会人设置', bounds: { left: 40, top: 750, right: 240, bottom: 780 }, children: [] },
+    ] },
+  } };
+  const ocr = {
+    status: 'complete', engine: 'apple-vision', width: 1000, height: 1000,
+    observations: [
+      { text: '会议设置', confidence: 1, rect: { x: 40, y: 550, width: 200, height: 30 } },
+      { text: '开启会议密码', confidence: 1, rect: { x: 80, y: 610, width: 250, height: 30 } },
+      { text: '参会人设置', confidence: 1, rect: { x: 40, y: 800, width: 200, height: 30 } },
+    ],
+  };
+  const result = refineRecognitionGeometryWithSources(recognition, runtime, ocr, { width: 1000, height: 1000 });
+  assert.equal(Number(result.elements.find((item) => item.candidateKey === 'settings_heading').approximateRegion.y.toFixed(2)), 0.55);
+  assert.equal(Number(result.elements.find((item) => item.candidateKey === 'password_switch').approximateRegion.y.toFixed(2)), 0.61);
+  assert.equal(Number(result.elements.find((item) => item.candidateKey === 'attendee_heading').approximateRegion.y.toFixed(2)), 0.8);
+  assert.equal(result.geometryRefinement.fullPageOcrCorrectionCount, 4);
+});
+
 test('OCR 多锚点会校准长截图的纵向比例并同步更新抽象实例框', () => {
   const recognition = {
     elements: [element('rows', null, 'list-item', { x: 0.08, y: 0.16, width: 0.84, height: 0.26 }, {
@@ -476,6 +566,48 @@ test('整页长截图保留模型按实际图片输出的坐标和实例区域',
   assert.deepEqual(roundedBox(result.elements[0].approximateRegion), { x: 0, y: 0.1, width: 1, height: 0.1 });
   assert.deepEqual(roundedBox(result.elements[0].abstraction.instanceRegions[0]), { x: 0.1, y: 0.2, width: 0.8, height: 0.1 });
   assert.deepEqual(roundedBox(result.elements[0].abstraction.fields[0].instanceRegions[0]), { x: 0.2, y: 0.25, width: 0.2, height: 0.03 });
+});
+
+test('整页滚动容器保留卡片和面板的截图外框，不把标题或说明当作容器边界', () => {
+  const description = '开启录制开关，开启字幕功能，开启安全水印，开启等候室，开启麦克风，开启摄像头，开启画面跟随开关…';
+  const recognition = {
+    elements: [
+      element('mode_card', '面试模式', 'card', { x: 0.05, y: 0.42, width: 0.42, height: 0.065 }),
+      element('mode_title', '面试模式', 'static-label', { x: 0.08, y: 0.435, width: 0.3, height: 0.015 }),
+      element('mode_description', '面试模式说明', 'text', { x: 0.08, y: 0.452, width: 0.35, height: 0.03 }, {
+        meaning: meaning([description]),
+      }),
+      element('settings_panel', '会议设置', 'panel', { x: 0.04, y: 0.515, width: 0.92, height: 0.168 }),
+      element('settings_heading', '会议设置', 'title', { x: 0.04, y: 0.493, width: 0.2, height: 0.016 }),
+    ],
+    relationships: [
+      { fromCandidateKey: 'mode_card', type: 'contains', toCandidateKey: 'mode_title' },
+      { fromCandidateKey: 'mode_card', type: 'contains', toCandidateKey: 'mode_description' },
+      { fromCandidateKey: 'settings_panel', type: 'contains', toCandidateKey: 'settings_heading' },
+    ],
+  };
+  const runtime = { hierarchy: {
+    fullPage: true,
+    origin: 'full_page',
+    viewport: { width: 1152, height: 2376 },
+    root: { class: 'FrameLayout', children: [
+      { class: 'ScrollView', scrollable: true, bounds: { left: 0, top: 1227, right: 1152, bottom: 2136 }, children: [] },
+      { class: 'TextView', text: '面试模式', bounds: { left: 96, top: 1988, right: 540, bottom: 2045 }, children: [] },
+      { class: 'TextView', text: description.slice(0, -1), bounds: { left: 96, top: 2013, right: 528, bottom: 2160 }, children: [] },
+      { class: 'TextView', text: '会议设置', bounds: { left: 48, top: 2262, right: 240, bottom: 2333 }, children: [] },
+      { class: 'TextView', text: '开启会议密码', bounds: { left: 84, top: 2401, right: 912, bottom: 2462 }, children: [] },
+    ] },
+  } };
+  const result = refineRecognitionGeometryWithSources(recognition, runtime, null, { width: 1152, height: 4588 });
+  assert.deepEqual(roundedBox(result.elements.find((item) => item.candidateKey === 'mode_card').approximateRegion), {
+    x: 0.05, y: 0.42, width: 0.42, height: 0.065,
+  });
+  assert.deepEqual(roundedBox(result.elements.find((item) => item.candidateKey === 'settings_panel').approximateRegion), {
+    x: 0.04, y: 0.515, width: 0.92, height: 0.168,
+  });
+  const modeDescription = result.elements.find((item) => item.candidateKey === 'mode_description');
+  assert.ok(modeDescription.approximateRegion.y > 0.43, '说明文字不能吸附到同卡片标题');
+  assert.equal(result.geometryRefinement.semanticContainerMatchCount, 0);
 });
 
 test('整页截图不会把整图归一化的共相容器再次套用视口文字校准', () => {

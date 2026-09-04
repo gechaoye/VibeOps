@@ -252,18 +252,26 @@ button { color: inherit; }
 .device-empty span { color: #99aaa2; font-size: 16px; }
 
 .annotation-canvas-viewport { position: relative; flex: 0 0 auto; max-width: 100%; max-height: 100%; overflow: hidden; background: #fff; box-shadow: 0 0 0 1px rgb(255 255 255 / 14%); }
-.annotation-device-viewport { overflow-x: hidden; overflow-y: auto; border: 1px solid #7f9188; border-radius: 4px; box-shadow: 0 0 0 5px #16231e, 0 10px 28px rgb(0 0 0 / 28%); scrollbar-color: #82968c #1d2b25; scrollbar-width: thin; overscroll-behavior: contain; }
-.annotation-device-viewport::after { position: sticky; z-index: 20; bottom: 0; display: block; width: 100%; height: 18px; margin-top: -18px; background: linear-gradient(to bottom, transparent, rgb(13 23 18 / 22%)); content: ""; pointer-events: none; }
-.annotation-stage { position: relative; flex: 0 0 auto; line-height: 0; touch-action: none; user-select: none; }
-.annotation-stage-viewport-mode { overflow: visible; }
+.annotation-device-viewport { border: 1px solid #7f9188; border-radius: 4px; box-shadow: 0 0 0 5px #16231e, 0 10px 28px rgb(0 0 0 / 28%); }
+.annotation-scroll-layer { width: 100%; height: 100%; overflow: hidden; overscroll-behavior: contain; }
+.annotation-device-viewport .annotation-scroll-layer { overflow-x: hidden; overflow-y: auto; scrollbar-color: #82968c #1d2b25; scrollbar-width: thin; }
+.annotation-device-viewport .annotation-scroll-layer::after { display: block; width: 100%; height: 18px; margin-top: -18px; background: linear-gradient(to bottom, transparent, rgb(13 23 18 / 22%)); content: ""; pointer-events: none; }
+.annotation-scroll-content { position: relative; width: 100%; min-height: 100%; overflow: hidden; }
+.annotation-stage { position: relative; flex: 0 0 auto; line-height: 0; touch-action: pan-y; user-select: none; }
+.annotation-stage-drawing { touch-action: none; }
 .annotation-stage > img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.annotation-fixed-layer { position: absolute; z-index: 18; inset: 0; display: block; isolation: isolate; overflow: hidden; pointer-events: none; }
+.annotation-fixed-pixels { position: absolute; z-index: 1; right: 0; left: 0; background-repeat: no-repeat; background-color: #fff; pointer-events: none; }
+.annotation-fixed-pixels-top { top: 0; background-position: 0 0; }
+.annotation-fixed-pixels-bottom { bottom: 0; }
+.annotation-fixed-layer > .bbox { z-index: 2; background: transparent; pointer-events: auto; }
 .annotation-stage-drawing { cursor: crosshair; }
 .annotation-grid { position: absolute; z-index: 2; inset: 0; display: grid; border-top: 1px solid #d000ff; border-left: 1px solid #d000ff; pointer-events: none; }
 .annotation-grid-cell { position: relative; min-width: 0; min-height: 0; border-right: 1px solid #d000ff; border-bottom: 1px solid #d000ff; }
 .annotation-grid-cell-active { background: rgb(208 0 255 / 10%); }
 .annotation-grid-label { position: absolute; top: 3px; left: 4px; min-width: 15px; padding: 1px 3px; color: #9300b3; background: rgb(255 255 255 / 86%); font-size: 14px; font-weight: 700; line-height: 11px; text-align: center; }
 
-.bbox { position: absolute; min-width: 5px; min-height: 5px; border: 2px solid #d18400; background: rgb(209 132 0 / 7%); cursor: move; line-height: normal; }
+.bbox { position: absolute; min-width: 5px; min-height: 5px; border: 2px solid #d18400; background: rgb(209 132 0 / 7%); cursor: move; line-height: normal; touch-action: none; }
 .bbox-pending { border-color: #d18400; background: rgb(209 132 0 / 8%); }
 .bbox-accepted { border-color: #18a066; background: rgb(24 160 102 / 7%); }
 .bbox-edited { border-color: #0a8292; background: rgb(10 130 146 / 8%); }

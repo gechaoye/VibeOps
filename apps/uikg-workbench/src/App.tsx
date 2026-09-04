@@ -2535,6 +2535,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
                 <AnnotationCanvas
                   imageUrl={frameUrl}
                   deviceViewport={frame?.capture?.deviceViewport}
+                  runtimeStructure={frame?.runtimeStructure}
                   useDeviceViewport={showDeviceViewportMask}
                   elements={annotationCanvasElements}
                   selectedId={selectedId}

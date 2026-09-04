@@ -5,6 +5,7 @@ import type { BBox, DraftElement } from './types';
 interface AnnotationCanvasProps {
   imageUrl: string;
   deviceViewport?: { width: number; height: number };
+  runtimeStructure?: Record<string, unknown> | null;
   useDeviceViewport: boolean;
   elements: DraftElement[];
   selectedId: string | null;
@@ -55,8 +56,95 @@ function elementAtPoint(elements: DraftElement[], selectedId: string | null, x: 
   return hits[(selectedIndex + 1) % hits.length];
 }
 
-export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, elements, selectedId, selectedAbstractFieldKey, selectedAbstractFieldInstanceIndex, drawing, showRejected, showGridGuides, onSelect, onSelectAbstractField, onSelectAbstractFieldInstance, onAdd, onBoxChange, onAbstractFieldBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
+function runtimeFixedBoxes(runtimeStructure: Record<string, unknown> | null | undefined, width: number, height: number): BBox[] | null {
+  if (!runtimeStructure || !width || !height) return null;
+  const hierarchy = (runtimeStructure.hierarchy || runtimeStructure) as Record<string, any>;
+  const hasFixedMetadata = Array.isArray(hierarchy.fixedNodes)
+    || Array.isArray((runtimeStructure.dom as Record<string, any> | undefined)?.fixedNodes);
+  if (!hasFixedMetadata) return null;
+  const flatten = (node: any, output: any[] = []) => {
+    if (!node) return output;
+    output.push(node);
+    for (const child of node.children || []) flatten(child, output);
+    return output;
+  };
+  const scrollable = flatten(hierarchy.root).filter((node) => node?.scrollable && node.bounds).sort((left, right) => (
+    (Number(right.bounds.right) - Number(right.bounds.left)) * (Number(right.bounds.bottom) - Number(right.bounds.top))
+    - (Number(left.bounds.right) - Number(left.bounds.left)) * (Number(left.bounds.bottom) - Number(left.bounds.top))
+  ));
+  const nodes = [
+    ...(Array.isArray(hierarchy.fixedNodes) ? hierarchy.fixedNodes : []),
+    ...(Array.isArray((runtimeStructure.dom as Record<string, any> | undefined)?.fixedNodes)
+      ? (runtimeStructure.dom as Record<string, any>).fixedNodes
+      : []),
+  ];
+  // Follow ancestry rather than long-image coordinates. Merged descendants
+  // below the fold can lie outside the original scroll rectangle numerically,
+  // but remain scrolling content because they descend from ScrollView.
+  const concreteOutsideScroll: any[] = [];
+  const collectOutsideScroll = (node: any, insideScrollable = false) => {
+    if (!node) return;
+    const nestedInScrollable = insideScrollable || node.scrollable === true;
+    if (node.bounds && !nestedInScrollable && node.scrollable !== true) {
+      const className = String(node.class || '');
+      const structural = /(?:Layout|ViewGroup|ScrollView|RecyclerView|WebView|FrameLayout|LinearLayout|RelativeLayout|ConstraintLayout|CoordinatorLayout)$/i.test(className);
+      const concrete = Boolean(node.text || node.contentDescription || node.clickable || node.checkable || node.focusable
+        || /(?:TextView|ImageView|Button|EditText|Switch|CheckBox|RadioButton)$/i.test(className));
+      const area = Math.max(0, Number(node.bounds.right) - Number(node.bounds.left))
+        * Math.max(0, Number(node.bounds.bottom) - Number(node.bounds.top));
+      if (concrete && !(structural && area > 0.7 * 1_000_000)) concreteOutsideScroll.push(node);
+    }
+    for (const child of node.children || []) collectOutsideScroll(child, nestedInScrollable);
+  };
+  const structuralRoots = hierarchy.fullPage
+    ? (hierarchy.root?.children || []).filter((node: any) => flatten(node).some((candidate) => candidate?.scrollable === true))
+    : [hierarchy.root];
+  for (const root of structuralRoots.length ? structuralRoots : [hierarchy.root]) collectOutsideScroll(root);
+  return [...nodes, ...concreteOutsideScroll]
+    .filter((node) => node?.bounds && !scrollable.some((container) => (
+      node.bounds.left >= container.bounds.left
+      && node.bounds.top >= container.bounds.top
+      && node.bounds.right <= container.bounds.right
+      && node.bounds.bottom <= container.bounds.bottom
+    )))
+    .map((node) => ({
+      x: Math.max(0, Number(node.bounds.left)) / width,
+      y: Math.max(0, Number(node.bounds.top)) / height,
+      width: Math.max(0, Number(node.bounds.right) - Number(node.bounds.left)) / width,
+      height: Math.max(0, Number(node.bounds.bottom) - Number(node.bounds.top)) / height,
+    }))
+    .filter((box) => box.width > 0 && box.height > 0);
+}
+
+function regionOverlap(left: BBox, right: BBox) {
+  const width = Math.max(0, Math.min(left.x + left.width, right.x + right.width) - Math.max(left.x, right.x));
+  const height = Math.max(0, Math.min(left.y + left.height, right.y + right.height) - Math.max(left.y, right.y));
+  return width * height / Math.max(0.000001, left.width * left.height);
+}
+
+function regionsRepresentSameElement(left: BBox, right: BBox) {
+  return regionOverlap(left, right) >= 0.6 && regionOverlap(right, left) >= 0.6;
+}
+
+function largestScrollableBounds(runtimeStructure: Record<string, unknown> | null | undefined) {
+  const hierarchy = (runtimeStructure?.hierarchy || runtimeStructure) as Record<string, any> | undefined;
+  const flatten = (node: any, output: any[] = []) => {
+    if (!node) return output;
+    output.push(node);
+    for (const child of node.children || []) flatten(child, output);
+    return output;
+  };
+  return flatten(hierarchy?.root)
+    .filter((node) => node?.scrollable && node.bounds)
+    .sort((left, right) => (
+      (Number(right.bounds.right) - Number(right.bounds.left)) * (Number(right.bounds.bottom) - Number(right.bounds.top))
+      - (Number(left.bounds.right) - Number(left.bounds.left)) * (Number(left.bounds.bottom) - Number(left.bounds.top))
+    ))[0]?.bounds || null;
+}
+
+export function AnnotationCanvas({ imageUrl, deviceViewport, runtimeStructure, useDeviceViewport, elements, selectedId, selectedAbstractFieldKey, selectedAbstractFieldInstanceIndex, drawing, showRejected, showGridGuides, onSelect, onSelectAbstractField, onSelectAbstractFieldInstance, onAdd, onBoxChange, onAbstractFieldBoxChange, onBoxChangeEnd }: AnnotationCanvasProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
+  const scrollLayerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [gesture, setGesture] = useState<Gesture | null>(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
@@ -97,8 +185,20 @@ export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, 
     };
   }, [availableSize, deviceViewport, imageSize, useDeviceViewport]);
 
+  const scrollRegion = useMemo(() => {
+    if (!layout?.viewportMode || !deviceViewport || !imageSize.width || !imageSize.height) return null;
+    const bounds = largestScrollableBounds(runtimeStructure);
+    if (!bounds) return null;
+    const scale = layout.stage.width / imageSize.width;
+    const top = Math.max(0, Number(bounds.top) * scale);
+    const height = Math.max(1, (Number(bounds.bottom) - Number(bounds.top)) * scale);
+    const bottom = Math.max(0, (Number(deviceViewport.height) - Number(bounds.bottom)) * scale);
+    const contentHeight = Math.max(height, layout.stage.height - top - bottom);
+    return { top, height, bottom, contentHeight };
+  }, [deviceViewport, imageSize, layout, runtimeStructure]);
+
   useEffect(() => {
-    if (viewportRef.current) viewportRef.current.scrollTop = 0;
+    if (scrollLayerRef.current) scrollLayerRef.current.scrollTop = 0;
   }, [imageUrl, useDeviceViewport]);
 
   const onPointerMove = (event: React.PointerEvent) => {
@@ -148,12 +248,48 @@ export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, 
       }
     : null;
   const visibleElements = elements.filter((element) => showRejected || element.reviewStatus !== 'rejected');
+  const fixedBoxes = runtimeFixedBoxes(runtimeStructure, imageSize.width, imageSize.height);
+  const isElementFixed = (element: DraftElement) => {
+    // Once a runtime hierarchy is available it is authoritative. This also
+    // prevents stale fixed-position flags from an older recognition result
+    // from pinning scrollable meeting-mode/settings content.
+    const explicitlyFixed = element.riskSignals?.includes('fixed-position');
+    if (!fixedBoxes) return explicitlyFixed;
+    const regions = (element.abstraction?.instanceRegions?.length
+      ? element.abstraction.instanceRegions
+      : [element.bbox]).filter(Boolean);
+    return regions.length > 0 && regions.every((region) => fixedBoxes.some((box) => regionsRepresentSameElement(region, box)));
+  };
+  const fixedElements = visibleElements.filter(isElementFixed);
+  const scrollingElements = visibleElements.filter((element) => !isElementFixed(element));
   // Abstract templates are represented by their instance regions; their inherited
   // parent/list bbox must never become a single selection rectangle.
-  const renderedElements = [...visibleElements.filter((element) => !element.abstraction || element.abstraction.instanceRegions.length === 0)]
+  const renderedElements = [...scrollingElements.filter((element) => !element.abstraction || element.abstraction.instanceRegions.length === 0)]
     .sort((left, right) => Number(left.id === selectedId) - Number(right.id === selectedId));
   const selectedElement = visibleElements.find((element) => element.id === selectedId) || null;
   const selectedInheritsListRegion = Boolean(selectedElement?.abstraction?.kind === 'repeated-template' && visibleElements.some((candidate) => candidate.id === selectedElement.parentId && ['list', 'grouped-list', 'swipe-list', 'expandable-list'].includes(candidate.elementType)));
+  const fixedRegionStyle = (region: BBox) => {
+    if (!layout || !imageSize.width || !imageSize.height) return {};
+    const scale = layout.stage.width / imageSize.width;
+    return {
+      left: `${region.x * layout.stage.width}px`,
+      // Fixed runtime bounds are normalized against the full captured image,
+      // but their on-screen position is still expressed in image pixels.
+      top: `${region.y * imageSize.height * scale}px`,
+      width: `${region.width * layout.stage.width}px`,
+      height: `${region.height * imageSize.height * scale}px`,
+    };
+  };
+  const fixedInstances = fixedElements.flatMap((element) => (
+    element.abstraction?.instanceRegions
+      ?.map((region, index) => ({ element, region, index })) || []
+  )).filter(({ region }) => {
+    if (!layout || !imageSize.height) return false;
+    const scale = layout.stage.width / imageSize.width;
+    const top = region.y * imageSize.height * scale;
+    const bottom = (region.y + region.height) * imageSize.height * scale;
+    return bottom > 0 && top < layout.viewport.height;
+  });
   return (
     <div
       ref={viewportRef}
@@ -163,27 +299,33 @@ export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, 
       data-viewport-mask={layout?.viewportMode ? 'true' : 'false'}
     >
     <div
-      ref={stageRef}
-      className={`annotation-stage ${drawing ? 'annotation-stage-drawing' : ''}`}
-      style={layout?.stage}
-      onPointerDown={(event) => {
-        const isBackground = event.target === event.currentTarget || event.target instanceof HTMLImageElement;
-        if (!stageRef.current || !isBackground) return;
-        if (!drawing) {
-          onSelect(null);
-          onSelectAbstractField(null);
-          onSelectAbstractFieldInstance(null);
-          return;
-        }
-        const start = point(event, stageRef.current);
-        event.currentTarget.setPointerCapture(event.pointerId);
-        setGesture({ type: 'draw', startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });
-        onSelect(null);
-      }}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerCancel}
+      className="annotation-scroll-layer"
+      ref={scrollLayerRef}
+      style={scrollRegion ? { position: 'absolute', top: `${scrollRegion.top}px`, left: 0, width: '100%', height: `${scrollRegion.height}px` } : undefined}
     >
+      <div className="annotation-scroll-content" style={scrollRegion ? { width: `${layout?.stage.width || 0}px`, height: `${scrollRegion.contentHeight}px` } : undefined}>
+      <div
+        ref={stageRef}
+        className={`annotation-stage ${drawing ? 'annotation-stage-drawing' : ''}`}
+        style={scrollRegion ? { ...layout?.stage, position: 'absolute', top: `${-scrollRegion.top}px`, left: 0 } : layout?.stage}
+        onPointerDown={(event) => {
+          const isBackground = event.target === event.currentTarget || event.target instanceof HTMLImageElement;
+          if (!stageRef.current || !isBackground) return;
+          if (!drawing) {
+            onSelect(null);
+            onSelectAbstractField(null);
+            onSelectAbstractFieldInstance(null);
+            return;
+          }
+          const start = point(event, stageRef.current);
+          event.currentTarget.setPointerCapture(event.pointerId);
+          setGesture({ type: 'draw', startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });
+          onSelect(null);
+        }}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerCancel}
+      >
       <img
         src={imageUrl}
         alt="冻结设备画面"
@@ -206,7 +348,7 @@ export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, 
           ))}
         </div>
       )}
-      {visibleElements.flatMap((element) => element.abstraction?.instanceRegions.map((region, index) => ({ element, region, index })) || []).map(({ element, region, index }) => (
+      {scrollingElements.flatMap((element) => element.abstraction?.instanceRegions.map((region, index) => ({ element, region, index })) || []).map(({ element, region, index }) => (
         <div
           key={`${element.id}-instance-${index}`}
           className={`bbox bbox-abstract bbox-abstract-instance ${element.id === selectedId ? 'bbox-abstract-instance-selected' : ''}`}
@@ -267,7 +409,7 @@ export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, 
               event.stopPropagation();
               if (!stageRef.current) return;
               const start = point(event, stageRef.current);
-              const hit = elementAtPoint(visibleElements, selectedId, start.x, start.y);
+              const hit = elementAtPoint(scrollingElements, selectedId, start.x, start.y);
               if (!hit) return;
               event.currentTarget.setPointerCapture(event.pointerId);
               onSelect(hit.id);
@@ -308,6 +450,26 @@ export function AnnotationCanvas({ imageUrl, deviceViewport, useDeviceViewport, 
         );
       })}
       {drawBox && <div className="bbox bbox-new" style={{ left: `${drawBox.x * 100}%`, top: `${drawBox.y * 100}%`, width: `${drawBox.width * 100}%`, height: `${drawBox.height * 100}%` }} />}
+      </div>
+      </div>
+    </div>
+    <div
+      className="annotation-fixed-layer"
+      aria-label="固定视口元素"
+    >
+      {scrollRegion && (
+        <>
+          <div className="annotation-fixed-pixels annotation-fixed-pixels-top" aria-hidden="true" style={{ height: `${scrollRegion.top}px`, backgroundImage: `url(${JSON.stringify(imageUrl)})`, backgroundSize: `${layout?.stage.width}px ${layout?.stage.height}px`, backgroundPosition: '0 0' }} />
+          <div className="annotation-fixed-pixels annotation-fixed-pixels-bottom" aria-hidden="true" style={{ height: `${scrollRegion.bottom}px`, backgroundImage: `url(${JSON.stringify(imageUrl)})`, backgroundSize: `${layout?.stage.width}px ${layout?.stage.height}px`, backgroundPosition: `0 ${-(scrollRegion.top + scrollRegion.contentHeight)}px` }} />
+        </>
+      )}
+      {fixedInstances.map(({ element, region, index }) => (
+        <div key={`${element.id}-fixed-instance-${index}`} className={`bbox bbox-abstract bbox-abstract-instance ${element.id === selectedId ? 'bbox-abstract-instance-selected' : ''}`} style={fixedRegionStyle(region)} title={`${element.label} · 固定实例`} onPointerDown={(event) => { event.stopPropagation(); onSelect(element.id); onSelectAbstractField(null); }} />
+      ))}
+      {fixedElements.filter((element) => !element.abstraction || element.abstraction.instanceRegions.length === 0).map((element) => {
+        const selected = element.id === selectedId;
+        return <div key={`${element.id}-fixed`} className={`bbox bbox-${element.reviewStatus} ${selected ? 'bbox-selected' : ''}`} style={fixedRegionStyle(element.bbox)} title={`${element.label} · 固定元素`} onPointerDown={(event) => { event.stopPropagation(); onSelect(element.id); onSelectAbstractField(null); onSelectAbstractFieldInstance(null); }}><span className="bbox-label">{element.label}</span><span className="bbox-center" /></div>;
+      })}
     </div>
     </div>
   );

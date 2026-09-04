@@ -146,7 +146,15 @@ export async function stitchHybridFullPage({ nativeBuffer, chunks, webViewBounds
   const footerTop = Math.min(deviceViewport.height, Math.round(webViewBounds.bottom));
   const footerHeight = Math.max(0, deviceViewport.height - footerTop);
   const contentHeight = Math.round(scrollHeightCss * devicePixelRatio);
-  const outputHeight = headerHeight + contentHeight + footerHeight;
+  const firstChunk = chunks[0];
+  const scrollerTop = firstChunk ? Math.max(0, Math.round((firstChunk.rect?.y || 0) * devicePixelRatio)) : 0;
+  const webViewHeight = Math.max(0, Math.round((webViewBounds.bottom - webViewBounds.top)));
+  const scrollerHeight = firstChunk ? Math.max(0, Math.round(firstChunk.clientHeight * devicePixelRatio)) : 0;
+  // CDP captures the whole target viewport. The scroll container can be shorter
+  // because the page owns a fixed action bar below it; preserve that bar once
+  // from the final chunk instead of replacing it with the native screen footer.
+  const bottomChromeHeight = Math.max(0, webViewHeight - scrollerTop - scrollerHeight);
+  const outputHeight = headerHeight + contentHeight + bottomChromeHeight + footerHeight;
   const composites = [];
   if (headerHeight > 0) {
     composites.push({ input: await sharp(nativeBuffer).extract({ left: 0, top: 0, width: deviceViewport.width, height: headerHeight }).png().toBuffer(), left: 0, top: 0 });
@@ -162,14 +170,24 @@ export async function stitchHybridFullPage({ nativeBuffer, chunks, webViewBounds
     const top = Math.max(0, Math.round(chunk.rect.y * devicePixelRatio));
     const width = Math.min(deviceViewport.width - webViewBounds.left, (metadata.width || deviceViewport.width) - left);
     const height = Math.min(pixelHeight, (metadata.height || pixelHeight) - top);
-    const input = await source.extract({ left, top, width, height }).png().toBuffer();
-    composites.push({ input, left: Math.round(webViewBounds.left), top: headerHeight + Math.round(chunk.scrollTop * devicePixelRatio) });
+    if (width > 0 && height > 0) {
+      const input = await source.extract({ left, top, width, height }).png().toBuffer();
+      composites.push({ input, left: Math.round(webViewBounds.left), top: headerHeight + Math.round(chunk.scrollTop * devicePixelRatio) });
+    }
+    if (index === chunks.length - 1 && bottomChromeHeight > 0) {
+      const chromeTop = Math.max(0, top + scrollerHeight);
+      const chromeHeight = Math.min(bottomChromeHeight, (metadata.height || 0) - chromeTop);
+      if (width > 0 && chromeHeight > 0) {
+        const input = await sharp(chunk.buffer).extract({ left, top: chromeTop, width, height: chromeHeight }).png().toBuffer();
+        composites.push({ input, left: Math.round(webViewBounds.left), top: headerHeight + contentHeight });
+      }
+    }
   }
   if (footerHeight > 0) {
     composites.push({
       input: await sharp(nativeBuffer).extract({ left: 0, top: footerTop, width: deviceViewport.width, height: footerHeight }).png().toBuffer(),
       left: 0,
-      top: headerHeight + contentHeight,
+      top: headerHeight + contentHeight + bottomChromeHeight,
     });
   }
   return sharp({ create: { width: deviceViewport.width, height: outputHeight, channels: 4, background: '#ffffff' } })

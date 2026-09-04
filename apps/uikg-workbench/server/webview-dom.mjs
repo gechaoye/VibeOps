@@ -122,6 +122,10 @@ const DOM_SNAPSHOT_EXPRESSION = `(() => {
       text: String(text || '').replace(/\\s+/g, ' ').trim().slice(0, 500),
       interactive: isInteractive,
       disabled: Boolean(element.disabled) || element.getAttribute('aria-disabled') === 'true',
+      // Keep CSS positioning as a first-class runtime fact. Fixed/sticky
+      // controls must stay in the device viewport while page content moves.
+      position: style.position || 'static',
+      fixed: style.position === 'fixed' || style.position === 'sticky',
       rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
     });
     // Keep the complete visible/interactive DOM snapshot. Payload trimming is
@@ -242,6 +246,9 @@ export function mergeDomSnapshots(baseDom, snapshots, { webViewBounds, viewport,
   const seen = new Set((selected.nodes || []).map(domNodeKey));
   const seenNodes = [...(selected.nodes || [])];
   selected.nodes ||= [];
+  const fixedNodes = new Map((selected.nodes || [])
+    .filter((node) => node.fixed)
+    .map((node) => [domNodeIdentity(node), { ...node, fixed: true }]));
   const webViewTop = Number(webViewBounds?.top || 0);
   const webViewBottom = Number(webViewBounds?.bottom || viewport.height);
   for (const snapshot of snapshots || []) {
@@ -254,8 +261,11 @@ export function mergeDomSnapshots(baseDom, snapshots, { webViewBounds, viewport,
       if (!bounds || bounds.bottom <= webViewTop || bounds.top >= webViewBottom) continue;
       const shifted = {
         ...node,
-        bounds: { ...bounds, top: bounds.top + offset, bottom: bounds.bottom + offset },
+        bounds: node.fixed
+          ? { ...bounds }
+          : { ...bounds, top: bounds.top + offset, bottom: bounds.bottom + offset },
       };
+      if (node.fixed) fixedNodes.set(domNodeIdentity(node), { ...shifted, fixed: true });
       if (seenNodes.some((existing) => sameDomNode(existing, shifted))) continue;
       const key = domNodeKey(shifted);
       if (seen.has(key)) continue;
@@ -266,7 +276,13 @@ export function mergeDomSnapshots(baseDom, snapshots, { webViewBounds, viewport,
   }
   selected.nodeCount = selected.nodes.length;
   selected.fullPage = true;
-  return { ...seed, documents, fullPage: true, selectedDocumentIndex: 0 };
+  return {
+    ...seed,
+    documents,
+    fullPage: true,
+    selectedDocumentIndex: 0,
+    fixedNodes: [...fixedNodes.values()],
+  };
 }
 
 export async function captureWebViewDom(agent, hierarchy) {
