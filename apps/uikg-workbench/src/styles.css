@@ -265,21 +265,29 @@ button { color: inherit; }
 .annotation-fixed-pixels-top { top: 0; background-position: 0 0; }
 .annotation-fixed-pixels-bottom { bottom: 0; }
 .annotation-fixed-layer > .bbox { z-index: 2; background: transparent; pointer-events: auto; }
+.annotation-fixed-layer > .bbox.bbox-edge,
+.annotation-fixed-layer > .bbox.bbox-edge-instance { z-index: 2; }
+.annotation-fixed-layer > .bbox.bbox-fixed-overlay { z-index: 4; }
+.annotation-fixed-layer > .bbox.bbox-fixed-instance { z-index: 6; }
+.annotation-fixed-layer > .bbox.bbox-fixed-field { z-index: 8; }
 .annotation-stage-drawing { cursor: crosshair; }
 .annotation-grid { position: absolute; z-index: 2; inset: 0; display: grid; border-top: 1px solid #d000ff; border-left: 1px solid #d000ff; pointer-events: none; }
 .annotation-grid-cell { position: relative; min-width: 0; min-height: 0; border-right: 1px solid #d000ff; border-bottom: 1px solid #d000ff; }
 .annotation-grid-cell-active { background: rgb(208 0 255 / 10%); }
 .annotation-grid-label { position: absolute; top: 3px; left: 4px; min-width: 15px; padding: 1px 3px; color: #9300b3; background: rgb(255 255 255 / 86%); font-size: 14px; font-weight: 700; line-height: 11px; text-align: center; }
 
-.bbox { position: absolute; min-width: 5px; min-height: 5px; border: 2px solid #d18400; background: rgb(209 132 0 / 7%); cursor: move; line-height: normal; touch-action: none; }
+.bbox { position: absolute; z-index: 2; min-width: 5px; min-height: 5px; border: 2px solid #d18400; background: rgb(209 132 0 / 7%); cursor: move; line-height: normal; touch-action: none; }
+.bbox-container { z-index: 1; }
+.bbox:not(.bbox-container):not(.bbox-abstract-instance):not(.bbox-abstract-field-instance) { z-index: 2; }
+.bbox-container.bbox-selected { z-index: 1; }
 .bbox-pending { border-color: #d18400; background: rgb(209 132 0 / 8%); }
 .bbox-accepted { border-color: #18a066; background: rgb(24 160 102 / 7%); }
 .bbox-edited { border-color: #0a8292; background: rgb(10 130 146 / 8%); }
 .bbox-rejected { border-color: #8c9691; border-style: dashed; background: rgb(110 120 115 / 9%); opacity: 0.7; }
 .bbox-abstract { border-color: #1479c9; background: rgb(20 121 201 / 10%); color: #1479c9; }
-.bbox-abstract-instance { z-index: 3; border-width: 2px; border-style: solid; pointer-events: auto; }
+.bbox-abstract-instance { z-index: 6; border-width: 2px; border-style: solid; pointer-events: auto; }
 .bbox-abstract-instance:hover { border-color: #2799e6; background: rgb(39 153 230 / 16%); }
-.bbox-abstract-instance-selected { z-index: 6; border-color: #39ff88; border-width: 3px; background: rgb(57 255 136 / 16%); box-shadow: 0 0 0 2px rgb(57 255 136 / 32%), 0 0 12px rgb(57 255 136 / 55%); }
+.bbox-abstract-instance-selected { z-index: 8; border-color: #39ff88; border-width: 3px; background: rgb(57 255 136 / 16%); box-shadow: 0 0 0 2px rgb(57 255 136 / 32%), 0 0 12px rgb(57 255 136 / 55%); }
 .bbox-abstract-field-instance { position: absolute; z-index: 7; min-width: 4px; min-height: 4px; border: 2px dashed #d97983; border-radius: 3px; background: rgb(217 121 131 / 9%); cursor: move; pointer-events: auto; }
 .bbox-abstract-field-instance:hover { background: rgb(217 121 131 / 17%); }
 .bbox-abstract-field-instance-selected { z-index: 9; border-style: solid; border-color: #ff426c; background: rgb(255 66 108 / 14%); box-shadow: 0 0 0 2px rgb(255 66 108 / 25%); }

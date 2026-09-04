@@ -38,7 +38,7 @@ import {
   Unplug,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnnotationCanvas } from './AnnotationCanvas';
 import { RelationWorkspace } from './RelationWorkspace';
 import { createAnnotationSessionId, draftForAnnotationTarget, type AnnotationTarget } from './annotation-tabs';
@@ -139,10 +139,12 @@ function removePageFromDraft(current: Draft, pageId: string): Draft {
     .map((element) => element.ownerKind === 'application'
       ? { ...element, availableOnPageIds: element.availableOnPageIds.filter((id) => id !== pageId) }
       : element);
-  const pages = current.pages.filter((page) => page.id !== pageId).map((page) => ({
-    ...page,
-    elementIds: page.elementIds.filter((id) => !removedElementIds.has(id)),
-  }));
+  const pages = current.pages
+    .filter((page) => page.id !== pageId)
+    .map((page) => {
+      const elementIds = page.elementIds.filter((id) => !removedElementIds.has(id));
+      return elementIds.length === page.elementIds.length ? page : { ...page, elementIds };
+    });
   const nextPage = current.currentPageId === pageId ? pages[0] : pages.find((page) => page.id === current.currentPageId) || pages[0];
   const emptyPage = {
     id: 'draft-page-empty',
@@ -168,6 +170,20 @@ function removePageFromDraft(current: Draft, pageId: string): Draft {
   };
 }
 
+function rebuildElementChildren(elements: DraftElement[]): DraftElement[] {
+  const childrenByParent = new Map<string, string[]>();
+  for (const element of elements) {
+    if (!element.parentId) continue;
+    const children = childrenByParent.get(element.parentId) || [];
+    children.push(element.id);
+    childrenByParent.set(element.parentId, children);
+  }
+  return elements.map((element) => ({
+    ...element,
+    childrenIds: childrenByParent.get(element.id) || [],
+  }));
+}
+
 function pageContentSignature(draft: Draft, pageId: string) {
   const page = draft.pages.find((candidate) => candidate.id === pageId);
   if (!page) return '';
@@ -178,9 +194,57 @@ function pageContentSignature(draft: Draft, pageId: string) {
 }
 
 function invalidateChangedPagePublications(previous: Draft, next: Draft): Draft {
+  if (previous === next) return next;
+  const pagesChanged = previous.pages !== next.pages;
+  const elementsChanged = previous.elements !== next.elements;
+  const transitionsChanged = previous.transitions !== next.transitions;
+  if (!pagesChanged && !elementsChanged && !transitionsChanged) return next;
+
+  const changedPageIds = new Set<string>();
+  if (pagesChanged) {
+    const previousPages = new Map(previous.pages.map((page) => [page.id, page]));
+    for (const page of next.pages) {
+      if (previousPages.get(page.id) !== page) changedPageIds.add(page.id);
+    }
+  }
+  if (elementsChanged) {
+    const previousById = new Map(previous.elements.map((element) => [element.id, element]));
+    const nextById = new Map(next.elements.map((element) => [element.id, element]));
+    const changedElements = [...new Set([...previousById.keys(), ...nextById.keys()])]
+      .map((id) => ({ previous: previousById.get(id), next: nextById.get(id) }))
+      .filter(({ previous: beforeElement, next: nextElement }) => beforeElement !== nextElement);
+    for (const page of next.pages) {
+      if (changedElements.some(({ previous: beforeElement, next: nextElement }) => (
+        (beforeElement && elementAvailableOnPage(beforeElement, page.id, previous.elements))
+        || (nextElement && elementAvailableOnPage(nextElement, page.id, next.elements))
+      ))) changedPageIds.add(page.id);
+    }
+  }
+  if (transitionsChanged) {
+    const previousById = new Map(previous.transitions.map((transition) => [transition.id, transition]));
+    const nextById = new Map(next.transitions.map((transition) => [transition.id, transition]));
+    for (const [id, transition] of nextById) {
+      if (previousById.get(id) !== transition) {
+        const previousTransition = previousById.get(id);
+        if (previousTransition) {
+          changedPageIds.add(previousTransition.sourcePageId);
+          changedPageIds.add(previousTransition.targetPageId);
+        }
+        changedPageIds.add(transition.sourcePageId);
+        changedPageIds.add(transition.targetPageId);
+      }
+    }
+    for (const [id, transition] of previousById) {
+      if (!nextById.has(id)) {
+        changedPageIds.add(transition.sourcePageId);
+        changedPageIds.add(transition.targetPageId);
+      }
+    }
+  }
+
   const pages = next.pages.map((page) => {
     const previousPage = previous.pages.find((candidate) => candidate.id === page.id);
-    if (!page.publishedAt || !previousPage?.publishedAt) return page;
+    if (!page.publishedAt || !previousPage?.publishedAt || !changedPageIds.has(page.id)) return page;
     return pageContentSignature(previous, page.id) === pageContentSignature(next, page.id) ? page : { ...page, publishedAt: null };
   });
   return pages.some((page, index) => page !== next.pages[index]) ? { ...next, pages } : next;
@@ -460,6 +524,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const [sideTab, setSideTab] = useState<SideTab>('elements');
   const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(() => tabKind === 'workspace' ? 'graph' : tabKind === 'knowledge' ? 'knowledge' : 'annotation');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedAbstractInstanceIndex, setSelectedAbstractInstanceIndex] = useState<number | null>(null);
   const [selectedAbstractFieldKey, setSelectedAbstractFieldKey] = useState<string | null>(null);
   const [selectedAbstractFieldInstanceIndex, setSelectedAbstractFieldInstanceIndex] = useState<number | null>(null);
   const [multiSelect, setMultiSelect] = useState(false);
@@ -522,7 +587,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     if (tabKind === 'annotation') onTabDirtyChange(tabId, dirty);
   }, [dirty, onTabDirtyChange, tabId, tabKind]);
 
-  const issues = useMemo(() => draft ? validateDraftClient(draft) : serverIssues, [draft, serverIssues]);
+  const issues = useMemo(() => draft ? validateDraftClient(draft) : serverIssues, [draft?.elements, draft?.pages, draft?.transitions, serverIssues]);
   const currentPageIssues = useMemo(() => {
     if (!draft) return issues;
     const pageId = draft.currentPageId;
@@ -534,7 +599,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       if (issue.pageIds?.length) return issue.pageIds.includes(pageId);
       return true;
     });
-  }, [draft, issues]);
+  }, [draft?.currentPageId, draft?.elements, issues]);
   const validationIssueGroups = useMemo(() => {
     const grouped = new Map<string, { code: string; level: ValidationIssue['level']; issues: ValidationIssue[] }>();
     for (const issue of currentPageIssues) {
@@ -548,14 +613,14 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       return right.issues.length - left.issues.length || left.code.localeCompare(right.code);
     });
   }, [currentPageIssues]);
-  const selectedElement = draft?.elements.find((element) => element.id === selectedId) || null;
+  const selectedElement = useMemo(() => draft?.elements.find((element) => element.id === selectedId) || null, [draft?.elements, selectedId]);
   useEffect(() => {
     setSelectedAbstractFieldKey(null);
   }, [selectedId]);
   const initialSelectedElement = selectedId ? initialElementsRef.current.get(selectedId) || null : null;
-  const canRestoreSelectedElement = Boolean(selectedElement && initialSelectedElement && JSON.stringify(selectedElement) !== JSON.stringify(initialSelectedElement));
-  const canRestoreAllElements = Boolean(draft && JSON.stringify(draft.elements) !== JSON.stringify(initialAllElementsRef.current));
-  const viewedPage = draft?.pages.find((page) => page.id === draft.currentPageId);
+  const canRestoreSelectedElement = useMemo(() => Boolean(selectedElement && initialSelectedElement && JSON.stringify(selectedElement) !== JSON.stringify(initialSelectedElement)), [initialSelectedElement, selectedElement]);
+  const canRestoreAllElements = useMemo(() => Boolean(draft && JSON.stringify(draft.elements) !== JSON.stringify(initialAllElementsRef.current)), [draft?.elements]);
+  const viewedPage = useMemo(() => draft?.pages.find((page) => page.id === draft.currentPageId), [draft?.currentPageId, draft?.pages]);
   const primaryFrameId = viewedPage?.primaryFrameId && viewedPage.frameIds.includes(viewedPage.primaryFrameId)
     ? viewedPage.primaryFrameId
     : viewedPage?.frameIds[0] || null;
@@ -565,7 +630,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const isPrimaryFrame = Boolean(activeFrameId && activeFrameId === primaryFrameId);
   const currentElements = useMemo(() => draft
     ? draft.elements.filter((element) => elementAvailableOnPage(element, draft.currentPageId, draft.elements) && element.sourceFrameId === activeFrameId)
-    : [], [activeFrameId, draft]);
+    : [], [activeFrameId, draft?.currentPageId, draft?.elements]);
   const currentPageActivities = useMemo(() => {
     if (!draft) return elementActivities;
     return elementActivities.filter((record) => {
@@ -575,7 +640,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
         return Boolean(element && elementAvailableOnPage(element, draft.currentPageId, draft.elements));
       });
     });
-  }, [draft, elementActivities]);
+  }, [draft?.currentPageId, draft?.elements, elementActivities]);
   const annotationCanvasElements = currentElements;
   const treeElements = useMemo(() => {
     const byId = new Map((draft?.elements || []).map((element) => [element.id, element]));
@@ -593,12 +658,12 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     return duplicateCandidateKeyFilter
       ? result.filter((element) => element.candidateKey.trim() === duplicateCandidateKeyFilter)
       : result;
-  }, [currentElements, draft, duplicateCandidateKeyFilter]);
-  const currentPageHasPrivateElements = Boolean(draft?.elements.some((element) => element.pageId === draft.currentPageId));
-  const historyBlockedForPendingPage = Boolean(activeFrameId && !currentPageHasPrivateElements && draft?.pages.find((page) => page.id === draft.currentPageId)?.frameIds.includes(activeFrameId));
-  const allCurrentChecked = treeElements.length > 0 && treeElements.every((element) => checkedIds.has(element.id));
-  const checkedCurrentElements = treeElements.filter((element) => checkedIds.has(element.id));
-  const allCheckedAccepted = checkedCurrentElements.length > 0 && checkedCurrentElements.every((element) => element.reviewStatus === 'accepted');
+  }, [currentElements, draft?.elements, duplicateCandidateKeyFilter]);
+  const currentPageHasPrivateElements = useMemo(() => Boolean(draft?.elements.some((element) => element.pageId === draft.currentPageId)), [draft?.currentPageId, draft?.elements]);
+  const historyBlockedForPendingPage = useMemo(() => Boolean(activeFrameId && !currentPageHasPrivateElements && draft?.pages.find((page) => page.id === draft.currentPageId)?.frameIds.includes(activeFrameId)), [activeFrameId, currentPageHasPrivateElements, draft?.currentPageId, draft?.pages]);
+  const allCurrentChecked = useMemo(() => treeElements.length > 0 && treeElements.every((element) => checkedIds.has(element.id)), [checkedIds, treeElements]);
+  const checkedCurrentElements = useMemo(() => treeElements.filter((element) => checkedIds.has(element.id)), [checkedIds, treeElements]);
+  const allCheckedAccepted = useMemo(() => checkedCurrentElements.length > 0 && checkedCurrentElements.every((element) => element.reviewStatus === 'accepted'), [checkedCurrentElements]);
   const frameUrl = activeFrameId
     ? absoluteAssetUrl(`/workbench/api/frames/${encodeURIComponent(activeFrameId)}/image`)
     : null;
@@ -624,12 +689,12 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     // Page IDs are authoritative. Falling back to frame IDs makes identical screenshots
     // from different pages appear in the current page's history.
     return analysisSessions.filter((session) => session.pageId === draft.currentPageId);
-  }, [analysisSessions, draft]);
+  }, [analysisSessions, draft?.currentPageId, draft?.pages]);
   const recognizedFrameIds = useMemo(() => {
     if (!draft) return new Set<string>();
     const currentPage = draft.pages.find((page) => page.id === draft.currentPageId);
     return currentPage ? recognizedFrameIdsForPage(draft, currentPage) : new Set<string>();
-  }, [draft]);
+  }, [draft?.currentPageId, draft?.pages, draft?.elements]);
   const hasAnalyzedCurrentFrame = Boolean(activeFrameId && recognizedFrameIds.has(activeFrameId));
   const acceptedHistorySessionId = useMemo(() => {
     if (!draft?.rawModelResultRef) return null;
@@ -807,7 +872,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       const next = afterById.get(id);
       if (!previous && next) { fields.add('added'); changedIds.push(id); labels.push(next.label); continue; }
       if (previous && !next) { fields.add('removed'); changedIds.push(id); labels.push(previous.label); continue; }
-      if (!previous || !next) continue;
+      if (!previous || !next || previous === next) continue;
       const changedFields = comparedFields.filter((field) => {
         if (field === 'capabilities' || field === 'availableOnPageIds' || field === 'childrenIds') {
           return JSON.stringify([...(previous[field] as string[])].sort()) !== JSON.stringify([...(next[field] as string[])].sort());
@@ -845,7 +910,9 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   const commitDraft = (updater: (current: Draft) => Draft, historyKey?: string, activityLabel = '编辑元素') => {
     const current = draftRef.current;
     if (!current) return;
-    const next = invalidateChangedPagePublications(current, updater(current));
+    const updated = updater(current);
+    if (updated === current) return;
+    const next = invalidateChangedPagePublications(current, updated);
     if (next === current) return;
     const mergeActivity = Boolean(historyKey && historyGroupRef.current === historyKey);
     if (!historyKey || historyGroupRef.current !== historyKey) {
@@ -857,7 +924,9 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
     setDraft(next);
     setDirty(true);
     setStaging(null);
-    appendElementActivity(activityLabel, current, next, historyKey, mergeActivity);
+    if (next.elements !== current.elements || next.elementEditRecords !== current.elementEditRecords) {
+      appendElementActivity(activityLabel, current, next, historyKey, mergeActivity);
+    }
   };
 
   const undo = () => {
@@ -928,6 +997,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   }, [active, refreshConnection]);
 
   useEffect(() => {
+    if (!active) return undefined;
     Promise.all([
       refreshConnection(),
       workbenchApi.draft(),
@@ -955,7 +1025,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       if (activeRef.current) void refreshConnection(true);
     }, 5_000);
     return () => window.clearInterval(timer);
-  }, [recoveryDraft, refreshConnection]);
+  }, [active, recoveryDraft, refreshConnection]);
 
   useEffect(() => {
     const frameId = activeFrameId;
@@ -1880,10 +1950,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       return {
         ...current,
         elementEditRecords,
-        elements: patch.parentId === undefined ? updated : updated.map((element) => ({
-          ...element,
-          childrenIds: updated.filter((candidate) => candidate.parentId === element.id).map((candidate) => candidate.id),
-        })),
+        elements: patch.parentId === undefined ? updated : rebuildElementChildren(updated),
       };
     }, historyKey, activityLabel);
   };
@@ -1965,10 +2032,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
           source: element.source === 'human' ? 'human' as const : 'mixed' as const,
         };
       }), container];
-      const normalizedElements = nextElements.map((element) => ({
-        ...element,
-        childrenIds: nextElements.filter((candidate) => candidate.parentId === element.id).map((candidate) => candidate.id),
-      }));
+      const normalizedElements = rebuildElementChildren(nextElements);
       const nextRecords = current.elementEditRecords.filter((record) => !selectedSet.has(record.elementId));
       for (const element of selected) nextRecords.push({ elementId: element.id, kind: 'updated', fields: ['parentId', 'ownerKind', 'ownerRef'], editedAt: new Date().toISOString() });
       nextRecords.push({ elementId: container.id, kind: 'created', fields: ['bbox', 'parentId', 'childrenIds'], editedAt: new Date().toISOString() });
@@ -2008,10 +2072,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
             ownerRef: parentId || current.currentPageId,
           };
         });
-      const elements = remaining.map((element) => ({
-        ...element,
-        childrenIds: remaining.filter((candidate) => candidate.parentId === element.id).map((candidate) => candidate.id),
-      }));
+      const elements = rebuildElementChildren(remaining);
       return {
         ...current,
         pages: current.pages.map((page) => ({ ...page, elementIds: page.elementIds.filter((id) => !deletedIds.has(id)) })),
@@ -2070,10 +2131,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       return {
         ...current,
         elementEditRecords,
-        elements: restored.map((element) => ({
-          ...element,
-          childrenIds: restored.filter((candidate) => candidate.parentId === element.id).map((candidate) => candidate.id),
-        })),
+        elements: rebuildElementChildren(restored),
       };
     }, undefined, '恢复元素');
     preAcceptStatusRef.current.delete(selectedId);
@@ -2122,24 +2180,24 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
       return {
         ...current,
         elementEditRecords: current.elementEditRecords.filter((record) => record.elementId !== selectedId),
-        elements: reparented.map((element) => ({
-          ...element,
-          childrenIds: reparented.filter((candidate) => candidate.parentId === element.id).map((candidate) => candidate.id),
-        })),
+        elements: rebuildElementChildren(reparented),
       };
     }, undefined, '删除元素');
   };
 
   const selectPage = (pageId: string) => {
-    if (!draft) return;
-    const page = draft.pages.find((item) => item.id === pageId);
+    const current = draftRef.current;
+    if (!current) return;
+    const page = current.pages.find((item) => item.id === pageId);
     if (!page) return;
-    commitDraft((current) => ({
+    const next = {
       ...current,
       currentPageId: page.id,
       currentFrameId: page.primaryFrameId || page.frameIds[0] || null,
       page: { id: page.id, key: page.key, name: page.name, functionRef: page.functionRef, implementationType: page.implementationType, surfaceType: page.surfaceType, stateSummary: page.stateSummary, scrollableRegions: page.scrollableRegions },
-    }));
+    };
+    draftRef.current = next;
+    setDraft(next);
     setViewedFrameId(page.primaryFrameId || page.frameIds[0] || null);
     setSelectedId(null);
     setCheckedIds(new Set());
@@ -2539,16 +2597,26 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
                   useDeviceViewport={showDeviceViewportMask}
                   elements={annotationCanvasElements}
                   selectedId={selectedId}
+                  selectedAbstractInstanceIndex={selectedAbstractInstanceIndex}
                   selectedAbstractFieldKey={selectedAbstractFieldKey}
                   selectedAbstractFieldInstanceIndex={selectedAbstractFieldInstanceIndex}
                   drawing={drawing}
                   showRejected={showRejected}
                   showGridGuides={showGridGuides}
-                  onSelect={(id) => { setSelectedId(id); setSelectedAbstractFieldKey(null); setSelectedAbstractFieldInstanceIndex(null); }}
+                  onSelect={(id) => { setSelectedId(id); setSelectedAbstractInstanceIndex(null); setSelectedAbstractFieldKey(null); setSelectedAbstractFieldInstanceIndex(null); }}
+                  onSelectAbstractInstance={(index) => { setSelectedAbstractInstanceIndex(index); setSelectedAbstractFieldKey(null); setSelectedAbstractFieldInstanceIndex(null); }}
                   onSelectAbstractField={setSelectedAbstractFieldKey}
                   onSelectAbstractFieldInstance={setSelectedAbstractFieldInstanceIndex}
                   onAdd={addElement}
                   onBoxChange={(id, bbox) => updateElement(id, { bbox }, `bbox:${id}`)}
+                  onAbstractInstanceBoxChange={(id, index, bbox) => {
+                    const element = draftRef.current?.elements.find((candidate) => candidate.id === id);
+                    if (!element?.abstraction) return;
+                    updateElement(id, { abstraction: {
+                      ...element.abstraction,
+                      instanceRegions: element.abstraction.instanceRegions.map((region, regionIndex) => regionIndex === index ? bbox : region),
+                    } }, `abstract-instance-bbox:${id}:${index}`);
+                  }}
                   onAbstractFieldBoxChange={(id, fieldKey, index, bbox) => {
                     const element = draftRef.current?.elements.find((candidate) => candidate.id === id);
                     if (!element?.abstraction) return;
@@ -2608,7 +2676,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
               <button type="button" className={`icon-button ${multiSelect ? 'active' : ''}`} title="多选" aria-pressed={multiSelect} disabled={currentElements.length === 0} onClick={() => { setMultiSelect((value) => !value); if (multiSelect) setCheckedIds(new Set()); }}><ListChecks size={15} /></button>
             </div>
           </div>
-          <ElementTree elements={treeElements} filterCandidateKey={duplicateCandidateKeyFilter} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} allChecked={allCurrentChecked} allCheckedAccepted={allCheckedAccepted} onToggleAll={() => setCheckedIds(allCurrentChecked ? new Set() : new Set(treeElements.map((element) => element.id)))} onCreateContainer={createContainerFromSelection} onToggleAccept={allCheckedAccepted ? bulkCancelAccept : bulkAccept} onDeleteChecked={deleteCheckedElements} onSelect={(id) => { setSelectedId(id); setSelectedAbstractFieldKey(null); setSelectedAbstractFieldInstanceIndex(null); }} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} onClearFilter={() => setDuplicateCandidateKeyFilter(null)} />
+          <ElementTree elements={treeElements} filterCandidateKey={duplicateCandidateKeyFilter} selectedId={selectedId} multiSelect={multiSelect} checkedIds={checkedIds} allChecked={allCurrentChecked} allCheckedAccepted={allCheckedAccepted} onToggleAll={() => setCheckedIds(allCurrentChecked ? new Set() : new Set(treeElements.map((element) => element.id)))} onCreateContainer={createContainerFromSelection} onToggleAccept={allCheckedAccepted ? bulkCancelAccept : bulkAccept} onDeleteChecked={deleteCheckedElements} onSelect={(id) => { setSelectedId(id); setSelectedAbstractInstanceIndex(null); setSelectedAbstractFieldKey(null); setSelectedAbstractFieldInstanceIndex(null); }} onCheck={(id, checked) => setCheckedIds((current) => { const next = new Set(current); if (checked) next.add(id); else next.delete(id); return next; })} onClearFilter={() => setDuplicateCandidateKeyFilter(null)} />
           <div className="tree-legend">
             {(Object.entries(reviewStatusLabels) as [keyof typeof reviewStatusLabels, string][]).map(([statusKey, label]) => <span key={statusKey}><i className={`legend-${statusKey}`} />{label}</span>)}
           </div>
@@ -2639,7 +2707,7 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
               onCreateRelation={() => setWorkspaceMode('relation')}
               selectedAbstractFieldKey={selectedAbstractFieldKey}
               selectedAbstractFieldInstanceIndex={selectedAbstractFieldInstanceIndex}
-              onSelectAbstractField={(key) => { setSelectedAbstractFieldKey(key); if (!key) setSelectedAbstractFieldInstanceIndex(null); }}
+              onSelectAbstractField={(key) => { setSelectedAbstractInstanceIndex(null); setSelectedAbstractFieldKey(key); if (!key) setSelectedAbstractFieldInstanceIndex(null); }}
               onSelectAbstractFieldInstance={setSelectedAbstractFieldInstanceIndex}
             />
           ) : sideTab === 'validation' ? (
@@ -2754,6 +2822,15 @@ function AppContent({ tabId, tabTitle, tabKind, annotationTarget, annotationSess
   );
 }
 
+// Most tab-level state is local to AppContent. Keep inactive tabs from
+// rerendering when a sibling tab or a global notice changes; they refresh as
+// soon as they become active again.
+const MemoizedAppContent = memo(AppContent, (previous, next) => {
+  // Inactive tabs are hidden and have no observable local work. Re-render them
+  // when they become active so they receive fresh callbacks and shared data.
+  return !previous.active && !next.active;
+});
+
 export default function App() {
   const [tabs, setTabs] = useState<InternalTab[]>(() => [
     { id: 'knowledge', title: '知识图谱', sessionId: createAnnotationSessionId(), kind: 'knowledge', annotationTarget: null },
@@ -2788,9 +2865,10 @@ export default function App() {
   }, []);
 
   const selectTab = useCallback((tabId: string) => {
+    if (tabId === activeTabId) return;
     setActiveTabId(tabId);
     setTabRefreshKeys((current) => ({ ...current, [tabId]: (current[tabId] || 0) + 1 }));
-  }, []);
+  }, [activeTabId]);
 
   const showPageTabLimit = () => {
     const text = `页面标签页最多可打开 ${MAX_PAGE_TABS} 个，请先关闭不需要的页面`;
@@ -2979,7 +3057,7 @@ export default function App() {
     <ConfigProvider theme={{ token: { colorPrimary: '#087f5b', borderRadius: 6, fontFamily: 'Inter, "PingFang SC", "Microsoft YaHei", sans-serif' } }}>
       <AntdApp>
         <div className="internal-workbench">
-          {tabs.map((tab) => <AppContent
+          {tabs.map((tab) => <MemoizedAppContent
             key={tab.id}
             tabId={tab.id}
             tabTitle={tab.title}
